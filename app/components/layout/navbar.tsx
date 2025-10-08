@@ -6,12 +6,10 @@ import { NAV_LINKS } from "@/lib/navigation";
 export function Navbar() {
   return (
     <nav className="flex items-center justify-between w-full">
-      {/* Logo */}
       <Link to="/" className="text-xl font-semibold">
         Logo
       </Link>
 
-      {/* Desktop Navigation */}
       <div className="hidden md:flex items-center gap-6">
         {NAV_LINKS.map((link) => (
           <NavLink
@@ -28,12 +26,10 @@ export function Navbar() {
         ))}
       </div>
 
-      {/* Desktop CTA */}
       <div className="hidden md:block">
         <Button size="sm">Get Started</Button>
       </div>
 
-      {/* Mobile Menu */}
       <MobileMenu />
     </nav>
   );
