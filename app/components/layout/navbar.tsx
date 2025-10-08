@@ -1,0 +1,40 @@
+import { Button } from "@/components/ui/button";
+import { MobileMenu } from "./mobile-menu";
+import { NavLink, Link } from "react-router";
+import { NAV_LINKS } from "@/lib/navigation";
+
+export function Navbar() {
+  return (
+    <nav className="flex items-center justify-between w-full">
+      {/* Logo */}
+      <Link to="/" className="text-xl font-semibold">
+        Logo
+      </Link>
+
+      {/* Desktop Navigation */}
+      <div className="hidden md:flex items-center gap-6">
+        {NAV_LINKS.map((link) => (
+          <NavLink
+            key={link.href}
+            to={link.href}
+            className={({ isActive }) =>
+              `text-sm transition-colors ${
+                isActive ? "text-primary font-medium" : "hover:text-primary"
+              }`
+            }
+          >
+            {link.label}
+          </NavLink>
+        ))}
+      </div>
+
+      {/* Desktop CTA */}
+      <div className="hidden md:block">
+        <Button size="sm">Get Started</Button>
+      </div>
+
+      {/* Mobile Menu */}
+      <MobileMenu />
+    </nav>
+  );
+}
