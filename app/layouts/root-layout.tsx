@@ -1,5 +1,5 @@
-import React, { type ReactNode } from "react";
-import { Navbar } from "~/components/layout/navbar";
+import React, { type ReactNode } from 'react';
+import { Navbar } from '~/components/layout/navbar';
 
 interface RootLayoutProps {
   children: ReactNode;
@@ -14,20 +14,14 @@ interface RootLayoutProps {
 export function RootLayout({ children }: RootLayoutProps) {
   return (
     <div className="h-screen min-h-dvh flex flex-col bg-white text-zinc-900">
-      <header
-        role="banner"
-        className="h-16 border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70"
-      >
+      <header role="banner" className="h-16 border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
         <div className="mx-auto h-full w-full max-w-[1200px] px-4 flex items-center">
           <Navbar />
         </div>
       </header>
 
       <main role="main" className="flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-[1200px] px-4 py-6">
-          MAIN CONTENT
-          {children}
-        </div>
+        <div className="mx-auto w-full max-w-[1200px] px-4 py-6">{children}</div>
       </main>
 
       <footer role="contentinfo" className="h-14 border-t bg-zinc-50">

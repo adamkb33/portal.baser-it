@@ -12,6 +12,7 @@
     "gen:api": "tsx scripts/openapi/generate.ts"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.3",
     "@react-router/node": "^7.9.2",
@@ -23,8 +24,10 @@
     "lucide-react": "^0.545.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-hook-form": "^7.64.0",
     "react-router": "^7.9.2",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@react-router/dev": "^7.9.2",
