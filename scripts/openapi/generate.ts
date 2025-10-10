@@ -1,6 +1,6 @@
-import "dotenv/config";
-import { generate } from "openapi-typescript-codegen";
-import { fetch } from "undici";
+import 'dotenv/config';
+import axios from 'axios';
+import { generate } from 'openapi-typescript-codegen';
 import {
   existsSync,
   mkdirSync,
@@ -10,8 +10,8 @@ import {
   writeFileSync,
   unlinkSync,
   renameSync,
-} from "node:fs";
-import { join, dirname, relative, sep, isAbsolute, resolve } from "node:path";
+} from 'node:fs';
+import { join, dirname, relative, sep, isAbsolute, resolve } from 'node:path';
 
 type OAS = any;
 
@@ -29,34 +29,31 @@ const getEnv = (key: string) => {
   return value;
 };
 
-const ID_DOCS = getEnv("VITE_API_IDENTITY_DOCS_URL");
-const BK_DOCS = getEnv("VITE_API_BOOKING_DOCS_URL");
+const ID_DOCS = getEnv('VITE_API_IDENTITY_DOCS_URL');
+const BK_DOCS = getEnv('VITE_API_BOOKING_DOCS_URL');
 
 const ROOT = process.cwd();
-const TMP_DIR = join(ROOT, "tmp", "openapi");
-const OUTPUT_DIR = join(ROOT, "app", "api", "clients");
+const TMP_DIR = join(ROOT, 'tmp', 'openapi');
+const OUTPUT_DIR = join(ROOT, 'app', 'api', 'clients');
 
-console.log("⬇️  fetching OpenAPI specs…");
-const [identitySpec, bookingSpec]: [OAS, OAS] = await Promise.all([
-  loadSpec(ID_DOCS),
-  loadSpec(BK_DOCS),
-]);
+console.log('⬇️  fetching OpenAPI specs…');
+const [identitySpec, bookingSpec]: [OAS, OAS] = await Promise.all([loadSpec(ID_DOCS), loadSpec(BK_DOCS)]);
 
 prepareDir(TMP_DIR);
 prepareDir(OUTPUT_DIR);
 
-const identitySpecPath = writeSpec(TMP_DIR, "identity.openapi.json", identitySpec);
-const bookingSpecPath = writeSpec(TMP_DIR, "booking.openapi.json", bookingSpec);
+const identitySpecPath = writeSpec(TMP_DIR, 'identity.openapi.json', identitySpec);
+const bookingSpecPath = writeSpec(TMP_DIR, 'booking.openapi.json', bookingSpec);
 
-const identityOut = join(OUTPUT_DIR, "identity");
-const bookingOut = join(OUTPUT_DIR, "booking");
+const identityOut = join(OUTPUT_DIR, 'identity');
+const bookingOut = join(OUTPUT_DIR, 'booking');
 
-console.log("🛠️  generating TypeScript clients…");
+console.log('🛠️  generating TypeScript clients…');
 await Promise.all([
   generate({
     input: identitySpecPath,
     output: identityOut,
-    httpClient: "fetch",
+    httpClient: 'axios',
     useOptions: true,
     exportServices: true,
     exportSchemas: true,
@@ -64,14 +61,14 @@ await Promise.all([
   generate({
     input: bookingSpecPath,
     output: bookingOut,
-    httpClient: "fetch",
+    httpClient: 'axios',
     useOptions: true,
     exportServices: true,
     exportSchemas: true,
   }),
 ]);
 
-const commonOut = join(OUTPUT_DIR, "common");
+const commonOut = join(OUTPUT_DIR, 'common');
 mkdirSync(commonOut, { recursive: true });
 
 const shared = collectShared(identityOut, bookingOut);
@@ -79,11 +76,7 @@ const sharedMapping = moveSharedFiles(identityOut, bookingOut, commonOut, shared
 
 const identityCoreMapping = relocateRemainingCore(identityOut);
 const bookingCoreMapping = relocateRemainingCore(bookingOut);
-const relocationMap = new Map<string, string>([
-  ...sharedMapping,
-  ...identityCoreMapping,
-  ...bookingCoreMapping,
-]);
+const relocationMap = new Map<string, string>([...sharedMapping, ...identityCoreMapping, ...bookingCoreMapping]);
 
 rewriteImports(identityOut, relocationMap);
 rewriteImports(bookingOut, relocationMap);
@@ -92,11 +85,11 @@ inlineOpenApiConfig(commonOut);
 dedupeApiErrorExport(identityOut);
 dedupeApiErrorExport(bookingOut);
 
-console.log("✅ generated clients → app/api/clients");
+console.log('✅ generated clients → app/api/clients');
 console.log(
   `   • common/${summaryList(shared.core.length, shared.models.length, shared.schemas.length)}\n` +
     `   • identity (unique + re-exports)\n` +
-    `   • booking (unique + re-exports)`
+    `   • booking (unique + re-exports)`,
 );
 
 function writeSpec(base: string, name: string, spec: OAS) {
@@ -107,15 +100,16 @@ function writeSpec(base: string, name: string, spec: OAS) {
 
 async function loadSpec(source: string): Promise<OAS> {
   if (/^https?:\/\//i.test(source)) {
-    return fetch(source).then((r) => r.json());
+    const response = await axios.get(source);
+    return response.data;
   }
 
-  if (source.startsWith("file://")) {
-    source = source.replace("file://", "");
+  if (source.startsWith('file://')) {
+    source = source.replace('file://', '');
   }
 
   const filePath = isAbsolute(source) ? source : join(ROOT, source);
-  const raw = readFileSync(filePath, "utf-8");
+  const raw = readFileSync(filePath, 'utf-8');
   return JSON.parse(raw);
 }
 
@@ -126,17 +120,13 @@ function prepareDir(dir: string) {
 
 function collectShared(identityRoot: string, bookingRoot: string): SharedSummary {
   return {
-    core: findSharedFiles(identityRoot, bookingRoot, "core"),
-    models: findSharedFiles(identityRoot, bookingRoot, "models"),
-    schemas: findSharedFiles(identityRoot, bookingRoot, "schemas"),
+    core: findSharedFiles(identityRoot, bookingRoot, 'core'),
+    models: findSharedFiles(identityRoot, bookingRoot, 'models'),
+    schemas: findSharedFiles(identityRoot, bookingRoot, 'schemas'),
   };
 }
 
-function findSharedFiles(
-  identityRoot: string,
-  bookingRoot: string,
-  subDir: string
-): string[] {
+function findSharedFiles(identityRoot: string, bookingRoot: string, subDir: string): string[] {
   const identityDir = join(identityRoot, subDir);
   const bookingDir = join(bookingRoot, subDir);
 
@@ -146,13 +136,13 @@ function findSharedFiles(
 
   const shared: string[] = [];
   for (const entry of readdirSync(identityDir, { withFileTypes: true })) {
-    if (!entry.isFile() || !entry.name.endsWith(".ts")) continue;
+    if (!entry.isFile() || !entry.name.endsWith('.ts')) continue;
     const identityFile = join(identityDir, entry.name);
     const bookingFile = join(bookingDir, entry.name);
     if (!existsSync(bookingFile)) continue;
 
-    const identitySource = readFileSync(identityFile, "utf-8");
-    const bookingSource = readFileSync(bookingFile, "utf-8");
+    const identitySource = readFileSync(identityFile, 'utf-8');
+    const bookingSource = readFileSync(bookingFile, 'utf-8');
 
     if (identitySource === bookingSource) {
       shared.push(entry.name);
@@ -166,17 +156,12 @@ function summaryList(coreCount: number, modelCount: number, schemaCount: number)
   if (coreCount) parts.push(`${coreCount} core`);
   if (modelCount) parts.push(`${modelCount} models`);
   if (schemaCount) parts.push(`${schemaCount} schemas`);
-  return parts.join(", ") || "no shared artifacts";
+  return parts.join(', ') || 'no shared artifacts';
 }
 
-function moveSharedFiles(
-  identityRoot: string,
-  bookingRoot: string,
-  commonRoot: string,
-  shared: SharedSummary
-) {
+function moveSharedFiles(identityRoot: string, bookingRoot: string, commonRoot: string, shared: SharedSummary) {
   type Entry = keyof SharedSummary;
-  const sections: Entry[] = ["core", "models", "schemas"];
+  const sections: Entry[] = ['core', 'models', 'schemas'];
   const mapping = new Map<string, string>();
 
   for (const section of sections) {
@@ -191,7 +176,7 @@ function moveSharedFiles(
       const bookingFile = resolve(bookingRoot, section, fileName);
       const commonFile = resolve(commonSectionDir, fileName);
 
-      const source = readFileSync(identityFile, "utf-8");
+      const source = readFileSync(identityFile, 'utf-8');
       writeFileSync(commonFile, source);
 
       if (existsSync(identityFile)) {
@@ -204,7 +189,7 @@ function moveSharedFiles(
       mapping.set(identityFile, commonFile);
       mapping.set(bookingFile, commonFile);
 
-      if (section === "core") {
+      if (section === 'core') {
         const identityRootFile = resolve(identityRoot, fileName);
         const bookingRootFile = resolve(bookingRoot, fileName);
         mapping.set(identityRootFile, commonFile);
@@ -218,13 +203,13 @@ function moveSharedFiles(
 
 function relocateRemainingCore(serviceRoot: string) {
   const mapping = new Map<string, string>();
-  const coreDir = join(serviceRoot, "core");
+  const coreDir = join(serviceRoot, 'core');
   if (!existsSync(coreDir)) {
     return mapping;
   }
 
   for (const entry of readdirSync(coreDir, { withFileTypes: true })) {
-    if (!entry.isFile() || !entry.name.endsWith(".ts")) continue;
+    if (!entry.isFile() || !entry.name.endsWith('.ts')) continue;
     const source = resolve(coreDir, entry.name);
     const target = resolve(serviceRoot, entry.name);
     renameSync(source, target);
@@ -240,12 +225,12 @@ function rewriteImports(rootDir: string, mapping: Map<string, string>) {
   const files = collectTsFiles(rootDir);
 
   for (const file of files) {
-    let content = readFileSync(file, "utf-8");
+    let content = readFileSync(file, 'utf-8');
     let updated = content;
 
     const replaceSpecifier = (
       pattern: RegExp,
-      replacer: (match: string, prefix: string, spec: string, suffix: string) => string
+      replacer: (match: string, prefix: string, spec: string, suffix: string) => string,
     ) => {
       updated = updated.replace(pattern, replacer);
     };
@@ -258,14 +243,10 @@ function rewriteImports(rootDir: string, mapping: Map<string, string>) {
       return `${prefix}${next}${suffix}`;
     };
 
-    replaceSpecifier(
-      /(from\s+["'])([^"']+)(["'])/g,
-      (match, prefix, spec, suffix) => handler(prefix, spec, suffix)
-    );
+    replaceSpecifier(/(from\s+["'])([^"']+)(["'])/g, (match, prefix, spec, suffix) => handler(prefix, spec, suffix));
 
-    replaceSpecifier(
-      /(import\(\s*["'])([^"']+)(["']\s*\))/g,
-      (match, prefix, spec, suffix) => handler(prefix, spec, suffix)
+    replaceSpecifier(/(import\(\s*["'])([^"']+)(["']\s*\))/g, (match, prefix, spec, suffix) =>
+      handler(prefix, spec, suffix),
     );
 
     if (updated !== content) {
@@ -282,7 +263,7 @@ function collectTsFiles(rootDir: string) {
       const fullPath = resolve(dir, entry.name);
       if (entry.isDirectory()) {
         walk(fullPath);
-      } else if (entry.isFile() && entry.name.endsWith(".ts")) {
+      } else if (entry.isFile() && entry.name.endsWith('.ts')) {
         out.push(fullPath);
       }
     }
@@ -292,20 +273,13 @@ function collectTsFiles(rootDir: string) {
   return out;
 }
 
-function resolveMappedSpecifier(
-  filePath: string,
-  specifier: string,
-  mapping: Map<string, string>
-) {
-  if (!specifier.startsWith(".")) {
+function resolveMappedSpecifier(filePath: string, specifier: string, mapping: Map<string, string>) {
+  if (!specifier.startsWith('.')) {
     return null;
   }
 
   const baseDir = dirname(filePath);
-  const absoluteCandidates = [
-    resolve(baseDir, `${specifier}.ts`),
-    resolve(baseDir, specifier, "index.ts"),
-  ];
+  const absoluteCandidates = [resolve(baseDir, `${specifier}.ts`), resolve(baseDir, specifier, 'index.ts')];
 
   for (const candidate of absoluteCandidates) {
     const normalized = normalizeFsPath(candidate);
@@ -318,10 +292,8 @@ function resolveMappedSpecifier(
 }
 
 function toModuleSpecifier(fromFile: string, targetFile: string) {
-  const relPath = normalizePath(
-    relative(dirname(fromFile), targetFile).replace(/\.ts$/, "")
-  );
-  return relPath.startsWith(".") ? relPath : `./${relPath}`;
+  const relPath = normalizePath(relative(dirname(fromFile), targetFile).replace(/\.ts$/, ''));
+  return relPath.startsWith('.') ? relPath : `./${relPath}`;
 }
 
 function normalizeFsPath(value: string) {
@@ -329,22 +301,22 @@ function normalizeFsPath(value: string) {
 }
 
 function normalizePath(value: string) {
-  return value.split(sep).join("/");
+  return value.split(sep).join('/');
 }
 
 function inlineOpenApiConfig(commonDir: string) {
-  const requestPath = join(commonDir, "core", "request.ts");
+  const requestPath = join(commonDir, 'core', 'request.ts');
   if (!existsSync(requestPath)) {
     return;
   }
 
-  let content = readFileSync(requestPath, "utf-8");
+  let content = readFileSync(requestPath, 'utf-8');
   const importLine = `import type { OpenAPIConfig } from './OpenAPI';\n`;
   if (!content.includes(importLine)) {
     return;
   }
 
-  content = content.replace(importLine, "");
+  content = content.replace(importLine, '');
 
   const anchor = `import type { OnCancel } from './CancelablePromise';\n`;
   if (content.includes(anchor)) {
@@ -356,16 +328,13 @@ function inlineOpenApiConfig(commonDir: string) {
 }
 
 function dedupeApiErrorExport(serviceRoot: string) {
-  const indexPath = join(serviceRoot, "index.ts");
+  const indexPath = join(serviceRoot, 'index.ts');
   if (!existsSync(indexPath)) {
     return;
   }
 
-  const content = readFileSync(indexPath, "utf-8");
-  const updated = content.replace(
-    /export \{\s*ApiError\s*\} from ['"][.]{1,2}\/[^'"]*core\/ApiError['"];?\n?/,
-    ""
-  );
+  const content = readFileSync(indexPath, 'utf-8');
+  const updated = content.replace(/export \{\s*ApiError\s*\} from ['"][.]{1,2}\/[^'"]*core\/ApiError['"];?\n?/, '');
 
   if (updated !== content) {
     writeFileSync(indexPath, updated);

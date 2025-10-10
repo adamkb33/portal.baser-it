@@ -1,0 +1,12 @@
+node_modules
+build
+build/**
+dist
+dist/**
+coverage
+coverage/**
+.tmp
+.tmp/**
+tmp
+tmp/**
+**/*.generated.*
