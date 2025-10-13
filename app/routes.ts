@@ -8,6 +8,8 @@ export default [
   route(ROUTES.AUTH.SIGN_OUT, './routes/auth/sign-out.tsx'),
   route(ROUTES.AUTH.ACCEPT_INVITE, './routes/auth/accept-invite.tsx'),
 
+  route(ROUTES.USER.PROFILE, './routes/user/profile.tsx'),
+
   route(ROUTES.ADMIN.DASHBOARD.ROUTE, './routes/admin/dashboard.tsx'),
 
   route(ROUTES.ADMIN.COMPANY.ROUTE, './routes/admin/company/_index.tsx'),

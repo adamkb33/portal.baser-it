@@ -1,7 +1,7 @@
 // routes.ts
 import { route } from './utils';
 const auth = route('auth');
-
+const user = route('user');
 const admin = route('admin');
 const company = route(`${admin.route}/company`);
 const dashboard = route(`${admin.route}/dashboard`);
@@ -15,7 +15,9 @@ export const ROUTES = {
     }),
   },
   USER: {
-    MY_PROFILE: 'my-profile',
+    ...user.group({
+      PROFILE: 'profile',
+    }),
   },
   ADMIN: {
     DASHBOARD: {
