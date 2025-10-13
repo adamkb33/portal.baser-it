@@ -1,5 +1,5 @@
-import { TOKEN_STORAGE_KEY } from "./constants";
-import { type AuthTokens, type TokenListener } from "./types";
+import { TOKEN_STORAGE_KEY } from './constants';
+import { type AuthTokens, type TokenListener } from './types';
 
 const listeners = new Set<TokenListener>();
 
@@ -9,7 +9,7 @@ export function emitTokenChange(tokens: AuthTokens | null) {
       listener(tokens);
     } catch (error) {
       if (import.meta.env.DEV) {
-        console.error("token listener error", error);
+        console.error('token listener error', error);
       }
     }
   }
@@ -23,7 +23,7 @@ export function subscribeToTokenChanges(listener: TokenListener) {
 }
 
 export function attachStorageEventListener() {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return;
   }
 
@@ -42,14 +42,14 @@ export function attachStorageEventListener() {
         emitTokenChange(value);
       } catch (error) {
         if (import.meta.env.DEV) {
-          console.error("failed to parse token storage event", error);
+          console.error('failed to parse token storage event', error);
         }
         emitTokenChange(null);
       }
     }
   };
 
-  window.addEventListener("storage", handler);
+  window.addEventListener('storage', handler);
 
-  return () => window.removeEventListener("storage", handler);
+  return () => window.removeEventListener('storage', handler);
 }

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link, redirect, useFetcher, useLoaderData, useNavigate } from "react-router";
 
-import type { Route } from "./+types/auth.accept-invite";
+import type { Route } from "../+types/auth/accept-invite";
 
 import { AcceptInviteForm } from "@/components/forms/accept-invite-form";
 import {
@@ -131,7 +131,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function AcceptInviteRoute() {
+export default function AuthAcceptInvite() {
   const { inviteToken } = useLoaderData<LoaderData>();
   const fetcher = useFetcher<ActionData>();
   const isSubmitting = fetcher.state !== "idle";

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useFetcher, Link, useNavigate } from "react-router";
 
-import type { Route } from "./+types/sign-in";
+import type { Route } from "../+types/auth/sign-in";
 
 import { SignInForm } from "@/components/forms/sign-in-form";
 import {
@@ -85,7 +85,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function SignIn() {
+export default function AuthSignIn() {
   const fetcher = useFetcher<ActionData>();
   const isSubmitting = fetcher.state !== "idle";
   const actionData = fetcher.data;

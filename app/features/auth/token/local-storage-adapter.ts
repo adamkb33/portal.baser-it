@@ -1,9 +1,9 @@
-import { TOKEN_STORAGE_KEY } from "./constants";
-import { emitTokenChange } from "./token-events";
-import { type AuthTokens } from "./types";
+import { TOKEN_STORAGE_KEY } from './constants';
+import { emitTokenChange } from './token-events';
+import { type AuthTokens } from './types';
 
 export function readTokensFromLocalStorage(): AuthTokens | null {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return null;
   }
 
@@ -15,16 +15,38 @@ export function readTokensFromLocalStorage(): AuthTokens | null {
     return JSON.parse(raw) as AuthTokens;
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error("Failed to parse tokens from localStorage", error);
+      console.error('Failed to parse tokens from localStorage', error);
     }
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);
     emitTokenChange(null);
     return null;
   }
 }
+export function getLocalStorageKey<T>(key: string): T | null {
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw) as T;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error(`Failed to parse ${key} from localStorage`, error);
+    }
+    window.localStorage.removeItem(key);
+    emitTokenChange(null);
+    return null;
+  }
+}
+
+export function readCompanyContextFromLocalStorage(): number | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+}
 
 export function writeTokensToLocalStorage(tokens: AuthTokens) {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return;
   }
 
@@ -33,13 +55,13 @@ export function writeTokensToLocalStorage(tokens: AuthTokens) {
     emitTokenChange(tokens);
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error("Failed to persist tokens to localStorage", error);
+      console.error('Failed to persist tokens to localStorage', error);
     }
   }
 }
 
 export function clearTokensFromLocalStorage() {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return;
   }
 
@@ -48,7 +70,7 @@ export function clearTokensFromLocalStorage() {
     emitTokenChange(null);
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error("Failed to clear tokens from localStorage", error);
+      console.error('Failed to clear tokens from localStorage', error);
     }
   }
 }
