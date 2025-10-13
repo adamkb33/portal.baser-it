@@ -1,36 +1,31 @@
-// routes.ts
-import { route } from './utils';
-const auth = route('auth');
-const user = route('user');
-const admin = route('admin');
-const company = route(`${admin.route}/company`);
-const dashboard = route(`${admin.route}/dashboard`);
+import { CompanyRoleAssignmentDto } from '~/api/clients/identity';
+import type { CreateUserRequestDto } from '~/api/clients/identity';
+import { buildRoutes } from './routes-builder';
 
-export const ROUTES = {
-  AUTH: {
-    ...auth.group({
-      SIGN_IN: 'sign-in',
-      SIGN_OUT: 'sign-out',
-      ACCEPT_INVITE: 'accept-invite',
-    }),
+const shape = {
+  auth: {
+    label: '_',
+    signIn: { label: 'Logg inn' },
+    signOut: { label: 'Logg inn' },
+    acceptInvite: { label: 'Aksepter invitasjon' },
   },
-  USER: {
-    ...user.group({
-      PROFILE: 'profile',
-    }),
+  user: {
+    requires: [CreateUserRequestDto.role.ADMIN],
+
+    label: 'Bruker',
+    profile: { label: 'Min profil' },
   },
-  ADMIN: {
-    DASHBOARD: {
-      ROUTE: dashboard.route,
-    },
-    COMPANY: {
-      ROUTE: company.route,
-      ...company.group({
-        SETTINGS: 'settings',
-        EMPLOYEES: 'employees',
-      }),
+  admin: {
+    requires: [CompanyRoleAssignmentDto.role.ADMIN],
+    label: 'Admin',
+    dashboard: { label: 'Dashbord' },
+    company: {
+      label: 'Mitt selskap',
+      settings: { label: 'Instillinger' },
+      employees: { label: 'Ansatte' },
     },
   },
 } as const;
 
+export const ROUTES = buildRoutes(shape);
 export type Routes = typeof ROUTES;

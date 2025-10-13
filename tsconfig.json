@@ -16,7 +16,11 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./app/*"],
-      "@/*": ["./app/*"]
+      "@/*": ["./app/*"],
+            "@types": ["app/api/types/index.ts"],
+      "@http": ["app/api/clients/http/index.ts"],
+      "@identity/*": ["app/api/clients/identity/*"],
+      "@booking/*": ["app/api/clients/booking/*"]
     },
     "esModuleInterop": true,
     "verbatimModuleSyntax": true,

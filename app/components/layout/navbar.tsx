@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { MobileMenu } from "./mobile-menu";
 import { NavLink, Link } from "react-router";
-import { NAV_LINKS } from "@/lib/navigation";
+import { MIDDLE_SECTION_NAV } from "@/lib/navigation";
 
 export function Navbar() {
   return (
@@ -11,7 +11,7 @@ export function Navbar() {
       </Link>
 
       <div className="hidden md:flex items-center gap-6">
-        {NAV_LINKS.map((link) => (
+        {MIDDLE_SECTION_NAV?.map((link) => (
           <NavLink
             key={link.href}
             to={link.href}
