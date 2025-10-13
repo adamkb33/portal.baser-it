@@ -1,0 +1,14 @@
+{
+  "merged": [
+    "ApiError",
+    "ApiMeta",
+    "ApiResponseString",
+    "ApiResponseUnit",
+    "FilteringMeta",
+    "Link",
+    "PaginationMeta",
+    "SortingMeta"
+  ],
+  "renamed": [],
+  "aliases": []
+}
