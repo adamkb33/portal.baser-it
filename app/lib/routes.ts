@@ -1,5 +1,3 @@
-import { CompanyRoleAssignmentDto } from '~/api/clients/identity';
-import type { CreateUserRequestDto } from '~/api/clients/identity';
 import { buildRoutes } from './routes-builder';
 
 const shape = {
@@ -10,13 +8,10 @@ const shape = {
     acceptInvite: { label: 'Aksepter invitasjon' },
   },
   user: {
-    requires: [CreateUserRequestDto.role.ADMIN],
-
     label: 'Bruker',
     profile: { label: 'Min profil' },
   },
   admin: {
-    requires: [CompanyRoleAssignmentDto.role.ADMIN],
     label: 'Admin',
     dashboard: { label: 'Dashbord' },
     company: {

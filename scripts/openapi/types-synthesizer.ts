@@ -145,8 +145,10 @@ export function synthesizeTypesAndZod(specs: SpecPack, gens: GenPack, migration:
     }
   }
 
-  const indexFile = buildIndexFile({ enumRegistry, modelOutputs });
-  writeFileSync(join(TYPES_DIR, 'index.ts'), indexFile + '\n');
+  const files = buildTypeFiles({ enumRegistry, modelOutputs });
+  for (const [name, content] of Object.entries(files)) {
+    writeFileSync(join(TYPES_DIR, `${name}.ts`), `${content.trimEnd()}\n`);
+  }
 }
 
 function collectEnumsFromSpecs(specs: SpecPack) {
@@ -242,11 +244,17 @@ function getResponseAlias(name: string): string | null {
   return rest;
 }
 
-function buildIndexFile({ enumRegistry, modelOutputs }: { enumRegistry: EnumEntry[]; modelOutputs: Map<string, string> }) {
-  const sections: string[] = [];
+function buildTypeFiles({
+  enumRegistry,
+  modelOutputs,
+}: {
+  enumRegistry: EnumEntry[];
+  modelOutputs: Map<string, string>;
+}) {
+  const files: Record<string, string> = {};
 
   const primitiveLines = Object.entries(PRIMITIVES).map(([name, tsType]) => `export type ${name} = ${tsType};`);
-  if (primitiveLines.length) sections.push(['// Primitives', ...primitiveLines].join('\n'));
+  if (primitiveLines.length) files.primitives = formatSection('Primitives', primitiveLines.join('\n'));
 
   const enumMap = new Map<string, string[]>();
   for (const entry of enumRegistry) {
@@ -256,18 +264,25 @@ function buildIndexFile({ enumRegistry, modelOutputs }: { enumRegistry: EnumEntr
   if (enumMap.size) {
     const enumLines = Array.from(enumMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name, values]) => `export type ${name} = ${values.map((v) => `'${v}'`).join(' | ')};`);
-    sections.push(['// Enums', ...enumLines].join('\n'));
+      .map(([name, values]) => `export type ${name} = ${values.map((v) => `'${v}'`).join(' | ')};`)
+      .join('\n');
+    files.enums = formatSection('Enums', enumLines);
   }
 
-  const coreLines = CORE_ORDER.map((key) => CORE_OVERRIDES[key]);
-  if (coreLines.length) sections.push(['// Core', ...coreLines].join('\n'));
+  const coreLines = CORE_ORDER.map((key) => CORE_OVERRIDES[key]).join('\n');
+  if (coreLines) files.core = formatSection('Core', coreLines);
 
-  sections.push(['// Generic Wrapper', GENERIC_WRAPPER].join('\n'));
+  const genericWrapperImports = [
+    `import type { ApiError, ApiMeta } from './core';`,
+    `import type { DateTime } from './primitives';`,
+  ];
+  const genericWrapperBody = withImports(genericWrapperImports, GENERIC_WRAPPER.trim());
+  files['generic-wrapper'] = formatSection('Generic Wrapper', genericWrapperBody);
 
   const modelLines: string[] = [];
   const responseLines: string[] = [];
   const entries = Array.from(modelOutputs.entries()).sort(([a], [b]) => a.localeCompare(b));
+  const modelNames: string[] = [];
   for (const [name, code] of entries) {
     if (CORE_OVERRIDES[name]) continue;
     const responseTarget = getResponseAlias(name);
@@ -275,10 +290,73 @@ function buildIndexFile({ enumRegistry, modelOutputs }: { enumRegistry: EnumEntr
       responseLines.push(`export type ${name} = ApiResponse<${responseTarget}>;`);
       continue;
     }
+    modelNames.push(name);
     modelLines.push(code.trim());
   }
-  if (modelLines.length) sections.push(['// Models', ...modelLines].join('\n\n'));
-  if (responseLines.length) sections.push(['// Common Responses', ...responseLines].join('\n'));
 
-  return sections.join('\n\n');
+  const enumNames = Array.from(enumMap.keys());
+  if (modelLines.length) {
+    const modelsBodyRaw = modelLines.join('\n\n');
+    const modelsImports = collectImports(modelsBodyRaw, [
+      { names: Object.keys(PRIMITIVES), from: './primitives' },
+      { names: enumNames, from: './enums' },
+      { names: CORE_ORDER.filter((name) => name !== 'ApiError'), from: './core' },
+    ]);
+    const modelsBody = withImports(modelsImports, modelsBodyRaw.trim());
+    files.models = formatSection('Models', modelsBody);
+  }
+  if (responseLines.length) {
+    const responsesBodyRaw = responseLines.join('\n');
+    const responsesImports = collectImports(responsesBodyRaw, [
+      { names: ['ApiResponse'], from: './generic-wrapper' },
+      { names: modelNames, from: './models' },
+      { names: enumNames, from: './enums' },
+      { names: CORE_ORDER.filter((name) => name !== 'ApiError'), from: './core' },
+      { names: Object.keys(PRIMITIVES), from: './primitives' },
+    ]);
+    const responsesBody = withImports(responsesImports, responsesBodyRaw.trim());
+    files.responses = formatSection('Common Responses', responsesBody);
+  }
+
+  const exportOrder = ['primitives', 'enums', 'core', 'generic-wrapper', 'models', 'responses'];
+  const indexLines = exportOrder
+    .filter((key) => files[key])
+    .map((key) => `export * from './${key}';`);
+  files.index = indexLines.join('\n');
+
+  return files;
+}
+
+function formatSection(title: string, body: string) {
+  return `// ${title}\n${body}`;
+}
+
+function withImports(imports: string[], body: string) {
+  const lines = imports.filter(Boolean);
+  if (!lines.length) return body;
+  return `${lines.join('\n')}\n\n${body}`;
+}
+
+function collectImports(
+  content: string,
+  sources: Array<{ names: string[]; from: string }>,
+) {
+  const imports: string[] = [];
+  for (const { names, from } of sources) {
+    const used = names
+      .filter((name) =>
+        name &&
+        !definesName(content, name) &&
+        new RegExp(`\\b${escapeReg(name)}\\b`).test(content),
+      )
+      .sort((a, b) => a.localeCompare(b));
+    if (!used.length) continue;
+    imports.push(`import type { ${used.join(', ')} } from '${from}';`);
+  }
+  return imports;
+}
+
+function definesName(content: string, name: string) {
+  const definition = new RegExp(`export\\s+(?:type|interface|class|enum)\\s+${escapeReg(name)}\\b`);
+  return definition.test(content);
 }
