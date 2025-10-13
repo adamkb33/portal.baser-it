@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link, redirect, useFetcher, useLoaderData } from "react-router";
+import { Link, redirect, useFetcher, useLoaderData, useNavigate } from "react-router";
 
 import type { Route } from "./+types/auth.accept-invite";
 
@@ -13,6 +13,8 @@ import {
   InvalidInviteTokenError,
   acceptInvite,
 } from "@/features/auth/api/accept-invite.server";
+import { persistAuthTokens } from "@/features/auth/token/token-storage";
+import { type AuthTokens } from "@/features/auth/token/types";
 
 interface LoaderData {
   inviteToken: string;
@@ -23,6 +25,9 @@ interface ActionData {
   formError?: string;
   values?: Pick<AcceptInviteInput, "givenName" | "familyName">;
   inviteInvalid?: boolean;
+  success?: boolean;
+  tokens?: AuthTokens;
+  redirectTo?: string;
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -85,8 +90,15 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   try {
-    await acceptInvite(inviteToken, parsed.data);
-    return redirect("/");
+    const tokens = await acceptInvite(inviteToken, parsed.data);
+    return jsonResponse<ActionData>(
+      {
+        success: true,
+        tokens,
+        redirectTo: "/",
+      },
+      { status: 200 },
+    );
   } catch (error) {
     if (error instanceof InvalidInviteTokenError) {
       return jsonResponse<ActionData>(
@@ -125,6 +137,7 @@ export default function AcceptInviteRoute() {
   const isSubmitting = fetcher.state !== "idle";
   const actionData = fetcher.data;
   const inviteInvalid = Boolean(actionData?.inviteInvalid);
+  const navigate = useNavigate();
 
   const handleSubmit = React.useCallback(
     (values: AcceptInviteInput) => {
@@ -142,6 +155,19 @@ export default function AcceptInviteRoute() {
     },
     [fetcher, inviteToken],
   );
+
+  React.useEffect(() => {
+    if (fetcher.state !== "idle") {
+      return;
+    }
+
+    if (!actionData?.success || !actionData.tokens) {
+      return;
+    }
+
+    persistAuthTokens(actionData.tokens);
+    navigate(actionData.redirectTo ?? "/", { replace: true });
+  }, [actionData, fetcher.state, navigate]);
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-8 py-12">

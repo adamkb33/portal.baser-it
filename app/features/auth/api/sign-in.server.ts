@@ -3,13 +3,8 @@ import { OpenAPI } from "~/api/clients/identity/OpenAPI";
 import { ApiError as HttpClientError } from "~/api/clients/common/core/ApiError";
 import { ENV } from "~/api/config/env";
 import { type SignInInput } from "../schemas/sign-in";
-
-export interface SignInResult {
-  accessToken: string;
-  accessTokenExpiresAt: number;
-  refreshToken: string;
-  refreshTokenExpiresAt: number;
-}
+import { type AuthTokens } from "../token/types";
+import { toAuthTokens } from "../token/token-utils";
 
 export class InvalidCredentialsError extends Error {
   constructor(message = "Invalid email or password") {
@@ -25,7 +20,7 @@ export class SignInRequestError extends Error {
   }
 }
 
-export async function signIn(payload: SignInInput): Promise<SignInResult> {
+export async function signIn(payload: SignInInput): Promise<AuthTokens> {
   OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
 
   try {
@@ -40,7 +35,7 @@ export async function signIn(payload: SignInInput): Promise<SignInResult> {
       throw new SignInRequestError(response.message || "Unable to sign in");
     }
 
-    return response.data;
+    return toAuthTokens(response.data);
   } catch (error) {
     if (error instanceof HttpClientError) {
       if (error.status === 400 || error.status === 401) {

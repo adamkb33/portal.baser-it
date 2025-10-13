@@ -1,5 +1,5 @@
 import * as React from "react";
-import { redirect, useFetcher, Link } from "react-router";
+import { useFetcher, Link, useNavigate } from "react-router";
 
 import type { Route } from "./+types/sign-in";
 
@@ -13,11 +13,16 @@ import {
   SignInRequestError,
   signIn,
 } from "@/features/auth/api/sign-in.server";
+import { persistAuthTokens } from "@/features/auth/token/token-storage";
+import { type AuthTokens } from "@/features/auth/token/types";
 
 interface ActionData {
   fieldErrors?: Partial<Record<keyof SignInInput, string>>;
   formError?: string;
   values?: Partial<Pick<SignInInput, "email">>;
+  success?: boolean;
+  tokens?: AuthTokens;
+  redirectTo?: string;
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -46,8 +51,15 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   try {
-    await signIn(parsed.data);
-    return redirect("/");
+    const tokens = await signIn(parsed.data);
+    return jsonResponse(
+      {
+        success: true,
+        tokens,
+        redirectTo: "/",
+      },
+      { status: 200 },
+    );
   } catch (error) {
     if (error instanceof InvalidCredentialsError) {
       return jsonResponse(
@@ -77,6 +89,7 @@ export default function SignIn() {
   const fetcher = useFetcher<ActionData>();
   const isSubmitting = fetcher.state !== "idle";
   const actionData = fetcher.data;
+  const navigate = useNavigate();
 
   const handleSubmit = React.useCallback(
     (values: SignInInput) => {
@@ -91,6 +104,19 @@ export default function SignIn() {
     },
     [fetcher],
   );
+
+  React.useEffect(() => {
+    if (fetcher.state !== "idle") {
+      return;
+    }
+
+    if (!actionData?.success || !actionData.tokens) {
+      return;
+    }
+
+    persistAuthTokens(actionData.tokens);
+    navigate(actionData.redirectTo ?? "/", { replace: true });
+  }, [actionData, fetcher.state, navigate]);
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-12">
