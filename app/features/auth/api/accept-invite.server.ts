@@ -4,7 +4,7 @@ import { type AcceptInviteInput } from '../schemas/accept-invite';
 import { ENV } from '~/api/config/env';
 import { type AuthTokens } from '../token/types';
 import { toAuthTokens } from '../token/token-utils';
-import { ApiError } from '~/api/clients/http';
+import { ApiClientError } from '~/api/clients/http';
 
 export class InvalidInviteTokenError extends Error {
   constructor(message = 'This invite link is invalid or has expired.') {
@@ -40,7 +40,7 @@ export async function acceptInvite(inviteToken: string, payload: AcceptInviteInp
 
     return toAuthTokens(response.data);
   } catch (error) {
-    if (error instanceof ApiError) {
+    if (error instanceof ApiClientError) {
       if (error.status === 400 || error.status === 401) {
         throw new InvalidInviteTokenError();
       }

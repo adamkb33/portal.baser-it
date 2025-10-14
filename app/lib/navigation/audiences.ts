@@ -1,30 +1,28 @@
-import type { AuthenticatedUserPayload } from '~/api/clients/types';
-import type { Audience, AuthSnapshot } from './functions';
+import { CompanyRole, type AuthenticatedUserPayload } from '../../api/clients/types';
 
-const hasSystemAdmin = (p: AuthenticatedUserPayload) => Array.isArray(p.roles) && p.roles.includes('SYSTEM_ADMIN');
-
-const hasCompanyRole = (p: AuthenticatedUserPayload, role: 'ADMIN' | 'EMPLOYEE') =>
-  Array.isArray(p.companyRoles) && p.companyRoles.some((cr) => cr.role === role);
+import type { AuthSnapshot, RouteAccess } from './functions';
 
 export const snapshotAuth = (payload?: AuthenticatedUserPayload | null): AuthSnapshot => {
-  const isAuthenticated = !!payload;
-  const isAdmin = !!payload && (hasSystemAdmin(payload) || hasCompanyRole(payload, 'ADMIN'));
-  const isEmployee = !!payload && (isAdmin || hasCompanyRole(payload, 'EMPLOYEE')); // toggle if admin ≠ employee in your app
+  const companyRoles = new Set<CompanyRole>((payload?.companyRoles ?? []).map((cr) => cr.role));
 
-  return { isAuthenticated, isAdmin, isEmployee };
+  return {
+    isAuthenticated: !!payload,
+    companyRoles,
+  };
 };
 
-export const visibleFor = (audience: Audience, snap: AuthSnapshot): boolean => {
-  switch (audience) {
+const hasAnyCompanyRole = (snap: AuthSnapshot, roles: readonly CompanyRole[]) =>
+  roles.some((role) => snap.companyRoles.has(role));
+
+export const canAccess = (access: RouteAccess, snap: AuthSnapshot): boolean => {
+  switch (access.audience) {
     case 'public':
       return true;
     case 'auth':
       return snap.isAuthenticated;
-    case 'employee':
-      return snap.isEmployee;
-    case 'admin':
-      return snap.isAdmin;
+    case 'role':
+      return snap.isAuthenticated && hasAnyCompanyRole(snap, access.companyRoles);
     default:
-      return false as never;
+      return false;
   }
 };

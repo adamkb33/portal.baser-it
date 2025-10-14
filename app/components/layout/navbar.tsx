@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { MobileMenu } from "./mobile-menu";
 import { NavLink, Link } from "react-router";
-import { MIDDLE_SECTION_NAV } from "@/lib/navigation";
+import { createNavigationSections } from "@/lib/navigation";
 
 export function Navbar() {
+  const navigation = createNavigationSections();
+  const middleLinks = navigation.navbar.middle;
+
   return (
     <nav className="flex items-center justify-between w-full">
       <Link to="/" className="text-xl font-semibold">
@@ -11,7 +14,7 @@ export function Navbar() {
       </Link>
 
       <div className="hidden md:flex items-center gap-6">
-        {MIDDLE_SECTION_NAV?.map((link) => (
+        {middleLinks.map((link) => (
           <NavLink
             key={link.href}
             to={link.href}

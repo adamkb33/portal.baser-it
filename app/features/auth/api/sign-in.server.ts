@@ -4,7 +4,7 @@ import { ENV } from '~/api/config/env';
 import { type SignInInput } from '../schemas/sign-in';
 import { type AuthTokens } from '../token/types';
 import { toAuthTokens } from '../token/token-utils';
-import { ApiError } from '~/api/clients/http';
+import { ApiClientError } from '~/api/clients/http';
 
 export class InvalidCredentialsError extends Error {
   constructor(message = 'Invalid email or password') {
@@ -37,7 +37,7 @@ export async function signIn(payload: SignInInput): Promise<AuthTokens> {
 
     return toAuthTokens(response.data);
   } catch (error) {
-    if (error instanceof ApiError) {
+    if (error instanceof ApiClientError) {
       if (error.status === 400 || error.status === 401) {
         throw new InvalidCredentialsError();
       }

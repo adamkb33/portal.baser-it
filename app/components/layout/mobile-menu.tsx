@@ -12,9 +12,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { MIDDLE_SECTION_NAV } from "@/lib/navigation";
+import { createNavigationSections } from "@/lib/navigation";
 
 export function MobileMenu() {
+  const navigation = createNavigationSections();
+  const middleLinks = navigation.navbar.middle;
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -39,7 +42,7 @@ export function MobileMenu() {
         </div>
 
         <div className="grid flex-1 auto-rows-min gap-2 px-6">
-          {MIDDLE_SECTION_NAV.map((link) => (
+          {middleLinks.map((link) => (
             <SheetClose asChild key={link.href}>
               <Link
                 to={link.href}

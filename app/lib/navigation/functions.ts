@@ -1,66 +1,72 @@
-export type Area = 'start' | 'middle' | 'end' | 'account' | 'sidebar';
-export type Audience = 'public' | 'auth' | 'employee' | 'admin';
+import type { ComponentType } from 'react';
+import type { CompanyRole } from '../../api/clients/types';
 
-export type RegistryChild = {
-  id: string;
-  label: string;
-  href?: string;
+export type Audience = 'public' | 'auth' | 'role';
+
+export const NAV_PLACEMENT = {
+  NavbarStart: 'navbar_start',
+  NavbarMiddle: 'navbar_middle',
+  NavbarEnd: 'navbar_end',
+  Account: 'account',
+  Sidebar: 'sidebar',
+} as const;
+
+export type NavPlacement = (typeof NAV_PLACEMENT)[keyof typeof NAV_PLACEMENT];
+export const NAV_PLACEMENT_LIST: NavPlacement[] = Object.values(NAV_PLACEMENT);
+
+export type NavConfig = {
+  placement: NavPlacement;
   order?: number;
+  icon?: ComponentType<{ className?: string }>;
 };
 
-export type RegistryNode = {
-  id: string;
+export type RouteAccess =
+  | { audience: 'public' }
+  | { audience: 'auth' }
+  | { audience: 'role'; companyRoles: readonly CompanyRole[] };
+
+export type RouteDefinition = {
   label: string;
-  href?: string;
-  area: Area;
-  audience: Audience;
-  order?: number;
-  iconKey?: string;
-  children?: RegistryChild[];
+  access: RouteAccess;
+  nav: NavConfig | null;
+  children?: Record<string, RouteDefinition>;
 };
+
+export type RoutesShape = Record<string, RouteDefinition>;
+
+export interface RouteBranch {
+  $id: string;
+  label: string;
+  route: string;
+  $access: RouteAccess;
+  $nav: NavConfig | null;
+  $children: Record<string, RouteBranch>;
+  [child: string]: unknown;
+}
+
+export interface RouteTree {
+  route: string;
+  $children: Record<string, RouteBranch>;
+  [child: string]: unknown;
+}
 
 export type AuthSnapshot = {
   isAuthenticated: boolean;
-  isAdmin: boolean;
-  isEmployee: boolean;
+  companyRoles: Set<CompanyRole>;
 };
 
 export type NavItem = {
   id: string;
   label: string;
-  href?: string;
-  iconKey?: string;
+  href: string;
+  icon?: ComponentType<{ className?: string }>;
   children?: NavItem[];
 };
 
-export type NavModel = {
-  start: NavItem[];
-  middle: NavItem[];
-  end: NavItem[];
-  account: NavItem[];
-  sidebar: NavItem[];
-};
-
-export type RouteNode = {
-  route: string;
-  label?: string;
-  [k: string]: unknown;
-};
-
-export type RouteTree = Record<string, unknown> & {
-  route?: string;
-};
-
-export function isRouteNode(v: unknown): v is RouteNode {
-  return !!v && typeof v === 'object' && 'route' in (v as any) && typeof (v as any).route === 'string';
-}
-
-export function hasChildNodes(node: RouteNode): boolean {
-  return Object.keys(node).some((k) => k !== 'route' && isRouteNode((node as any)[k]));
-}
+export type NavModel = Record<NavPlacement, NavItem[]>;
 
 export function toHref(route: string, base = '/'): string {
+  if (!route) return base;
   const normalized = route.startsWith('/') ? route : `/${route}`;
-
-  return route === '' ? base : normalized;
+  return normalized;
 }

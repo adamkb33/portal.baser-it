@@ -1,6 +1,6 @@
 import { type RouteConfig, index, route } from '@react-router/dev/routes';
-import { ROUTES } from './lib/routes';
-import { collectRouteTuples } from './lib/routes-builder';
+import { ROUTES } from './lib/navigation/routes';
+import { collectRouteTuples } from './lib/navigation/routes-builder';
 
 const tuples = collectRouteTuples(ROUTES, {
   baseDir: './routes',

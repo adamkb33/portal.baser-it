@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { defaultMeta } from '../registry';
 import type { AuthenticatedUserPayload } from '~/api/clients/types';
-import { buildRoutes } from '~/lib/routes-builder';
-import { buildNavigationFromRoutes } from '../build';
+import { buildRoutes } from '~/lib/navigation/routes-builder';
+import { createNavigationModel } from '../navigation';
 import type { RouteTree } from '../functions';
-import { ROUTES_SHAPE } from '~/lib/routes';
+import { ROUTES_SHAPE } from '~/lib/navigation/routes';
 
 const makePayload = (partial: Partial<AuthenticatedUserPayload> = {}): AuthenticatedUserPayload => ({
   id: 1,
@@ -14,16 +13,17 @@ const makePayload = (partial: Partial<AuthenticatedUserPayload> = {}): Authentic
   ...partial,
 });
 
-describe('buildNavigationFromRoutes (E2E)', () => {
+describe('createNavigationModel (E2E)', () => {
   const ROUTES: RouteTree = buildRoutes(ROUTES_SHAPE);
+  const buildModel = (payload: AuthenticatedUserPayload | null) =>
+    createNavigationModel({ routes: ROUTES, payload, baseHref: '/' });
 
   it('guest sees public items only', () => {
-    const model = buildNavigationFromRoutes(ROUTES, null, defaultMeta, '/');
+    const model = buildModel(null);
 
-    // Header end should include Accept invite (public) and NOT Sign in (auth-only)
-    const endIds = model.end.map((i) => i.id);
-    expect(endIds).not.toContain('auth.signIn'); // <- changed: sign-in is auth-only
+    const endIds = model.navbar_end.map((i) => i.id);
     expect(endIds).toContain('auth.acceptInvite');
+    expect(endIds).not.toContain('auth.signIn');
     expect(endIds).not.toContain('auth.signOut');
 
     // Account empty
@@ -34,14 +34,13 @@ describe('buildNavigationFromRoutes (E2E)', () => {
   });
 
   it('authenticated (no roles) sees profile + sign out + sign in; no admin/employee', () => {
-    const model = buildNavigationFromRoutes(ROUTES, makePayload(), defaultMeta, '/');
+    const model = buildModel(makePayload());
 
-    // End: Logg ut present, Sign in present (auth-only)
-    const endIds = model.end.map((i) => i.id);
+    const endIds = model.navbar_end.map((i) => i.id);
     expect(endIds).toContain('auth.signOut');
-    expect(endIds).toContain('auth.signIn'); // <- changed: sign-in appears for authenticated
+    expect(endIds).toContain('auth.signIn');
+    expect(endIds).toContain('auth.acceptInvite');
 
-    // Account: user.profile present
     const accountIds = model.account.map((i) => i.id);
     expect(accountIds).toContain('user.profile');
     expect(accountIds).not.toContain('employee.profile');
@@ -51,12 +50,7 @@ describe('buildNavigationFromRoutes (E2E)', () => {
   });
 
   it('employee sees employee profile in account', () => {
-    const model = buildNavigationFromRoutes(
-      ROUTES,
-      makePayload({ companyRoles: [{ companyId: 1, role: 'EMPLOYEE' }] }),
-      defaultMeta,
-      '/',
-    );
+    const model = buildModel(makePayload({ companyRoles: [{ companyId: 1, role: 'EMPLOYEE' }] }));
 
     const accountIds = model.account.map((i) => i.id);
     expect(accountIds).toContain('user.profile');
@@ -65,12 +59,7 @@ describe('buildNavigationFromRoutes (E2E)', () => {
   });
 
   it('admin (company ADMIN) sees sidebar admin items', () => {
-    const model = buildNavigationFromRoutes(
-      ROUTES,
-      makePayload({ companyRoles: [{ companyId: 1, role: 'ADMIN' }] }),
-      defaultMeta,
-      '/',
-    );
+    const model = buildModel(makePayload({ companyRoles: [{ companyId: 1, role: 'ADMIN' }] }));
 
     const sidebarIds = model.sidebar.map((i) => i.id);
     expect(sidebarIds).toContain('admin.dashboard');
@@ -81,11 +70,8 @@ describe('buildNavigationFromRoutes (E2E)', () => {
     expect(accountIds).toContain('user.profile');
   });
 
-  it('admin (SYSTEM_ADMIN) sees sidebar admin items', () => {
-    const model = buildNavigationFromRoutes(ROUTES, makePayload({ roles: ['SYSTEM_ADMIN'] }), defaultMeta, '/');
-    console.log(model, 'model');
-    const sidebarIds = model.sidebar.map((i) => i.id);
-    expect(sidebarIds).toContain('admin.dashboard');
-    expect(sidebarIds).toContain('admin.company');
+  it('system admin without company role does not see company admin items', () => {
+    const model = buildModel(makePayload({ roles: ['SYSTEM_ADMIN'] }));
+    expect(model.sidebar.length).toBe(0);
   });
 });

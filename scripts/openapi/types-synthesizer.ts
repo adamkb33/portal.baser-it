@@ -264,8 +264,8 @@ function buildTypeFiles({
   if (enumMap.size) {
     const enumLines = Array.from(enumMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name, values]) => `export type ${name} = ${values.map((v) => `'${v}'`).join(' | ')};`)
-      .join('\n');
+      .map(([name, values]) => createEnumBlock(name, values))
+      .join('\n\n');
     files.enums = formatSection('Enums', enumLines);
   }
 
@@ -359,4 +359,25 @@ function collectImports(
 function definesName(content: string, name: string) {
   const definition = new RegExp(`export\\s+(?:type|interface|class|enum)\\s+${escapeReg(name)}\\b`);
   return definition.test(content);
+}
+
+function createEnumBlock(name: string, values: string[]) {
+  const entries = values
+    .map((value) => {
+      const key = enumKeyFromValue(value);
+      return `  ${key}: '${value}',`;
+    })
+    .join('\n');
+
+  const constDecl = `export const ${name} = {\n${entries}\n} as const;`;
+  const typeDecl = `export type ${name} = (typeof ${name})[keyof typeof ${name}];`;
+
+  return `${constDecl}\n\n${typeDecl}`;
+}
+
+function enumKeyFromValue(value: string) {
+  let key = value.replace(/[^A-Za-z0-9_$]/g, '_');
+  if (/^[0-9]/.test(key)) key = `_${key}`;
+  if (!key.length) key = 'UNKNOWN';
+  return key;
 }
