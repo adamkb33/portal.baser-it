@@ -20,14 +20,22 @@ export type NavConfig = {
   icon?: ComponentType<{ className?: string }>;
 };
 
+export enum AudienceType {
+  Public = 'public',
+  Auth = 'auth',
+  Role = 'role',
+  None = 'none',
+}
+
 export type RouteAccess =
-  | { audience: 'public' }
-  | { audience: 'auth' }
-  | { audience: 'role'; companyRoles: readonly CompanyRole[] };
+  | { audience: AudienceType.None }
+  | { audience: AudienceType.Public }
+  | { audience: AudienceType.Auth }
+  | { audience: AudienceType.Role; companyRoles: readonly CompanyRole[] };
 
 export type RouteDefinition = {
   label: string;
-  access: RouteAccess;
+  access?: RouteAccess;
   nav: NavConfig | null;
   children?: Record<string, RouteDefinition>;
 };

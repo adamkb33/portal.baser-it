@@ -1,31 +1,74 @@
 import React, { type ReactNode } from 'react';
 import { NavLink } from 'react-router';
-import { SignInForm, type SignInInput } from '~/components/forms/sign-in-form';
 
+import { MobileMenu } from '~/components/layout/mobile-menu';
 import { MobileNav } from '~/components/layout/mobile-nav';
 import { Navbar } from '~/components/layout/navbar';
+import { createNavigationSections, type NavigationSections } from '~/lib/navigation';
+import { loadAuthTokens, withTokenListener } from '~/features/auth/token/token-storage';
+import type { AuthTokens } from '~/features/auth/token/types';
+import { tokensToAuthenticatedPayload } from '~/features/auth/token/token-payload';
+import type { NavItem } from '~/lib/navigation/functions';
 
 interface RootLayoutProps {
   children: ReactNode;
 }
 
-const SIDEBAR_LINKS = [
-  { to: '/admin/dashboard', label: 'Dashboard' },
-  { to: '/admin/company/settings', label: 'Company settings' },
-  { to: '/admin/company/employees', label: 'Employees' },
-];
-
-/**
- * Minimal app shell with a static sidebar and main content area.
- */
 export function RootLayout({ children }: RootLayoutProps) {
-  const showSidebar = SIDEBAR_LINKS.length > 0;
+  const [navigation, setNavigation] = React.useState<NavigationSections>(() => createNavigationSections());
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const updateNavigation = (tokens?: AuthTokens | null) => {
+      const source = tokens ?? loadAuthTokens();
+      const payload = tokensToAuthenticatedPayload(source);
+      setNavigation(createNavigationSections({ payload }));
+    };
+
+    updateNavigation(loadAuthTokens());
+
+    const unsubscribe = withTokenListener((nextTokens) => {
+      updateNavigation(nextTokens);
+    });
+
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
+  }, [setNavigation, loadAuthTokens, tokensToAuthenticatedPayload, createNavigationSections]);
+
+  const sidebarItems = navigation.sidebar;
+  const showSidebar = sidebarItems.length > 0;
+
+  const mobileMenuItems = React.useMemo(
+    () =>
+      dedupeNavItems([
+        navigation.navbar.start,
+        navigation.navbar.middle,
+        navigation.navbar.end,
+        navigation.account,
+        navigation.sidebar,
+      ]),
+    [navigation],
+  );
+
+  const mobileNavItems = React.useMemo(() => {
+    if (sidebarItems.length) {
+      return flattenNavItems(sidebarItems).slice(0, 4);
+    }
+    return mobileMenuItems.slice(0, 4);
+  }, [mobileMenuItems, sidebarItems]);
 
   return (
     <div className="h-screen min-h-dvh flex flex-col bg-white text-zinc-900">
       <header role="banner" className="h-16 border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-        <div className="mx-auto h-full w-full max-w-[1200px] px-4 flex items-center">
-          <Navbar />
+        <div className="mx-auto h-full w-full max-w-[1200px] px-4 flex items-center gap-3">
+          <Navbar sections={navigation.navbar} accountItems={navigation.account} />
+          <MobileMenu items={mobileMenuItems} />
         </div>
       </header>
 
@@ -34,16 +77,12 @@ export function RootLayout({ children }: RootLayoutProps) {
           {showSidebar ? (
             <aside className="hidden lg:block top-6 w-64 h-full">
               <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
-                <SidebarNav links={SIDEBAR_LINKS} />
+                <SidebarNav items={sidebarItems} />
               </div>
             </aside>
           ) : null}
 
-          <div className="w-full">
-            <SignInForm onSubmit={function (values: SignInInput): void {
-              throw new Error('Function not implemented.');
-            } }/>
-            {children}</div>
+          <div className="w-full">{children}</div>
         </div>
       </main>
 
@@ -53,13 +92,13 @@ export function RootLayout({ children }: RootLayoutProps) {
         </div>
       </footer>
 
-      <MobileNav />
+      <MobileNav items={mobileNavItems} />
     </div>
   );
 }
 
-function SidebarNav({ links }: { links: Array<{ to: string; label: string }> }) {
-  if (!links.length) {
+function SidebarNav({ items }: { items: NavItem[] }) {
+  if (!items.length) {
     return (
       <div className="rounded-md border border-dashed border-zinc-200 p-4 text-sm text-zinc-600">
         No sidebar links configured.
@@ -69,20 +108,70 @@ function SidebarNav({ links }: { links: Array<{ to: string; label: string }> }) 
 
   return (
     <nav className="space-y-2">
-      {links.map((link) => (
-        <NavLink
-          key={link.to}
-          to={link.to}
-          className={({ isActive }) =>
-            [
-              'block rounded-md px-3 py-2 text-sm font-medium transition',
-              isActive ? 'bg-zinc-900 text-white shadow' : 'text-zinc-700 hover:bg-zinc-200/70',
-            ].join(' ')
-          }
-        >
-          {link.label}
-        </NavLink>
+      {items.map((item) => (
+        <SidebarItem key={item.id} item={item} depth={0} />
       ))}
     </nav>
   );
+}
+
+function SidebarItem({ item, depth }: { item: NavItem; depth: number }) {
+  const hasChildren = Boolean(item.children?.length);
+  return (
+    <div className="space-y-1">
+      <NavLink
+        to={item.href}
+        className={({ isActive }) =>
+          [
+            'block rounded-md px-3 py-2 text-sm font-medium transition',
+            depth > 0 ? 'pl-3 text-sm' : undefined,
+            isActive ? 'bg-zinc-900 text-white shadow' : 'text-zinc-700 hover:bg-zinc-200/70',
+          ]
+            .filter(Boolean)
+            .join(' ')
+        }
+      >
+        {item.label}
+      </NavLink>
+
+      {hasChildren ? (
+        <div className="space-y-1 pl-3">
+          {item.children!.map((child) => (
+            <SidebarItem key={child.id} item={child} depth={depth + 1} />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function dedupeNavItems(groups: NavItem[][]): NavItem[] {
+  const seen = new Set<string>();
+  const flattened: NavItem[] = [];
+
+  const push = (item: NavItem) => {
+    if (!seen.has(item.id)) {
+      seen.add(item.id);
+      flattened.push(item);
+    }
+    item.children?.forEach(push);
+  };
+
+  for (const group of groups) {
+    for (const item of group) {
+      push(item);
+    }
+  }
+
+  return flattened;
+}
+
+function flattenNavItems(items: NavItem[]): NavItem[] {
+  const result: NavItem[] = [];
+  const visit = (item: NavItem) => {
+    result.push(item);
+    item.children?.forEach(visit);
+  };
+  items.forEach(visit);
+  return result;
 }
