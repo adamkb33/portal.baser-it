@@ -11,6 +11,10 @@ const shape = {
     label: 'Bruker',
     profile: { label: 'Min profil' },
   },
+  employee: {
+    label: 'Ansatt profil',
+    profile: { label: 'Min ansatt profil' },
+  },
   admin: {
     label: 'Admin',
     dashboard: { label: 'Dashbord' },

@@ -1,25 +1,17 @@
-import * as React from "react";
-import { useFetcher, Link, useNavigate } from "react-router";
+import * as React from 'react';
+import { useFetcher, Link, useNavigate } from 'react-router';
 
-import type { Route } from "../+types/auth/sign-in";
-
-import { SignInForm } from "@/components/forms/sign-in-form";
-import {
-  type SignInInput,
-  signInSchema,
-} from "@/features/auth/schemas/sign-in";
-import {
-  InvalidCredentialsError,
-  SignInRequestError,
-  signIn,
-} from "@/features/auth/api/sign-in.server";
-import { persistAuthTokens } from "@/features/auth/token/token-storage";
-import { type AuthTokens } from "@/features/auth/token/types";
+import { SignInForm } from '@/components/forms/sign-in-form';
+import { type SignInInput, signInSchema } from '@/features/auth/schemas/sign-in';
+import { InvalidCredentialsError, SignInRequestError, signIn } from '@/features/auth/api/sign-in.server';
+import { persistAuthTokens } from '@/features/auth/token/token-storage';
+import { type AuthTokens } from '@/features/auth/token/types';
+import type { Route } from './+types/sign-in';
 
 interface ActionData {
   fieldErrors?: Partial<Record<keyof SignInInput, string>>;
   formError?: string;
-  values?: Partial<Pick<SignInInput, "email">>;
+  values?: Partial<Pick<SignInInput, 'email'>>;
   success?: boolean;
   tokens?: AuthTokens;
   redirectTo?: string;
@@ -28,14 +20,13 @@ interface ActionData {
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const submission = {
-    email: formData.get("email"),
-    password: formData.get("password"),
+    email: formData.get('email'),
+    password: formData.get('password'),
   };
 
   const parsed = signInSchema.safeParse({
-    email: typeof submission.email === "string" ? submission.email : "",
-    password:
-      typeof submission.password === "string" ? submission.password : "",
+    email: typeof submission.email === 'string' ? submission.email : '',
+    password: typeof submission.password === 'string' ? submission.password : '',
   });
 
   if (!parsed.success) {
@@ -43,7 +34,7 @@ export async function action({ request }: Route.ActionArgs) {
       {
         fieldErrors: flattenFieldErrors(parsed.error.flatten().fieldErrors),
         values: {
-          email: typeof submission.email === "string" ? submission.email : "",
+          email: typeof submission.email === 'string' ? submission.email : '',
         },
       },
       { status: 400 },
@@ -56,7 +47,7 @@ export async function action({ request }: Route.ActionArgs) {
       {
         success: true,
         tokens,
-        redirectTo: "/",
+        redirectTo: '/',
       },
       { status: 200 },
     );
@@ -87,26 +78,26 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function AuthSignIn() {
   const fetcher = useFetcher<ActionData>();
-  const isSubmitting = fetcher.state !== "idle";
+  const isSubmitting = fetcher.state !== 'idle';
   const actionData = fetcher.data;
   const navigate = useNavigate();
 
   const handleSubmit = React.useCallback(
     (values: SignInInput) => {
       const payload = new FormData();
-      payload.set("email", values.email);
-      payload.set("password", values.password);
+      payload.set('email', values.email);
+      payload.set('password', values.password);
 
       fetcher.submit(payload, {
-        method: "post",
-        action: "/sign-in",
+        method: 'post',
+        action: '/sign-in',
       });
     },
     [fetcher],
   );
 
   React.useEffect(() => {
-    if (fetcher.state !== "idle") {
+    if (fetcher.state !== 'idle') {
       return;
     }
 
@@ -115,16 +106,14 @@ export default function AuthSignIn() {
     }
 
     persistAuthTokens(actionData.tokens);
-    navigate(actionData.redirectTo ?? "/", { replace: true });
+    navigate(actionData.redirectTo ?? '/', { replace: true });
   }, [actionData, fetcher.state, navigate]);
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-12">
       <header className="space-y-2 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">Sign In</h1>
-        <p className="text-muted-foreground text-sm">
-          Access your account using your company credentials.
-        </p>
+        <p className="text-muted-foreground text-sm">Access your account using your company credentials.</p>
       </header>
 
       <SignInForm
@@ -135,9 +124,7 @@ export default function AuthSignIn() {
         initialValues={actionData?.values}
       />
 
-      <p className="text-center text-sm text-muted-foreground">
-        Forgot your password? Contact your administrator.
-      </p>
+      <p className="text-center text-sm text-muted-foreground">Forgot your password? Contact your administrator.</p>
 
       <div className="text-center text-sm">
         <Link to="/" className="text-primary hover:underline">
@@ -165,7 +152,7 @@ function jsonResponse(data: ActionData, init: ResponseInit) {
   return new Response(JSON.stringify(data), {
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...(init.headers ?? {}),
     },
   });

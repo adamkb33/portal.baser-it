@@ -1,22 +1,22 @@
-import { AuthControllerService } from "~/api/clients/identity";
-import { OpenAPI } from "~/api/clients/identity/OpenAPI";
-import { ApiError as HttpClientError } from "~/api/clients/common/core/ApiError";
-import { ENV } from "~/api/config/env";
-import { type SignInInput } from "../schemas/sign-in";
-import { type AuthTokens } from "../token/types";
-import { toAuthTokens } from "../token/token-utils";
+import { AuthControllerService } from '~/api/clients/identity';
+import { OpenAPI } from '~/api/clients/identity/OpenAPI';
+import { ENV } from '~/api/config/env';
+import { type SignInInput } from '../schemas/sign-in';
+import { type AuthTokens } from '../token/types';
+import { toAuthTokens } from '../token/token-utils';
+import { ApiError } from '~/api/clients/http';
 
 export class InvalidCredentialsError extends Error {
-  constructor(message = "Invalid email or password") {
+  constructor(message = 'Invalid email or password') {
     super(message);
-    this.name = "InvalidCredentialsError";
+    this.name = 'InvalidCredentialsError';
   }
 }
 
 export class SignInRequestError extends Error {
-  constructor(message = "Unable to sign in", options?: { cause?: unknown }) {
+  constructor(message = 'Unable to sign in', options?: { cause?: unknown }) {
     super(message, options);
-    this.name = "SignInRequestError";
+    this.name = 'SignInRequestError';
   }
 }
 
@@ -32,12 +32,12 @@ export async function signIn(payload: SignInInput): Promise<AuthTokens> {
     });
 
     if (!response.success || !response.data) {
-      throw new SignInRequestError(response.message || "Unable to sign in");
+      throw new SignInRequestError(response.message || 'Unable to sign in');
     }
 
     return toAuthTokens(response.data);
   } catch (error) {
-    if (error instanceof HttpClientError) {
+    if (error instanceof ApiError) {
       if (error.status === 400 || error.status === 401) {
         throw new InvalidCredentialsError();
       }

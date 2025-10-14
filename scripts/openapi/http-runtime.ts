@@ -66,5 +66,4 @@ export type { ApiRequestOptions } from './ApiRequestOptions';
 export type { ApiResult } from './ApiResult';
 `;
   writeFileSync(join(HTTP_DIR, 'index.ts'), idx);
-
 }
