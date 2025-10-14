@@ -1,6 +1,6 @@
 import { buildRoutes } from './routes-builder';
 
-const shape = {
+export const ROUTES_SHAPE = {
   auth: {
     label: '_',
     signIn: { label: 'Logg inn' },
@@ -26,5 +26,15 @@ const shape = {
   },
 } as const;
 
-export const ROUTES = buildRoutes(shape);
+// user can be unauthenticated
+// - sign inn, forgot password, create account
+
+// user can be authenticated
+// - sign out, profile...
+
+// user can be authentiated and have a role of employee
+
+// user can be authenticated and have a role of admin
+
+export const ROUTES = buildRoutes(ROUTES_SHAPE);
 export type Routes = typeof ROUTES;

@@ -1,5 +1,5 @@
 // Models
-import type { CompanyRole, UserRole } from './enums';
+import type { CompanyRole, Role, UserRole } from './enums';
 
 export interface AcceptInviteDto {
     givenName: string;
@@ -18,6 +18,13 @@ export interface AddressDto {
     city?: string;
 }
 
+export interface AuthenticatedUserPayload {
+    id: number;
+    email: string;
+    roles: UserRole[];
+    companyRoles: CompanyRoleDto[];
+}
+
 export interface AuthenticationRequestDto {
     email: string;
     password: string;
@@ -33,6 +40,11 @@ export interface AuthenticationTokenDto {
 export interface CompanyRoleAssignmentDto {
     companyId: number;
     role: CompanyRole;
+}
+
+export interface CompanyRoleDto {
+    companyId: number;
+    role: Role;
 }
 
 export interface CompanySummaryDto {

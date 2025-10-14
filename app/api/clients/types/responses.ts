@@ -1,7 +1,8 @@
 // Common Responses
 import type { ApiResponse } from './generic-wrapper';
-import type { AuthenticationTokenDto, CompanySummaryDto, InvitedUserTokenDto } from './models';
+import type { AuthenticatedUserPayload, AuthenticationTokenDto, CompanySummaryDto, InvitedUserTokenDto } from './models';
 
+export type ApiResponseAuthenticatedUserPayload = ApiResponse<AuthenticatedUserPayload>;
 export type ApiResponseAuthenticationTokenDto = ApiResponse<AuthenticationTokenDto>;
 export type ApiResponseCompanySummaryDto = ApiResponse<CompanySummaryDto>;
 export type ApiResponseInvitedUserTokenDto = ApiResponse<InvitedUserTokenDto>;

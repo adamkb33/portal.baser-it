@@ -1,5 +1,6 @@
 import React, { type ReactNode } from 'react';
 import { NavLink } from 'react-router';
+import { SignInForm, type SignInInput } from '~/components/forms/sign-in-form';
 
 import { MobileNav } from '~/components/layout/mobile-nav';
 import { Navbar } from '~/components/layout/navbar';
@@ -29,16 +30,20 @@ export function RootLayout({ children }: RootLayoutProps) {
       </header>
 
       <main role="main" className="flex-1 overflow-y-auto pb-24 lg:pb-0">
-        <div className="relative mx-auto w-full max-w-[1200px] px-4 py-6">
+        <div className="relative mx-auto w-full max-w-[1200px] flex gap-4 px-4 py-6">
           {showSidebar ? (
-            <aside className="hidden lg:block absolute -left-[256px] top-6 w-64">
+            <aside className="hidden lg:block top-6 w-64 h-full">
               <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
                 <SidebarNav links={SIDEBAR_LINKS} />
               </div>
             </aside>
           ) : null}
 
-          <div className="w-full">{children}</div>
+          <div className="w-full">
+            <SignInForm onSubmit={function (values: SignInInput): void {
+              throw new Error('Function not implemented.');
+            } }/>
+            {children}</div>
         </div>
       </main>
 

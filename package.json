@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "vitest",
     "build": "react-router build",
     "dev": "npx kill-port 5173 && react-router dev",
     "start": "react-router-serve ./build/server/index.js",
@@ -25,6 +26,7 @@
     "react-hook-form": "^7.64.0",
     "react-router": "^7.9.2",
     "tailwind-merge": "^3.3.1",
+    "vitest": "^3.2.4",
     "zod": "^4.1.12"
   },
   "devDependencies": {
