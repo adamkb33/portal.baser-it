@@ -13,7 +13,7 @@ export const snapshotAuth = (payload?: AuthenticatedUserPayload | null): AuthSna
 const hasAnyCompanyRole = (snap: AuthSnapshot, roles: readonly CompanyRole[]) =>
   roles.some((role) => snap.companyRoles.has(role));
 
-export const canAccess = (access: RouteAccess, snap: AuthSnapshot): boolean => {
+export const canAccess = (snap: AuthSnapshot, access?: RouteAccess): boolean => {
   if (access === undefined) {
     return false;
   }

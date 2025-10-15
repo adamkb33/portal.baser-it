@@ -74,7 +74,15 @@ export class NavigationBuilder {
 
     for (const entry of entries) {
       const item = items.get(entry.id);
-      if (!item) continue;
+      if (!item) {
+        continue;
+      }
+
+      const hasParent = entry.parentId ? items.has(entry.parentId) : false;
+      if (hasParent) {
+        continue;
+      }
+
       model[entry.placement].push(item);
     }
 
@@ -110,7 +118,7 @@ export class NavigationBuilder {
   }
 
   private visit(node: RouteBranch, entries: NavEntry[]) {
-    if (node.$nav && canAccess(node.$access, this.snapshot)) {
+    if (node.$nav && canAccess(this.snapshot, node.$access)) {
       entries.push({
         id: node.$id,
         parentId: NavigationBuilder.parentIdOf(node.$id),
@@ -132,13 +140,10 @@ export class NavigationBuilder {
   }
 
   private static createEmptyModel(): NavModel {
-    return NAV_PLACEMENT_LIST.reduce(
-      (acc, placement) => {
-        acc[placement] = [];
-        return acc;
-      },
-      {} as NavModel,
-    );
+    return NAV_PLACEMENT_LIST.reduce((acc, placement) => {
+      acc[placement] = [];
+      return acc;
+    }, {} as NavModel);
   }
 
   private static parentIdOf(id: string) {

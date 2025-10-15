@@ -46,8 +46,8 @@ export interface RouteBranch {
   $id: string;
   label: string;
   route: string;
-  $access: RouteAccess;
-  $nav: NavConfig | null;
+  $access?: RouteAccess;
+  $nav?: NavConfig | null;
   $children: Record<string, RouteBranch>;
   [child: string]: unknown;
 }

@@ -94,6 +94,14 @@ export const ROUTES_SHAPE: RoutesShape = {
               order: 22,
             },
           },
+          analytics: {
+            label: 'Ansatte',
+            access: { audience: AudienceType.Role, companyRoles: [CompanyRole.ADMIN] },
+            nav: {
+              placement: NAV_PLACEMENT.Sidebar,
+              order: 22,
+            },
+          },
         },
       },
     },

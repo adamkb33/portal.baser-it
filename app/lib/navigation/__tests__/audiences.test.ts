@@ -2,7 +2,7 @@ import { CompanyRole } from '../../../api/clients/types';
 import { describe, it, expect } from 'vitest';
 import type { AuthenticatedUserPayload } from '~/api/clients/types';
 import { canAccess, snapshotAuth } from '../audiences';
-import type { RouteAccess } from '../functions';
+import { AudienceType, type RouteAccess } from '../functions';
 
 const makePayload = (partial: Partial<AuthenticatedUserPayload> = {}): AuthenticatedUserPayload => ({
   id: 1,
@@ -49,32 +49,30 @@ describe('snapshotAuth', () => {
 describe('canAccess', () => {
   const snapGuest = snapshotAuth(null);
   const snapUser = snapshotAuth(makePayload());
-  const snapEmployee = snapshotAuth(
-    makePayload({ companyRoles: [{ companyId: 1, role: CompanyRole.EMPLOYEE }] }),
-  );
+  const snapEmployee = snapshotAuth(makePayload({ companyRoles: [{ companyId: 1, role: CompanyRole.EMPLOYEE }] }));
   const snapAdmin = snapshotAuth(makePayload({ companyRoles: [{ companyId: 1, role: CompanyRole.ADMIN }] }));
 
   it('public routes are always accessible', () => {
-    const access: RouteAccess = { audience: 'public' };
-    expect(canAccess(access, snapGuest)).toBe(true);
-    expect(canAccess(access, snapUser)).toBe(true);
+    const access: RouteAccess = { audience: AudienceType.Public };
+    expect(canAccess(snapGuest, access)).toBe(true);
+    expect(canAccess(snapUser, access)).toBe(true);
   });
 
   it('auth routes require authentication', () => {
-    const access: RouteAccess = { audience: 'auth' };
-    expect(canAccess(access, snapGuest)).toBe(false);
-    expect(canAccess(access, snapUser)).toBe(true);
+    const access: RouteAccess = { audience: AudienceType.Auth };
+    expect(canAccess(snapGuest, access)).toBe(false);
+    expect(canAccess(snapUser, access)).toBe(true);
   });
 
   it('employee routes require matching company role', () => {
-    const access: RouteAccess = { audience: 'role', companyRoles: [CompanyRole.EMPLOYEE] };
-    expect(canAccess(access, snapUser)).toBe(false);
-    expect(canAccess(access, snapEmployee)).toBe(true);
+    const access: RouteAccess = { audience: AudienceType.Role, companyRoles: [CompanyRole.EMPLOYEE] };
+    expect(canAccess(snapUser, access)).toBe(false);
+    expect(canAccess(snapEmployee, access)).toBe(true);
   });
 
   it('admin routes require admin company role', () => {
-    const access: RouteAccess = { audience: 'role', companyRoles: [CompanyRole.ADMIN] };
-    expect(canAccess(access, snapUser)).toBe(false);
-    expect(canAccess(access, snapAdmin)).toBe(true);
+    const access: RouteAccess = { audience: AudienceType.Role, companyRoles: [CompanyRole.ADMIN] };
+    expect(canAccess(snapUser, access)).toBe(false);
+    expect(canAccess(snapAdmin, access)).toBe(true);
   });
 });
