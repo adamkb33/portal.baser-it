@@ -1,20 +1,16 @@
-import * as React from "react";
-import { Link, redirect, useFetcher, useLoaderData, useNavigate } from "react-router";
+import * as React from 'react';
+import { Link, redirect, useFetcher, useLoaderData, useNavigate } from 'react-router';
 
-import type { Route } from "../+types/auth/accept-invite";
-
-import { AcceptInviteForm } from "@/components/forms/accept-invite-form";
-import {
-  acceptInviteSchema,
-  type AcceptInviteInput,
-} from "@/features/auth/schemas/accept-invite";
+import { AcceptInviteForm } from '@/components/forms/accept-invite-form';
+import { acceptInviteSchema, type AcceptInviteInput } from '@/features/auth/schemas/accept-invite';
 import {
   AcceptInviteRequestError,
   InvalidInviteTokenError,
   acceptInvite,
-} from "@/features/auth/api/accept-invite.server";
-import { persistAuthTokens } from "@/features/auth/token/token-storage";
-import { type AuthTokens } from "@/features/auth/token/types";
+} from '@/features/auth/api/accept-invite.server';
+import { persistAuthTokens } from '@/features/auth/token/token-storage';
+import { type AuthTokens } from '@/features/auth/token/types';
+import type { Route } from './+types/accept-invite';
 
 interface LoaderData {
   inviteToken: string;
@@ -23,7 +19,7 @@ interface LoaderData {
 interface ActionData {
   fieldErrors?: Partial<Record<keyof AcceptInviteInput, string>>;
   formError?: string;
-  values?: Pick<AcceptInviteInput, "givenName" | "familyName">;
+  values?: Pick<AcceptInviteInput, 'givenName' | 'familyName'>;
   inviteInvalid?: boolean;
   success?: boolean;
   tokens?: AuthTokens;
@@ -32,10 +28,10 @@ interface ActionData {
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
-  const inviteToken = url.searchParams.get("token");
+  const inviteToken = url.searchParams.get('token');
 
   if (!inviteToken) {
-    return redirect("/");
+    return redirect('/');
   }
 
   return jsonResponse<LoaderData>({ inviteToken }, { status: 200 });
@@ -43,33 +39,24 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
-  const inviteToken = formData.get("token");
+  const inviteToken = formData.get('token');
 
-  if (typeof inviteToken !== "string" || !inviteToken) {
-    return jsonResponse<ActionData>(
-      { formError: "This invite link is missing or invalid." },
-      { status: 400 },
-    );
+  if (typeof inviteToken !== 'string' || !inviteToken) {
+    return jsonResponse<ActionData>({ formError: 'This invite link is missing or invalid.' }, { status: 400 });
   }
 
   const submission = {
-    givenName: formData.get("givenName"),
-    familyName: formData.get("familyName"),
-    password: formData.get("password"),
-    confirmPassword: formData.get("confirmPassword"),
+    givenName: formData.get('givenName'),
+    familyName: formData.get('familyName'),
+    password: formData.get('password'),
+    confirmPassword: formData.get('confirmPassword'),
   };
 
   const parsed = acceptInviteSchema.safeParse({
-    givenName:
-      typeof submission.givenName === "string" ? submission.givenName : "",
-    familyName:
-      typeof submission.familyName === "string" ? submission.familyName : "",
-    password:
-      typeof submission.password === "string" ? submission.password : "",
-    confirmPassword:
-      typeof submission.confirmPassword === "string"
-        ? submission.confirmPassword
-        : "",
+    givenName: typeof submission.givenName === 'string' ? submission.givenName : '',
+    familyName: typeof submission.familyName === 'string' ? submission.familyName : '',
+    password: typeof submission.password === 'string' ? submission.password : '',
+    confirmPassword: typeof submission.confirmPassword === 'string' ? submission.confirmPassword : '',
   });
 
   if (!parsed.success) {
@@ -77,12 +64,8 @@ export async function action({ request }: Route.ActionArgs) {
       {
         fieldErrors: flattenFieldErrors(parsed.error.flatten().fieldErrors),
         values: {
-          givenName:
-            typeof submission.givenName === "string" ? submission.givenName : "",
-          familyName:
-            typeof submission.familyName === "string"
-              ? submission.familyName
-              : "",
+          givenName: typeof submission.givenName === 'string' ? submission.givenName : '',
+          familyName: typeof submission.familyName === 'string' ? submission.familyName : '',
         },
       },
       { status: 400 },
@@ -95,7 +78,7 @@ export async function action({ request }: Route.ActionArgs) {
       {
         success: true,
         tokens,
-        redirectTo: "/",
+        redirectTo: '/',
       },
       { status: 200 },
     );
@@ -134,7 +117,7 @@ export async function action({ request }: Route.ActionArgs) {
 export default function AuthAcceptInvite() {
   const { inviteToken } = useLoaderData<LoaderData>();
   const fetcher = useFetcher<ActionData>();
-  const isSubmitting = fetcher.state !== "idle";
+  const isSubmitting = fetcher.state !== 'idle';
   const actionData = fetcher.data;
   const inviteInvalid = Boolean(actionData?.inviteInvalid);
   const navigate = useNavigate();
@@ -142,22 +125,22 @@ export default function AuthAcceptInvite() {
   const handleSubmit = React.useCallback(
     (values: AcceptInviteInput) => {
       const payload = new FormData();
-      payload.set("token", inviteToken);
-      payload.set("givenName", values.givenName);
-      payload.set("familyName", values.familyName);
-      payload.set("password", values.password);
-      payload.set("confirmPassword", values.confirmPassword);
+      payload.set('token', inviteToken);
+      payload.set('givenName', values.givenName);
+      payload.set('familyName', values.familyName);
+      payload.set('password', values.password);
+      payload.set('confirmPassword', values.confirmPassword);
 
       fetcher.submit(payload, {
-        method: "post",
-        action: "/auth/accept-invite",
+        method: 'post',
+        action: '/auth/accept-invite',
       });
     },
     [fetcher, inviteToken],
   );
 
   React.useEffect(() => {
-    if (fetcher.state !== "idle") {
+    if (fetcher.state !== 'idle') {
       return;
     }
 
@@ -166,18 +149,14 @@ export default function AuthAcceptInvite() {
     }
 
     persistAuthTokens(actionData.tokens);
-    navigate(actionData.redirectTo ?? "/", { replace: true });
+    navigate(actionData.redirectTo ?? '/', { replace: true });
   }, [actionData, fetcher.state, navigate]);
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-8 py-12">
       <header className="space-y-2 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Complete your account
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Set up your profile and password to activate your access.
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight">Complete your account</h1>
+        <p className="text-muted-foreground text-sm">Set up your profile and password to activate your access.</p>
       </header>
 
       {inviteInvalid ? (
@@ -185,7 +164,7 @@ export default function AuthAcceptInvite() {
           <h2 className="text-xl font-semibold">Invite expired</h2>
           <p className="text-sm text-muted-foreground">
             {actionData?.formError ??
-              "This invitation link is no longer valid. Please request a new invite from your administrator."}
+              'This invitation link is no longer valid. Please request a new invite from your administrator.'}
           </p>
         </div>
       ) : (
@@ -224,7 +203,7 @@ function jsonResponse<T>(data: T, init: ResponseInit) {
   return new Response(JSON.stringify(data), {
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...(init.headers ?? {}),
     },
   });
