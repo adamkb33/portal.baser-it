@@ -1,22 +1,26 @@
 import { matchPath, useLocation, useResolvedPath, NavLink as ReactRouterNavLink } from 'react-router';
+import type { ComponentPropsWithoutRef } from 'react';
+import { cn } from '~/lib/utils';
 
 type NavItem = { href: string; label: string };
 type MatchMode = 'exact' | 'prefix';
+
+interface NavLinkProps extends Omit<ComponentPropsWithoutRef<typeof ReactRouterNavLink>, 'to' | 'children'> {
+  link: NavItem;
+  variant?: 'link' | 'button';
+  matchMode?: MatchMode;
+  activeClassName?: string;
+}
 
 export function NavLink({
   link,
   variant,
   matchMode = 'exact',
-}: {
-  link: NavItem;
-  variant?: 'link' | 'button';
-  matchMode?: MatchMode;
-}) {
+  className,
+  activeClassName = 'text-primary font-medium',
+  ...props
+}: NavLinkProps) {
   const location = useLocation();
-  console.log(location.pathname);
-  console.log(link.href.split('/').at(-1));
-  console.log(location.pathname.split('/').at(-1));
-
   const resolved = useResolvedPath(link.href);
 
   const isActive = !!matchPath({ path: resolved.pathname, end: matchMode === 'exact' }, location.pathname);
@@ -28,7 +32,8 @@ export function NavLink({
   return (
     <ReactRouterNavLink
       to={link.href}
-      className={[base, variantClasses, isActive ? 'text-primary font-medium' : ''].filter(Boolean).join(' ')}
+      className={cn(base, variantClasses, isActive && activeClassName, className)}
+      {...props}
     >
       {link.label}
     </ReactRouterNavLink>

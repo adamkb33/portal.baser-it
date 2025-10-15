@@ -10,6 +10,7 @@ import type { AuthTokens } from '~/features/auth/token/types';
 import { tokensToAuthenticatedPayload } from '~/features/auth/token/token-payload';
 import type { NavItem } from '~/lib/navigation/functions';
 import { SidebarNav } from '~/components/layout/sidebar';
+import { NavBreadcrumbs } from '~/components/layout/nav-breadcrums';
 
 interface RootLayoutProps {
   children: ReactNode;
@@ -82,8 +83,10 @@ export function RootLayout({ children }: RootLayoutProps) {
               </div>
             </aside>
           ) : null}
-
-          <div className="w-full">{children}</div>
+          <div className="flex flex-col w-full">
+            <NavBreadcrumbs items={sidebarItems} />
+            <div className="w-full ">{children}</div>
+          </div>
         </div>
       </main>
 

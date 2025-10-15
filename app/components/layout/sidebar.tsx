@@ -22,8 +22,12 @@ export function SidebarNav({ items }: { items: NavItem[] }) {
 export function SidebarItem({ item, depth }: { item: NavItem; depth: number }) {
   const hasChildren = Boolean(item.children?.length);
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <NavLink
+        className={`block rounded-md px-3 py-2 text-sm font-medium hover:bg-zinc-200 ${
+          depth > 0 ? 'text-zinc-700' : 'text-zinc-900'
+        }`}
+        activeClassName="bg-zinc-300 text-zinc-900 font-semibold"
         link={{
           href: item.href,
           label: item.label,

@@ -95,11 +95,21 @@ export const ROUTES_SHAPE: RoutesShape = {
             },
           },
           analytics: {
-            label: 'Ansatte',
+            label: 'Analyse',
             access: { audience: AudienceType.Role, companyRoles: [CompanyRole.ADMIN] },
             nav: {
               placement: NAV_PLACEMENT.Sidebar,
               order: 22,
+            },
+            children: {
+              overview: {
+                label: 'Oversikt',
+                access: { audience: AudienceType.Role, companyRoles: [CompanyRole.ADMIN] },
+                nav: {
+                  placement: NAV_PLACEMENT.Sidebar,
+                  order: 30,
+                },
+              },
             },
           },
         },
