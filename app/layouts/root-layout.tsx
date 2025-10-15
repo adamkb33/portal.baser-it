@@ -9,6 +9,7 @@ import { loadAuthTokens, withTokenListener } from '~/features/auth/token/token-s
 import type { AuthTokens } from '~/features/auth/token/types';
 import { tokensToAuthenticatedPayload } from '~/features/auth/token/token-payload';
 import type { NavItem } from '~/lib/navigation/functions';
+import { SidebarNav } from '~/components/layout/sidebar';
 
 interface RootLayoutProps {
   children: ReactNode;
@@ -97,54 +98,6 @@ export function RootLayout({ children }: RootLayoutProps) {
   );
 }
 
-function SidebarNav({ items }: { items: NavItem[] }) {
-  if (!items.length) {
-    return (
-      <div className="rounded-md border border-dashed border-zinc-200 p-4 text-sm text-zinc-600">
-        No sidebar links configured.
-      </div>
-    );
-  }
-
-  return (
-    <nav className="space-y-2">
-      {items.map((item) => (
-        <SidebarItem key={item.id} item={item} depth={0} />
-      ))}
-    </nav>
-  );
-}
-
-function SidebarItem({ item, depth }: { item: NavItem; depth: number }) {
-  const hasChildren = Boolean(item.children?.length);
-  return (
-    <div className="space-y-1">
-      <NavLink
-        to={item.href}
-        className={({ isActive }) =>
-          [
-            'block rounded-md px-3 py-2 text-sm font-medium transition',
-            depth > 0 ? 'pl-3 text-sm' : undefined,
-            isActive ? 'bg-zinc-900 text-white shadow' : 'text-zinc-700 hover:bg-zinc-200/70',
-          ]
-            .filter(Boolean)
-            .join(' ')
-        }
-      >
-        {item.label}
-      </NavLink>
-
-      {hasChildren ? (
-        <div className="space-y-1 pl-3">
-          {item.children!.map((child) => (
-            <SidebarItem key={child.id} item={child} depth={depth + 1} />
-          ))}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 function dedupeNavItems(groups: NavItem[][]): NavItem[] {
   const seen = new Set<string>();
   const flattened: NavItem[] = [];
@@ -168,10 +121,16 @@ function dedupeNavItems(groups: NavItem[][]): NavItem[] {
 
 function flattenNavItems(items: NavItem[]): NavItem[] {
   const result: NavItem[] = [];
+  const seen = new Set<string>();
+
   const visit = (item: NavItem) => {
-    result.push(item);
+    if (!seen.has(item.href)) {
+      seen.add(item.href);
+      result.push(item);
+    }
     item.children?.forEach(visit);
   };
+
   items.forEach(visit);
   return result;
 }

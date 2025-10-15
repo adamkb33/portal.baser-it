@@ -6,11 +6,10 @@ import { buildRoutes } from './routes-builder';
 export const ROUTES_SHAPE: RoutesShape = {
   auth: {
     label: 'Auth',
-    nav: null,
     children: {
       signIn: {
         label: 'Logg inn',
-        access: { audience: AudienceType.Public },
+        access: { audience: AudienceType.NoAuth },
         nav: {
           placement: NAV_PLACEMENT.NavbarEnd,
           order: 80,
@@ -26,7 +25,6 @@ export const ROUTES_SHAPE: RoutesShape = {
       },
       acceptInvite: {
         label: 'Aksepter invitasjon',
-        access: { audience: AudienceType.None },
         nav: {
           placement: NAV_PLACEMENT.NavbarEnd,
           order: 95,
@@ -36,7 +34,6 @@ export const ROUTES_SHAPE: RoutesShape = {
   },
   user: {
     label: 'Bruker',
-    nav: null,
     children: {
       profile: {
         label: 'Min profil',
@@ -50,12 +47,10 @@ export const ROUTES_SHAPE: RoutesShape = {
   },
   employee: {
     label: 'Ansatt profil',
-    access: { audience: AudienceType.Role, companyRoles: [CompanyRole.EMPLOYEE, CompanyRole.ADMIN] },
-    nav: null,
     children: {
       profile: {
         label: 'Min ansatt profil',
-        access: { audience: AudienceType.Role, companyRoles: [CompanyRole.EMPLOYEE, CompanyRole.ADMIN] },
+        access: { audience: AudienceType.Role, companyRoles: [CompanyRole.EMPLOYEE] },
         nav: {
           placement: NAV_PLACEMENT.Account,
           order: 20,
@@ -66,7 +61,6 @@ export const ROUTES_SHAPE: RoutesShape = {
   admin: {
     label: 'Admin',
     access: { audience: AudienceType.Role, companyRoles: [CompanyRole.ADMIN] },
-    nav: null,
     children: {
       dashboard: {
         label: 'Dashbord',

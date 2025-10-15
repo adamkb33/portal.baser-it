@@ -22,8 +22,6 @@ describe('createNavigationModel (E2E)', () => {
     const model = buildModel(null);
 
     const endIds = model.navbar_end.map((i) => i.id);
-    expect(endIds).toContain('auth.acceptInvite');
-    expect(endIds).not.toContain('auth.signIn');
     expect(endIds).not.toContain('auth.signOut');
 
     // Account empty
@@ -38,8 +36,6 @@ describe('createNavigationModel (E2E)', () => {
 
     const endIds = model.navbar_end.map((i) => i.id);
     expect(endIds).toContain('auth.signOut');
-    expect(endIds).toContain('auth.signIn');
-    expect(endIds).toContain('auth.acceptInvite');
 
     const accountIds = model.account.map((i) => i.id);
     expect(accountIds).toContain('user.profile');

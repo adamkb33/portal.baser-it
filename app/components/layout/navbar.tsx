@@ -1,5 +1,6 @@
-import { NavLink, Link } from 'react-router';
+import { Link, useLocation, useResolvedPath, matchPath } from 'react-router';
 import type { NavItem } from '~/lib/navigation/index';
+import { NavLink } from './nav-link';
 
 interface NavbarSections {
   start: NavItem[];
@@ -27,46 +28,25 @@ export function Navbar({ sections, accountItems = [], brandHref = '/' }: NavbarP
 
         <nav className="hidden md:flex items-center gap-4">
           {startLinks.map((link) => (
-            <NavbarLink key={link.id} link={link} />
+            <NavLink key={link.id} link={link} />
           ))}
         </nav>
       </div>
 
       <nav className="hidden md:flex items-center gap-6">
         {middleLinks.map((link) => (
-          <NavbarLink key={link.id} link={link} />
+          <NavLink key={link.id} link={link} />
         ))}
       </nav>
 
       <nav className="hidden md:flex items-center gap-4">
         {accountItems.map((link) => (
-          <NavbarLink key={link.id} link={link} />
+          <NavLink key={link.id} link={link} />
         ))}
         {endLinks.map((link) => (
-          <NavbarLink key={link.id} link={link} variant="button" />
+          <NavLink key={link.id} link={link} variant="button" />
         ))}
       </nav>
     </nav>
-  );
-}
-
-function NavbarLink({ link, variant }: { link: NavItem; variant?: 'link' | 'button' }) {
-  return (
-    <NavLink
-      to={link.href}
-      className={({ isActive }) =>
-        [
-          'text-sm transition-colors',
-          variant === 'button'
-            ? 'rounded-md border border-zinc-200 px-3 py-1.5 hover:bg-zinc-100'
-            : 'hover:text-primary',
-          isActive ? 'text-primary font-medium' : undefined,
-        ]
-          .filter(Boolean)
-          .join(' ')
-      }
-    >
-      {link.label}
-    </NavLink>
   );
 }

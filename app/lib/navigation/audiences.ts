@@ -1,6 +1,5 @@
 import { CompanyRole, type AuthenticatedUserPayload } from '../../api/clients/types';
-
-import type { AuthSnapshot, RouteAccess } from './functions';
+import { type AuthSnapshot, type RouteAccess, AudienceType } from './functions';
 
 export const snapshotAuth = (payload?: AuthenticatedUserPayload | null): AuthSnapshot => {
   const companyRoles = new Set<CompanyRole>((payload?.companyRoles ?? []).map((cr) => cr.role));
@@ -15,13 +14,19 @@ const hasAnyCompanyRole = (snap: AuthSnapshot, roles: readonly CompanyRole[]) =>
   roles.some((role) => snap.companyRoles.has(role));
 
 export const canAccess = (access: RouteAccess, snap: AuthSnapshot): boolean => {
+  if (access === undefined) {
+    return false;
+  }
+
   switch (access.audience) {
-    case 'public':
+    case AudienceType.Public:
       return true;
-    case 'auth':
+    case AudienceType.Auth:
       return snap.isAuthenticated;
-    case 'role':
+    case AudienceType.Role:
       return snap.isAuthenticated && hasAnyCompanyRole(snap, access.companyRoles);
+    case AudienceType.NoAuth:
+      return !snap.isAuthenticated;
     default:
       return false;
   }

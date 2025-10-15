@@ -22,13 +22,13 @@ export type NavConfig = {
 
 export enum AudienceType {
   Public = 'public',
+  NoAuth = 'no-auth',
   Auth = 'auth',
   Role = 'role',
-  None = 'none',
 }
 
 export type RouteAccess =
-  | { audience: AudienceType.None }
+  | { audience: AudienceType.NoAuth }
   | { audience: AudienceType.Public }
   | { audience: AudienceType.Auth }
   | { audience: AudienceType.Role; companyRoles: readonly CompanyRole[] };
@@ -36,7 +36,7 @@ export type RouteAccess =
 export type RouteDefinition = {
   label: string;
   access?: RouteAccess;
-  nav: NavConfig | null;
+  nav?: NavConfig;
   children?: Record<string, RouteDefinition>;
 };
 

@@ -90,7 +90,7 @@ export default function AuthSignIn() {
 
       fetcher.submit(payload, {
         method: 'post',
-        action: '/sign-in',
+        action: '/auth/sign-in',
       });
     },
     [fetcher],
