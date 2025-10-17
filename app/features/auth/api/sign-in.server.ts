@@ -1,27 +1,17 @@
 import { AuthControllerService } from '~/api/clients/identity';
 import { OpenAPI } from '~/api/clients/identity/OpenAPI';
 import { ENV } from '~/api/config/env';
-import { type SignInInput } from '../schemas/sign-in';
-import { type AuthTokens } from '../token/types';
+import { type SignInSchema } from '../schemas/sign-in';
 import { toAuthTokens } from '../token/token-utils';
-import { ApiClientError } from '~/api/clients/http';
+import type { ApiClientError } from '~/api/clients/http';
+import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
+import { redirect, type ActionFunctionArgs } from 'react-router';
 
-export class InvalidCredentialsError extends Error {
-  constructor(message = 'Invalid email or password') {
-    super(message);
-    this.name = 'InvalidCredentialsError';
-  }
-}
-
-export class SignInRequestError extends Error {
-  constructor(message = 'Unable to sign in', options?: { cause?: unknown }) {
-    super(message, options);
-    this.name = 'SignInRequestError';
-  }
-}
-
-export async function signIn(payload: SignInInput): Promise<AuthTokens> {
+export async function signIn({ request }: ActionFunctionArgs) {
   OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
+
+  const formData = await request.formData();
+  const payload = Object.fromEntries(formData) as unknown as SignInSchema;
 
   try {
     const response = await AuthControllerService.signIn({
@@ -32,17 +22,27 @@ export async function signIn(payload: SignInInput): Promise<AuthTokens> {
     });
 
     if (!response.success || !response.data) {
-      throw new SignInRequestError(response.message || 'Unable to sign in');
+      throw new Error();
     }
 
-    return toAuthTokens(response.data);
-  } catch (error) {
-    if (error instanceof ApiClientError) {
-      if (error.status === 400 || error.status === 401) {
-        throw new InvalidCredentialsError();
-      }
+    const tokens = toAuthTokens(response.data);
 
-      throw new SignInRequestError(error.message, { cause: error });
+    const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
+      expires: new Date(tokens.accessTokenExpiresAt * 1000),
+    });
+    const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
+      expires: new Date(tokens.refreshTokenExpiresAt * 1000),
+    });
+
+    return redirect('/', {
+      headers: [
+        ['Set-Cookie', accessCookie],
+        ['Set-Cookie', refreshCookie],
+      ],
+    });
+  } catch (error: any) {
+    if (error as ApiClientError) {
+      return { error: error.body.message };
     }
 
     throw error;
