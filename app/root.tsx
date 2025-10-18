@@ -4,7 +4,6 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, 
 import type { Route } from './+types/root';
 import './app.css';
 import { RootLayout } from './layouts/root-layout';
-import { configureIdentityInterceptors } from '@/api/http/identity-interceptors';
 import { rootLoader } from './features/auth/api/root.server';
 
 export const loader = rootLoader;
@@ -43,10 +42,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  React.useEffect(() => {
-    configureIdentityInterceptors();
-  }, []);
-
   return <Outlet />;
 }
 

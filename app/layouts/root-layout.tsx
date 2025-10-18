@@ -7,7 +7,7 @@ import { Navbar } from '~/components/layout/navbar';
 import { createNavigationSections, type NavigationSections } from '~/lib/navigation';
 import { loadAuthTokens, withTokenListener } from '~/features/auth/token/token-storage';
 import type { AuthTokens } from '~/features/auth/token/types';
-import { tokensToAuthenticatedPayload } from '~/features/auth/token/token-payload';
+import { toAuthPayload } from '~/features/auth/token/token-payload';
 import type { NavItem } from '~/lib/navigation/functions';
 import { SidebarNav } from '~/components/layout/sidebar';
 import { NavBreadcrumbs } from '~/components/layout/nav-breadcrums';
@@ -18,30 +18,6 @@ interface RootLayoutProps {
 
 export function RootLayout({ children }: RootLayoutProps) {
   const [navigation, setNavigation] = React.useState<NavigationSections>(() => createNavigationSections());
-
-  React.useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const updateNavigation = (tokens?: AuthTokens | null) => {
-      const source = tokens ?? loadAuthTokens();
-      const payload = tokensToAuthenticatedPayload(source);
-      setNavigation(createNavigationSections({ payload }));
-    };
-
-    updateNavigation(loadAuthTokens());
-
-    const unsubscribe = withTokenListener((nextTokens) => {
-      updateNavigation(nextTokens);
-    });
-
-    return () => {
-      if (typeof unsubscribe === 'function') {
-        unsubscribe();
-      }
-    };
-  }, [setNavigation, loadAuthTokens, tokensToAuthenticatedPayload, createNavigationSections]);
 
   const sidebarItems = navigation.sidebar;
   const showSidebar = sidebarItems.length > 0;

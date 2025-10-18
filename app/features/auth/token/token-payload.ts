@@ -11,12 +11,12 @@ type AccessTokenClaims = {
   [key: string]: unknown;
 };
 
-export function tokensToAuthenticatedPayload(tokens: AuthTokens | null): AuthenticatedUserPayload | null {
-  if (!tokens?.accessToken) {
+export function toAuthPayload(accessToken?: string): AuthenticatedUserPayload | null {
+  if (!accessToken) {
     return null;
   }
 
-  const claims = decodeAccessToken(tokens.accessToken);
+  const claims = decodeAccessToken(accessToken);
   if (!claims) {
     return null;
   }
@@ -96,13 +96,10 @@ function normalizeRoles(roles: AccessTokenClaims['roles']): UserRole[] {
   if (!Array.isArray(roles)) {
     return [];
   }
-
-  return roles.filter((role): role is UserRole => typeof role === 'string');
+  return roles.filter((role): role is UserRole => typeof role === 'string') as UserRole[];
 }
 
-function normalizeCompanyRoles(
-  companyRoles: AccessTokenClaims['companyRoles'],
-): CompanyRoleDto[] {
+function normalizeCompanyRoles(companyRoles: AccessTokenClaims['companyRoles']): CompanyRoleDto[] {
   if (!Array.isArray(companyRoles)) {
     return [];
   }
@@ -110,10 +107,7 @@ function normalizeCompanyRoles(
   return companyRoles
     .filter(
       (entry): entry is { companyId: number; role: string } =>
-        !!entry &&
-        typeof entry === 'object' &&
-        typeof entry.companyId === 'number' &&
-        typeof entry.role === 'string',
+        !!entry && typeof entry === 'object' && typeof entry.companyId === 'number' && typeof entry.role === 'string',
     )
     .map(
       (entry): CompanyRoleDto => ({
