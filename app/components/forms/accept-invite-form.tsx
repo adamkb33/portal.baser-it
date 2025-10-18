@@ -1,83 +1,59 @@
-import * as React from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import * as React from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  acceptInviteSchema,
-  type AcceptInviteInput,
-} from "@/features/auth/schemas/accept-invite";
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { acceptInviteSchema, type AcceptInviteSchema } from '@/features/auth/schemas/accept-invite';
 
 export interface AcceptInviteFormProps {
-  onSubmit: (values: AcceptInviteInput) => void;
+  inviteToken: string;
+  onSubmit: (values: AcceptInviteSchema) => void;
   isSubmitting?: boolean;
   serverError?: string;
-  fieldErrors?: Partial<Record<keyof AcceptInviteInput, string | undefined>>;
-  initialValues?: Partial<AcceptInviteInput>;
+  initialValues?: Partial<AcceptInviteSchema>;
 }
 
 export function AcceptInviteForm({
+  inviteToken,
   onSubmit,
   isSubmitting = false,
-  serverError,
-  fieldErrors,
   initialValues,
 }: AcceptInviteFormProps) {
-  const form = useForm<AcceptInviteInput>({
+  const form = useForm<AcceptInviteSchema>({
     resolver: zodResolver(acceptInviteSchema),
     defaultValues: {
-      givenName: "",
-      familyName: "",
-      password: "",
-      confirmPassword: "",
+      inviteToken,
+      givenName: '',
+      familyName: '',
+      password: '',
+      confirmPassword: '',
       ...initialValues,
     },
   });
 
+  if (form.formState.errors) {
+    console.log(form.formState.errors);
+  }
+
   React.useEffect(() => {
     if (initialValues) {
       form.reset({
-        givenName: initialValues.givenName ?? "",
-        familyName: initialValues.familyName ?? "",
-        password: initialValues.password ?? "",
-        confirmPassword: initialValues.confirmPassword ?? "",
+        givenName: initialValues.givenName ?? '',
+        familyName: initialValues.familyName ?? '',
+        password: initialValues.password ?? '',
+        confirmPassword: initialValues.confirmPassword ?? '',
       });
     }
   }, [initialValues, form]);
 
-  React.useEffect(() => {
-    form.clearErrors();
-    if (!fieldErrors) {
-      return;
-    }
-
-    for (const [field, message] of Object.entries(fieldErrors)) {
-      if (!message) continue;
-      form.setError(field as keyof AcceptInviteInput, {
-        type: "server",
-        message,
-      });
-    }
-  }, [fieldErrors, form]);
-
   return (
     <Form {...form}>
-      <form
-        className="space-y-6"
-        onSubmit={form.handleSubmit(onSubmit)}
-        noValidate
-      >
-
+      <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)} noValidate>
         <div className="grid gap-4 sm:grid-cols-2">
+          <input hidden name="inviteToken" value={inviteToken} />
+
           <FormField
             control={form.control}
             name="givenName"
@@ -114,12 +90,7 @@ export function AcceptInviteForm({
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  type="password"
-                  autoComplete="new-password"
-                  data-testid="password"
-                />
+                <Input {...field} type="password" autoComplete="new-password" data-testid="password" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -133,29 +104,15 @@ export function AcceptInviteForm({
             <FormItem>
               <FormLabel>Confirm password</FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  type="password"
-                  autoComplete="new-password"
-                  data-testid="confirmPassword"
-                />
+                <Input {...field} type="password" autoComplete="new-password" data-testid="confirmPassword" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {serverError ? (
-          <div
-            role="alert"
-            className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          >
-            {serverError}
-          </div>
-        ) : null}
-
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Creating account…" : "Create account"}
+          {isSubmitting ? 'Creating account…' : 'Create account'}
         </Button>
       </form>
     </Form>

@@ -1,31 +1,21 @@
 import { AuthControllerService } from '~/api/clients/identity';
 import { OpenAPI } from '~/api/clients/identity/OpenAPI';
-import { type AcceptInviteInput } from '../schemas/accept-invite';
 import { ENV } from '~/api/config/env';
-import { type AuthTokens } from '../token/types';
 import { toAuthTokens } from '../token/token-utils';
-import { ApiClientError } from '~/api/clients/http';
+import type { ApiClientError } from '~/api/clients/http';
+import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
+import { redirect, type ActionFunctionArgs } from 'react-router';
+import type { AcceptInviteSchema } from '../schemas/accept-invite';
 
-export class InvalidInviteTokenError extends Error {
-  constructor(message = 'This invite link is invalid or has expired.') {
-    super(message);
-    this.name = 'InvalidInviteTokenError';
-  }
-}
-
-export class AcceptInviteRequestError extends Error {
-  constructor(message = 'We couldn’t accept your invite.', options?: { cause?: unknown }) {
-    super(message, options);
-    this.name = 'AcceptInviteRequestError';
-  }
-}
-
-export async function acceptInvite(inviteToken: string, payload: AcceptInviteInput): Promise<AuthTokens> {
+export async function acceptInvite({ request }: ActionFunctionArgs) {
   OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
+
+  const formData = await request.formData();
+  const payload = Object.fromEntries(formData) as unknown as AcceptInviteSchema;
 
   try {
     const response = await AuthControllerService.acceptInvite({
-      inviteToken,
+      inviteToken: payload.inviteToken,
       requestBody: {
         givenName: payload.givenName,
         familyName: payload.familyName,
@@ -35,17 +25,27 @@ export async function acceptInvite(inviteToken: string, payload: AcceptInviteInp
     });
 
     if (!response.success || !response.data) {
-      throw new AcceptInviteRequestError(response.message || 'Unable to accept invite.');
+      throw new Error();
     }
 
-    return toAuthTokens(response.data);
-  } catch (error) {
-    if (error instanceof ApiClientError) {
-      if (error.status === 400 || error.status === 401) {
-        throw new InvalidInviteTokenError();
-      }
+    const tokens = toAuthTokens(response.data);
 
-      throw new AcceptInviteRequestError(error.message, { cause: error });
+    const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
+      expires: new Date(tokens.accessTokenExpiresAt * 1000),
+    });
+    const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
+      expires: new Date(tokens.refreshTokenExpiresAt * 1000),
+    });
+
+    return redirect('/', {
+      headers: [
+        ['Set-Cookie', accessCookie],
+        ['Set-Cookie', refreshCookie],
+      ],
+    });
+  } catch (error: any) {
+    if (error as ApiClientError) {
+      return { error: error.body.message };
     }
 
     throw error;
