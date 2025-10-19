@@ -12,15 +12,13 @@ export const buildRoutesFlat = (
     const hasChildren = !!branch.children;
     const file = routesPath + branch.id.replace(/\./g, '/') + (hasChildren ? '/_index.tsx' : '.tsx');
 
-    const fullPath = `${parentPath.replace(/\/$/, '')}/${branch.href.replace(/^\//, '')}`.replace(/\/+/g, '/');
-
     routes.push({
-      path: fullPath === '/' ? undefined : fullPath,
+      path: branch.href,
       file,
     });
 
     if (branch.children) {
-      routes.push(...buildRoutesFlat(branch.children, fullPath));
+      routes.push(...buildRoutesFlat(branch.children, branch.href));
     }
   }
 

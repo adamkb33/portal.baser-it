@@ -71,6 +71,7 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null) => {
     );
   }
 
+  const authenticatedRoutes = ROUTE_TREE.filter((route) => route.accessType == Access.AUTHENTICATED);
   const userCompanyRoles = user.companyRoles.flatMap((c) => c.role) as CompanyRole[];
   const userRoles = user.roles;
 
@@ -80,5 +81,5 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null) => {
 
   const branchesWithUserRole = ROUTE_TREE.filter((branch) => branch.userRoles?.map((role) => userRoles.includes(role)));
 
-  return [...branchWithCompanyRoles, ...branchesWithUserRole];
+  return [...authenticatedRoutes, ...branchWithCompanyRoles, ...branchesWithUserRole];
 };

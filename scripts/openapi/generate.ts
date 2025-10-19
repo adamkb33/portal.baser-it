@@ -25,7 +25,7 @@ import type { MigrationMap, OAS } from './types';
 const MIGRATION: MigrationMap = { merged: [], renamed: [], aliases: [] };
 
 (async () => {
-  console.log('⬇️  fetching OpenAPI specs…');
+  console.info('⬇️  fetching OpenAPI specs…');
   const [identitySpec, bookingSpec]: [OAS, OAS] = await Promise.all([loadSpec(ID_DOCS), loadSpec(BK_DOCS)]);
 
   cleanDir(TMP_DIR);
@@ -36,7 +36,7 @@ const MIGRATION: MigrationMap = { merged: [], renamed: [], aliases: [] };
   const identitySpecPath = writeJson(TMP_DIR, 'identity.openapi.json', identitySpec);
   const bookingSpecPath = writeJson(TMP_DIR, 'booking.openapi.json', bookingSpec);
 
-  console.log('🛠️  generating raw clients to tmp…');
+  console.info('🛠️  generating raw clients to tmp…');
   await Promise.all([
     generate({
       input: identitySpecPath,
@@ -56,28 +56,24 @@ const MIGRATION: MigrationMap = { merged: [], renamed: [], aliases: [] };
     }),
   ]);
 
-  console.log('📦 creating shared HTTP runtime…');
+  console.info('📦 creating shared HTTP runtime…');
   createHttpRuntime(ID_OUT);
 
-  console.log('🧬 synthesizing unified types…');
-  synthesizeTypesAndZod(
-    { identitySpec, bookingSpec },
-    { identityOut: ID_OUT, bookingOut: BK_OUT },
-    MIGRATION,
-  );
+  console.info('🧬 synthesizing unified types…');
+  synthesizeTypesAndZod({ identitySpec, bookingSpec }, { identityOut: ID_OUT, bookingOut: BK_OUT }, MIGRATION);
 
-  console.log('🧹 extracting services only & rewriting imports…');
+  console.info('🧹 extracting services only & rewriting imports…');
   extractServicesAndRewrite('identity', ID_OUT, ID_CLIENT);
   extractServicesAndRewrite('booking', BK_OUT, BK_CLIENT);
 
-  console.log('👷 creating single combined clients…');
+  console.info('👷 creating single combined clients…');
   writeCombinedClient('identity', ID_CLIENT);
   writeCombinedClient('booking', BK_CLIENT);
 
-  console.log('🗺️  writing migration map…');
+  console.info('🗺️  writing migration map…');
   writeJson(TYPES_DIR, 'migration-map.json', MIGRATION);
 
-  console.log(
+  console.info(
     '✅ Done.\nOutput:\n  - app/api/clients/types (all types)\n  - app/api/clients/http (runtime)\n  - app/api/clients/{identity,booking}/services (services only)\n  - app/api/clients/{identity,booking}/client.ts (single client)\n',
   );
 })().catch((err) => {

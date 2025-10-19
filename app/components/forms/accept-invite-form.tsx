@@ -34,7 +34,7 @@ export function AcceptInviteForm({
   });
 
   if (form.formState.errors) {
-    console.log(form.formState.errors);
+    console.error(form.formState.errors);
   }
 
   React.useEffect(() => {

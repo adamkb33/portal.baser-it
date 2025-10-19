@@ -5,6 +5,7 @@ import type { Route } from './+types/root';
 import './app.css';
 import { RootLayout } from './layouts/root-layout';
 import { rootLoader, type RootLoaderLoaderData } from './features/auth/api/root.server';
+import type { RouteBranch } from './lib/nav/route-tree';
 
 export const loader = rootLoader;
 
@@ -22,7 +23,13 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const [userNav, setUserNav] = React.useState<RouteBranch[]>([]);
   const data = useLoaderData<RootLoaderLoaderData>();
+
+  React.useEffect(() => {
+    setUserNav(data.userNavigation);
+  }, [data]);
+
   return (
     <html lang="en">
       <head>
@@ -32,7 +39,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <RootLayout routeTree={data.userNavigation}>{children}</RootLayout>
+        <RootLayout routeTree={userNav}>{children}</RootLayout>
         <ScrollRestoration />
         <Scripts />
       </body>
