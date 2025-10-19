@@ -9,9 +9,10 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import type { NavItem } from '~/lib/navigation/functions';
+import type { RouteBranch } from '~/lib/nav/route-tree';
 
 interface BreadcrumbsProps {
-  items: NavItem[];
+  items: RouteBranch[] | undefined;
   className?: string;
 }
 
@@ -42,7 +43,7 @@ export function NavBreadcrumbs({ items, className }: BreadcrumbsProps) {
       return false;
     };
 
-    findPath(items);
+    findPath(items ?? []);
     return trail;
   }, [items, location.pathname]);
 

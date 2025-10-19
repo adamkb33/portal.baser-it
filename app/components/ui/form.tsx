@@ -8,8 +8,7 @@ import {
   type FieldPath,
   type FieldValues,
 } from 'react-hook-form';
-
-import { cn } from '~/lib/navigation/utils';
+import { cn } from '~/lib/utils';
 
 type FormFieldContextValue = {
   name: string;

@@ -1,15 +1,14 @@
-import React from "react";
-import { NavLink } from "react-router";
-import { Circle } from "lucide-react";
-
-import type { NavItem } from "~/lib/navigation";
+import React from 'react';
+import { NavLink } from 'react-router';
+import { Circle } from 'lucide-react';
+import type { RouteBranch } from '~/lib/nav/route-tree';
 
 interface MobileNavProps {
-  items: NavItem[];
+  items: RouteBranch[] | undefined;
 }
 
 export function MobileNav({ items }: MobileNavProps) {
-  if (!items.length) {
+  if (!items?.length) {
     return null;
   }
 
@@ -27,9 +26,9 @@ export function MobileNav({ items }: MobileNavProps) {
               to={link.href}
               className={({ isActive }) =>
                 [
-                  "flex flex-col items-center gap-1 rounded-full px-3 py-1.5 transition",
-                  isActive ? "bg-zinc-900 text-white shadow" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
-                ].join(" ")
+                  'flex flex-col items-center gap-1 rounded-full px-3 py-1.5 transition',
+                  isActive ? 'bg-zinc-900 text-white shadow' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
+                ].join(' ')
               }
             >
               <Icon className="h-5 w-5" aria-hidden="true" />

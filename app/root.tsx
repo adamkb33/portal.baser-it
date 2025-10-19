@@ -4,7 +4,7 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, 
 import type { Route } from './+types/root';
 import './app.css';
 import { RootLayout } from './layouts/root-layout';
-import { rootLoader } from './features/auth/api/root.server';
+import { rootLoader, type RootLoaderLoaderData } from './features/auth/api/root.server';
 
 export const loader = rootLoader;
 
@@ -22,8 +22,7 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const data = useLoaderData<typeof loader>();
-
+  const data = useLoaderData<RootLoaderLoaderData>();
   return (
     <html lang="en">
       <head>
@@ -33,7 +32,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <RootLayout>{children}</RootLayout>
+        <RootLayout routeTree={data.userNavigation}>{children}</RootLayout>
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -1,52 +1,33 @@
 import React, { type ReactNode } from 'react';
-import { NavLink } from 'react-router';
 
 import { MobileMenu } from '~/components/layout/mobile-menu';
 import { MobileNav } from '~/components/layout/mobile-nav';
 import { Navbar } from '~/components/layout/navbar';
-import { createNavigationSections, type NavigationSections } from '~/lib/navigation';
-import { loadAuthTokens, withTokenListener } from '~/features/auth/token/token-storage';
-import type { AuthTokens } from '~/features/auth/token/types';
-import { toAuthPayload } from '~/features/auth/token/token-payload';
-import type { NavItem } from '~/lib/navigation/functions';
 import { SidebarNav } from '~/components/layout/sidebar';
 import { NavBreadcrumbs } from '~/components/layout/nav-breadcrums';
+import { Access, type RouteBranch } from '~/lib/nav/route-tree';
 
 interface RootLayoutProps {
   children: ReactNode;
+  routeTree: RouteBranch[] | undefined;
 }
 
-export function RootLayout({ children }: RootLayoutProps) {
-  const [navigation, setNavigation] = React.useState<NavigationSections>(() => createNavigationSections());
-
-  const sidebarItems = navigation.sidebar;
-  const showSidebar = sidebarItems.length > 0;
-
-  const mobileMenuItems = React.useMemo(
-    () =>
-      dedupeNavItems([
-        navigation.navbar.start,
-        navigation.navbar.middle,
-        navigation.navbar.end,
-        navigation.account,
-        navigation.sidebar,
-      ]),
-    [navigation],
+export function RootLayout({ children, routeTree }: RootLayoutProps) {
+  const midNavbar = routeTree?.filter((route) => route.accessType == Access.PUBLIC);
+  const rightNavbar = routeTree?.filter(
+    (route) => route.accessType == Access.AUTHENTICATED || route.accessType == Access.NOT_AUTHENTICATED,
   );
+  const sideBar = routeTree?.filter((route) => route.accessType == Access.ROLE);
 
-  const mobileNavItems = React.useMemo(() => {
-    if (sidebarItems.length) {
-      return flattenNavItems(sidebarItems).slice(0, 4);
-    }
-    return mobileMenuItems.slice(0, 4);
-  }, [mobileMenuItems, sidebarItems]);
+  const mobileNav = [...(midNavbar ?? []), ...(rightNavbar ?? [])];
+  const showSidebar = sideBar?.length ?? 0 > 0;
 
   return (
     <div className="h-screen min-h-dvh flex flex-col bg-white text-zinc-900">
       <header role="banner" className="h-16 border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
         <div className="mx-auto h-full w-full max-w-[1200px] px-4 flex items-center gap-3">
-          <Navbar sections={navigation.navbar} accountItems={navigation.account} />
-          <MobileMenu items={mobileMenuItems} />
+          <Navbar mid={midNavbar} right={rightNavbar} />
+          <MobileMenu items={mobileNav} />
         </div>
       </header>
 
@@ -55,12 +36,12 @@ export function RootLayout({ children }: RootLayoutProps) {
           {showSidebar ? (
             <aside className="hidden lg:block top-6 w-64 h-full">
               <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
-                <SidebarNav items={sidebarItems} />
+                <SidebarNav items={sideBar} />
               </div>
             </aside>
           ) : null}
           <div className="flex flex-col w-full">
-            <NavBreadcrumbs items={sidebarItems} />
+            <NavBreadcrumbs items={sideBar} />
             <div className="w-full ">{children}</div>
           </div>
         </div>
@@ -72,44 +53,7 @@ export function RootLayout({ children }: RootLayoutProps) {
         </div>
       </footer>
 
-      <MobileNav items={mobileNavItems} />
+      <MobileNav items={sideBar} />
     </div>
   );
-}
-
-function dedupeNavItems(groups: NavItem[][]): NavItem[] {
-  const seen = new Set<string>();
-  const flattened: NavItem[] = [];
-
-  const push = (item: NavItem) => {
-    if (!seen.has(item.id)) {
-      seen.add(item.id);
-      flattened.push(item);
-    }
-    item.children?.forEach(push);
-  };
-
-  for (const group of groups) {
-    for (const item of group) {
-      push(item);
-    }
-  }
-
-  return flattened;
-}
-
-function flattenNavItems(items: NavItem[]): NavItem[] {
-  const result: NavItem[] = [];
-  const seen = new Set<string>();
-
-  const visit = (item: NavItem) => {
-    if (!seen.has(item.href)) {
-      seen.add(item.href);
-      result.push(item);
-    }
-    item.children?.forEach(visit);
-  };
-
-  items.forEach(visit);
-  return result;
 }

@@ -1,8 +1,9 @@
 import type { NavItem } from '~/lib/navigation/functions';
 import { NavLink } from './nav-link';
+import type { RouteBranch } from '~/lib/nav/route-tree';
 
-export function SidebarNav({ items }: { items: NavItem[] }) {
-  if (!items.length) {
+export function SidebarNav({ items }: { items: RouteBranch[] | undefined }) {
+  if (!items?.length) {
     return (
       <div className="rounded-md border border-dashed border-zinc-200 p-4 text-sm text-zinc-600">
         No sidebar links configured.
@@ -19,7 +20,7 @@ export function SidebarNav({ items }: { items: NavItem[] }) {
   );
 }
 
-export function SidebarItem({ item, depth }: { item: NavItem; depth: number }) {
+export function SidebarItem({ item, depth }: { item: RouteBranch; depth: number }) {
   const hasChildren = Boolean(item.children?.length);
   return (
     <div className="space-y-2">

@@ -1,49 +1,84 @@
-enum Access {
+import type { ComponentType } from 'react';
+import type { AuthenticatedUserPayload } from '@/api/clients/identity';
+import { CompanyRole, UserRole } from '../../api/clients/types';
+
+export enum Access {
   PUBLIC = 'PUBLIC',
+  NOT_AUTHENTICATED = 'NOT_AUTHENTICATED',
   AUTHENTICATED = 'AUTHENTICATED',
-  EMPLOYEE = 'EMPLOYEE',
-  ADMIN = 'ADMIN',
-  SYSTEM_ADMIN = 'SYSTEM_ADMIN',
+  ROLE = 'ROLE',
 }
 
-type RouteBranch = {
+export type RouteBranch = {
   id: string;
+  href: string;
+  label: string;
+  icon?: ComponentType<{ className?: string }>;
+  accessType: Access;
+  userRoles?: UserRole[];
+  companyRoles?: CompanyRole[];
   children?: RouteBranch[];
-  access?: string[];
 };
 
-const tree: RouteBranch[] = [
+export const ROUTE_TREE: RouteBranch[] = [
   {
     id: 'auth.sign-in',
-  },
-  {
-    id: 'auth.sign-up',
+    href: 'auth/sign-in',
+    label: 'Logg inn',
+    accessType: Access.NOT_AUTHENTICATED,
   },
   {
     id: 'auth.forgot-password',
+    href: 'auth/forgot-password',
+    label: 'Glemt passord',
+    accessType: Access.NOT_AUTHENTICATED,
   },
   {
-    id: 'auth.dashboard',
+    id: 'profile',
+    href: 'profile',
+    label: 'Min profil',
+    accessType: Access.AUTHENTICATED,
+  },
+  {
+    id: 'company',
+    href: 'company',
+    label: 'Mitt selskap',
+    accessType: Access.ROLE,
+    companyRoles: [CompanyRole.ADMIN],
     children: [
       {
-        id: 'auth.dashboard.analytics',
-      },
-      {
-        id: 'auth.dashboard.reports',
+        id: 'company.settings',
+        href: 'company/settings',
+        label: 'Instillinger',
+        accessType: Access.NOT_AUTHENTICATED,
+        children: [
+          {
+            id: 'company.settings.employees',
+            href: 'company/settings/employees',
+            label: 'Ansatt instillinger',
+            accessType: Access.NOT_AUTHENTICATED,
+          },
+        ],
       },
     ],
   },
 ];
 
-const resolveAccessType = (accessType: Access) => {
-  switch (accessType) {
-    case Access.PUBLIC:
-      return 'requries no authentication';
-    case Access.AUTHENTICATED:
-      return 'requires user to be authenticated';
-    default:
-      return 'requires user to have role ' + accessType;
+export const createNavigation = (user?: AuthenticatedUserPayload | null) => {
+  if (!user) {
+    return ROUTE_TREE.filter(
+      (branch) => branch.accessType == Access.NOT_AUTHENTICATED || branch.accessType == Access.PUBLIC,
+    );
   }
-};
 
-const generateRoutes = () => {};
+  const userCompanyRoles = user.companyRoles.flatMap((c) => c.role) as CompanyRole[];
+  const userRoles = user.roles;
+
+  const branchWithCompanyRoles = ROUTE_TREE.filter((branch) =>
+    branch.companyRoles?.map((role) => userCompanyRoles.includes(role)),
+  );
+
+  const branchesWithUserRole = ROUTE_TREE.filter((branch) => branch.userRoles?.map((role) => userRoles.includes(role)));
+
+  return [...branchWithCompanyRoles, ...branchesWithUserRole];
+};

@@ -1,38 +1,48 @@
-import type { LoaderFunctionArgs } from 'react-router';
+import { type LoaderFunctionArgs } from 'react-router';
 import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
-import { ApiClientError, OpenAPI } from '~/api/clients/http';
-import { ENV } from '~/api/config/env';
-import { AuthControllerService, type AuthenticatedUserPayload } from '~/api/clients/identity';
+import { createNavigation, type RouteBranch } from '~/lib/nav/route-tree';
 import { toAuthTokens } from '../token/token-utils';
-import { data } from 'react-router';
+import { AuthControllerService, type AuthenticatedUserPayload } from '~/api/clients/identity';
+import { ENV } from '~/api/config/env';
+import { OpenAPI } from '~/api/clients/http';
 import { toAuthPayload } from '../token/token-payload';
 
-export async function rootLoader({ request }: LoaderFunctionArgs) {
-  const cookieHeader = request.headers.get('Cookie');
-  const refresh = await refreshTokenCookie.parse(cookieHeader);
+export type RootLoaderLoaderData = {
+  user: AuthenticatedUserPayload | null;
+  userNavigation: RouteBranch[];
+};
 
-  if (refresh) {
-    return await handleRefreshToken(refresh);
+export async function rootLoader({ request }: LoaderFunctionArgs): Promise<Response> {
+  const cookieHeader = request.headers.get('Cookie');
+  const refreshToken = await refreshTokenCookie.parse(cookieHeader);
+
+  const defaultResponse = async (): Promise<Response> => {
+    const headers = await clearAuthCookies();
+    const body: RootLoaderLoaderData = {
+      user: null,
+      userNavigation: createNavigation(),
+    };
+    return jsonResponse(body, headers);
+  };
+
+  if (!refreshToken) {
+    return defaultResponse();
   }
 
-  return { user: null };
-}
-
-const handleRefreshToken = async (refreshToken: string) => {
   try {
     OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
 
     const response = await AuthControllerService.refresh({
-      requestBody: {
-        refreshToken: refreshToken,
-      },
+      requestBody: { refreshToken },
     });
 
     if (!response.success || !response.data) {
-      throw new Error();
+      throw new Error('Failed to refresh auth tokens');
     }
 
     const tokens = toAuthTokens(response.data);
+    const authPayload = toAuthPayload(tokens.accessToken);
+    const navigation = createNavigation(authPayload);
 
     const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
       expires: new Date(tokens.accessTokenExpiresAt * 1000),
@@ -41,34 +51,39 @@ const handleRefreshToken = async (refreshToken: string) => {
       expires: new Date(tokens.refreshTokenExpiresAt * 1000),
     });
 
-    const authPayload = toAuthPayload(tokens.accessToken);
+    const headers = new Headers();
+    headers.append('Set-Cookie', accessCookie);
+    headers.append('Set-Cookie', refreshCookie);
 
-    return data(
-      { user: authPayload },
-      {
-        headers: [
-          ['Set-Cookie', accessCookie],
-          ['Set-Cookie', refreshCookie],
-        ],
-      },
-    );
-  } catch (error: any) {
-    const accessCookie = await accessTokenCookie.serialize('', {
-      expires: new Date(0),
-    });
-    const refreshCookie = await refreshTokenCookie.serialize('', {
-      expires: new Date(0),
-    });
+    const body: RootLoaderLoaderData = {
+      user: authPayload,
+      userNavigation: navigation,
+    };
 
-    if (error as ApiClientError) {
-      return data(null, {
-        headers: [
-          ['Set-Cookie', accessCookie],
-          ['Set-Cookie', refreshCookie],
-        ],
-      });
-    }
-
-    throw error;
+    return jsonResponse(body, headers);
+  } catch (err) {
+    console.error('rootLoader error:', err);
+    return defaultResponse();
   }
-};
+}
+
+async function clearAuthCookies(): Promise<Headers> {
+  const accessCookie = await accessTokenCookie.serialize('', { expires: new Date(0) });
+  const refreshCookie = await refreshTokenCookie.serialize('', { expires: new Date(0) });
+
+  const headers = new Headers();
+  headers.append('Set-Cookie', accessCookie);
+  headers.append('Set-Cookie', refreshCookie);
+
+  return headers;
+}
+
+function jsonResponse(data: RootLoaderLoaderData, headers: Headers = new Headers()): Response {
+  return new Response(JSON.stringify(data), {
+    status: 200,
+    headers: {
+      ...Object.fromEntries(headers.entries()),
+      'Content-Type': 'application/json',
+    },
+  });
+}
