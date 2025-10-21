@@ -1,5 +1,5 @@
 // Models
-import type { CompanyRole, Role, UserRole } from './enums';
+import type { Roles, UserRole } from './enums';
 
 export interface AcceptInviteDto {
     givenName: string;
@@ -39,12 +39,12 @@ export interface AuthenticationTokenDto {
 
 export interface CompanyRoleAssignmentDto {
     companyId: number;
-    role: CompanyRole;
+    roles: Roles[];
 }
 
 export interface CompanyRoleDto {
     companyId: number;
-    role: Role;
+    companyRole: Roles[];
 }
 
 export interface CompanySummaryDto {

@@ -40,6 +40,13 @@ export const ROUTE_TREE: RouteBranch[] = [
     accessType: Access.AUTHENTICATED,
   },
   {
+    id: 'company-context',
+    href: 'companies',
+    label: 'Mine selskap',
+    accessType: Access.AUTHENTICATED,
+    companyRoles: [CompanyRole.EMPLOYEE, CompanyRole.ADMIN],
+  },
+  {
     id: 'company',
     href: 'company',
     label: 'Mitt selskap',
@@ -64,7 +71,7 @@ export const ROUTE_TREE: RouteBranch[] = [
   },
 ];
 
-export const createNavigation = (user?: AuthenticatedUserPayload | null) => {
+export const createNavigation = (user?: AuthenticatedUserPayload | null, companyContext?: any | null) => {
   if (!user) {
     return ROUTE_TREE.filter(
       (branch) => branch.accessType == Access.NOT_AUTHENTICATED || branch.accessType == Access.PUBLIC,
@@ -72,14 +79,21 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null) => {
   }
 
   const authenticatedRoutes = ROUTE_TREE.filter((route) => route.accessType == Access.AUTHENTICATED);
-  const userCompanyRoles = user.companyRoles.flatMap((c) => c.role) as CompanyRole[];
-  const userRoles = user.roles;
 
-  const branchWithCompanyRoles = ROUTE_TREE.filter((branch) =>
-    branch.companyRoles?.map((role) => userCompanyRoles.includes(role)),
-  );
+  if (companyContext) {
+    const userCompanyRoles = user.companyRoles.flatMap((c) => c.companyRole) as CompanyRole[];
+    const userRoles = user.roles;
 
-  const branchesWithUserRole = ROUTE_TREE.filter((branch) => branch.userRoles?.map((role) => userRoles.includes(role)));
+    const branchWithCompanyRoles = ROUTE_TREE.filter((branch) =>
+      branch.companyRoles?.map((role) => userCompanyRoles.includes(role)),
+    );
 
-  return [...authenticatedRoutes, ...branchWithCompanyRoles, ...branchesWithUserRole];
+    const branchesWithUserRole = ROUTE_TREE.filter((branch) =>
+      branch.userRoles?.map((role) => userRoles.includes(role)),
+    );
+
+    return [...authenticatedRoutes, ...branchWithCompanyRoles, ...branchesWithUserRole];
+  }
+
+  return [...authenticatedRoutes];
 };

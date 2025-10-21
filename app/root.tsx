@@ -1,11 +1,22 @@
 import * as React from 'react';
-import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from 'react-router';
+import {
+  isRouteErrorResponse,
+  Link,
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLoaderData,
+  useOutletContext,
+} from 'react-router';
 
 import type { Route } from './+types/root';
 import './app.css';
 import { RootLayout } from './layouts/root-layout';
 import { rootLoader, type RootLoaderLoaderData } from './features/auth/api/root.server';
 import type { RouteBranch } from './lib/nav/route-tree';
+import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
 
 export const loader = rootLoader;
 
@@ -23,13 +34,6 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const [userNav, setUserNav] = React.useState<RouteBranch[]>([]);
-  const data = useLoaderData<RootLoaderLoaderData>();
-
-  React.useEffect(() => {
-    setUserNav(data.userNavigation);
-  }, [data]);
-
   return (
     <html lang="en">
       <head>
@@ -39,7 +43,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <RootLayout routeTree={userNav}>{children}</RootLayout>
+        {children}
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -47,8 +51,35 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+export type RootOutletContext = {
+  userNav: RouteBranch[];
+  setUserNav: React.Dispatch<React.SetStateAction<RouteBranch[]>>;
+  companyContext: CompanySummaryDto | null | undefined;
+  setCompanyContext: React.Dispatch<React.SetStateAction<CompanySummaryDto | null | undefined>>;
+};
+
 export default function App() {
-  return <Outlet />;
+  const [userNav, setUserNav] = React.useState<RouteBranch[]>([]);
+  const [companyContext, setCompanyContext] = React.useState<CompanySummaryDto | null | undefined>(undefined);
+  const data = useLoaderData<RootLoaderLoaderData>();
+
+  React.useEffect(() => {
+    setUserNav(data.userNavigation || []);
+    setCompanyContext(data.companyContext);
+  }, [data]);
+
+  return (
+    <RootLayout routeTree={userNav} companyContext={companyContext}>
+      <Outlet
+        context={{
+          userNav,
+          setUserNav,
+          companyContext,
+          setCompanyContext,
+        }}
+      />
+    </RootLayout>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
@@ -68,6 +99,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     <main className="pt-16 p-4 container mx-auto">
       <h1>{message}</h1>
       <p>{details}</p>
+      <Link to={'/'}>Tilbake til hjemmesiden</Link>
       {stack && (
         <pre className="w-full p-4 overflow-x-auto">
           <code>{stack}</code>

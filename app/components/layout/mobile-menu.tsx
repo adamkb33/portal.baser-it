@@ -11,11 +11,11 @@ import {
   SheetTrigger,
 } from '~/components/ui/sheet';
 import { Button } from '~/components/ui/button';
-import type { NavItem } from '~/lib/navigation/index';
+import type { RouteBranch } from '~/lib/nav/route-tree';
 
 interface MobileMenuProps {
   title?: string;
-  items: NavItem[];
+  items: RouteBranch[];
 }
 
 export function MobileMenu({ title = 'Navigation', items }: MobileMenuProps) {

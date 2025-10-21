@@ -1,28 +1,35 @@
-import { type LoaderFunctionArgs } from 'react-router';
-import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
+import { redirect, type LoaderFunctionArgs } from 'react-router';
+import { accessTokenCookie, companyContextCookie, refreshTokenCookie } from './cookies.server';
 import { createNavigation, type RouteBranch } from '~/lib/nav/route-tree';
 import { toAuthTokens } from '../token/token-utils';
-import { AuthControllerService, type AuthenticatedUserPayload } from '~/api/clients/identity';
+import { AuthControllerService, createIdentityClient, type AuthenticatedUserPayload } from '~/api/clients/identity';
 import { ENV } from '~/api/config/env';
 import { OpenAPI } from '~/api/clients/http';
 import { toAuthPayload } from '../token/token-payload';
+import { data } from 'react-router';
+import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
 
 export type RootLoaderLoaderData = {
-  user: AuthenticatedUserPayload | null;
-  userNavigation: RouteBranch[];
+  user?: AuthenticatedUserPayload | null;
+  userNavigation?: RouteBranch[];
+  companyContext?: CompanySummaryDto | null;
 };
 
-export async function rootLoader({ request }: LoaderFunctionArgs): Promise<Response> {
+export async function rootLoader({ request }: LoaderFunctionArgs) {
   const cookieHeader = request.headers.get('Cookie');
   const refreshToken = await refreshTokenCookie.parse(cookieHeader);
 
-  const defaultResponse = async (): Promise<Response> => {
+  const defaultResponse = async () => {
     const headers = await clearAuthCookies();
     const body: RootLoaderLoaderData = {
       user: null,
+      companyContext: null,
       userNavigation: createNavigation(),
     };
-    return jsonResponse(body, headers);
+    return data(body, {
+      status: 200,
+      headers,
+    });
   };
 
   if (!refreshToken) {
@@ -42,7 +49,8 @@ export async function rootLoader({ request }: LoaderFunctionArgs): Promise<Respo
 
     const tokens = toAuthTokens(response.data);
     const authPayload = toAuthPayload(tokens.accessToken);
-    const navigation = createNavigation(authPayload);
+
+    const companyCookie = await companyContextCookie.parse(cookieHeader);
 
     const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
       expires: new Date(tokens.accessTokenExpiresAt * 1000),
@@ -55,12 +63,42 @@ export async function rootLoader({ request }: LoaderFunctionArgs): Promise<Respo
     headers.append('Set-Cookie', accessCookie);
     headers.append('Set-Cookie', refreshCookie);
 
+    const navigation = createNavigation(authPayload, companyCookie);
+
+    const url = new URL(request.url);
+
+    const userHasCompanyRoles = authPayload?.companyRoles.length ?? 0 > 0;
+
+    if (!companyCookie && userHasCompanyRoles) {
+      if (url.pathname === '/companies') {
+        return data(
+          {
+            user: authPayload,
+            userNavigation: navigation,
+          },
+          {
+            headers,
+          },
+        );
+      }
+
+      return redirect('/companies', { headers });
+    }
+
+    const identityClient = createIdentityClient({ baseUrl: ENV.IDENTITY_BASE_URL, token: tokens.accessToken });
+    const companySummary = await identityClient.AdminCompanyControllerService.AdminCompanyControllerService.getCompany({
+      companyId: companyCookie,
+    });
+
     const body: RootLoaderLoaderData = {
       user: authPayload,
       userNavigation: navigation,
+      companyContext: companySummary.data,
     };
 
-    return jsonResponse(body, headers);
+    return data(body, {
+      headers,
+    });
   } catch (err) {
     console.error('rootLoader error:', err);
     return defaultResponse();
@@ -76,14 +114,4 @@ async function clearAuthCookies(): Promise<Headers> {
   headers.append('Set-Cookie', refreshCookie);
 
   return headers;
-}
-
-function jsonResponse(data: RootLoaderLoaderData, headers: Headers = new Headers()): Response {
-  return new Response(JSON.stringify(data), {
-    status: 200,
-    headers: {
-      ...Object.fromEntries(headers.entries()),
-      'Content-Type': 'application/json',
-    },
-  });
 }

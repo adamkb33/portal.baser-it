@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { AcceptInviteDto } from '@types';
 import type { ApiResponseAuthenticationTokenDto } from '@types';
+import type { ApiResponseListCompanySummaryDto } from '@types';
 import type { ApiResponseUnit } from '@types';
 import type { AuthenticationRequestDto } from '@types';
 import type { RefreshTokenRequestDto } from '@types';
@@ -79,6 +80,16 @@ export class AuthControllerService {
             },
             body: requestBody,
             mediaType: 'application/json',
+        });
+    }
+    /**
+     * @returns ApiResponseListCompanySummaryDto OK
+     * @throws ApiError
+     */
+    public static getCompanyContexts(): CancelablePromise<ApiResponseListCompanySummaryDto> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/auth/company-contexts',
         });
     }
 }

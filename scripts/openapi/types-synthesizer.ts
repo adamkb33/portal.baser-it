@@ -83,7 +83,10 @@ export function synthesizeTypesAndZod(specs: SpecPack, gens: GenPack, migration:
   function writeModel(outName: string, m: { api: ApiName; file: string; src: string; name: string }) {
     let code = m.src;
 
-    code = code.replace(/\/\*[\s\S]*?(generated using openapi-typescript-codegen|istanbul ignore file|tslint:disable|eslint-disable)[\s\S]*?\*\/\s*/gi, '');
+    code = code.replace(
+      /\/\*[\s\S]*?(generated using openapi-typescript-codegen|istanbul ignore file|tslint:disable|eslint-disable)[\s\S]*?\*\/\s*/gi,
+      '',
+    );
     code = code.replace(/^import[^;]+;\s*/gm, '');
 
     const nsBlocks = extractNamespaces(code);
@@ -186,13 +189,18 @@ function enumNameFromProp(parent: string, prop: string, api: ApiName) {
   if (/^role$/i.test(prop) && /CompanyRoleAssignmentDto$/.test(parent)) return 'CompanyRole';
   return pascal(prop);
 }
+
 function enumNameFromTop(name: string, api: ApiName) {
+  // Map Roles schema to CompanyRole
+  if (name === 'Roles') return 'CompanyRole';
   return pascal(name);
 }
+
 function guessEnumNameFromNamespace(parentModel: string, enumKey: string) {
   if (/^role$/i.test(enumKey) && /CompanyRoleAssignmentDto$/.test(parentModel)) return 'CompanyRole';
   return pascal(enumKey);
 }
+
 const arrEq = (a: string[], b: string[]) => {
   const as = a.slice().sort().join('|');
   const bs = b.slice().sort().join('|');
@@ -319,9 +327,7 @@ function buildTypeFiles({
   }
 
   const exportOrder = ['primitives', 'enums', 'core', 'generic-wrapper', 'models', 'responses'];
-  const indexLines = exportOrder
-    .filter((key) => files[key])
-    .map((key) => `export * from './${key}';`);
+  const indexLines = exportOrder.filter((key) => files[key]).map((key) => `export * from './${key}';`);
   files.index = indexLines.join('\n');
 
   return files;
@@ -337,18 +343,11 @@ function withImports(imports: string[], body: string) {
   return `${lines.join('\n')}\n\n${body}`;
 }
 
-function collectImports(
-  content: string,
-  sources: Array<{ names: string[]; from: string }>,
-) {
+function collectImports(content: string, sources: Array<{ names: string[]; from: string }>) {
   const imports: string[] = [];
   for (const { names, from } of sources) {
     const used = names
-      .filter((name) =>
-        name &&
-        !definesName(content, name) &&
-        new RegExp(`\\b${escapeReg(name)}\\b`).test(content),
-      )
+      .filter((name) => name && !definesName(content, name) && new RegExp(`\\b${escapeReg(name)}\\b`).test(content))
       .sort((a, b) => a.localeCompare(b));
     if (!used.length) continue;
     imports.push(`import type { ${used.join(', ')} } from '${from}';`);

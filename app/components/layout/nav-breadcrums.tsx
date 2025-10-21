@@ -8,7 +8,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import type { NavItem } from '~/lib/navigation/functions';
 import type { RouteBranch } from '~/lib/nav/route-tree';
 
 interface BreadcrumbsProps {
@@ -20,10 +19,10 @@ export function NavBreadcrumbs({ items, className }: BreadcrumbsProps) {
   const location = useLocation();
 
   const breadcrumbTrail = React.useMemo(() => {
-    const trail: NavItem[] = [];
+    const trail: RouteBranch[] = [];
     const currentPath = location.pathname;
 
-    const findPath = (navItems: NavItem[], path: NavItem[] = []): boolean => {
+    const findPath = (navItems: RouteBranch[], path: RouteBranch[] = []): boolean => {
       for (const item of navItems) {
         const currentTrail = [...path, item];
 

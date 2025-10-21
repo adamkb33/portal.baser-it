@@ -1,11 +1,10 @@
-import type { NavItem } from '~/lib/navigation/functions';
 import { NavLink } from './nav-link';
 import type { RouteBranch } from '~/lib/nav/route-tree';
 
 export function SidebarNav({ items }: { items: RouteBranch[] | undefined }) {
   if (!items?.length) {
     return (
-      <div className="rounded-md border border-dashed border-zinc-200 p-4 text-sm text-zinc-600">
+      <div className="rounded-md border border-dashed border-zinc-200 p-4 text-sm text-zinc-600 h-200">
         No sidebar links configured.
       </div>
     );

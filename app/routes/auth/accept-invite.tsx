@@ -4,8 +4,7 @@ import { Link, redirect, useFetcher, useLoaderData, useNavigate } from 'react-ro
 import { AcceptInviteForm } from '@/components/forms/accept-invite-form';
 import { type AcceptInviteSchema } from '@/features/auth/schemas/accept-invite';
 import { acceptInvite } from '@/features/auth/api/accept-invite.server';
-import { persistAuthTokens } from '@/features/auth/token/token-storage';
-import type { Route } from './+types/accept-invite';
+import type { Route } from '../+types/home';
 
 interface LoaderData {
   inviteToken: string;
@@ -30,7 +29,6 @@ export default function AuthAcceptInvite() {
   const isSubmitting = fetcher.state !== 'idle';
   const actionData = fetcher.data;
   const inviteInvalid = Boolean(actionData?.inviteInvalid);
-  const navigate = useNavigate();
 
   const handleSubmit = React.useCallback(
     (values: AcceptInviteSchema) => {
@@ -48,19 +46,6 @@ export default function AuthAcceptInvite() {
     },
     [fetcher, inviteToken],
   );
-
-  React.useEffect(() => {
-    if (fetcher.state !== 'idle') {
-      return;
-    }
-
-    if (!actionData?.success || !actionData.tokens) {
-      return;
-    }
-
-    persistAuthTokens(actionData.tokens);
-    navigate(actionData.redirectTo ?? '/', { replace: true });
-  }, [actionData, fetcher.state, navigate]);
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-8 py-12">

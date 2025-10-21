@@ -6,16 +6,9 @@ export const CompanyRole = {
 
 export type CompanyRole = (typeof CompanyRole)[keyof typeof CompanyRole];
 
-export const Role = {
+export const Roles = {
   ADMIN: 'ADMIN',
   EMPLOYEE: 'EMPLOYEE',
-} as const;
-
-export type Role = (typeof Role)[keyof typeof Role];
-
-export const Roles = {
-  SYSTEM_ADMIN: 'SYSTEM_ADMIN',
-  USER: 'USER',
 } as const;
 
 export type Roles = (typeof Roles)[keyof typeof Roles];

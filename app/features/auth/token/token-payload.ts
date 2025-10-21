@@ -1,11 +1,10 @@
 import type { AuthenticatedUserPayload, CompanyRoleDto, UserRole } from '~/api/clients/types';
-import type { AuthTokens } from './types';
 
 type AccessTokenClaims = {
   sub?: string | number;
   email?: string;
   roles?: UserRole[] | string[];
-  companyRoles?: CompanyRoleDto[] | Array<{ companyId: number; role: string }>;
+  companyRoles?: CompanyRoleDto[];
   userId?: string | number;
   id?: string | number;
   [key: string]: unknown;
@@ -104,17 +103,7 @@ function normalizeCompanyRoles(companyRoles: AccessTokenClaims['companyRoles']):
     return [];
   }
 
-  return companyRoles
-    .filter(
-      (entry): entry is { companyId: number; role: string } =>
-        !!entry && typeof entry === 'object' && typeof entry.companyId === 'number' && typeof entry.role === 'string',
-    )
-    .map(
-      (entry): CompanyRoleDto => ({
-        companyId: entry.companyId,
-        role: entry.role as CompanyRoleDto['role'],
-      }),
-    );
+  return companyRoles;
 }
 
 export type { AccessTokenClaims };

@@ -1,11 +1,4 @@
-import * as React from 'react';
-import { Link, useFetcher, useNavigate, useSearchParams } from 'react-router';
-
-import { signOut, SignOutRequestError } from '@/features/auth/api/sign-out.server';
-import { clearAuthTokens, loadAuthTokens } from '@/features/auth/token/token-storage';
-import { toAuthPayload } from '@/features/auth/token/token-payload';
-import type { Route } from './+types/sign-out';
-import { ROUTES_SHAPE } from '~/lib/routes';
+import { Link, useFetcher } from 'react-router';
 
 interface ActionData {
   success?: boolean;
@@ -15,10 +8,6 @@ interface ActionData {
 
 export default function AuthSignOut() {
   const fetcher = useFetcher<ActionData>();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [attempt, setAttempt] = React.useState(1);
-  const dispatchedAttemptRef = React.useRef(0);
 
   const isProcessing = fetcher.state !== 'idle';
   const errorMessage = fetcher.data?.error;

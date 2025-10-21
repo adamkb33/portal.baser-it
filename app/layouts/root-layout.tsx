@@ -6,13 +6,15 @@ import { Navbar } from '~/components/layout/navbar';
 import { SidebarNav } from '~/components/layout/sidebar';
 import { NavBreadcrumbs } from '~/components/layout/nav-breadcrums';
 import { Access, type RouteBranch } from '~/lib/nav/route-tree';
+import type { CompanySummaryDto } from '~/api/clients/types';
 
 interface RootLayoutProps {
   children: ReactNode;
   routeTree: RouteBranch[] | undefined;
+  companyContext: CompanySummaryDto | null | undefined;
 }
 
-export function RootLayout({ children, routeTree }: RootLayoutProps) {
+export function RootLayout({ children, routeTree, companyContext }: RootLayoutProps) {
   const midNavbar = routeTree?.filter((route) => route.accessType == Access.PUBLIC);
   const rightNavbar = routeTree?.filter(
     (route) => route.accessType == Access.AUTHENTICATED || route.accessType == Access.NOT_AUTHENTICATED,
@@ -26,7 +28,7 @@ export function RootLayout({ children, routeTree }: RootLayoutProps) {
     <div className="h-screen min-h-dvh flex flex-col bg-white text-zinc-900">
       <header role="banner" className="h-16 border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
         <div className="mx-auto h-full w-full max-w-[1200px] px-4 flex items-center gap-3">
-          <Navbar mid={midNavbar} right={rightNavbar} />
+          <Navbar mid={midNavbar} right={rightNavbar} companyContext={companyContext} />
           <MobileMenu items={mobileNav} />
         </div>
       </header>
