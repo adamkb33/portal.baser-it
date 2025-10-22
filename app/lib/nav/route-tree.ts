@@ -9,12 +9,24 @@ export enum Access {
   ROLE = 'ROLE',
 }
 
+export enum BrachCategory {
+  AUTH = 'AUTH',
+  COMPANY = 'COMPANY',
+  USER = 'USER',
+}
+
+export interface BranchGroup {
+  label: string;
+  branches: RouteBranch[];
+}
+
 export type RouteBranch = {
   id: string;
   href: string;
   label: string;
-  icon?: ComponentType<{ className?: string }>;
   accessType: Access;
+  category: BrachCategory;
+  icon?: ComponentType<{ className?: string }>;
   userRoles?: UserRole[];
   companyRoles?: CompanyRole[];
   children?: RouteBranch[];
@@ -25,24 +37,35 @@ export const ROUTE_TREE: RouteBranch[] = [
     id: 'auth.sign-in',
     href: 'auth/sign-in',
     label: 'Logg inn',
+    category: BrachCategory.AUTH,
     accessType: Access.NOT_AUTHENTICATED,
   },
   {
     id: 'auth.forgot-password',
     href: 'auth/forgot-password',
     label: 'Glemt passord',
+    category: BrachCategory.AUTH,
     accessType: Access.NOT_AUTHENTICATED,
+  },
+  {
+    id: 'auth.sign-out',
+    href: 'auth/sign-out',
+    label: 'Logg ut',
+    category: BrachCategory.AUTH,
+    accessType: Access.AUTHENTICATED,
   },
   {
     id: 'profile',
     href: 'profile',
     label: 'Min profil',
+    category: BrachCategory.USER,
     accessType: Access.AUTHENTICATED,
   },
   {
     id: 'company-context',
     href: 'companies',
     label: 'Mine selskap',
+    category: BrachCategory.USER,
     accessType: Access.AUTHENTICATED,
     companyRoles: [CompanyRole.EMPLOYEE, CompanyRole.ADMIN],
   },
@@ -50,6 +73,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     id: 'company',
     href: 'company',
     label: 'Mitt selskap',
+    category: BrachCategory.AUTH,
     accessType: Access.ROLE,
     companyRoles: [CompanyRole.ADMIN],
     children: [
@@ -57,12 +81,14 @@ export const ROUTE_TREE: RouteBranch[] = [
         id: 'company.settings',
         href: 'company/settings',
         label: 'Instillinger',
+        category: BrachCategory.AUTH,
         accessType: Access.NOT_AUTHENTICATED,
         children: [
           {
             id: 'company.settings.employees',
             href: 'company/settings/employees',
             label: 'Ansatt instillinger',
+            category: BrachCategory.AUTH,
             accessType: Access.NOT_AUTHENTICATED,
           },
         ],
@@ -71,29 +97,66 @@ export const ROUTE_TREE: RouteBranch[] = [
   },
 ];
 
-export const createNavigation = (user?: AuthenticatedUserPayload | null, companyContext?: any | null) => {
+export const createNavigation = (
+  user?: AuthenticatedUserPayload | null,
+  companyContext?: any | null,
+): Record<BrachCategory, BranchGroup> => {
+  let filteredBranches: RouteBranch[];
+
   if (!user) {
-    return ROUTE_TREE.filter(
-      (branch) => branch.accessType == Access.NOT_AUTHENTICATED || branch.accessType == Access.PUBLIC,
+    filteredBranches = ROUTE_TREE.filter(
+      (branch) => branch.accessType === Access.NOT_AUTHENTICATED || branch.accessType === Access.PUBLIC,
     );
-  }
-
-  const authenticatedRoutes = ROUTE_TREE.filter((route) => route.accessType == Access.AUTHENTICATED);
-
-  if (companyContext) {
+  } else if (!companyContext) {
+    filteredBranches = ROUTE_TREE.filter((route) => route.accessType === Access.AUTHENTICATED);
+  } else {
     const userCompanyRoles = user.companyRoles.flatMap((c) => c.companyRole) as CompanyRole[];
     const userRoles = user.roles;
 
-    const branchWithCompanyRoles = ROUTE_TREE.filter((branch) =>
-      branch.companyRoles?.map((role) => userCompanyRoles.includes(role)),
-    );
+    const seen = new Set<string>();
 
-    const branchesWithUserRole = ROUTE_TREE.filter((branch) =>
-      branch.userRoles?.map((role) => userRoles.includes(role)),
-    );
+    filteredBranches = ROUTE_TREE.filter((branch) => {
+      if (seen.has(branch.id)) return false;
 
-    return [...authenticatedRoutes, ...branchWithCompanyRoles, ...branchesWithUserRole];
+      const isAuthenticated = branch.accessType === Access.AUTHENTICATED;
+      const hasCompanyRole = branch.companyRoles?.some((role) => userCompanyRoles.includes(role)) ?? false;
+      const hasUserRole = branch.userRoles?.some((role) => userRoles.includes(role)) ?? false;
+
+      const shouldInclude = isAuthenticated || hasCompanyRole || hasUserRole;
+
+      if (shouldInclude) {
+        seen.add(branch.id);
+        return true;
+      }
+
+      return false;
+    });
   }
 
-  return [...authenticatedRoutes];
+  return filteredBranches.reduce(
+    (acc, branch) => {
+      if (!acc[branch.category]) {
+        acc[branch.category] = {
+          label: getCategoryLabel(branch.category),
+          branches: [],
+        };
+      }
+      acc[branch.category].branches.push(branch);
+      return acc;
+    },
+    {} as Record<BrachCategory, BranchGroup>,
+  );
+};
+
+const getCategoryLabel = (category: BrachCategory): string => {
+  switch (category) {
+    case BrachCategory.AUTH:
+      return 'Autentisering';
+    case BrachCategory.COMPANY:
+      return 'Selskap';
+    case BrachCategory.USER:
+      return 'Bruker';
+    default:
+      return category;
+  }
 };

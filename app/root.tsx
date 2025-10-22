@@ -15,7 +15,7 @@ import type { Route } from './+types/root';
 import './app.css';
 import { RootLayout } from './layouts/root-layout';
 import { rootLoader, type RootLoaderLoaderData } from './features/auth/api/root.server';
-import type { RouteBranch } from './lib/nav/route-tree';
+import type { BrachCategory, BranchGroup, RouteBranch } from './lib/nav/route-tree';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
 
 export const loader = rootLoader;
@@ -59,12 +59,12 @@ export type RootOutletContext = {
 };
 
 export default function App() {
-  const [userNav, setUserNav] = React.useState<RouteBranch[]>([]);
+  const [userNav, setUserNav] = React.useState<Record<BrachCategory, BranchGroup> | undefined>(undefined);
   const [companyContext, setCompanyContext] = React.useState<CompanySummaryDto | null | undefined>(undefined);
   const data = useLoaderData<RootLoaderLoaderData>();
 
   React.useEffect(() => {
-    setUserNav(data.userNavigation || []);
+    setUserNav(data.userNavigation || undefined);
     setCompanyContext(data.companyContext);
   }, [data]);
 
