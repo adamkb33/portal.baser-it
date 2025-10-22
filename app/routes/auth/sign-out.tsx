@@ -1,9 +1,54 @@
-import { Link, useFetcher } from 'react-router';
+import { Link, redirect, useFetcher, type LoaderFunctionArgs } from 'react-router';
+import { ApiClientError, OpenAPI } from '~/api/clients/http';
+import { AuthControllerService } from '~/api/clients/identity';
+import { ENV } from '~/api/config/env';
+import { accessTokenCookie, refreshTokenCookie } from '~/features/auth/api/cookies.server';
+import { toAuthPayload } from '~/features/auth/token/token-payload';
 
 interface ActionData {
   success?: boolean;
   error?: string;
   redirectTo?: string;
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const cookieHeader = request.headers.get('Cookie');
+  const accessToken = await accessTokenCookie.parse(cookieHeader);
+
+  if (!accessToken) {
+    return redirect('/auth/sign-in');
+  }
+
+  OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
+  try {
+    const authPayload = toAuthPayload(accessToken);
+    if (!authPayload) {
+      return redirect('/auth/sign-in');
+    }
+
+    const response = await AuthControllerService.signOut({
+      requestBody: { userId: authPayload.id },
+    });
+
+    const expiredAccessCookie = await accessTokenCookie.serialize('', { maxAge: 0 });
+    const expiredRefreshCookie = await refreshTokenCookie.serialize('', { maxAge: 0 });
+
+    const headers = new Headers();
+    headers.append('Set-Cookie', expiredAccessCookie);
+    headers.append('Set-Cookie', expiredRefreshCookie);
+
+    if (response.success) {
+      return redirect('/', {
+        headers,
+      });
+    }
+  } catch (error: any) {
+    if (error as ApiClientError) {
+      return { error: error.body.message };
+    }
+
+    throw error;
+  }
 }
 
 export default function AuthSignOut() {

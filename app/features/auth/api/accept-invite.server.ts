@@ -5,7 +5,7 @@ import { toAuthTokens } from '../token/token-utils';
 import type { ApiClientError } from '~/api/clients/http';
 import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
 import { redirect, type ActionFunctionArgs } from 'react-router';
-import type { AcceptInviteSchema } from '../schemas/accept-invite';
+import type { AcceptInviteSchema } from '../schemas/accept-invite.schema';
 
 export async function acceptInvite({ request }: ActionFunctionArgs) {
   OpenAPI.BASE = ENV.IDENTITY_BASE_URL;

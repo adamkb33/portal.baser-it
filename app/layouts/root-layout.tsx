@@ -3,12 +3,12 @@ import { type ReactNode } from 'react';
 import { MobileMenu } from '~/components/layout/mobile-menu';
 import { MobileNav } from '~/components/layout/mobile-nav';
 import { Navbar } from '~/components/layout/navbar';
-import { BrachCategory, type BranchGroup } from '~/lib/nav/route-tree';
+import { BrachCategory, type BranchGroup, type UserNavigation } from '~/lib/nav/route-tree';
 import type { CompanySummaryDto } from '~/api/clients/types';
 
 interface RootLayoutProps {
   children: ReactNode;
-  routeTree: Record<BrachCategory, BranchGroup> | undefined;
+  routeTree: UserNavigation | undefined;
   companyContext: CompanySummaryDto | null | undefined;
 }
 
@@ -17,7 +17,7 @@ export function RootLayout({ children, routeTree, companyContext }: RootLayoutPr
     <div className="h-screen min-h-dvh flex flex-col bg-white text-zinc-900">
       <header role="banner" className="h-16 border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
         <div className="mx-auto h-full w-full max-w-[1200px] px-4 flex items-center gap-3">
-          <Navbar navRoutes={routeTree} companyContext={companyContext} />
+          <Navbar navRoutes={routeTree?.NAVIGATION} companyContext={companyContext} />
         </div>
       </header>
 

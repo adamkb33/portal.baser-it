@@ -1,6 +1,12 @@
 import { redirect, type LoaderFunctionArgs } from 'react-router';
 import { accessTokenCookie, companyContextCookie, refreshTokenCookie } from './cookies.server';
-import { BrachCategory, createNavigation, type BranchGroup, type RouteBranch } from '~/lib/nav/route-tree';
+import {
+  BrachCategory,
+  createNavigation,
+  type BranchGroup,
+  type RouteBranch,
+  type UserNavigation,
+} from '~/lib/nav/route-tree';
 import { toAuthTokens } from '../token/token-utils';
 import { AuthControllerService, createIdentityClient, type AuthenticatedUserPayload } from '~/api/clients/identity';
 import { ENV } from '~/api/config/env';
@@ -11,7 +17,7 @@ import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
 
 export type RootLoaderLoaderData = {
   user?: AuthenticatedUserPayload | null;
-  userNavigation?: Record<BrachCategory, BranchGroup>;
+  userNavigation?: UserNavigation;
   companyContext?: CompanySummaryDto | null;
 };
 

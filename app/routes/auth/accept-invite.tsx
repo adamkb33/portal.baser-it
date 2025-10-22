@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Link, redirect, useFetcher, useLoaderData, useNavigate } from 'react-router';
+import { Link, redirect, useFetcher, useLoaderData } from 'react-router';
 
-import { AcceptInviteForm } from '@/components/forms/accept-invite-form';
-import { type AcceptInviteSchema } from '@/features/auth/schemas/accept-invite';
+import { AcceptInviteForm } from '~/components/forms/accept-invite.form';
+import { type AcceptInviteSchema } from '~/features/auth/schemas/accept-invite.schema';
 import { acceptInvite } from '@/features/auth/api/accept-invite.server';
 import type { Route } from '../+types/home';
 

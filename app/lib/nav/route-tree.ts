@@ -20,13 +20,19 @@ export interface BranchGroup {
   branches: RouteBranch[];
 }
 
+export enum RoutePlaceMent {
+  NAVIGATION = 'NAVIGATION',
+  SIDEBAR = 'SIDEBAR',
+  FOOTER = 'FOOTER',
+}
+
 export type RouteBranch = {
   id: string;
   href: string;
   label: string;
   accessType: Access;
+  placement?: RoutePlaceMent;
   category: BrachCategory;
-  icon?: ComponentType<{ className?: string }>;
   userRoles?: UserRole[];
   companyRoles?: CompanyRole[];
   children?: RouteBranch[];
@@ -35,14 +41,15 @@ export type RouteBranch = {
 export const ROUTE_TREE: RouteBranch[] = [
   {
     id: 'auth.sign-in',
-    href: 'auth/sign-in',
+    href: '/auth/sign-in',
     label: 'Logg inn',
     category: BrachCategory.AUTH,
+    placement: RoutePlaceMent.NAVIGATION,
     accessType: Access.NOT_AUTHENTICATED,
   },
   {
     id: 'auth.forgot-password',
-    href: 'auth/forgot-password',
+    href: '/auth/forgot-password',
     label: 'Glemt passord',
     category: BrachCategory.AUTH,
     accessType: Access.NOT_AUTHENTICATED,
@@ -52,6 +59,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     href: 'auth/sign-out',
     label: 'Logg ut',
     category: BrachCategory.AUTH,
+    placement: RoutePlaceMent.NAVIGATION,
     accessType: Access.AUTHENTICATED,
   },
   {
@@ -59,6 +67,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     href: 'profile',
     label: 'Min profil',
     category: BrachCategory.USER,
+    placement: RoutePlaceMent.NAVIGATION,
     accessType: Access.AUTHENTICATED,
   },
   {
@@ -66,6 +75,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     href: 'companies',
     label: 'Mine selskap',
     category: BrachCategory.USER,
+    placement: RoutePlaceMent.NAVIGATION,
     accessType: Access.AUTHENTICATED,
     companyRoles: [CompanyRole.EMPLOYEE, CompanyRole.ADMIN],
   },
@@ -74,6 +84,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     href: 'company',
     label: 'Mitt selskap',
     category: BrachCategory.AUTH,
+    placement: RoutePlaceMent.SIDEBAR,
     accessType: Access.ROLE,
     companyRoles: [CompanyRole.ADMIN],
     children: [
@@ -97,10 +108,20 @@ export const ROUTE_TREE: RouteBranch[] = [
   },
 ];
 
+export const ROUTES_MAP: Record<string, RouteBranch> = ROUTE_TREE.reduce(
+  (acc, branch) => {
+    acc[branch.id] = branch;
+    return acc;
+  },
+  {} as Record<string, RouteBranch>,
+);
+
+export type UserNavigation = Record<RoutePlaceMent, Record<BrachCategory, BranchGroup>>;
+
 export const createNavigation = (
   user?: AuthenticatedUserPayload | null,
   companyContext?: any | null,
-): Record<BrachCategory, BranchGroup> => {
+): UserNavigation => {
   let filteredBranches: RouteBranch[];
 
   if (!user) {
@@ -133,19 +154,23 @@ export const createNavigation = (
     });
   }
 
-  return filteredBranches.reduce(
-    (acc, branch) => {
-      if (!acc[branch.category]) {
-        acc[branch.category] = {
-          label: getCategoryLabel(branch.category),
-          branches: [],
-        };
-      }
-      acc[branch.category].branches.push(branch);
-      return acc;
-    },
-    {} as Record<BrachCategory, BranchGroup>,
-  );
+  return filteredBranches.reduce((acc, branch) => {
+    if (!branch.placement) return acc;
+
+    if (!acc[branch.placement]) {
+      acc[branch.placement] = {} as Record<BrachCategory, BranchGroup>;
+    }
+
+    if (!acc[branch.placement][branch.category]) {
+      acc[branch.placement][branch.category] = {
+        label: getCategoryLabel(branch.category),
+        branches: [],
+      };
+    }
+
+    acc[branch.placement][branch.category].branches.push(branch);
+    return acc;
+  }, {} as UserNavigation);
 };
 
 const getCategoryLabel = (category: BrachCategory): string => {

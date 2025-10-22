@@ -38,6 +38,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent>
               {navRoutes.USER.branches.map((link) => (
                 <DropdownMenuItem key={link.id} asChild>

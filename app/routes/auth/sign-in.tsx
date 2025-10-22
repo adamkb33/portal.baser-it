@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { useFetcher, Link } from 'react-router';
 
-import { SignInForm } from '@/components/forms/sign-in-form';
-import { type SignInSchema } from '@/features/auth/schemas/sign-in';
+import { SignInForm } from '~/components/forms/sign-in.form';
+import { type SignInSchema } from '~/features/auth/schemas/sign-in.schema';
 
 import { signIn } from '@/features/auth/api/sign-in.server';
+import { ROUTES_MAP } from '~/lib/nav/route-tree';
 
 export const action = signIn;
 
@@ -30,8 +31,10 @@ export default function AuthSignIn() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-12">
       <header className="space-y-2 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Sign In</h1>
-        <p className="text-muted-foreground text-sm">Access your account using your company credentials.</p>
+        <h1 className="text-3xl font-semibold tracking-tight">Logg inn</h1>
+        <p className="text-muted-foreground text-sm">
+          Logg inn for å ta i bruk våre tjenester, administrer ditt selskap og ditt kundeforhold.
+        </p>
       </header>
 
       {actionData?.error ? (
@@ -45,11 +48,16 @@ export default function AuthSignIn() {
 
       <SignInForm onSubmit={handleSubmit} isSubmitting={isSubmitting} initialValues={actionData?.values} />
 
-      <p className="text-center text-sm text-muted-foreground">Forgot your password? Contact your administrator.</p>
+      <p className="text-center text-sm text-muted-foreground">
+        Har du glemt ditt passord?{' '}
+        <Link to={ROUTES_MAP['auth.forgot-password'].href} className="text-primary hover:underline">
+          Tilbakestill passordet ditt her.
+        </Link>
+      </p>
 
       <div className="text-center text-sm">
         <Link to="/" className="text-primary hover:underline">
-          Return to home
+          Tilbake til hovedsiden
         </Link>
       </div>
     </div>

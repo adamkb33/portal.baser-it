@@ -1,7 +1,7 @@
 import { AuthControllerService } from '~/api/clients/identity';
 import { OpenAPI } from '~/api/clients/identity/OpenAPI';
 import { ENV } from '~/api/config/env';
-import { type SignInSchema } from '../schemas/sign-in';
+import { type SignInSchema } from '../schemas/sign-in.schema';
 import { toAuthTokens } from '../token/token-utils';
 import type { ApiClientError } from '~/api/clients/http';
 import { accessTokenCookie, refreshTokenCookie } from './cookies.server';

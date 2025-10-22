@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { signInSchema, type SignInSchema } from '@/features/auth/schemas/sign-in';
+import { signInSchema, type SignInSchema } from '~/features/auth/schemas/sign-in.schema';
 
 export interface SignInFormProps {
   onSubmit: (values: SignInSchema) => void;
@@ -40,9 +40,9 @@ export function SignInForm({ onSubmit, isSubmitting = false, initialValues }: Si
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>E-post</FormLabel>
               <FormControl>
-                <Input {...field} type="email" autoComplete="email" placeholder="you@example.com" data-testid="email" />
+                <Input {...field} type="email" autoComplete="email" placeholder="din@e-post.no" data-testid="email" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -54,7 +54,7 @@ export function SignInForm({ onSubmit, isSubmitting = false, initialValues }: Si
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Passord</FormLabel>
               <FormControl>
                 <Input {...field} type="password" autoComplete="current-password" data-testid="password" />
               </FormControl>
@@ -64,7 +64,7 @@ export function SignInForm({ onSubmit, isSubmitting = false, initialValues }: Si
         />
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Signing In…' : 'Sign In'}
+          {isSubmitting ? 'Logger inn…' : 'Logg inn'}
         </Button>
       </form>
     </Form>
