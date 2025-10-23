@@ -11,6 +11,7 @@ import {
 import { createIdentityClient, type CompanySummaryDto } from '~/api/clients/identity';
 import { ENV } from '~/api/config/env';
 import { CompanyCard } from '~/components/cards/company-summary.card';
+import { ComapnyCardV2 } from '~/components/cards/company-summary.cardv2';
 import { Button } from '~/components/ui/button';
 import { accessTokenCookie, companyContextCookie } from '~/features/auth/api/cookies.server';
 

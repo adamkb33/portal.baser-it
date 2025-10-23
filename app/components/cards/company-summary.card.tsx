@@ -17,8 +17,10 @@ export function CompanyCard({ company }: CompanyCardProps) {
     return parts.join(', ');
   };
 
+  console.log(postalAddress);
+
   return (
-    <Card className="w-full max-w-md hover:shadow-md transition-shadow">
+    <Card className="w-full min-w-md hover:shadow-md transition-shadow">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg font-semibold">
           <Building2 className="h-5 w-5 text-muted-foreground" />
@@ -33,14 +35,6 @@ export function CompanyCard({ company }: CompanyCardProps) {
         <div>
           <p className="text-muted-foreground font-medium">Organization Type</p>
           <p>{organizationType?.description || 'Unknown'}</p>
-        </div>
-
-        <div className="flex gap-2 items-start">
-          <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-          <div>
-            <p className="text-muted-foreground font-medium">Business Address</p>
-            <p>{formatAddress(businessAddress)}</p>
-          </div>
         </div>
 
         {postalAddress && (
