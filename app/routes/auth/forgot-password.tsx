@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useFetcher, Link, type ActionFunctionArgs, redirect } from 'react-router';
-import { ca, tr } from 'zod/v4/locales';
 import type { ApiClientError } from '~/api/clients/http';
 import { AuthControllerService } from '~/api/clients/identity';
 import { ForgotPasswordForm } from '~/components/forms/forgot-password.form';

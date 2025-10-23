@@ -5,10 +5,10 @@ import type { CompanySummaryDto } from '~/api/clients/types';
 
 interface CompanyCardProps {
   company: CompanySummaryDto;
-  onViewDetails?: (id: number) => void;
+  onSubmit?: (values: { companyId: string }) => void;
 }
 
-export function CompanyCard({ company, onViewDetails }: CompanyCardProps) {
+export function CompanyCard({ company }: CompanyCardProps) {
   const { id, name, orgNumber, organizationType, postalAddress, businessAddress } = company;
 
   const formatAddress = (address?: typeof company.postalAddress) => {
@@ -55,11 +55,7 @@ export function CompanyCard({ company, onViewDetails }: CompanyCardProps) {
       </CardContent>
 
       <CardFooter className="flex justify-end">
-        {onViewDetails && (
-          <Button variant="outline" onClick={() => onViewDetails(id)}>
-            View Details
-          </Button>
-        )}
+        <Button variant="outline">View Details</Button>
       </CardFooter>
     </Card>
   );

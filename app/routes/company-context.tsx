@@ -1,4 +1,13 @@
-import { data, Form, useLoaderData, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
+import React from 'react';
+import {
+  data,
+  Form,
+  useLoaderData,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  useFetcher,
+  redirect,
+} from 'react-router';
 import { createIdentityClient, type CompanySummaryDto } from '~/api/clients/identity';
 import { ENV } from '~/api/config/env';
 import { CompanyCard } from '~/components/cards/company-summary.card';
@@ -36,7 +45,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const headers = new Headers();
   headers.append('Set-Cookie', companyCookie);
 
-  return data(null, { headers });
+  return redirect('/company', { headers });
 }
 
 export default function CompanyContextPage() {
@@ -53,16 +62,11 @@ export default function CompanyContextPage() {
   }
 
   return (
-    <div className="grid gap-6 p-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="flex gap-4 items-center justify-center">
       {companies.map((company) => (
-        <Form key={company.id} method="post" className="cursor-pointer">
+        <Form key={company.id} method="post">
           <input type="hidden" name="companyId" value={company.id} />
-          <button
-            type="submit"
-            className="w-full text-left transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
-          >
-            <CompanyCard company={company} />
-          </button>
+          <CompanyCard company={company} />
         </Form>
       ))}
     </div>

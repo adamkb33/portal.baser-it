@@ -10,7 +10,7 @@ import { ROUTES_MAP } from '~/lib/nav/route-tree';
 export const action = signIn;
 
 export default function AuthSignIn() {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher({ key: 'sign-in' });
   const isSubmitting = fetcher.state !== 'idle';
   const actionData = fetcher.data;
 
