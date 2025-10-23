@@ -2,6 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AddCompanyRoleDto } from '@types';
+import type { ApiResponseAuthenticatedUserPayload } from '@types';
 import type { ApiResponseCompanySummaryDto } from '@types';
 import type { CreateCompanyDto } from '@types';
 import type { CancelablePromise } from '@http';
@@ -20,6 +22,22 @@ export class SystemAdminCompanyControllerService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/system-admin/companies',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * @returns ApiResponseAuthenticatedUserPayload OK
+     * @throws ApiError
+     */
+    public static addCompanyRole({
+        requestBody,
+    }: {
+        requestBody: AddCompanyRoleDto,
+    }): CancelablePromise<ApiResponseAuthenticatedUserPayload> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/system-admin/companies/add-role',
             body: requestBody,
             mediaType: 'application/json',
         });

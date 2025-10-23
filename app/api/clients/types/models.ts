@@ -8,6 +8,11 @@ export interface AcceptInviteDto {
     password2: string;
 }
 
+export interface AddCompanyRoleDto {
+    userId: number;
+    companyRoles: CompanyRoleAssignmentDto[];
+}
+
 export interface AddressDto {
     municipality?: string;
     countryCode?: string;
@@ -25,11 +30,6 @@ export interface AuthenticatedUserPayload {
     companyRoles: CompanyRoleDto[];
 }
 
-export interface AuthenticationRequestDto {
-    email: string;
-    password: string;
-}
-
 export interface AuthenticationTokenDto {
     accessToken: string;
     accessTokenExpiresAt: number;
@@ -44,7 +44,7 @@ export interface CompanyRoleAssignmentDto {
 
 export interface CompanyRoleDto {
     companyId: number;
-    companyRole: Roles[];
+    companyRoles: Roles[];
 }
 
 export interface CompanySummaryDto {
@@ -58,6 +58,10 @@ export interface CompanySummaryDto {
 
 export interface CreateCompanyDto {
     orgNumber: string;
+}
+
+export interface ForgotPasswordDto {
+    email: string;
 }
 
 export interface InvitedUserTokenDto {
@@ -85,6 +89,17 @@ export interface RefreshTokenRequestDto {
     refreshToken: string;
 }
 
-export interface SignOutRequestDto {
+export interface ResetPasswordDto {
+    resetPasswordToken: string;
+    password: string;
+    password2: string;
+}
+
+export interface SignInDto {
+    email: string;
+    password: string;
+}
+
+export interface SignOutDto {
     userId: number;
 }

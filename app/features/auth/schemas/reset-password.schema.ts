@@ -1,11 +1,9 @@
 import { z } from 'zod';
 import { tokenValidator, passwordValidator } from '~/lib/form-validators';
 
-export const acceptInviteSchema = z
+export const resetPasswordSchema = z
   .object({
-    inviteToken: tokenValidator,
-    givenName: z.string().trim().min(1, { message: 'Fornavn er påkrevd' }),
-    familyName: z.string().trim().min(1, { message: 'Etternavn er påkrevd' }),
+    resetPasswordToken: tokenValidator,
     password: passwordValidator,
     confirmPassword: passwordValidator,
   })
@@ -19,4 +17,4 @@ export const acceptInviteSchema = z
     }
   });
 
-export type AcceptInviteSchema = z.infer<typeof acceptInviteSchema>;
+export type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;

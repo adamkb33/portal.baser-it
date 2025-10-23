@@ -1,6 +1,5 @@
-import type { ComponentType } from 'react';
 import type { AuthenticatedUserPayload } from '@/api/clients/identity';
-import { CompanyRole, UserRole } from '../../api/clients/types';
+import { Roles, UserRole } from '../../api/clients/types';
 
 export enum Access {
   PUBLIC = 'PUBLIC',
@@ -34,7 +33,7 @@ export type RouteBranch = {
   placement?: RoutePlaceMent;
   category: BrachCategory;
   userRoles?: UserRole[];
-  companyRoles?: CompanyRole[];
+  companyRoles?: Roles[];
   children?: RouteBranch[];
 };
 
@@ -51,6 +50,13 @@ export const ROUTE_TREE: RouteBranch[] = [
     id: 'auth.forgot-password',
     href: '/auth/forgot-password',
     label: 'Glemt passord',
+    category: BrachCategory.AUTH,
+    accessType: Access.NOT_AUTHENTICATED,
+  },
+  {
+    id: 'auth.reset-password',
+    href: '/auth/reset-password',
+    label: 'Tilbakestill passord',
     category: BrachCategory.AUTH,
     accessType: Access.NOT_AUTHENTICATED,
   },
@@ -77,7 +83,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     category: BrachCategory.USER,
     placement: RoutePlaceMent.NAVIGATION,
     accessType: Access.AUTHENTICATED,
-    companyRoles: [CompanyRole.EMPLOYEE, CompanyRole.ADMIN],
+    companyRoles: [Roles.EMPLOYEE, Roles.ADMIN],
   },
   {
     id: 'company',
@@ -86,7 +92,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     category: BrachCategory.AUTH,
     placement: RoutePlaceMent.SIDEBAR,
     accessType: Access.ROLE,
-    companyRoles: [CompanyRole.ADMIN],
+    companyRoles: [Roles.ADMIN],
     children: [
       {
         id: 'company.settings',
@@ -131,7 +137,7 @@ export const createNavigation = (
   } else if (!companyContext) {
     filteredBranches = ROUTE_TREE.filter((route) => route.accessType === Access.AUTHENTICATED);
   } else {
-    const userCompanyRoles = user.companyRoles.flatMap((c) => c.companyRole) as CompanyRole[];
+    const userCompanyRoles = user.companyRoles.flatMap((c) => c.companyRoles) as Roles[];
     const userRoles = user.roles;
 
     const seen = new Set<string>();

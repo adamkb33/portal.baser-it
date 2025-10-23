@@ -1,10 +1,10 @@
 // Enums
-export const CompanyRole = {
+export const CompanyRoles = {
   ADMIN: 'ADMIN',
   EMPLOYEE: 'EMPLOYEE',
 } as const;
 
-export type CompanyRole = (typeof CompanyRole)[keyof typeof CompanyRole];
+export type CompanyRoles = (typeof CompanyRoles)[keyof typeof CompanyRoles];
 
 export const Roles = {
   ADMIN: 'ADMIN',

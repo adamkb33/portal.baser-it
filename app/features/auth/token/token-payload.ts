@@ -54,7 +54,7 @@ function decodeAccessToken(token: string): AccessTokenClaims | null {
   }
 }
 
-function decodeBase64Url(segment: string): string | null {
+export function decodeBase64Url(segment: string): string | null {
   const padded = padBase64(segment.replace(/-/g, '+').replace(/_/g, '/'));
 
   try {

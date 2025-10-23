@@ -1,5 +1,8 @@
 import * as React from 'react';
-import { useFetcher, Link, type ActionFunctionArgs } from 'react-router';
+import { useFetcher, Link, type ActionFunctionArgs, redirect } from 'react-router';
+import { ca, tr } from 'zod/v4/locales';
+import type { ApiClientError } from '~/api/clients/http';
+import { AuthControllerService } from '~/api/clients/identity';
 import { ForgotPasswordForm } from '~/components/forms/forgot-password.form';
 
 import type { ForgotPasswordSchema } from '~/features/auth/schemas/forgot-password.schema';
@@ -8,7 +11,23 @@ import { ROUTES_MAP } from '~/lib/nav/route-tree';
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  console.log(formData);
+  const email = formData.get('email') as string;
+
+  try {
+    await AuthControllerService.forgotPassword({
+      requestBody: {
+        email: email,
+      },
+    });
+
+    return redirect('/');
+  } catch (error: any) {
+    if (error as ApiClientError) {
+      return { error: error.body.message };
+    }
+
+    throw error;
+  }
 }
 
 export default function AuthForgotPassword() {
