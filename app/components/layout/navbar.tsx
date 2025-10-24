@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Button } from '../ui/button';
+import BiTLogo from '../logos/BiT.logo';
 
 export type NavbarProps = {
   navRoutes: Record<BrachCategory, BranchGroup> | undefined;
@@ -24,7 +25,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
     <nav className="flex flex-1 items-center justify-between gap-4">
       <div className="flex items-center gap-6">
         <Link to="/" className="text-xl font-semibold">
-          Logo
+          <BiTLogo />
         </Link>
 
         <CompanyHeader company={companyContext} />

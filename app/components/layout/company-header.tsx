@@ -20,7 +20,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
 
         {/* Desktop: Full info with icon */}
         <div className="hidden md:flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-slate-600 shrink-0">
-          <Building2 className="h-4 w-4" />
+          <Building2 className="h-4 w-4 text-[#702963]" />
         </div>
         <div className="hidden md:block min-w-0">
           <div className="text-sm font-medium text-slate-900 truncate">{company.name}</div>

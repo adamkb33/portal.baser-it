@@ -8,14 +8,13 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
-  useOutletContext,
 } from 'react-router';
 
 import type { Route } from './+types/root';
 import './app.css';
 import { RootLayout } from './layouts/root-layout';
 import { rootLoader, type RootLoaderLoaderData } from './features/auth/api/root.server';
-import type { BrachCategory, BranchGroup, RouteBranch, UserNavigation } from './lib/nav/route-tree';
+import type { RouteBranch, UserNavigation } from './lib/nav/route-tree';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
 
 export const loader = rootLoader;

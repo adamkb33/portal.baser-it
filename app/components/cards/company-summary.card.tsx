@@ -23,7 +23,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
     <Card className="w-full min-w-md hover:shadow-md transition-shadow">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-          <Building2 className="h-5 w-5 text-muted-foreground" />
+          <Building2 className="h-5 w-5 text-[#702963]" />
           {name}
         </CardTitle>
         <CardDescription>
