@@ -78,7 +78,7 @@ export const ROUTE_TREE: RouteBranch[] = [
   },
   {
     id: 'company-context',
-    href: '/companies',
+    href: '/company-context',
     label: 'Mine selskap',
     category: BrachCategory.USER,
     placement: RoutePlaceMent.NAVIGATION,
