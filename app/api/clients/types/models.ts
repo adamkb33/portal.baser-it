@@ -44,16 +44,16 @@ export interface CompanyRoleAssignmentDto {
 
 export interface CompanyRoleDto {
     companyId: number;
-    companyRoles: Roles[];
+    roles: Roles[];
 }
 
 export interface CompanySummaryDto {
     id: number;
     orgNumber: string;
-    name: string;
-    organizationType: OrganizationTypeDto;
-    postalAddress: AddressDto;
-    businessAddress: AddressDto;
+    name?: string;
+    organizationType?: OrganizationTypeDto;
+    postalAddress?: AddressDto;
+    businessAddress?: AddressDto;
 }
 
 export interface CreateCompanyDto {

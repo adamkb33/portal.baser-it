@@ -1,9 +1,7 @@
 import { type ReactNode } from 'react';
 
-import { MobileMenu } from '~/components/layout/mobile-menu';
-import { MobileNav } from '~/components/layout/mobile-nav';
 import { Navbar } from '~/components/layout/navbar';
-import { BrachCategory, type BranchGroup, type UserNavigation } from '~/lib/nav/route-tree';
+import { type UserNavigation } from '~/lib/nav/route-tree';
 import type { CompanySummaryDto } from '~/api/clients/types';
 
 interface RootLayoutProps {
@@ -24,13 +22,13 @@ export function RootLayout({ children, routeTree, companyContext }: RootLayoutPr
           className="h-16 border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70"
         >
           <div className="mx-auto h-full w-full max-w-[1200px] px-4 flex items-center gap-3">
-            <Navbar navRoutes={routeTree?.NAVIGATION} companyContext={companyContext} />
+            <Navbar navRoutes={routeTree} companyContext={companyContext} />
           </div>
         </header>
 
         <main role="main" className="flex-1 overflow-y-auto pb-24 lg:pb-0">
-          <div className="relative mx-auto w-full max-w-[1200px] flex gap-4 px-4 py-6">
-            <div className="w-full">{children}</div>
+          <div className="relative mx-auto w-full max-w-[1200px] flex flex-col gap-4 px-4 py-6 h-full">
+            <div className="w-full flex-1">{children}</div>
           </div>
         </main>
 
@@ -52,7 +50,7 @@ const BackgroundSvg = ({ className, ...props }: React.SVGProps<SVGSVGElement>) =
     height="1080"
     version="1.1"
     viewBox="0 0 1920 1080"
-    className="{className}"
+    className="{className} -z-50"
     {...props}
   >
     <path

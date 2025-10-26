@@ -2,7 +2,7 @@ import { matchPath, useLocation, useResolvedPath, NavLink as ReactRouterNavLink 
 import type { ComponentPropsWithoutRef } from 'react';
 import { cn } from '~/lib/utils';
 
-type NavItem = { href: string; label: string };
+export type NavItem = { href: string; label: string };
 type MatchMode = 'exact' | 'prefix';
 
 interface NavLinkProps extends Omit<ComponentPropsWithoutRef<typeof ReactRouterNavLink>, 'to' | 'children'> {

@@ -69,7 +69,7 @@ export async function rootLoader({ request }: LoaderFunctionArgs) {
     headers.append('Set-Cookie', accessCookie);
     headers.append('Set-Cookie', refreshCookie);
 
-    const navigation = createNavigation(authPayload, companyCookie);
+    const navigation = createNavigation(authPayload);
 
     const url = new URL(request.url);
 

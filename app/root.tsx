@@ -51,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export type RootOutletContext = {
-  userNav: RouteBranch[];
+  userNav: UserNavigation;
   setUserNav: React.Dispatch<React.SetStateAction<RouteBranch[]>>;
   companyContext: CompanySummaryDto | null | undefined;
   setCompanyContext: React.Dispatch<React.SetStateAction<CompanySummaryDto | null | undefined>>;

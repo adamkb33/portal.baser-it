@@ -1,46 +1,42 @@
+import { useState } from 'react';
 import { NavLink } from './nav-link';
-import type { RouteBranch } from '~/lib/nav/route-tree';
 
-export function SidebarNav({ items }: { items: RouteBranch[] | undefined }) {
-  if (!items?.length) {
-    return (
-      <div className="rounded-md border border-dashed border-zinc-200 p-4 text-sm text-zinc-600 h-200">
-        No sidebar links configured.
+export function Sidebar() {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <>
+      {/* Mobile top bar (explicit height) */}
+      <div className="md:hidden sticky top-0 z-20 bg-white border-b h-12">
+        <button className="h-full px-3" onClick={() => setOpen((v) => !v)} aria-label="Toggle sidebar">
+          ☰
+        </button>
       </div>
-    );
-  }
 
-  return (
-    <nav className="space-y-2">
-      {items.map((item) => (
-        <SidebarItem key={item.id} item={item} depth={0} />
-      ))}
-    </nav>
-  );
-}
+      {/* Sidebar */}
+      <aside
+        className={[
+          // positioning
+          'fixed md:sticky left-0 z-30 md:z-auto',
+          // offset + height
+          // mobile: below the 3rem top bar; desktop: full viewport height, top-0
+          'top-12 md:top-0',
+          'h-[calc(100dvh-3rem)] md:h-[100dvh]',
+          // width + look
+          'w-64 shrink-0 bg-white border-r overflow-y-auto',
+          // slide-in on mobile
+          open ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+          'transition-transform',
+        ].join(' ')}
+      >
+        <nav className="p-3 space-y-1">
+          <NavLink link={{ href: '/dashboard', label: 'Dashboard' }} />
+          <NavLink link={{ href: '/settings', label: 'Settings' }} />
+          <NavLink link={{ href: '/profile', label: 'Profile' }} />
+        </nav>
+      </aside>
 
-export function SidebarItem({ item, depth }: { item: RouteBranch; depth: number }) {
-  const hasChildren = Boolean(item.children?.length);
-  return (
-    <div className="space-y-2">
-      <NavLink
-        className={`block rounded-md px-3 py-2 text-sm font-medium hover:bg-zinc-200 ${
-          depth > 0 ? 'text-zinc-700' : 'text-zinc-900'
-        }`}
-        activeClassName="bg-zinc-300 text-zinc-900 font-semibold"
-        link={{
-          href: item.href,
-          label: item.label,
-        }}
-      />
-
-      {hasChildren ? (
-        <div className="space-y-1 pl-3">
-          {item.children!.map((child) => (
-            <SidebarItem key={child.id} item={child} depth={depth + 1} />
-          ))}
-        </div>
-      ) : null}
-    </div>
+      {open && <div className="fixed inset-0 bg-black/20 md:hidden" onClick={() => setOpen(false)} />}
+    </>
   );
 }

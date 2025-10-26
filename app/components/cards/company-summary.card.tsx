@@ -17,8 +17,6 @@ export function CompanyCard({ company }: CompanyCardProps) {
     return parts.join(', ');
   };
 
-  console.log(postalAddress);
-
   return (
     <Card className="w-full min-w-md hover:shadow-md transition-shadow">
       <CardHeader>

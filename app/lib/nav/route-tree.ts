@@ -62,7 +62,7 @@ export const ROUTE_TREE: RouteBranch[] = [
   },
   {
     id: 'auth.sign-out',
-    href: 'auth/sign-out',
+    href: '/auth/sign-out',
     label: 'Logg ut',
     category: BrachCategory.AUTH,
     placement: RoutePlaceMent.NAVIGATION,
@@ -70,7 +70,7 @@ export const ROUTE_TREE: RouteBranch[] = [
   },
   {
     id: 'profile',
-    href: 'profile',
+    href: '/profile',
     label: 'Min profil',
     category: BrachCategory.USER,
     placement: RoutePlaceMent.NAVIGATION,
@@ -78,7 +78,7 @@ export const ROUTE_TREE: RouteBranch[] = [
   },
   {
     id: 'company-context',
-    href: 'companies',
+    href: '/companies',
     label: 'Mine selskap',
     category: BrachCategory.USER,
     placement: RoutePlaceMent.NAVIGATION,
@@ -87,25 +87,26 @@ export const ROUTE_TREE: RouteBranch[] = [
   },
   {
     id: 'company',
-    href: 'company',
+    href: '/company',
     label: 'Mitt selskap',
-    category: BrachCategory.AUTH,
+    category: BrachCategory.COMPANY,
     placement: RoutePlaceMent.SIDEBAR,
     accessType: Access.ROLE,
-    companyRoles: [Roles.ADMIN],
+    companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
     children: [
       {
         id: 'company.settings',
-        href: 'company/settings',
+        href: '/company/settings',
         label: 'Instillinger',
-        category: BrachCategory.AUTH,
+        category: BrachCategory.COMPANY,
         accessType: Access.NOT_AUTHENTICATED,
+        companyRoles: [Roles.ADMIN],
         children: [
           {
             id: 'company.settings.employees',
-            href: 'company/settings/employees',
+            href: '/company/settings/employees',
             label: 'Ansatt instillinger',
-            category: BrachCategory.AUTH,
+            category: BrachCategory.COMPANY,
             accessType: Access.NOT_AUTHENTICATED,
           },
         ],
@@ -122,59 +123,30 @@ export const ROUTES_MAP: Record<string, RouteBranch> = ROUTE_TREE.reduce(
   {} as Record<string, RouteBranch>,
 );
 
-export type UserNavigation = Record<RoutePlaceMent, Record<BrachCategory, BranchGroup>>;
+export type UserNavigation = Record<BrachCategory, BranchGroup>;
 
-export const createNavigation = (
-  user?: AuthenticatedUserPayload | null,
-  companyContext?: any | null,
-): UserNavigation => {
+export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNavigation => {
   let filteredBranches: RouteBranch[];
 
   if (!user) {
     filteredBranches = ROUTE_TREE.filter(
       (branch) => branch.accessType === Access.NOT_AUTHENTICATED || branch.accessType === Access.PUBLIC,
     );
-  } else if (!companyContext) {
-    filteredBranches = ROUTE_TREE.filter((route) => route.accessType === Access.AUTHENTICATED);
   } else {
-    const userCompanyRoles = user.companyRoles.flatMap((c) => c.companyRoles) as Roles[];
-    const userRoles = user.roles;
-
-    const seen = new Set<string>();
-
-    filteredBranches = ROUTE_TREE.filter((branch) => {
-      if (seen.has(branch.id)) return false;
-
-      const isAuthenticated = branch.accessType === Access.AUTHENTICATED;
-      const hasCompanyRole = branch.companyRoles?.some((role) => userCompanyRoles.includes(role)) ?? false;
-      const hasUserRole = branch.userRoles?.some((role) => userRoles.includes(role)) ?? false;
-
-      const shouldInclude = isAuthenticated || hasCompanyRole || hasUserRole;
-
-      if (shouldInclude) {
-        seen.add(branch.id);
-        return true;
-      }
-
-      return false;
-    });
+    filteredBranches = ROUTE_TREE.filter((route) => route.accessType === Access.AUTHENTICATED);
   }
 
   return filteredBranches.reduce((acc, branch) => {
     if (!branch.placement) return acc;
 
-    if (!acc[branch.placement]) {
-      acc[branch.placement] = {} as Record<BrachCategory, BranchGroup>;
-    }
-
-    if (!acc[branch.placement][branch.category]) {
-      acc[branch.placement][branch.category] = {
+    if (!acc[branch.category]) {
+      acc[branch.category] = {
         label: getCategoryLabel(branch.category),
         branches: [],
       };
     }
 
-    acc[branch.placement][branch.category].branches.push(branch);
+    acc[branch.category].branches.push(branch);
     return acc;
   }, {} as UserNavigation);
 };
