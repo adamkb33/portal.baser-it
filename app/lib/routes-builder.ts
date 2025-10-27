@@ -8,20 +8,25 @@ export const buildRoutesNested = (routeTree: RouteBranch[]): RouteConfigEntry[] 
     const hasChildren = !!branch.children && branch.children.length > 0;
     const fileName = branch.id.replace(/\./g, '/');
 
-    const fileNameParts = fileName.split('/');
-    const fileEnd = hasChildren ? `/${fileNameParts[fileNameParts.length - 1]}.tsx` : '.tsx';
-    const file = 'routes/' + fileName + fileEnd;
-
     if (hasChildren) {
+      // Parent layout route with children
       routes.push({
         path: branch.href,
-        file,
-        children: buildRoutesNested(branch.children as RouteBranch[]),
+        file: `routes/${fileName}/layout.tsx`, // Layout component
+        children: [
+          // Index route for the parent path itself
+          {
+            index: true,
+            file: `routes/${fileName}/_index.tsx`,
+          },
+          // Nested children routes
+          ...buildRoutesNested(branch.children as RouteBranch[]),
+        ],
       });
     } else {
       routes.push({
         path: branch.href,
-        file,
+        file: `routes/${fileName}.tsx`,
       });
     }
   }

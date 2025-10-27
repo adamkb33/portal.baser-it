@@ -40,7 +40,7 @@ export const RenderRouteBranch = ({ routeBanch }: RenderRouteBranchProps) => {
       {routeBanch.children && (
         <div className="pl-4 mt-1 flex flex-col gap-1">
           {routeBanch.children.map((childBranch) => (
-            <RenderRouteBranch routeBanch={childBranch} />
+            <RenderRouteBranch key={childBranch.id} routeBanch={childBranch} />
           ))}
         </div>
       )}
@@ -48,7 +48,7 @@ export const RenderRouteBranch = ({ routeBanch }: RenderRouteBranchProps) => {
   );
 };
 
-export default function Company() {
+export default function CompanyLayout() {
   const data = useLoaderData<CompanyLoaderData>();
 
   const context = useOutletContext<RootOutletContext>();
@@ -58,12 +58,12 @@ export default function Company() {
       <aside className="hidden md:block absolute -left-68 top-0 h-full flex-shrink-0 border rounded-sm p-4 transition-all duration-300 z-10 w-64 bg-white">
         <div className="flex flex-col gap-2">
           {data.userBranches?.map((branch) => (
-            <RenderRouteBranch routeBanch={branch} />
+            <RenderRouteBranch key={branch.id} routeBanch={branch} />
           ))}
         </div>
       </aside>
 
-      <div className="flex-1 border rounded-sm p-4 transition-all duration-300 ml-0 bg-white">
+      <div className="flex-1 flex flex-col gap-4 border rounded-sm p-4 transition-all duration-300 ml-0 bg-white">
         <NavBreadcrumbs items={data.userBranches} />
         <Outlet context={context} />
       </div>

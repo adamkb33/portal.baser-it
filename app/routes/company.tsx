@@ -57,7 +57,7 @@ export default function Company() {
       <aside className="hidden md:block absolute -left-68 top-0 h-full flex-shrink-0 border rounded-sm p-4 transition-all duration-300 z-10 w-64 bg-white">
         <div className="flex flex-col gap-2">
           {data.userBranches?.map((branch) => (
-            <RenderRouteBranch routeBanch={branch} />
+            <RenderRouteBranch key={branch.id} routeBanch={branch} />
           ))}
         </div>
       </aside>

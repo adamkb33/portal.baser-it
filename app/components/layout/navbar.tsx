@@ -4,14 +4,7 @@ import type { BrachCategory, BranchGroup } from '~/lib/nav/route-tree';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
 import CompanyHeader from './company-header';
 import { User } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { Button } from '../ui/button';
 import BiTLogo from '../logos/BiT.logo';
 
