@@ -11,7 +11,7 @@ import {
   SheetTrigger,
 } from '~/components/ui/sheet';
 import { Button } from '~/components/ui/button';
-import type { RouteBranch } from '~/lib/nav/route-tree';
+import type { RouteBranch } from '~/lib/route-tree';
 
 interface MobileMenuProps {
   title?: string;

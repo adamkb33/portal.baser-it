@@ -6,7 +6,7 @@ import { ForgotPasswordForm } from '~/components/forms/forgot-password.form';
 
 import type { ForgotPasswordSchema } from '~/features/auth/schemas/forgot-password.schema';
 
-import { ROUTES_MAP } from '~/lib/nav/route-tree';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();

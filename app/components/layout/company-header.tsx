@@ -1,7 +1,7 @@
 import { Building2 } from 'lucide-react';
 import { Link } from 'react-router';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
-import { ROUTES_MAP } from '~/lib/nav/route-tree';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 type CompanyHeaderProps = {
   company?: CompanySummaryDto | null;

@@ -41,6 +41,7 @@ export async function signIn({ request }: ActionFunctionArgs) {
       ],
     });
   } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {
       return { error: error.body.message };
     }

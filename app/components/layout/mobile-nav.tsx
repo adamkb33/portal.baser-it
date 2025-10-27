@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router';
 import { Circle } from 'lucide-react';
-import type { RouteBranch } from '~/lib/nav/route-tree';
+import type { RouteBranch } from '~/lib/route-tree';
 
 interface MobileNavProps {
   items: RouteBranch[] | undefined;

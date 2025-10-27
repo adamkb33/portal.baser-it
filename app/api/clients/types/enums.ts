@@ -6,6 +6,13 @@ export const Roles = {
 
 export type Roles = (typeof Roles)[keyof typeof Roles];
 
+export const RolesToDelete = {
+  ADMIN: 'ADMIN',
+  EMPLOYEE: 'EMPLOYEE',
+} as const;
+
+export type RolesToDelete = (typeof RolesToDelete)[keyof typeof RolesToDelete];
+
 export const UserRole = {
   SYSTEM_ADMIN: 'SYSTEM_ADMIN',
   USER: 'USER',

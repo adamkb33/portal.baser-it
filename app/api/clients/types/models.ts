@@ -56,6 +56,11 @@ export interface CompanySummaryDto {
     businessAddress?: AddressDto;
 }
 
+export interface CompanyUserDto {
+    email: string;
+    roles: Roles[];
+}
+
 export interface CreateCompanyDto {
     orgNumber: string;
 }
@@ -66,6 +71,13 @@ export interface ForgotPasswordDto {
 
 export interface InvitedUserTokenDto {
     inviteToken: string;
+}
+
+export interface InviteEmployeeDto {
+    givenName: string;
+    familyName: string;
+    email: string;
+    roles: Roles[];
 }
 
 export interface InviteUserDto {
@@ -87,6 +99,11 @@ export interface OrganizationTypeDto {
 
 export interface RefreshTokenRequestDto {
     refreshToken: string;
+}
+
+export interface RequestCompanyRoleDeleteDto {
+    userId: number;
+    rolesToDelete: Roles[];
 }
 
 export interface ResetPasswordDto {

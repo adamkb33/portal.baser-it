@@ -5,7 +5,7 @@ import { SignInForm } from '~/components/forms/sign-in.form';
 import { type SignInSchema } from '~/features/auth/schemas/sign-in.schema';
 
 import { signIn } from '@/features/auth/api/sign-in.server';
-import { ROUTES_MAP } from '~/lib/nav/route-tree';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 export const action = signIn;
 

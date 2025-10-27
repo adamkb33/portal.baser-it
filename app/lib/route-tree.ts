@@ -1,5 +1,5 @@
 import type { AuthenticatedUserPayload } from '@/api/clients/identity';
-import { Roles, UserRole } from '../../api/clients/types';
+import { Roles, UserRole } from '../api/clients/types';
 
 export enum Access {
   PUBLIC = 'PUBLIC',
@@ -10,6 +10,7 @@ export enum Access {
 
 export enum BrachCategory {
   AUTH = 'AUTH',
+  NONE = 'NONE',
   COMPANY = 'COMPANY',
   USER = 'USER',
 }
@@ -31,6 +32,7 @@ export type RouteBranch = {
   label: string;
   accessType: Access;
   placement?: RoutePlaceMent;
+  hidden?: boolean;
   category: BrachCategory;
   userRoles?: UserRole[];
   companyRoles?: Roles[];
@@ -58,6 +60,13 @@ export const ROUTE_TREE: RouteBranch[] = [
     href: '/auth/reset-password',
     label: 'Tilbakestill passord',
     category: BrachCategory.AUTH,
+    accessType: Access.NOT_AUTHENTICATED,
+  },
+  {
+    id: 'auth.accept-invite',
+    href: '/auth/accept-invite',
+    label: 'Aksepter invitasjon',
+    category: BrachCategory.NONE,
     accessType: Access.NOT_AUTHENTICATED,
   },
   {
@@ -103,6 +112,15 @@ export const ROUTE_TREE: RouteBranch[] = [
         companyRoles: [Roles.ADMIN],
       },
       {
+        id: 'company.request-role-delete',
+        href: '/company/request-role-delete',
+        label: 'Etterspørsel om å slette rolle',
+        category: BrachCategory.NONE,
+        hidden: true,
+        accessType: Access.NOT_AUTHENTICATED,
+        companyRoles: [Roles.ADMIN],
+      },
+      {
         id: 'company.employees',
         href: '/company/employees',
         label: 'Ansatte',
@@ -110,6 +128,13 @@ export const ROUTE_TREE: RouteBranch[] = [
         accessType: Access.NOT_AUTHENTICATED,
         companyRoles: [Roles.ADMIN],
         children: [
+          {
+            id: 'company.employees.invite',
+            href: '/company/employees/invite',
+            label: 'Inviter',
+            category: BrachCategory.COMPANY,
+            accessType: Access.NOT_AUTHENTICATED,
+          },
           {
             id: 'company.employees.overview',
             href: '/company/employees/overview',

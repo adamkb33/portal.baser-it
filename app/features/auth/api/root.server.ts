@@ -1,12 +1,6 @@
 import { redirect, type LoaderFunctionArgs } from 'react-router';
 import { accessTokenCookie, companyContextCookie, refreshTokenCookie } from './cookies.server';
-import {
-  BrachCategory,
-  createNavigation,
-  type BranchGroup,
-  type RouteBranch,
-  type UserNavigation,
-} from '~/lib/nav/route-tree';
+import { createNavigation, type UserNavigation } from '~/lib/route-tree';
 import { toAuthTokens } from '../token/token-utils';
 import { AuthControllerService, createIdentityClient, type AuthenticatedUserPayload } from '~/api/clients/identity';
 import { ENV } from '~/api/config/env';
@@ -76,7 +70,7 @@ export async function rootLoader({ request }: LoaderFunctionArgs) {
     const userHasCompanyRoles = authPayload?.companyRoles.length ?? 0 > 0;
 
     if (!companyCookie && userHasCompanyRoles) {
-      if (url.pathname === '/companies') {
+      if (url.pathname === '/company-context') {
         return data(
           {
             user: authPayload,
@@ -88,7 +82,7 @@ export async function rootLoader({ request }: LoaderFunctionArgs) {
         );
       }
 
-      return redirect('/companies', { headers });
+      return redirect('/company-context', { headers });
     }
 
     const identityClient = createIdentityClient({ baseUrl: ENV.IDENTITY_BASE_URL, token: tokens.accessToken });

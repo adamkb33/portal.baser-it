@@ -7,5 +7,6 @@ export type ApiResponseAuthenticationTokenDto = ApiResponse<AuthenticationTokenD
 export type ApiResponseCompanySummaryDto = ApiResponse<CompanySummaryDto>;
 export type ApiResponseInvitedUserTokenDto = ApiResponse<InvitedUserTokenDto>;
 export type ApiResponseListCompanySummaryDto = ApiResponse<ListCompanySummaryDto>;
+export type ApiResponseListCompanyUserDto = ApiResponse<ListCompanyUserDto>;
 export type ApiResponseString = ApiResponse<string>;
 export type ApiResponseUnit = ApiResponse<void>;

@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { tokenValidator, passwordValidator } from '~/lib/form-validators';
+import { passwordValidator } from '~/lib/form-validators';
 
 export const acceptInviteSchema = z
   .object({
-    inviteToken: tokenValidator,
+    inviteToken: z.string().min(1, { message: 'Kode er påkrevd' }),
     givenName: z.string().trim().min(1, { message: 'Fornavn er påkrevd' }),
     familyName: z.string().trim().min(1, { message: 'Etternavn er påkrevd' }),
     password: passwordValidator,

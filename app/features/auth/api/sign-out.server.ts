@@ -22,6 +22,7 @@ export async function signOut(userId: number): Promise<void> {
       throw new SignOutRequestError(response.message || 'Unable to sign out');
     }
   } catch (error) {
+    console.error(JSON.stringify(error, null, 2));
     if (error instanceof ApiClientError) {
       throw new SignOutRequestError(error.message, { cause: error });
     }

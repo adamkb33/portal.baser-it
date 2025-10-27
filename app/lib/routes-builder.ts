@@ -1,5 +1,5 @@
 import type { RouteConfigEntry } from '@react-router/dev/routes';
-import type { RouteBranch } from './nav/route-tree';
+import type { RouteBranch } from './route-tree';
 
 export const buildRoutesNested = (routeTree: RouteBranch[]): RouteConfigEntry[] => {
   const routes: RouteConfigEntry[] = [];

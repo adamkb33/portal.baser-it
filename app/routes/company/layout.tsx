@@ -3,7 +3,7 @@ import { NavBreadcrumbs } from '~/components/layout/nav-breadcrums';
 import { NavLink, type NavItem } from '~/components/layout/nav-link';
 import { BreadcrumbList } from '~/components/ui/breadcrumb';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
-import { Access, ROUTE_TREE, type RouteBranch } from '~/lib/nav/route-tree';
+import { Access, ROUTE_TREE, type RouteBranch } from '~/lib/route-tree';
 import type { RootOutletContext } from '~/root';
 
 export type CompanyLoaderData = { userBranches: RouteBranch[] | undefined };
@@ -17,12 +17,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const roleAccessBranches = ROUTE_TREE.filter((branch) => branch.accessType === Access.ROLE);
   const userRoles = authPayload.companyRoles.flatMap((cr) => cr.roles);
-  const userBranches = roleAccessBranches.filter((branch) =>
-    branch?.companyRoles?.some((role) => userRoles.includes(role)),
-  );
+
+  const userBranches = roleAccessBranches
+    .filter((branch) => branch?.companyRoles?.some((role) => userRoles.includes(role)))
+    .filter((branch) => branch.hidden !== true)
+    .map(filterHiddenBranches);
 
   return data({ userBranches }, { status: 200 });
 }
+
+const filterHiddenBranches = (branch: RouteBranch): RouteBranch => {
+  const filteredBranch = { ...branch };
+
+  if (branch.children) {
+    filteredBranch.children = branch.children.filter((child) => child.hidden !== true).map(filterHiddenBranches);
+  }
+
+  return filteredBranch;
+};
 
 export type RenderRouteBranchProps = {
   routeBanch: RouteBranch;

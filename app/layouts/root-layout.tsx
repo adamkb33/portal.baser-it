@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 
 import { Navbar } from '~/components/layout/navbar';
-import { type UserNavigation } from '~/lib/nav/route-tree';
+import { type UserNavigation } from '~/lib/route-tree';
 import type { CompanySummaryDto } from '~/api/clients/types';
 
 interface RootLayoutProps {
