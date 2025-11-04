@@ -7,7 +7,7 @@ import * as InternalUserControllerService from './services/InternalUserControlle
 import * as SystemAdminCompanyControllerService from './services/SystemAdminCompanyControllerService';
 import * as SystemAdminUserControllerService from './services/SystemAdminUserControllerService';
 
-export type IdentityClient = {
+export type BaseClient = {
   ActuatorService: typeof ActuatorService;
   AdminCompanyControllerService: typeof AdminCompanyControllerService;
   AuthControllerService: typeof AuthControllerService;
@@ -16,7 +16,7 @@ export type IdentityClient = {
   SystemAdminUserControllerService: typeof SystemAdminUserControllerService
 };
 
-export function createIdentityClient(opts: { baseUrl: string; token?: string }): IdentityClient {
+export function createBaseClient(opts: { baseUrl: string; token?: string }): BaseClient {
   setBaseUrl(opts.baseUrl);
   setAuth(opts.token);
   return {

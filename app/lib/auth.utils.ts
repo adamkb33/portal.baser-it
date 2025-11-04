@@ -1,4 +1,4 @@
-import type { AuthenticatedUserPayload } from 'tmp/openapi/gen/identity';
+import type { AuthenticatedUserPayload } from 'tmp/openapi/gen/base';
 import { accessTokenCookie, companyContextCookie } from '~/features/auth/api/cookies.server';
 import { toAuthPayload } from '~/features/auth/token/token-payload';
 

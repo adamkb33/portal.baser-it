@@ -14,7 +14,7 @@
       "@/*": ["./app/*"],
       "@types": ["app/api/clients/types/index.ts"],
       "@http": ["app/api/clients/http/index.ts"],
-      "@identity/*": ["app/api/clients/identity/*"],
+      "@base/*": ["app/api/clients/base/*"],
       "@booking/*": ["app/api/clients/booking/*"]
     },
     "esModuleInterop": true,

@@ -15,7 +15,7 @@ import './app.css';
 import { RootLayout } from './layouts/root-layout';
 import { rootLoader, type RootLoaderLoaderData } from './features/auth/api/root.server';
 import type { RouteBranch, UserNavigation } from './lib/route-tree';
-import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
+import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 
 export const loader = rootLoader;
 

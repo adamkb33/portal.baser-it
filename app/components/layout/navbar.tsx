@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { NavLink } from './nav-link';
 import type { BrachCategory, BranchGroup } from '~/lib/route-tree';
-import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
+import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 import CompanyHeader from './company-header';
 import { User } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';

@@ -57,12 +57,17 @@ export interface CompanySummaryDto {
 }
 
 export interface CompanyUserDto {
+    userId: number;
     email: string;
     roles: Roles[];
 }
 
 export interface CreateCompanyDto {
     orgNumber: string;
+}
+
+export interface EditCompanyUserDto {
+    roles: Roles[];
 }
 
 export interface ForgotPasswordDto {

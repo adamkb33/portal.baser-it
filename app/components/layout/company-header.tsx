@@ -1,6 +1,6 @@
 import { Building2 } from 'lucide-react';
 import { Link } from 'react-router';
-import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
+import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 import { ROUTES_MAP } from '~/lib/route-tree';
 
 type CompanyHeaderProps = {
@@ -15,7 +15,7 @@ export default function CompanyHeader({ company }: CompanyHeaderProps) {
       <div className="flex items-center gap-2 pl-4 md:pl-6 border-l">
         {/* Mobile: Just the first letter */}
         <div className="md:hidden flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-slate-700 font-semibold text-sm shrink-0">
-          {company.name.charAt(0).toUpperCase()}
+          {company.name?.charAt(0).toUpperCase()}
         </div>
 
         {/* Desktop: Full info with icon */}

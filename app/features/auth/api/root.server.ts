@@ -2,12 +2,12 @@ import { redirect, type LoaderFunctionArgs } from 'react-router';
 import { accessTokenCookie, companyContextCookie, refreshTokenCookie } from './cookies.server';
 import { createNavigation, type UserNavigation } from '~/lib/route-tree';
 import { toAuthTokens } from '../token/token-utils';
-import { AuthControllerService, createIdentityClient, type AuthenticatedUserPayload } from '~/api/clients/identity';
+import { AuthControllerService, createBaseClient, type AuthenticatedUserPayload } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
 import { OpenAPI } from '~/api/clients/http';
 import { toAuthPayload } from '../token/token-payload';
 import { data } from 'react-router';
-import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
+import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 
 export type RootLoaderLoaderData = {
   user?: AuthenticatedUserPayload | null;
@@ -37,7 +37,7 @@ export async function rootLoader({ request }: LoaderFunctionArgs) {
   }
 
   try {
-    OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
+    OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
 
     const response = await AuthControllerService.refresh({
       requestBody: { refreshToken },
@@ -85,8 +85,8 @@ export async function rootLoader({ request }: LoaderFunctionArgs) {
       return redirect('/company-context', { headers });
     }
 
-    const identityClient = createIdentityClient({ baseUrl: ENV.IDENTITY_BASE_URL, token: tokens.accessToken });
-    const companySummary = await identityClient.AdminCompanyControllerService.AdminCompanyControllerService.getCompany({
+    const baseClient = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: tokens.accessToken });
+    const companySummary = await baseClient.AdminCompanyControllerService.AdminCompanyControllerService.getCompany({
       companyId: companyCookie,
     });
 

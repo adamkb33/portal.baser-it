@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
+import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 
 type ComapnyCardV2Props = {
   company?: CompanySummaryDto | null;

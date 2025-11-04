@@ -1,18 +1,7 @@
-import React from 'react';
-import {
-  data,
-  Form,
-  useLoaderData,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  useFetcher,
-  redirect,
-} from 'react-router';
-import { createIdentityClient, type CompanySummaryDto } from '~/api/clients/identity';
+import { data, Form, useLoaderData, type LoaderFunctionArgs, type ActionFunctionArgs, redirect } from 'react-router';
+import { createBaseClient, type CompanySummaryDto } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
 import { CompanyCard } from '~/components/cards/company-summary.card';
-import { ComapnyCardV2 } from '~/components/cards/company-summary.cardv2';
-import { Button } from '~/components/ui/button';
 import { accessTokenCookie, companyContextCookie } from '~/features/auth/api/cookies.server';
 
 export type LoaderResponse = {
@@ -23,12 +12,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const cookieHeader = request.headers.get('Cookie');
   const accessToken = await accessTokenCookie.parse(cookieHeader);
 
-  const identityApi = createIdentityClient({
-    baseUrl: ENV.IDENTITY_BASE_URL,
+  const baseApi = createBaseClient({
+    baseUrl: ENV.BASE_SERVICE_BASE_URL,
     token: accessToken,
   });
 
-  const response = await identityApi.AuthControllerService.AuthControllerService.getCompanyContexts();
+  const response = await baseApi.AuthControllerService.AuthControllerService.getCompanyContexts();
 
   return data<LoaderResponse>({
     companyContexts: response.data,

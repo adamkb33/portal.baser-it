@@ -1,5 +1,5 @@
-import { AuthControllerService } from '~/api/clients/identity';
-import { OpenAPI } from '~/api/clients/identity/OpenAPI';
+import { AuthControllerService } from '~/api/clients/base';
+import { OpenAPI } from '~/api/clients/base/OpenAPI';
 import { ENV } from '~/api/config/env';
 import { toAuthTokens } from '../token/token-utils';
 import type { ApiClientError } from '~/api/clients/http';
@@ -8,7 +8,7 @@ import { redirect, type ActionFunctionArgs } from 'react-router';
 import type { AcceptInviteSchema } from '../schemas/accept-invite.schema';
 
 export async function acceptInvite({ request }: ActionFunctionArgs) {
-  OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
+  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
 
   const formData = await request.formData();
   const payload = Object.fromEntries(formData) as unknown as AcceptInviteSchema;

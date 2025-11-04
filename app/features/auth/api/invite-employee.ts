@@ -1,7 +1,6 @@
 // ~/features/company/api/invite-employee.server.ts
 import { redirect, type ActionFunctionArgs } from 'react-router';
-import type { CompanySummaryDto } from 'tmp/openapi/gen/identity';
-import { createIdentityClient, type InviteEmployeeDto } from '~/api/clients/identity';
+import { createBaseClient, type InviteEmployeeDto } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
 import { accessTokenCookie, companyContextCookie } from '~/features/auth/api/cookies.server';
 import type { ApiClientError } from '~/api/clients/http';
@@ -17,7 +16,6 @@ export async function inviteEmployee({ request }: ActionFunctionArgs) {
 
   const formData = await request.formData();
   const payload = Object.fromEntries(formData) as Record<string, string>;
-  console.log(formData, companyContext);
 
   let roles;
   try {
@@ -41,12 +39,12 @@ export async function inviteEmployee({ request }: ActionFunctionArgs) {
   };
 
   try {
-    const identityApi = createIdentityClient({
-      baseUrl: ENV.IDENTITY_BASE_URL,
+    const baseApi = createBaseClient({
+      baseUrl: ENV.BASE_SERVICE_BASE_URL,
       token: accessToken,
     });
 
-    const response = await identityApi.AdminCompanyControllerService.AdminCompanyControllerService.inviteEmployee({
+    const response = await baseApi.AdminCompanyControllerService.AdminCompanyControllerService.inviteEmployee({
       companyId: companyContext,
       requestBody: inviteData,
     });

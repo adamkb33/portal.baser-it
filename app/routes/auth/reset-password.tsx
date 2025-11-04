@@ -6,7 +6,7 @@ import type { ResetPasswordSchema } from '~/features/auth/schemas/reset-password
 import { decodeResetPasswordToken } from '~/features/auth/token/reset-password-token';
 import type { Route } from '../+types/home';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { AuthControllerService } from '~/api/clients/identity';
+import { AuthControllerService } from '~/api/clients/base';
 import type { ApiClientError } from '~/api/clients/http';
 import { accessTokenCookie, refreshTokenCookie } from '~/features/auth/api/cookies.server';
 import { toAuthTokens } from '~/features/auth/token/token-utils';

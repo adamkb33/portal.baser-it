@@ -1,5 +1,5 @@
-import { AuthControllerService } from '~/api/clients/identity';
-import { OpenAPI } from '~/api/clients/identity/OpenAPI';
+import { AuthControllerService } from '~/api/clients/base';
+import { OpenAPI } from '~/api/clients/base/OpenAPI';
 import { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 
@@ -11,7 +11,7 @@ export class SignOutRequestError extends Error {
 }
 
 export async function signOut(userId: number): Promise<void> {
-  OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
+  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
 
   try {
     const response = await AuthControllerService.signOut({

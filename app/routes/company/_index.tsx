@@ -1,3 +1,9 @@
 export default function CompanyIndex() {
-  return <div>CompanyIndex</div>;
+  return (
+    <>
+      <div>Hvordan skal det se ut her?</div>
+      <div>Oppsummering på selskapet</div>
+      <div>Hvordan skal det se ut her?</div>
+    </>
+  );
 }

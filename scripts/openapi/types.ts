@@ -1,6 +1,6 @@
 export type OAS = any;
 
-export type ApiName = 'identity' | 'booking';
+export type ApiName = 'base' | 'booking';
 
 export type MigrationMap = {
   merged: string[];
@@ -8,5 +8,5 @@ export type MigrationMap = {
   aliases: Array<{ alias: string; target: string }>;
 };
 
-export type SpecPack = { identitySpec: OAS; bookingSpec: OAS };
-export type GenPack = { identityOut: string; bookingOut: string };
+export type SpecPack = { baseSpec: OAS; bookingSpec: OAS };
+export type GenPack = { baseOut: string; bookingOut: string };

@@ -37,7 +37,7 @@ export function synthesizeTypesAndZod(specs: SpecPack, gens: GenPack, migration:
 
   const genModels: Array<{ api: ApiName; file: string; name: string; src: string; normHash: string }> = [];
   for (const [api, root] of [
-    ['identity', gens.identityOut],
+    ['base', gens.baseOut],
     ['booking', gens.bookingOut],
   ] as Array<[ApiName, string]>) {
     const d = join(root, 'models');
@@ -73,7 +73,7 @@ export function synthesizeTypesAndZod(specs: SpecPack, gens: GenPack, migration:
       identicalHashes.set(files[0].normHash, name);
     } else {
       for (const f of files) {
-        const ns = `${f.api === 'identity' ? 'Identity' : 'Booking'}_${name}`;
+        const ns = `${f.api === 'base' ? 'Base' : 'Booking'}_${name}`;
         writeModel(ns, f);
         migration.renamed.push({ from: name, to: ns, reason: 'collision' });
       }
@@ -162,7 +162,7 @@ function collectEnumsFromSpecs(specs: SpecPack) {
   };
 
   for (const [apiName, spec] of [
-    ['identity', specs.identitySpec],
+    ['base', specs.baseSpec],
     ['booking', specs.bookingSpec],
   ] as Array<[ApiName, OAS]>) {
     const schemas = spec?.components?.schemas || {};

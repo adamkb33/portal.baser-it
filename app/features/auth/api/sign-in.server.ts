@@ -1,5 +1,5 @@
-import { AuthControllerService } from '~/api/clients/identity';
-import { OpenAPI } from '~/api/clients/identity/OpenAPI';
+import { AuthControllerService } from '~/api/clients/base';
+import { OpenAPI } from '~/api/clients/base/OpenAPI';
 import { ENV } from '~/api/config/env';
 import { type SignInSchema } from '../schemas/sign-in.schema';
 import { toAuthTokens } from '../token/token-utils';
@@ -8,7 +8,7 @@ import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
 import { redirect, type ActionFunctionArgs } from 'react-router';
 
 export async function signIn({ request }: ActionFunctionArgs) {
-  OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
+  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
 
   const formData = await request.formData();
   const payload = Object.fromEntries(formData) as unknown as SignInSchema;

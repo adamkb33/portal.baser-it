@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useFetcher, Link, type ActionFunctionArgs, redirect } from 'react-router';
 import type { ApiClientError } from '~/api/clients/http';
-import { AuthControllerService } from '~/api/clients/identity';
+import { AuthControllerService } from '~/api/clients/base';
 import { ForgotPasswordForm } from '~/components/forms/forgot-password.form';
 
 import type { ForgotPasswordSchema } from '~/features/auth/schemas/forgot-password.schema';

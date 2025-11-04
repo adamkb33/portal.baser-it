@@ -1,5 +1,5 @@
-import { AuthControllerService } from '~/api/clients/identity';
-import { OpenAPI } from '~/api/clients/identity/OpenAPI';
+import { AuthControllerService } from '~/api/clients/base';
+import { OpenAPI } from '~/api/clients/base/OpenAPI';
 import { ENV } from '~/api/config/env';
 import { type AuthTokens } from '../token/types';
 import { toAuthTokens } from '../token/token-utils';
@@ -13,7 +13,7 @@ export class RefreshTokenError extends Error {
 }
 
 export async function refreshTokens(refreshToken: string): Promise<AuthTokens> {
-  OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
+  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
 
   try {
     const response = await AuthControllerService.refresh({

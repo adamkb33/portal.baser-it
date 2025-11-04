@@ -1,6 +1,6 @@
 import { Link, redirect, useFetcher, type LoaderFunctionArgs } from 'react-router';
 import { ApiClientError, OpenAPI } from '~/api/clients/http';
-import { AuthControllerService } from '~/api/clients/identity';
+import { AuthControllerService } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
 import { accessTokenCookie, refreshTokenCookie } from '~/features/auth/api/cookies.server';
 import { toAuthPayload } from '~/features/auth/token/token-payload';
@@ -19,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/auth/sign-in');
   }
 
-  OpenAPI.BASE = ENV.IDENTITY_BASE_URL;
+  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
   try {
     const authPayload = toAuthPayload(accessToken);
     if (!authPayload) {

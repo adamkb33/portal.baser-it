@@ -3,15 +3,61 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ApiResponseCompanySummaryDto } from '@types';
+import type { ApiResponseCompanyUserDto } from '@types';
 import type { ApiResponseInvitedUserTokenDto } from '@types';
 import type { ApiResponseListCompanyUserDto } from '@types';
 import type { ApiResponseUnit } from '@types';
+import type { EditCompanyUserDto } from '@types';
 import type { InviteEmployeeDto } from '@types';
 import type { RequestCompanyRoleDeleteDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
 export class AdminCompanyControllerService {
+    /**
+     * @returns ApiResponseCompanyUserDto OK
+     * @throws ApiError
+     */
+    public static getCompanyUser({
+        companyId,
+        userId,
+    }: {
+        companyId: number,
+        userId: number,
+    }): CancelablePromise<ApiResponseCompanyUserDto> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/admin/companies/user',
+            query: {
+                'companyId': companyId,
+                'userId': userId,
+            },
+        });
+    }
+    /**
+     * @returns ApiResponseUnit OK
+     * @throws ApiError
+     */
+    public static editCompanyUser({
+        companyId,
+        userId,
+        requestBody,
+    }: {
+        companyId: number,
+        userId: number,
+        requestBody: EditCompanyUserDto,
+    }): CancelablePromise<ApiResponseUnit> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/admin/companies/user',
+            query: {
+                'companyId': companyId,
+                'userId': userId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
     /**
      * @returns ApiResponseCompanySummaryDto OK
      * @throws ApiError

@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink } from 'react-router';
 import { Circle } from 'lucide-react';
 import type { RouteBranch } from '~/lib/route-tree';

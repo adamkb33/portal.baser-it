@@ -1,4 +1,4 @@
-import type { AuthenticatedUserPayload } from '@/api/clients/identity';
+import type { AuthenticatedUserPayload } from '@/api/clients/base';
 import { Roles, UserRole } from '../api/clients/types';
 
 export enum Access {
@@ -141,6 +141,16 @@ export const ROUTE_TREE: RouteBranch[] = [
             label: 'Oversikt',
             category: BrachCategory.COMPANY,
             accessType: Access.NOT_AUTHENTICATED,
+            children: [
+              {
+                id: 'company.employees.overview.edit',
+                href: '/company/employees/overview/edit',
+                label: 'Endre',
+                category: BrachCategory.COMPANY,
+                hidden: true,
+                accessType: Access.NOT_AUTHENTICATED,
+              },
+            ],
           },
           {
             id: 'company.employees.settings',
@@ -157,7 +167,14 @@ export const ROUTE_TREE: RouteBranch[] = [
 
 export const ROUTES_MAP: Record<string, RouteBranch> = ROUTE_TREE.reduce(
   (acc, branch) => {
-    acc[branch.id] = branch;
+    const flattenBranch = (b: RouteBranch): void => {
+      acc[b.id] = b;
+      if (b.children) {
+        b.children.forEach(flattenBranch);
+      }
+    };
+
+    flattenBranch(branch);
     return acc;
   },
   {} as Record<string, RouteBranch>,
