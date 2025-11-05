@@ -3,6 +3,7 @@ import { createBaseClient, type CompanySummaryDto } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
 import { CompanyCard } from '~/components/cards/company-summary.card';
 import { accessTokenCookie, companyContextCookie } from '~/features/auth/api/cookies.server';
+import type { CompanyContextSession } from '~/lib/auth.utils';
 
 export type LoaderResponse = {
   companyContexts?: CompanySummaryDto[];
@@ -27,8 +28,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const companyId = formData.get('companyId');
+  const orgNumber = formData.get('orgNumber');
 
-  const companyCookie = await companyContextCookie.serialize(companyId, {
+  if (!orgNumber || !companyId) {
+    return { error: 'Ikke valgt' };
+  }
+
+  const companyContext: CompanyContextSession = {
+    companyId: parseInt(companyId.toString()),
+    orgNumber: orgNumber.toString(),
+  };
+
+  const companyCookie = await companyContextCookie.serialize(companyContext, {
     expires: new Date(Date.now() + 1209600 * 1000),
   });
 
@@ -56,6 +67,7 @@ export default function CompanyContextPage() {
       {companies.map((company) => (
         <Form key={company.id} method="post">
           <input type="hidden" name="companyId" value={company.id} />
+          <input type="hidden" name="orgNumber" value={company.orgNumber} />
           <CompanyCard company={company} />
         </Form>
       ))}

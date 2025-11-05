@@ -1,5 +1,5 @@
 import { redirect, type LoaderFunctionArgs } from 'react-router';
-import { accessTokenCookie, companyContextCookie, refreshTokenCookie } from './cookies.server';
+import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
 import { createNavigation, type UserNavigation } from '~/lib/route-tree';
 import { toAuthTokens } from '../token/token-utils';
 import { AuthControllerService, createBaseClient, type AuthenticatedUserPayload } from '~/api/clients/base';
@@ -8,6 +8,7 @@ import { OpenAPI } from '~/api/clients/http';
 import { toAuthPayload } from '../token/token-payload';
 import { data } from 'react-router';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
+import { getCompanyContextSession } from '~/lib/auth.utils';
 
 export type RootLoaderLoaderData = {
   user?: AuthenticatedUserPayload | null;
@@ -50,7 +51,7 @@ export async function rootLoader({ request }: LoaderFunctionArgs) {
     const tokens = toAuthTokens(response.data);
     const authPayload = toAuthPayload(tokens.accessToken);
 
-    const companyCookie = await companyContextCookie.parse(cookieHeader);
+    const companyCookie = await getCompanyContextSession(request);
 
     const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
       expires: new Date(tokens.accessTokenExpiresAt * 1000),
@@ -86,14 +87,18 @@ export async function rootLoader({ request }: LoaderFunctionArgs) {
     }
 
     const baseClient = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: tokens.accessToken });
-    const companySummary = await baseClient.AdminCompanyControllerService.AdminCompanyControllerService.getCompany({
-      companyId: companyCookie,
-    });
+
+    var companySummary = null;
+    if (companyCookie) {
+      companySummary = await baseClient.AdminCompanyControllerService.AdminCompanyControllerService.getCompany({
+        companyId: companyCookie?.companyId,
+      });
+    }
 
     const body: RootLoaderLoaderData = {
       user: authPayload,
       userNavigation: navigation,
-      companyContext: companySummary.data,
+      companyContext: companySummary?.data,
     };
 
     return data(body, {
