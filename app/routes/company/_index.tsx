@@ -1,7 +1,13 @@
 import axios from 'axios';
 import { data, redirect, useLoaderData, useOutletContext, type LoaderFunctionArgs } from 'react-router';
 import type { BrregEnhetResponse } from '~/api/brreg/types';
+import { AccountingSection } from '~/components/company/brreg/accounting-section';
+import { AddressSection } from '~/components/company/brreg/address-section';
+import { CompanyInfoSection } from '~/components/company/brreg/company-info-section';
+import { CompanyStatusSection } from '~/components/company/brreg/company-status-section';
+import { RegistrationsSection } from '~/components/company/brreg/registration-section';
 import { CompanyIndexView } from '~/components/company/company-index-view';
+import { ProductAccessSection } from '~/components/company/company-products-section';
 import { getCompanyContextSession } from '~/lib/auth.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import type { RootOutletContext } from '~/root';
@@ -33,15 +39,32 @@ export default function CompanyIndex() {
   console.log(companyContext);
 
   return (
-    <>
-      <CompanyIndexView brregData={loaderData.brregResponse} />
-      <div>Hvordan skal det se ut her?</div>
-      <div>Oppsummering på selskapet</div>
-      <div>bregg informasjon</div>
-      <div>ting som mangler for regnskap</div>
-      <div>Hvor mange ansatte selskapet har</div>
-      <div>Hvilke produkter de har tilgang til: BOOKING?</div>
+    <div className="flex flex-col gap-2">
+      <CompanyStatusSection brregData={loaderData.brregResponse} />
+
+      <div className="flex justify-between gap-2">
+        <CompanyInfoSection brregData={loaderData.brregResponse} companyContext={companyContext} className="flex-1" />
+        <RegistrationsSection brregData={loaderData.brregResponse} className="flex-1" />
+      </div>
+
+      <div className="flex gap-2">
+        <AddressSection
+          title="Forretningsadresse"
+          brregAddress={loaderData.brregResponse?.forretningsadresse}
+          fallbackAddress={companyContext?.businessAddress}
+          className="max-w-1/2 flex-1"
+        />
+        <AccountingSection brregData={loaderData.brregResponse} className="max-w-1/2 flex-1" />
+      </div>
+      <div className="border border-red-500">
+        <div>Hvordan skal det se ut her?</div>
+        <div>Oppsummering på selskapet</div>
+        <div>bregg informasjon</div>
+        <div>ting som mangler for regnskap</div>
+        <div>Hvor mange ansatte selskapet har</div>
+        <div>Hvilke produkter de har tilgang til: BOOKING?</div>
+      </div>
       <div></div>
-    </>
+    </div>
   );
 }

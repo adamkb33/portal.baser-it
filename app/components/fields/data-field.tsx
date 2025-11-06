@@ -8,7 +8,7 @@ interface DataFieldProps {
 export function DataField({ label, value, fallback = 'Ikke oppgitt', className = '' }: DataFieldProps) {
   return (
     <div className={className}>
-      <dt className="text-sm font-medium text-gray-600">{label}</dt>
+      <dt className="text-sm font-bold text-gray-600">{label}</dt>
       <dd className="mt-1 text-gray-900">{value ?? fallback}</dd>
     </div>
   );

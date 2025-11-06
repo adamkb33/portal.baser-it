@@ -5,15 +5,16 @@ import { DataField } from '../../fields/data-field';
 
 interface RegistrationsSectionProps {
   brregData?: BrregEnhetResponse;
+  className?: string;
 }
 
-export function RegistrationsSection({ brregData }: RegistrationsSectionProps) {
+export function RegistrationsSection({ brregData, className }: RegistrationsSectionProps) {
   if (!brregData) {
     return null;
   }
 
   return (
-    <InfoCard title="Registreringer">
+    <InfoCard title="Registreringer" className={className}>
       <dl className="space-y-3">
         <StatusBadge label="MVA-registeret" isActive={brregData.registrertIMvaregisteret ?? false} />
         <StatusBadge label="Foretaksregisteret" isActive={brregData.registrertIForetaksregisteret ?? false} />

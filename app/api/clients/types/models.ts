@@ -1,7 +1,7 @@
 // Models
 import type { Roles, UserRole } from './enums';
 
-export interface AcceptInviteDto {
+export interface AcceptNewInviteDto {
     givenName: string;
     familyName: string;
     password: string;
@@ -70,19 +70,21 @@ export interface EditCompanyUserDto {
     roles: Roles[];
 }
 
+export interface ExistingUserAcceptInviteDto {
+    hasAccepted: boolean;
+}
+
 export interface ForgotPasswordDto {
     email: string;
 }
 
-export interface InvitedUserTokenDto {
-    inviteToken: string;
-}
-
-export interface InviteEmployeeDto {
-    givenName: string;
-    familyName: string;
+export interface InviteCompanyUserDto {
     email: string;
     roles: Roles[];
+}
+
+export interface InvitedUserTokenDto {
+    inviteToken: string;
 }
 
 export interface InviteUserDto {

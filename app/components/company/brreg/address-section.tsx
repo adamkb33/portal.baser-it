@@ -6,15 +6,16 @@ interface AddressSectionProps {
   title: string;
   brregAddress?: BrregEnhetResponse['forretningsadresse'] | BrregEnhetResponse['postadresse'];
   fallbackAddress?: CompanySummaryDto['businessAddress'] | CompanySummaryDto['postalAddress'];
+  className?: string;
 }
 
-export function AddressSection({ title, brregAddress, fallbackAddress }: AddressSectionProps) {
+export function AddressSection({ title, brregAddress, fallbackAddress, className }: AddressSectionProps) {
   if (!brregAddress && !fallbackAddress) {
     return null;
   }
 
   return (
-    <InfoCard title={title}>
+    <InfoCard title={title} className={className}>
       <address className="not-italic text-gray-900">
         {brregAddress?.adresse?.map((line, idx) => <div key={idx}>{line}</div>) || (
           <div>{fallbackAddress?.addressLines}</div>

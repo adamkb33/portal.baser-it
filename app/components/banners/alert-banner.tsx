@@ -44,7 +44,7 @@ export function AlertBanner({ title, description, variant = 'info', className = 
         className,
       )}
     >
-      <Icon className="mt-[2px] h-3.5 w-3.5 shrink-0" />
+      <Icon className="h-3.5 w-3.5 shrink-0" />
       <div>
         <AlertTitle className="font-medium text-sm">{title}</AlertTitle>
         {description && <AlertDescription className="text-[11px] text-gray-700 mt-0.5">{description}</AlertDescription>}

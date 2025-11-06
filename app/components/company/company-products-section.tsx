@@ -8,16 +8,17 @@ interface Product {
 
 interface ProductAccessSectionProps {
   products?: Product[];
+  className?: string;
 }
 
-export function ProductAccessSection({ products }: ProductAccessSectionProps) {
+export function ProductAccessSection({ products, className }: ProductAccessSectionProps) {
   // Default products if none provided
   const defaultProducts: Product[] = [{ name: 'BOOKING', isActive: true }];
 
   const displayProducts = products ?? defaultProducts;
 
   return (
-    <InfoCard title="Produkttilgang" className="md:col-span-2">
+    <InfoCard title="Produkttilgang" className={className}>
       <div className="space-y-2">
         {displayProducts.map((product) => (
           <div key={product.name} className="flex items-center justify-between py-2 border-b last:border-b-0">

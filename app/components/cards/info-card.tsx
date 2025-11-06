@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 interface InfoCardProps {
   title: string;
@@ -7,9 +8,9 @@ interface InfoCardProps {
   className?: string;
 }
 
-export function InfoCard({ title, children, className = 'rounded-md' }: InfoCardProps) {
+export function InfoCard({ title, children, className }: InfoCardProps) {
   return (
-    <Card className={className}>
+    <Card className={cn('rounded-md', className)}>
       <CardHeader>
         <CardTitle className="text-md">{title}</CardTitle>
       </CardHeader>

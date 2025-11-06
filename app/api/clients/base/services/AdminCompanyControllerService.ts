@@ -8,7 +8,7 @@ import type { ApiResponseInvitedUserTokenDto } from '@types';
 import type { ApiResponseListCompanyUserDto } from '@types';
 import type { ApiResponseUnit } from '@types';
 import type { EditCompanyUserDto } from '@types';
-import type { InviteEmployeeDto } from '@types';
+import type { InviteCompanyUserDto } from '@types';
 import type { RequestCompanyRoleDeleteDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
@@ -84,7 +84,7 @@ export class AdminCompanyControllerService {
         requestBody,
     }: {
         companyId: number,
-        requestBody: InviteEmployeeDto,
+        requestBody: InviteCompanyUserDto,
     }): CancelablePromise<ApiResponseInvitedUserTokenDto> {
         return __request(OpenAPI, {
             method: 'POST',

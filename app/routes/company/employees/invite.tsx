@@ -1,6 +1,6 @@
 // ~/routes/company/employees/invite.tsx
 import * as React from 'react';
-import { Link, useFetcher } from 'react-router';
+import { useFetcher } from 'react-router';
 
 import { InviteEmployeeForm } from '~/components/forms/invite-employee.form';
 import { inviteEmployee } from '~/features/auth/api/invite-employee';
@@ -16,8 +16,6 @@ export default function CompanyEmployeesInvite() {
   const handleSubmit = React.useCallback(
     (values: InviteEmployeeSchema) => {
       const payload = new FormData();
-      payload.set('givenName', values.givenName);
-      payload.set('familyName', values.familyName);
       payload.set('email', values.email);
       payload.set('roles', JSON.stringify(values.roles));
 
@@ -48,12 +46,6 @@ export default function CompanyEmployeesInvite() {
       ) : null}
 
       <InviteEmployeeForm onSubmit={handleSubmit} isSubmitting={isSubmitting} initialValues={actionData?.values} />
-
-      <div className="text-center text-sm">
-        <Link to="/company/employees" className="text-primary hover:underline">
-          Tilbake til medarbeidere
-        </Link>
-      </div>
     </div>
   );
 }

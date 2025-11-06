@@ -2,11 +2,11 @@ import type { BrregEnhetResponse } from '~/api/brreg/types';
 import { AlertBanner } from '../../banners/alert-banner';
 
 interface CompanyStatusSectionProps {
-  brregData: BrregEnhetResponse;
+  brregData: BrregEnhetResponse | undefined;
 }
 
 export function CompanyStatusSection({ brregData }: CompanyStatusSectionProps) {
-  const hasAlerts = brregData.konkurs || brregData.underAvvikling;
+  const hasAlerts = brregData?.konkurs || brregData?.underAvvikling;
 
   if (!hasAlerts) {
     return null;

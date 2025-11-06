@@ -1,6 +1,6 @@
 // ~/features/company/api/invite-employee.server.ts
 import { redirect, type ActionFunctionArgs } from 'react-router';
-import { createBaseClient, type InviteEmployeeDto } from '~/api/clients/base';
+import { createBaseClient, type InviteCompanyUserDto } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
 import { accessTokenCookie } from '~/features/auth/api/cookies.server';
 import type { ApiClientError } from '~/api/clients/http';
@@ -25,16 +25,12 @@ export async function inviteEmployee({ request }: ActionFunctionArgs) {
     return {
       error: 'Ugyldig rolledata',
       values: {
-        givenName: payload.givenName,
-        familyName: payload.familyName,
         email: payload.email,
       },
     };
   }
 
-  const inviteData: InviteEmployeeDto = {
-    givenName: payload.givenName,
-    familyName: payload.familyName,
+  const inviteData: InviteCompanyUserDto = {
     email: payload.email,
     roles,
   };
