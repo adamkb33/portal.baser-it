@@ -1,4 +1,3 @@
-import { BackgroundBeams } from '~/components/backgrounds/background-beams';
 import type { Route } from '../+types/root';
 
 export function meta({}: Route.MetaArgs) {
@@ -8,9 +7,7 @@ export function meta({}: Route.MetaArgs) {
 export default function Home() {
   return (
     <>
-      <div className="bg-white border">
-        <BackgroundBeams />
-      </div>
+      <div className="bg-white border"></div>
     </>
   );
 }
