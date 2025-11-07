@@ -5,9 +5,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return (
-    <>
-      <div className="bg-white border"></div>
-    </>
-  );
+  return <></>;
 }

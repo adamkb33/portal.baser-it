@@ -33,10 +33,10 @@ export const getUserSession = async (request: Request): Promise<UserSesion> => {
   const cookieHeader = request.headers.get('Cookie');
   const accessToken = await accessTokenCookie.parse(cookieHeader);
   const authPayload = accessToken ? toAuthPayload(accessToken) : null;
-  const companyContext = await companyContextCookie.parse(cookieHeader);
+  const companyContext: CompanyContextSession = await companyContextCookie.parse(cookieHeader);
   return {
     accesstoken: accessToken,
-    companyId: companyContext,
+    companyId: companyContext.companyId,
     user: authPayload,
   };
 };

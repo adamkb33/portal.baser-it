@@ -29,6 +29,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       return { error: 'Kunne ikke hente brukere for selskapet' };
     }
 
+    console.log(response.data);
+
     return data<EmployeesOverviewLoaderData>({
       users: response.data,
     });
@@ -67,7 +69,7 @@ export default function CompanyEmployees() {
               <TableCell>{formatRoles(user.roles)}</TableCell>
               <TableCell className="text-right">
                 <Link
-                  to={`${ROUTES_MAP['company.employees.overview.edit'].href}?userId=${user.userId}`}
+                  to={`${ROUTES_MAP['company.employees.edit'].href}?userId=${user.userId}`}
                   className="flex justify-end gap-2"
                 >
                   <Button variant="outline" size="sm">
