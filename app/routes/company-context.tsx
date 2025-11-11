@@ -1,9 +1,10 @@
 import { data, Form, useLoaderData, type LoaderFunctionArgs, type ActionFunctionArgs, redirect } from 'react-router';
 import { createBaseClient, type CompanySummaryDto } from '~/api/clients/base';
+import { type ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { CompanyCard } from '~/components/cards/company-summary.card';
-import { accessTokenCookie, companyContextCookie } from '~/features/auth/api/cookies.server';
-import type { CompanyContextSession } from '~/lib/auth.utils';
+import { accessTokenCookie, refreshTokenCookie } from '~/features/auth/api/cookies.server';
+import { getAccessToken } from '~/lib/auth.utils';
 
 export type LoaderResponse = {
   companyContexts?: CompanySummaryDto[];
@@ -18,11 +19,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
     token: accessToken,
   });
 
-  const response = await baseApi.AuthControllerService.AuthControllerService.getCompanyContexts();
+  try {
+    const response = await baseApi.AuthControllerService.AuthControllerService.getCompanyContexts();
+    console.log(response);
 
-  return data<LoaderResponse>({
-    companyContexts: response.data,
-  });
+    return data<LoaderResponse>({
+      companyContexts: response.data,
+    });
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+    if (error as ApiClientError) {
+      return { error: error.body.message };
+    }
+
+    throw error;
+  }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -34,19 +45,48 @@ export async function action({ request }: ActionFunctionArgs) {
     return { error: 'Ikke valgt' };
   }
 
-  const companyContext: CompanyContextSession = {
-    companyId: parseInt(companyId.toString()),
-    orgNumber: orgNumber.toString(),
-  };
+  const accessToken = await getAccessToken(request);
 
-  const companyCookie = await companyContextCookie.serialize(companyContext, {
-    expires: new Date(Date.now() + 1209600 * 1000),
+  const baseClient = createBaseClient({
+    baseUrl: ENV.BASE_SERVICE_BASE_URL,
+    token: accessToken,
   });
 
-  const headers = new Headers();
-  headers.append('Set-Cookie', companyCookie);
+  try {
+    const response = await baseClient.AuthControllerService.AuthControllerService.companySignIn({
+      requestBody: {
+        companyId: parseInt(companyId.toString()),
+      },
+    });
 
-  return redirect('/company', { headers });
+    const payload = response.data;
+    if (!payload) {
+      return { error: 'En feil har skjedd ved innlogging til selskap' };
+    }
+
+    const accessCookie = await accessTokenCookie.serialize(payload.accessToken, {
+      expires: new Date(payload.accessTokenExpiresAt * 1000),
+    });
+    const refreshCookie = await refreshTokenCookie.serialize(payload.refreshToken, {
+      expires: new Date(payload.refreshTokenExpiresAt * 1000),
+    });
+
+    console.log(payload);
+
+    return redirect('/', {
+      headers: [
+        ['Set-Cookie', accessCookie],
+        ['Set-Cookie', refreshCookie],
+      ],
+    });
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+    if (error as ApiClientError) {
+      return { error: error.body.message };
+    }
+
+    throw error;
+  }
 }
 
 export default function CompanyContextPage() {

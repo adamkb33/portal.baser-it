@@ -1,5 +1,5 @@
 // Models
-import type { Roles, UserRole } from './enums';
+import type { CompanyProducts, DayOfWeek, Roles, UserRole } from './enums';
 
 export interface AcceptNewInviteDto {
     givenName: string;
@@ -11,6 +11,14 @@ export interface AcceptNewInviteDto {
 export interface AddCompanyRoleDto {
     userId: number;
     companyRoles: CompanyRoleAssignmentDto[];
+}
+
+/**
+ * Request to add products to a company
+ */
+export type AddProductToCompanyDto = {
+    companyId: number;
+    products: CompanyProducts[];
 }
 
 export interface AddressDto {
@@ -27,7 +35,7 @@ export interface AuthenticatedUserPayload {
     id: number;
     email: string;
     roles: UserRole[];
-    companyRoles: CompanyRoleDto[];
+    company?: AuthUserCompany;
 }
 
 export interface AuthenticationTokenDto {
@@ -37,14 +45,20 @@ export interface AuthenticationTokenDto {
     refreshTokenExpiresAt: number;
 }
 
+export interface AuthUserCompany {
+    companyId: number;
+    companyOrgNum: string;
+    companyRoles: Roles[];
+    companyProducts: CompanyProducts[];
+}
+
 export interface CompanyRoleAssignmentDto {
     companyId: number;
     roles: Roles[];
 }
 
-export interface CompanyRoleDto {
+export interface CompanySignInDto {
     companyId: number;
-    roles: Roles[];
 }
 
 export interface CompanySummaryDto {
@@ -62,8 +76,59 @@ export interface CompanyUserDto {
     roles: Roles[];
 }
 
+export interface ContactDto {
+    id: number;
+    companyId: number;
+    givenName: string;
+    familyName: string;
+    email?: ContactEmailDto;
+    mobileNumberDto?: ContactMobileNumberDto;
+}
+
+export interface ContactEmailDto {
+    id: number;
+    email: string;
+}
+
+export interface ContactMobileNumberDto {
+    id: number;
+    mobileNumber: string;
+}
+
 export interface CreateCompanyDto {
     orgNumber: string;
+}
+
+export interface CreateContactDto {
+    givenName: string;
+    familyName: string;
+    email?: string;
+    mobileNumber?: string;
+}
+
+export interface CreateOrUpdateDailySchedulesDto {
+    id?: number;
+    dayOfWeek: DayOfWeek;
+    startTime: string;
+    endTime: string;
+}
+
+export interface CreateServiceDto {
+    serviceGroupId: number;
+    name: string;
+    price: number;
+    duration: number;
+}
+
+export interface CreateServiceGroupDto {
+    name: string;
+}
+
+export interface DailyScheduleDto {
+    id: number;
+    dayOfWeek: DayOfWeek;
+    startTime: string;
+    endTime: string;
 }
 
 export interface EditCompanyUserDto {
@@ -93,6 +158,22 @@ export interface InviteUserDto {
     companyRoles: CompanyRoleAssignmentDto[];
 }
 
+export interface JwtClaims {
+    sub?: number;
+    email?: string;
+    roles?: string[];
+    company?: JwtCompanyClaim;
+    exp?: number;
+    iat?: number;
+}
+
+export interface JwtCompanyClaim {
+    companyId?: number;
+    companyOrgNum: string;
+    companyRoles?: string[];
+    companyProducts?: string[];
+}
+
 export interface Link {
     href?: string;
     templated?: boolean;
@@ -119,6 +200,21 @@ export interface ResetPasswordDto {
     password2: string;
 }
 
+export interface ServiceDto {
+    id: number;
+    companyId: number;
+    serviceGroupId: number;
+    name: string;
+    price: number;
+    duration: number;
+}
+
+export interface ServiceGroupDto {
+    id: number;
+    companyId: number;
+    name: string;
+}
+
 export interface SignInDto {
     email: string;
     password: string;
@@ -126,4 +222,24 @@ export interface SignInDto {
 
 export interface SignOutDto {
     userId: number;
+}
+
+export interface UpdateContactDto {
+    givenName: string;
+    familyName: string;
+    email?: string;
+    mobileNumber?: string;
+}
+
+export interface UpdateServiceDto {
+    id: number;
+    serviceGroupId: number;
+    price: number;
+    name: string;
+    duration: number;
+}
+
+export interface UpdateServiceGroupDto {
+    id: number;
+    name: string;
 }

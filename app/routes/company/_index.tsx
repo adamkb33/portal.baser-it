@@ -6,9 +6,7 @@ import { AddressSection } from '~/components/company/brreg/address-section';
 import { CompanyInfoSection } from '~/components/company/brreg/company-info-section';
 import { CompanyStatusSection } from '~/components/company/brreg/company-status-section';
 import { RegistrationsSection } from '~/components/company/brreg/registration-section';
-import { CompanyIndexView } from '~/components/company/company-index-view';
-import { ProductAccessSection } from '~/components/company/company-products-section';
-import { getCompanyContextSession } from '~/lib/auth.utils';
+import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import type { RootOutletContext } from '~/root';
 
@@ -17,13 +15,13 @@ export type CompanyIndexLoaderResponse = {
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const companyContext = await getCompanyContextSession(request);
-  if (!companyContext) {
+  const auth = await getAuthPayloadFromRequest(request);
+  if (!auth || !auth.company) {
     return redirect(ROUTES_MAP['company-context'].href);
   }
 
   const brregResponse = await axios.get(
-    `https://data.brreg.no/enhetsregisteret/api/enheter/${companyContext.orgNumber}`,
+    `https://data.brreg.no/enhetsregisteret/api/enheter/${auth.company.companyOrgNum}`,
   );
 
   return data<CompanyIndexLoaderResponse>({

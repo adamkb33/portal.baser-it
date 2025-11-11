@@ -1,0 +1,242 @@
+import {
+  data,
+  redirect,
+  useLoaderData,
+  useNavigate,
+  useSubmit,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+} from 'react-router';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { createBookingClient } from '~/api/clients/booking';
+import type { ApiClientError } from '~/api/clients/http';
+import type { ServiceGroupDto } from '~/api/clients/types';
+import { ENV } from '~/api/config/env';
+import { getAccessToken } from '~/lib/auth.utils';
+import { Button } from '~/components/ui/button';
+import { DataTable } from '~/components/table/data-table';
+import { FormDialog } from '~/components/dialog/form-dialog';
+import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
+
+export type BookingServiceGroupsLoaderData = {
+  serviceGroups: ServiceGroupDto[];
+};
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  try {
+    const accessToken = await getAccessToken(request);
+    if (!accessToken) {
+      return redirect('/');
+    }
+
+    const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
+    const response = await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups();
+    return data<BookingServiceGroupsLoaderData>({ serviceGroups: response.data });
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+    if (error as ApiClientError) {
+      return { error: error.body.message };
+    }
+
+    throw error;
+  }
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const accessToken = await getAccessToken(request);
+  if (!accessToken) {
+    return redirect('/');
+  }
+
+  const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
+  const formData = await request.formData();
+  const intent = formData.get('intent') as string;
+
+  try {
+    if (intent === 'create') {
+      const name = formData.get('name') as string;
+      await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.createServiceGroup({
+        requestBody: {
+          name,
+        },
+      });
+      return data({ success: true, message: 'Tjenestegruppe opprettet' });
+    }
+
+    if (intent === 'update') {
+      const id = Number(formData.get('id'));
+      const name = formData.get('name') as string;
+      await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.updateServiceGroup({
+        id,
+        requestBody: {
+          id,
+          name,
+        },
+      });
+      return data({ success: true, message: 'Tjenestegruppe oppdatert' });
+    }
+
+    if (intent === 'delete') {
+      const id = Number(formData.get('id'));
+      await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.deleteServiceGroup({ id: id });
+      return data({ success: true, message: 'Tjenestegruppe slettet' });
+    }
+
+    return data({ success: false, message: 'Ugyldig handling' });
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+    return data({ success: false, message: error.body?.message || 'En feil oppstod' }, { status: 400 });
+  }
+}
+
+type FormData = {
+  id?: number;
+  name: string;
+};
+
+export default function BookingServiceGroups() {
+  const { serviceGroups } = useLoaderData<BookingServiceGroupsLoaderData>();
+  const submit = useSubmit();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [editingServiceGroup, setEditingServiceGroup] = useState<FormData | null>(null);
+  const [deletingServiceGroupId, setDeletingServiceGroupId] = useState<number | null>(null);
+
+  const handleAdd = () => {
+    setEditingServiceGroup({ name: '' });
+    setIsDialogOpen(true);
+  };
+
+  const handleEdit = (serviceGroup: ServiceGroupDto) => {
+    setEditingServiceGroup({
+      id: serviceGroup.id,
+      name: serviceGroup.name,
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteClick = (id: number) => {
+    setDeletingServiceGroupId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deletingServiceGroupId) return;
+
+    const formData = new FormData();
+    formData.append('intent', 'delete');
+    formData.append('id', String(deletingServiceGroupId));
+
+    submit(formData, { method: 'post' });
+    toast.success('Tjenestegruppen ble slettet');
+
+    setIsDeleteDialogOpen(false);
+    setDeletingServiceGroupId(null);
+  };
+
+  const handleFieldChange = (name: keyof FormData, value: any) => {
+    if (editingServiceGroup) {
+      setEditingServiceGroup({ ...editingServiceGroup, [name]: value });
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingServiceGroup) return;
+
+    const formData = new FormData();
+    formData.append('intent', editingServiceGroup.id ? 'update' : 'create');
+    if (editingServiceGroup.id) {
+      formData.append('id', String(editingServiceGroup.id));
+    }
+    formData.append('name', editingServiceGroup.name);
+
+    submit(formData, { method: 'post' });
+
+    setIsDialogOpen(false);
+    setEditingServiceGroup(null);
+
+    toast.success(editingServiceGroup.id ? 'Tjenestegruppe oppdatert' : 'Tjenestegruppe opprettet');
+  };
+
+  return (
+    <div className="container mx-auto py-6">
+      <div className="flex justify-end items-center mb-6">
+        <Button onClick={handleAdd}>Ny tjenestegruppe</Button>
+      </div>
+
+      <DataTable<ServiceGroupDto>
+        data={serviceGroups}
+        getRowKey={(serviceGroup) => serviceGroup.id}
+        columns={[
+          {
+            header: 'ID',
+            accessor: 'id',
+          },
+          {
+            header: 'Navn',
+            accessor: 'name',
+            className: 'font-medium',
+          },
+        ]}
+        actions={[
+          {
+            label: 'Rediger',
+            onClick: (serviceGroup) => handleEdit(serviceGroup),
+            variant: 'outline',
+          },
+          {
+            label: 'Slett',
+            onClick: (serviceGroup) => handleDeleteClick(serviceGroup.id),
+            variant: 'destructive',
+          },
+        ]}
+      />
+
+      {editingServiceGroup && (
+        <FormDialog<FormData>
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          title={editingServiceGroup.id ? 'Rediger tjenestegruppe' : 'Ny tjenestegruppe'}
+          formData={editingServiceGroup}
+          onFieldChange={handleFieldChange}
+          onSubmit={handleSubmit}
+          fields={[
+            {
+              name: 'name',
+              label: 'Navn',
+              type: 'text',
+              placeholder: 'Skriv inn navn',
+              required: true,
+            },
+          ]}
+          actions={[
+            {
+              label: 'Avbryt',
+              variant: 'outline',
+              onClick: () => {
+                setIsDialogOpen(false);
+                setEditingServiceGroup(null);
+              },
+            },
+            {
+              label: 'Lagre',
+              type: 'submit',
+              variant: 'default',
+              onClick: () => {},
+            },
+          ]}
+        />
+      )}
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Slett tjenestegruppe?"
+        description="Er du sikker på at du vil slette denne tjenestegruppen? Denne handlingen kan ikke angres."
+      />
+    </div>
+  );
+}

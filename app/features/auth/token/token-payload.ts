@@ -1,13 +1,25 @@
-import type { AuthenticatedUserPayload, CompanyRoleDto, UserRole } from '~/api/clients/types';
+import type { JwtClaims } from 'tmp/openapi/gen/base';
+import type { AuthenticatedUserPayload, UserRole, Roles, CompanyProducts } from '~/api/clients/types';
 
-type AccessTokenClaims = {
-  sub?: string | number;
-  email?: string;
-  roles?: UserRole[] | string[];
-  companyRoles?: CompanyRoleDto[];
-  userId?: string | number;
-  id?: string | number;
-  [key: string]: unknown;
+export const toJwtClaims = (accessToken: string): JwtClaims => {
+  const parts = accessToken.split('.');
+
+  if (parts.length !== 3) {
+    throw new Error('Invalid JWT token format');
+  }
+
+  const payload = parts[1];
+
+  // Decode base64url to base64
+  const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+
+  // Decode base64 to JSON string
+  const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
+
+  // Parse and return claims
+  const claims = JSON.parse(jsonPayload) as JwtClaims;
+
+  return claims;
 };
 
 export function toAuthPayload(accessToken?: string): AuthenticatedUserPayload | null {
@@ -23,17 +35,23 @@ export function toAuthPayload(accessToken?: string): AuthenticatedUserPayload | 
   const id = parseIdentifier(claims);
   const email = typeof claims.email === 'string' ? claims.email : '';
   const roles = normalizeRoles(claims.roles);
-  const companyRoles = normalizeCompanyRoles(claims.companyRoles);
 
   return {
     id,
     email,
     roles,
-    companyRoles,
+    company: claims.company
+      ? {
+          companyId: claims.company.companyId ?? 0,
+          companyOrgNum: claims.company.companyOrgNum,
+          companyRoles: normalizeCompanyRoles(claims.company.companyRoles),
+          companyProducts: normalizeCompanyProducts(claims.company.companyProducts),
+        }
+      : undefined,
   };
 }
 
-function decodeAccessToken(token: string): AccessTokenClaims | null {
+function decodeAccessToken(token: string): JwtClaims | null {
   const parts = token.split('.');
   if (parts.length < 2) {
     return null;
@@ -45,7 +63,7 @@ function decodeAccessToken(token: string): AccessTokenClaims | null {
   }
 
   try {
-    return JSON.parse(payload) as AccessTokenClaims;
+    return JSON.parse(payload) as JwtClaims;
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error('Failed to parse access token payload', error);
@@ -85,25 +103,29 @@ const padBase64 = (value: string) => {
   return value + '='.repeat(padding);
 };
 
-function parseIdentifier(claims: AccessTokenClaims): number {
-  const raw = claims.userId ?? claims.sub ?? claims.id ?? 0;
+function parseIdentifier(claims: JwtClaims): number {
+  const raw = claims.sub ?? 0;
   const parsed = Number(raw);
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function normalizeRoles(roles: AccessTokenClaims['roles']): UserRole[] {
+function normalizeRoles(roles: JwtClaims['roles']): UserRole[] {
   if (!Array.isArray(roles)) {
     return [];
   }
   return roles.filter((role): role is UserRole => typeof role === 'string') as UserRole[];
 }
 
-function normalizeCompanyRoles(companyRoles: AccessTokenClaims['companyRoles']): CompanyRoleDto[] {
-  if (!Array.isArray(companyRoles)) {
+function normalizeCompanyRoles(roles?: string[]): Roles[] {
+  if (!Array.isArray(roles)) {
     return [];
   }
-
-  return companyRoles;
+  return roles.filter((role): role is Roles => typeof role === 'string') as Roles[];
 }
 
-export type { AccessTokenClaims };
+function normalizeCompanyProducts(products?: string[]): CompanyProducts[] {
+  if (!Array.isArray(products)) {
+    return [];
+  }
+  return products.filter((product): product is CompanyProducts => typeof product === 'string') as CompanyProducts[];
+}

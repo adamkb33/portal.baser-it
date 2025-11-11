@@ -6,7 +6,7 @@ import { CompanyRootLayout } from '~/layouts/company-root-layout';
 
 export const loader = getLayoutloader;
 
-export default function CompanyLayout() {
+export default function BookingLayout() {
   const data = useLoaderData<GetLayoutloaderData>();
 
   const context = useOutletContext<RootOutletContext>();

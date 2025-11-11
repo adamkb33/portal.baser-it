@@ -2,16 +2,13 @@
 import { redirect, type ActionFunctionArgs } from 'react-router';
 import { createBaseClient, type InviteCompanyUserDto } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
-import { accessTokenCookie } from '~/features/auth/api/cookies.server';
 import type { ApiClientError } from '~/api/clients/http';
-import { getCompanyContextSession } from '~/lib/auth.utils';
+import { getUserSession } from '~/lib/auth.utils';
 
 export async function inviteEmployee({ request }: ActionFunctionArgs) {
-  const cookieHeader = request.headers.get('Cookie');
-  const accessToken = await accessTokenCookie.parse(cookieHeader);
-  const companyContext = await getCompanyContextSession(request);
+  const { accessToken, user } = await getUserSession(request);
 
-  if (!accessToken || !companyContext) {
+  if (!accessToken || !user?.company) {
     return { error: 'Unauthorized', status: 401 };
   }
 
@@ -42,7 +39,7 @@ export async function inviteEmployee({ request }: ActionFunctionArgs) {
     });
 
     const response = await baseApi.AdminCompanyControllerService.AdminCompanyControllerService.inviteEmployee({
-      companyId: companyContext.companyId,
+      companyId: user.company.companyId,
       requestBody: inviteData,
     });
 

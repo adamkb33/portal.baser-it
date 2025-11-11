@@ -15,15 +15,15 @@ export type EmployeesOverviewLoaderData = {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
-    const { companyId, user, accesstoken } = await getUserSession(request);
-    if (!user || !companyId) {
+    const { user, accessToken: accesstoken } = await getUserSession(request);
+    if (!user || !user.company) {
       return redirect('/');
     }
 
     const baseApi = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accesstoken });
 
     const response = await baseApi.AdminCompanyControllerService.AdminCompanyControllerService.getCompanyUsers({
-      companyId,
+      companyId: user.company.companyId,
     });
     if (!response.data) {
       return { error: 'Kunne ikke hente brukere for selskapet' };

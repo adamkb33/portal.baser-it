@@ -3,6 +3,7 @@ import { type ReactNode } from 'react';
 import { Navbar } from '~/components/layout/navbar';
 import { type UserNavigation } from '~/lib/route-tree';
 import type { CompanySummaryDto } from '~/api/clients/types';
+import { Toaster } from 'sonner';
 
 interface RootLayoutProps {
   children: ReactNode;
@@ -29,6 +30,7 @@ export function RootLayout({ children, routeTree, companyContext }: RootLayoutPr
         <main role="main" className="flex-1 overflow-y-auto pb-24 lg:pb-0">
           <div className="relative mx-auto w-full max-w-[1200px] flex flex-col gap-4 px-4 py-6 h-full">
             <div className="w-full flex-1">{children}</div>
+            <Toaster />
           </div>
         </main>
 

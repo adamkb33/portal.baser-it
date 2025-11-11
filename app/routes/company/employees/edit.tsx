@@ -14,8 +14,8 @@ import { createBaseClient, Roles, type EditCompanyUserDto } from '~/api/clients/
 import { ENV } from '~/api/config/env';
 import { EditCompanyUserForm } from '~/components/forms/edit-company-user-form';
 import type { EditCompanyUserSchema } from '~/features/company/admin/schemas/edit-company-user.schema';
-import { getUserSession } from '~/lib/auth.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import { getUserSession } from '~/lib/auth.utils';
 
 export type CompanyEmployeesEditLoaderData = {
   user: CompanyUserDto;
@@ -30,15 +30,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   try {
-    const { companyId, user, accesstoken } = await getUserSession(request);
-    if (!user || !companyId) {
+    const { user, accessToken: accesstoken } = await getUserSession(request);
+    if (!user || !user.company) {
       return redirect('/');
     }
 
     const baseApi = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accesstoken });
 
     const response = await baseApi.AdminCompanyControllerService.AdminCompanyControllerService.getCompanyUser({
-      companyId,
+      companyId: user.company.companyId,
       userId: parseInt(userId),
     });
 
@@ -71,8 +71,8 @@ export async function action({ request }: ActionFunctionArgs) {
       return { error: 'Form data not provieded' };
     }
 
-    const { companyId, user, accesstoken } = await getUserSession(request);
-    if (!user || !companyId) {
+    const { user, accessToken: accesstoken } = await getUserSession(request);
+    if (!user || !user.company) {
       return redirect('/');
     }
 
@@ -82,7 +82,7 @@ export async function action({ request }: ActionFunctionArgs) {
     };
 
     await baseClient.AdminCompanyControllerService.AdminCompanyControllerService.editCompanyUser({
-      companyId,
+      companyId: user.company.companyId,
       userId: parseInt(userId.toString()),
       requestBody: payload,
     });

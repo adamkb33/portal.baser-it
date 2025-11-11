@@ -1,11 +1,15 @@
 
 import { setAuth, setBaseUrl } from '@http';
 import * as ActuatorService from './services/ActuatorService';
-import * as AppointmentControllerService from './services/AppointmentControllerService';
+import * as DailyScheduleControllerService from './services/DailyScheduleControllerService';
+import * as ServiceControllerService from './services/ServiceControllerService';
+import * as ServiceGroupControllerService from './services/ServiceGroupControllerService';
 
 export type BookingClient = {
   ActuatorService: typeof ActuatorService;
-  AppointmentControllerService: typeof AppointmentControllerService
+  DailyScheduleControllerService: typeof DailyScheduleControllerService;
+  ServiceControllerService: typeof ServiceControllerService;
+  ServiceGroupControllerService: typeof ServiceGroupControllerService
 };
 
 export function createBookingClient(opts: { baseUrl: string; token?: string }): BookingClient {
@@ -13,6 +17,8 @@ export function createBookingClient(opts: { baseUrl: string; token?: string }): 
   setAuth(opts.token);
   return {
     ActuatorService,
-    AppointmentControllerService
+    DailyScheduleControllerService,
+    ServiceControllerService,
+    ServiceGroupControllerService
   };
 }

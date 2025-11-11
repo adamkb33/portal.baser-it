@@ -4,8 +4,10 @@
 /* eslint-disable */
 import type { AcceptNewInviteDto } from '@types';
 import type { ApiResponseAuthenticationTokenDto } from '@types';
+import type { ApiResponseJwtClaims } from '@types';
 import type { ApiResponseListCompanySummaryDto } from '@types';
 import type { ApiResponseUnit } from '@types';
+import type { CompanySignInDto } from '@types';
 import type { ExistingUserAcceptInviteDto } from '@types';
 import type { ForgotPasswordDto } from '@types';
 import type { RefreshTokenRequestDto } from '@types';
@@ -70,14 +72,29 @@ export class AuthControllerService {
      */
     public static refresh({
         requestBody,
+        companyId,
     }: {
         requestBody: RefreshTokenRequestDto,
+        companyId?: number,
     }): CancelablePromise<ApiResponseAuthenticationTokenDto> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/auth/refresh',
+            query: {
+                'companyId': companyId,
+            },
             body: requestBody,
             mediaType: 'application/json',
+        });
+    }
+    /**
+     * @returns ApiResponseJwtClaims OK
+     * @throws ApiError
+     */
+    public static jwtClaims(): CancelablePromise<ApiResponseJwtClaims> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/auth/jwt-claims',
         });
     }
     /**
@@ -92,6 +109,22 @@ export class AuthControllerService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/auth/forgot-password',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * @returns ApiResponseAuthenticationTokenDto OK
+     * @throws ApiError
+     */
+    public static companySignIn({
+        requestBody,
+    }: {
+        requestBody: CompanySignInDto,
+    }): CancelablePromise<ApiResponseAuthenticationTokenDto> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/auth/company-sign-in',
             body: requestBody,
             mediaType: 'application/json',
         });

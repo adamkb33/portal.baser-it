@@ -13,10 +13,3 @@ export const refreshTokenCookie = createCookie('refresh_token', {
   secure: true,
   path: '/',
 });
-
-export const companyContextCookie = createCookie('company_context', {
-  httpOnly: true,
-  sameSite: 'lax',
-  secure: true,
-  path: '/',
-});
