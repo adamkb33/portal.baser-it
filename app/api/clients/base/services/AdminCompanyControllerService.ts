@@ -5,7 +5,7 @@
 import type { ApiResponseCompanySummaryDto } from '@types';
 import type { ApiResponseCompanyUserDto } from '@types';
 import type { ApiResponseInvitedUserTokenDto } from '@types';
-import type { ApiResponseListCompanyUserDto } from '@types';
+import type { ApiResponsePaginatedResponseCompanyUserDto } from '@types';
 import type { ApiResponseUnit } from '@types';
 import type { EditCompanyUserDto } from '@types';
 import type { InviteCompanyUserDto } from '@types';
@@ -118,19 +118,28 @@ export class AdminCompanyControllerService {
         });
     }
     /**
-     * @returns ApiResponseListCompanyUserDto OK
+     * @returns ApiResponsePaginatedResponseCompanyUserDto OK
      * @throws ApiError
      */
     public static getCompanyUsers({
         companyId,
+        page,
+        size,
+        sort,
     }: {
         companyId: number,
-    }): CancelablePromise<ApiResponseListCompanyUserDto> {
+        page?: number,
+        size?: number,
+        sort?: string,
+    }): CancelablePromise<ApiResponsePaginatedResponseCompanyUserDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/admin/companies/users',
             query: {
                 'companyId': companyId,
+                'page': page,
+                'size': size,
+                'sort': sort,
             },
         });
     }

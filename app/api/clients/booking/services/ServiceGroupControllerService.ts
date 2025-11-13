@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ApiResponseListServiceGroupDto } from '@types';
+import type { ApiResponsePaginatedResponseServiceGroupDto } from '@types';
 import type { ApiResponseServiceGroupDto } from '@types';
 import type { ApiResponseUnit } from '@types';
 import type { CreateServiceGroupDto } from '@types';
@@ -50,13 +50,26 @@ export class ServiceGroupControllerService {
         });
     }
     /**
-     * @returns ApiResponseListServiceGroupDto OK
+     * @returns ApiResponsePaginatedResponseServiceGroupDto OK
      * @throws ApiError
      */
-    public static getServiceGroups(): CancelablePromise<ApiResponseListServiceGroupDto> {
+    public static getServiceGroups({
+        page,
+        size,
+        sort,
+    }: {
+        page?: number,
+        size?: number,
+        sort?: string,
+    }): CancelablePromise<ApiResponsePaginatedResponseServiceGroupDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/company-user/service-groups',
+            query: {
+                'page': page,
+                'size': size,
+                'sort': sort,
+            },
         });
     }
     /**

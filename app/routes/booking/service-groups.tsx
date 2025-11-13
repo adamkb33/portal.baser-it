@@ -1,13 +1,12 @@
 import {
   data,
   redirect,
+  useFetcher,
   useLoaderData,
-  useNavigate,
-  useSubmit,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
 } from 'react-router';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { createBookingClient } from '~/api/clients/booking';
 import type { ApiClientError } from '~/api/clients/http';
@@ -15,9 +14,11 @@ import type { ServiceGroupDto } from '~/api/clients/types';
 import { ENV } from '~/api/config/env';
 import { getAccessToken } from '~/lib/auth.utils';
 import { Button } from '~/components/ui/button';
-import { DataTable } from '~/components/table/data-table';
+import { PaginatedTable } from '~/components/table/paginated-data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
+import { Input } from '~/components/ui/input';
+import { TableCell, TableRow } from '~/components/ui/table';
 
 export type BookingServiceGroupsLoaderData = {
   serviceGroups: ServiceGroupDto[];
@@ -31,8 +32,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const response = await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups();
-    return data<BookingServiceGroupsLoaderData>({ serviceGroups: response?.data || [] });
+    const response = await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups(
+      {},
+    );
+    return data<BookingServiceGroupsLoaderData>({ serviceGroups: response.data?.content || [] });
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {
@@ -97,11 +100,37 @@ type FormData = {
 
 export default function BookingServiceGroups() {
   const { serviceGroups } = useLoaderData<BookingServiceGroupsLoaderData>();
-  const submit = useSubmit();
+  const fetcher = useFetcher<{ success?: boolean; message?: string }>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingServiceGroup, setEditingServiceGroup] = useState<FormData | null>(null);
   const [deletingServiceGroupId, setDeletingServiceGroupId] = useState<number | null>(null);
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    if (fetcher.state !== 'idle' || !fetcher.data) return;
+
+    if (fetcher.data.success) {
+      toast.success(fetcher.data.message ?? 'Handling fullført');
+      setIsDialogOpen(false);
+      setEditingServiceGroup(null);
+      setIsDeleteDialogOpen(false);
+      setDeletingServiceGroupId(null);
+    } else if (fetcher.data.message) {
+      toast.error(fetcher.data.message);
+    }
+  }, [fetcher.state, fetcher.data]);
+
+  const filteredGroups = useMemo(() => {
+    if (!filter) return serviceGroups;
+    const query = filter.toLowerCase();
+
+    return serviceGroups.filter((group) => {
+      const name = group.name?.toLowerCase() ?? '';
+      const id = String(group.id ?? '');
+      return name.includes(query) || id.includes(query);
+    });
+  }, [serviceGroups, filter]);
 
   const handleAdd = () => {
     setEditingServiceGroup({ name: '' });
@@ -128,11 +157,7 @@ export default function BookingServiceGroups() {
     formData.append('intent', 'delete');
     formData.append('id', String(deletingServiceGroupId));
 
-    submit(formData, { method: 'post' });
-    toast.success('Tjenestegruppen ble slettet');
-
-    setIsDeleteDialogOpen(false);
-    setDeletingServiceGroupId(null);
+    fetcher.submit(formData, { method: 'post' });
   };
 
   const handleFieldChange = (name: keyof FormData, value: any) => {
@@ -152,46 +177,55 @@ export default function BookingServiceGroups() {
     }
     formData.append('name', editingServiceGroup.name);
 
-    submit(formData, { method: 'post' });
-
-    setIsDialogOpen(false);
-    setEditingServiceGroup(null);
-
-    toast.success(editingServiceGroup.id ? 'Tjenestegruppe oppdatert' : 'Tjenestegruppe opprettet');
+    fetcher.submit(formData, { method: 'post' });
   };
 
   return (
     <div className="container mx-auto py-6">
-      <div className="flex justify-end items-center mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <h1 className="text-xl font-semibold">Tjenestegrupper</h1>
         <Button onClick={handleAdd}>Ny tjenestegruppe</Button>
       </div>
 
-      <DataTable<ServiceGroupDto>
-        data={serviceGroups}
-        getRowKey={(serviceGroup) => serviceGroup.id}
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Filtrer på navn eller ID…"
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+
+      <PaginatedTable<ServiceGroupDto>
+        items={filteredGroups}
+        getRowKey={(serviceGroup, index) => serviceGroup.id ?? `group-${index}`}
         columns={[
-          {
-            header: 'ID',
-            accessor: 'id',
-          },
-          {
-            header: 'Navn',
-            accessor: 'name',
-            className: 'font-medium',
-          },
+          { header: 'ID' },
+          { header: 'Navn', className: 'font-medium' },
+          { header: 'Handlinger', className: 'text-right' },
         ]}
-        actions={[
-          {
-            label: 'Rediger',
-            onClick: (serviceGroup) => handleEdit(serviceGroup),
-            variant: 'outline',
-          },
-          {
-            label: 'Slett',
-            onClick: (serviceGroup) => handleDeleteClick(serviceGroup.id),
-            variant: 'destructive',
-          },
-        ]}
+        renderRow={(serviceGroup) => (
+          <TableRow>
+            <TableCell>{serviceGroup.id}</TableCell>
+            <TableCell className="font-medium">{serviceGroup.name}</TableCell>
+            <TableCell className="text-right">
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleEdit(serviceGroup)}>
+                  Rediger
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-500"
+                  onClick={() => handleDeleteClick(serviceGroup.id!)}
+                  disabled={fetcher.state !== 'idle' && deletingServiceGroupId === serviceGroup.id}
+                >
+                  Slett
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
       />
 
       {editingServiceGroup && (

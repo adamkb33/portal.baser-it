@@ -7,7 +7,7 @@ import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
 } from 'react-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -18,9 +18,11 @@ import { ENV } from '~/api/config/env';
 import { getAccessToken } from '~/lib/auth.utils';
 
 import { Button } from '~/components/ui/button';
-import { DataTable } from '~/components/table/data-table';
+import { PaginatedTable } from '~/components/table/paginated-data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
+import { Input } from '~/components/ui/input';
+import { TableCell, TableRow } from '~/components/ui/table';
 
 /* ================================
  * Loader
@@ -41,9 +43,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
 
     const response =
-      await baseClient.CompanyUserContactControllerService.CompanyUserContactControllerService.getContacts();
+      await baseClient.CompanyUserContactControllerService.CompanyUserContactControllerService.getContacts({});
 
-    return data<CompanyContactsLoaderData>({ contacts: response?.data || [] });
+    return data<CompanyContactsLoaderData>({ contacts: response?.data?.content || [] });
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {
@@ -170,9 +172,13 @@ type ContactFormData = {
   mobileNumber?: string;
 };
 
-type ContactRow = Omit<ContactDto, 'email' | 'mobileNumberDto'> & {
+type ContactRow = {
+  id?: number;
+  givenName: string;
+  familyName: string;
   contactEmail?: string;
   contactMobileNumber?: string;
+  original: ContactDto;
 };
 
 type FieldErrors = Partial<Record<keyof ContactFormData, string>>;
@@ -186,6 +192,7 @@ export default function CompanyContactsRoute() {
   const [editingContact, setEditingContact] = useState<ContactFormData | null>(null);
   const [deletingContactId, setDeletingContactId] = useState<number | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [filter, setFilter] = useState('');
 
   const openCreate = () => {
     setEditingContact({ givenName: '', familyName: '', email: '', mobileNumber: '' });
@@ -269,32 +276,84 @@ export default function CompanyContactsRoute() {
     toast.success(editingContact.id ? 'Kontakt oppdatert' : 'Kontakt opprettet');
   };
 
-  const contactRows: ContactRow[] = contacts.map((c) => ({
-    ...c,
-    contactEmail: c.email?.email ?? '',
-    contactMobileNumber: c.mobileNumberDto?.mobileNumber ?? '',
-  }));
+  const contactRows = useMemo<ContactRow[]>(
+    () =>
+      contacts.map((contact) => ({
+        id: contact.id,
+        givenName: contact.givenName ?? '',
+        familyName: contact.familyName ?? '',
+        contactEmail: contact.email?.email ?? '',
+        contactMobileNumber: contact.mobileNumberDto?.mobileNumber ?? '',
+        original: contact,
+      })),
+    [contacts],
+  );
+
+  const filteredContacts = useMemo(() => {
+    if (!filter) return contactRows;
+    const query = filter.toLowerCase();
+
+    return contactRows.filter((contact) => {
+      const name = `${contact.givenName} ${contact.familyName}`.toLowerCase();
+      const email = contact.contactEmail?.toLowerCase() ?? '';
+      const mobile = contact.contactMobileNumber?.toLowerCase() ?? '';
+      return name.includes(query) || email.includes(query) || mobile.includes(query);
+    });
+  }, [contactRows, filter]);
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-end items-center mb-6">
+    <div className="container mx-auto py-6 space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">Kontakter</h1>
+          <p className="text-sm text-muted-foreground">Administrer kontaktpersoner og detaljer.</p>
+        </div>
         <Button onClick={openCreate}>Ny kontakt</Button>
       </div>
 
-      <DataTable<ContactRow>
-        data={contactRows}
-        getRowKey={(row) => row.id}
+      <div className="flex items-center py-2">
+        <Input
+          placeholder="Filtrer på navn, e-post eller mobil…"
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+
+      <PaginatedTable<ContactRow>
+        items={filteredContacts}
+        getRowKey={(row, index) => row.id ?? `contact-${index}`}
         columns={[
-          { header: 'ID', accessor: 'id' as any },
-          { header: 'Fornavn', accessor: 'givenName' as any, className: 'font-medium' },
-          { header: 'Etternavn', accessor: 'familyName' as any },
-          { header: 'E-post', accessor: 'contactEmail' as any },
-          { header: 'Mobil', accessor: 'contactMobileNumber' as any },
+          { header: 'Navn', className: 'font-medium' },
+          { header: 'E-post' },
+          { header: 'Mobil' },
+          { header: 'Handlinger', className: 'text-right' },
         ]}
-        actions={[
-          { label: 'Rediger', onClick: (row) => openEdit(row), variant: 'outline' },
-          { label: 'Slett', onClick: (row) => requestDelete(row.id), variant: 'destructive' },
-        ]}
+        renderRow={(row) => (
+          <TableRow>
+            <TableCell className="font-medium">
+              {row.givenName} {row.familyName}
+            </TableCell>
+            <TableCell>{row.contactEmail || '—'}</TableCell>
+            <TableCell>{row.contactMobileNumber || '—'}</TableCell>
+            <TableCell className="text-right">
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => openEdit(row.original)}>
+                  Rediger
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-500"
+                  disabled={row.id == null}
+                  onClick={() => row.id && requestDelete(row.id)}
+                >
+                  Slett
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
       />
 
       {editingContact && (

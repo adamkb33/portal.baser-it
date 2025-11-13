@@ -1,12 +1,12 @@
 import {
   data,
   redirect,
+  useFetcher,
   useLoaderData,
-  useSubmit,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
 } from 'react-router';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { ServiceDto, ServiceGroupDto } from 'tmp/openapi/gen/booking';
 import { createBookingClient } from '~/api/clients/booking';
@@ -14,13 +14,23 @@ import type { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { getAccessToken } from '~/lib/auth.utils';
 import { Button } from '~/components/ui/button';
-import { DataTable } from '~/components/table/data-table';
+import { PaginatedTable } from '~/components/table/paginated-data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
+import { Input } from '~/components/ui/input';
+import { TableCell, TableRow } from '~/components/ui/table';
 
 export type BookingServicesLoaderData = {
   serviceGroups: ServiceGroupDto[];
   services: ServiceDto[];
+};
+
+const extractList = <T,>(payload: unknown): T[] => {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload as T[];
+  if (Array.isArray((payload as any).content)) return (payload as any).content as T[];
+  if (Array.isArray((payload as any).items)) return (payload as any).items as T[];
+  return [];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -31,13 +41,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
     const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
     const serviceGroupsResponse =
-      await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups();
+      await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups({});
     const bookingClient2 = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const servicesResponse = await bookingClient2.ServiceControllerService.ServiceControllerService.getServices();
+    const servicesResponse = await bookingClient2.ServiceControllerService.ServiceControllerService.getServices({});
 
     return data<BookingServicesLoaderData>({
-      serviceGroups: serviceGroupsResponse?.data || [],
-      services: servicesResponse.data || [],
+      serviceGroups: extractList<ServiceGroupDto>(serviceGroupsResponse?.data),
+      services: extractList<ServiceDto>(servicesResponse?.data),
     });
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
@@ -120,11 +130,49 @@ type FormData = {
 
 export default function BookingServices() {
   const { serviceGroups, services } = useLoaderData<BookingServicesLoaderData>();
-  const submit = useSubmit();
+  const fetcher = useFetcher<{ success?: boolean; message?: string }>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<FormData | null>(null);
   const [deletingServiceId, setDeletingServiceId] = useState<number | null>(null);
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    if (fetcher.state !== 'idle' || !fetcher.data) {
+      return;
+    }
+
+    if (fetcher.data.success) {
+      toast.success(fetcher.data.message ?? 'Handling fullført');
+      setIsDialogOpen(false);
+      setEditingService(null);
+      setIsDeleteDialogOpen(false);
+      setDeletingServiceId(null);
+    } else if (fetcher.data.message) {
+      toast.error(fetcher.data.message);
+    }
+  }, [fetcher.state, fetcher.data]);
+
+  const groupNameById = useMemo(() => {
+    return new Map(
+      serviceGroups
+        .filter((group): group is ServiceGroupDto & { id: number } => typeof group.id === 'number')
+        .map((group) => [group.id, group.name] as const),
+    );
+  }, [serviceGroups]);
+
+  const filteredItems = useMemo(() => {
+    if (!filter) return services;
+    const query = filter.toLowerCase();
+
+    return services.filter((service) => {
+      const name = service.name?.toLowerCase() ?? '';
+      const groupName = groupNameById.get(service.serviceGroupId)?.toLowerCase() ?? '';
+      const price = String(service.price ?? '');
+      const duration = String(service.duration ?? '');
+      return name.includes(query) || groupName.includes(query) || price.includes(query) || duration.includes(query);
+    });
+  }, [services, filter, groupNameById]);
 
   const handleAdd = () => {
     setEditingService({
@@ -159,15 +207,16 @@ export default function BookingServices() {
     formData.append('intent', 'delete');
     formData.append('id', String(deletingServiceId));
 
-    submit(formData, { method: 'post' });
-    toast.success('Tjenesten ble slettet');
-
-    setIsDeleteDialogOpen(false);
-    setDeletingServiceId(null);
+    fetcher.submit(formData, { method: 'post' });
   };
 
   const handleFieldChange = (name: keyof FormData, value: any) => {
     if (editingService) {
+      if (name === 'serviceGroupId' || name === 'price' || name === 'duration') {
+        setEditingService({ ...editingService, [name]: Number(value) });
+        return;
+      }
+
       setEditingService({ ...editingService, [name]: value });
     }
   };
@@ -186,58 +235,68 @@ export default function BookingServices() {
     formData.append('price', String(editingService.price));
     formData.append('duration', String(editingService.duration));
 
-    submit(formData, { method: 'post' });
-
-    setIsDialogOpen(false);
-    setEditingService(null);
-
-    toast.success(editingService.id ? 'Tjeneste oppdatert' : 'Tjeneste opprettet');
+    fetcher.submit(formData, { method: 'post' });
   };
 
   const getServiceGroupName = (serviceGroupId: number) => {
-    return serviceGroups.find((sg) => sg.id === serviceGroupId)?.name || 'Ukjent';
+    return groupNameById.get(serviceGroupId) || 'Ukjent';
+  };
+
+  const formatNok = (value?: number) => {
+    const amount = Number(value ?? 0);
+    return amount.toLocaleString('nb-NO', { style: 'currency', currency: 'NOK' });
   };
 
   return (
     <div className="container mx-auto py-6">
-      <div className="flex justify-end items-center mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <h1 className="text-xl font-semibold">Tjenester</h1>
         <Button onClick={handleAdd}>Ny tjeneste</Button>
       </div>
 
-      <DataTable<ServiceDto>
-        data={services}
-        getRowKey={(service) => service.id}
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Filtrer på navn, gruppe, pris eller varighet…"
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+
+      <PaginatedTable<ServiceDto>
+        items={filteredItems}
+        getRowKey={(service, index) => service.id ?? `${service.name}-${index}`}
         columns={[
-          {
-            header: 'Navn',
-            accessor: 'name',
-            className: 'font-medium',
-          },
-          {
-            header: 'Tjenestegruppe',
-            accessor: (service) => getServiceGroupName(service.serviceGroupId),
-          },
-          {
-            header: 'Pris',
-            accessor: (service) => `${service.price} kr`,
-          },
-          {
-            header: 'Varighet',
-            accessor: (service) => `${service.duration} min`,
-          },
+          { header: 'Navn', className: 'font-medium' },
+          { header: 'Tjenestegruppe' },
+          { header: 'Pris' },
+          { header: 'Varighet' },
+          { header: 'Handlinger', className: 'text-right' },
         ]}
-        actions={[
-          {
-            label: 'Rediger',
-            onClick: (service) => handleEdit(service),
-            variant: 'outline',
-          },
-          {
-            label: 'Slett',
-            onClick: (service) => handleDeleteClick(service.id),
-            variant: 'destructive',
-          },
-        ]}
+        renderRow={(service) => (
+          <TableRow>
+            <TableCell className="font-medium">{service.name}</TableCell>
+            <TableCell>{getServiceGroupName(service.serviceGroupId)}</TableCell>
+            <TableCell>{formatNok(service.price)}</TableCell>
+            <TableCell>{service.duration} min</TableCell>
+            <TableCell className="text-right">
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleEdit(service)}>
+                  Rediger
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-500"
+                  onClick={() => handleDeleteClick(service.id!)}
+                  disabled={fetcher.state !== 'idle' && deletingServiceId === service.id}
+                >
+                  Slett
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
       />
 
       {editingService && (

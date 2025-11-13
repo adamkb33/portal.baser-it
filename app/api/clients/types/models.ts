@@ -234,6 +234,46 @@ export interface PaginatedResponseAppointmentDto {
     hasPrevious: boolean;
 }
 
+export interface PaginatedResponseCompanyUserDto {
+    content: CompanyUserDto[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+}
+
+export interface PaginatedResponseContactDto {
+    content: ContactDto[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+}
+
+export interface PaginatedResponseServiceDto {
+    content: ServiceDto[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+}
+
+export interface PaginatedResponseServiceGroupDto {
+    content: ServiceGroupDto[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+}
+
 export interface RefreshTokenRequestDto {
     refreshToken: string;
 }

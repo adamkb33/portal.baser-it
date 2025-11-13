@@ -1,13 +1,16 @@
 import { data, Link, redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router';
+import { useMemo, useState } from 'react';
 import type { CompanyUserDto } from 'tmp/openapi/gen/base';
 import type { ApiClientError } from '~/api/clients/http';
 import { createBaseClient } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
 import { Button } from '~/components/ui/button';
 import { getUserSession } from '~/lib/auth.utils';
-import { Pen } from 'lucide-react';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import { PaginatedTable } from '~/components/table/paginated-data-table';
+import { TableCell, TableRow } from '~/components/ui/table';
+import { Input } from '~/components/ui/input';
+import { Pen } from 'lucide-react';
 
 export type EmployeesOverviewLoaderData = {
   users: CompanyUserDto[];
@@ -29,10 +32,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       return { error: 'Kunne ikke hente brukere for selskapet' };
     }
 
-    console.log(response.data);
-
     return data<EmployeesOverviewLoaderData>({
-      users: response.data,
+      users: response.data.content,
     });
   } catch (error: any) {
     console.error(error);
@@ -46,41 +47,66 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function CompanyEmployees() {
   const { users } = useLoaderData<EmployeesOverviewLoaderData>();
+  const [filter, setFilter] = useState('');
 
   const formatRoles = (roles: Array<'ADMIN' | 'EMPLOYEE'>) => {
     return roles.map((role) => (role === 'ADMIN' ? 'Admin' : 'Ansatt')).join(', ');
   };
 
+  const filteredUsers = useMemo(() => {
+    if (!filter) return users;
+    const query = filter.toLowerCase();
+    return users.filter((user) => {
+      const email = user.email?.toLowerCase() ?? '';
+      const roles = formatRoles(user.roles).toLowerCase();
+      return email.includes(query) || roles.includes(query);
+    });
+  }, [users, filter]);
+
   return (
-    <div>
-      <Table>
-        <TableCaption>Oversikt over ansatte i selskapet.</TableCaption>
-        <TableHeader>
+    <div className="container mx-auto py-6 space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">Ansatte</h1>
+          <p className="text-sm text-muted-foreground">Oversikt over alle brukere tilknyttet selskapet.</p>
+        </div>
+        <Button asChild>
+          <Link to={ROUTES_MAP['company.employees.invite'].href}>Inviter ansatt</Link>
+        </Button>
+      </div>
+
+      <div className="flex items-center py-2">
+        <Input
+          placeholder="Filtrer på e-post eller rolle…"
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+
+      <PaginatedTable<CompanyUserDto>
+        items={filteredUsers}
+        getRowKey={(user) => user.userId}
+        columns={[
+          { header: 'E-post', className: 'font-medium' },
+          { header: 'Roller' },
+          { header: 'Handlinger', className: 'text-right' },
+        ]}
+        renderRow={(user) => (
           <TableRow>
-            <TableHead>E-post</TableHead>
-            <TableHead>Roller</TableHead>
-            <TableHead className="text-right">Rediger</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users?.map((user) => (
-            <TableRow key={user.email}>
-              <TableCell className="font-medium">{user.email}</TableCell>
-              <TableCell>{formatRoles(user.roles)}</TableCell>
-              <TableCell className="text-right">
-                <Link
-                  to={`${ROUTES_MAP['company.employees.edit'].href}?userId=${user.userId}`}
-                  className="flex justify-end gap-2"
-                >
-                  <Button variant="outline" size="sm">
-                    <Pen />
-                  </Button>
+            <TableCell className="font-medium">{user.email}</TableCell>
+            <TableCell>{formatRoles(user.roles)}</TableCell>
+            <TableCell className="text-right">
+              <Button variant="outline" size="sm" asChild>
+                <Link to={`${ROUTES_MAP['company.employees.edit'].href}?userId=${user.userId}`}>
+                  <Pen className="h-4 w-4" />
+                  <span className="sr-only">Rediger</span>
                 </Link>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+              </Button>
+            </TableCell>
+          </TableRow>
+        )}
+      />
     </div>
   );
 }

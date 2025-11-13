@@ -1,6 +1,6 @@
 // Common Responses
 import type { ApiResponse } from './generic-wrapper';
-import type { AppointmentDto, AuthenticatedUserPayload, AuthenticationTokenDto, CompanySummaryDto, CompanyUserDto, ContactDto, DailyScheduleDto, InvitedUserTokenDto, JwtClaims, PaginatedResponseAppointmentDto, ScheduleDto, ServiceDto, ServiceGroupDto } from './models';
+import type { AppointmentDto, AuthenticatedUserPayload, AuthenticationTokenDto, CompanySummaryDto, CompanyUserDto, ContactDto, DailyScheduleDto, InvitedUserTokenDto, JwtClaims, PaginatedResponseAppointmentDto, PaginatedResponseCompanyUserDto, PaginatedResponseContactDto, PaginatedResponseServiceDto, PaginatedResponseServiceGroupDto, ScheduleDto, ServiceDto, ServiceGroupDto } from './models';
 
 export type ApiResponseAppointmentDto = ApiResponse<AppointmentDto>;
 export type ApiResponseAuthenticatedUserPayload = ApiResponse<AuthenticatedUserPayload>;
@@ -12,12 +12,13 @@ export type ApiResponseContactDto = ApiResponse<ContactDto>;
 export type ApiResponseInvitedUserTokenDto = ApiResponse<InvitedUserTokenDto>;
 export type ApiResponseJwtClaims = ApiResponse<JwtClaims>;
 export type ApiResponseListCompanySummaryDto = ApiResponse<CompanySummaryDto[]>;
-export type ApiResponseListCompanyUserDto = ApiResponse<CompanyUserDto[]>;
 export type ApiResponseListContactDto = ApiResponse<ContactDto[]>;
 export type ApiResponseListDailyScheduleDto = ApiResponse<DailyScheduleDto[]>;
-export type ApiResponseListServiceDto = ApiResponse<ServiceDto[]>;
-export type ApiResponseListServiceGroupDto = ApiResponse<ServiceGroupDto[]>;
 export type ApiResponsePaginatedResponseAppointmentDto = ApiResponse<PaginatedResponseAppointmentDto>;
+export type ApiResponsePaginatedResponseCompanyUserDto = ApiResponse<PaginatedResponseCompanyUserDto>;
+export type ApiResponsePaginatedResponseContactDto = ApiResponse<PaginatedResponseContactDto>;
+export type ApiResponsePaginatedResponseServiceDto = ApiResponse<PaginatedResponseServiceDto>;
+export type ApiResponsePaginatedResponseServiceGroupDto = ApiResponse<PaginatedResponseServiceGroupDto>;
 export type ApiResponseScheduleDto = ApiResponse<ScheduleDto>;
 export type ApiResponseServiceDto = ApiResponse<ServiceDto>;
 export type ApiResponseServiceGroupDto = ApiResponse<ServiceGroupDto>;

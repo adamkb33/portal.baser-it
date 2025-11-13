@@ -44,17 +44,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const identityClient2 = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accessToken });
     const companyContactsResponse =
-      await identityClient2.CompanyUserContactControllerService.CompanyUserContactControllerService.getContacts();
-    const companyContacts = companyContactsResponse.data ?? [];
+      await identityClient2.CompanyUserContactControllerService.CompanyUserContactControllerService.getContacts({});
+    const companyContacts = companyContactsResponse.data?.content ?? [];
 
     const bookingClient2 = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
     const serviceGroupsResponse =
-      await bookingClient2.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups();
-    const serviceGroups = serviceGroupsResponse.data ?? [];
+      await bookingClient2.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups({});
+    const serviceGroups = serviceGroupsResponse.data?.content ?? [];
 
     const bookingClient3 = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const servicesResponse = await bookingClient3.ServiceControllerService.ServiceControllerService.getServices();
-    const services = servicesResponse.data ?? [];
+    const servicesResponse = await bookingClient3.ServiceControllerService.ServiceControllerService.getServices({});
+    const services = servicesResponse.data?.content ?? [];
 
     const companyGroupedServices: GroupedServiceGroup[] = serviceGroups.map((group) => ({
       ...group,

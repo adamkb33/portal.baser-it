@@ -4,6 +4,7 @@
 /* eslint-disable */
 import type { ApiResponseContactDto } from '@types';
 import type { ApiResponseListContactDto } from '@types';
+import type { ApiResponsePaginatedResponseContactDto } from '@types';
 import type { ApiResponseUnit } from '@types';
 import type { CreateContactDto } from '@types';
 import type { GetContactsByIdsDto } from '@types';
@@ -51,13 +52,26 @@ export class CompanyUserContactControllerService {
         });
     }
     /**
-     * @returns ApiResponseListContactDto OK
+     * @returns ApiResponsePaginatedResponseContactDto OK
      * @throws ApiError
      */
-    public static getContacts(): CancelablePromise<ApiResponseListContactDto> {
+    public static getContacts({
+        page,
+        size,
+        sort,
+    }: {
+        page?: number,
+        size?: number,
+        sort?: string,
+    }): CancelablePromise<ApiResponsePaginatedResponseContactDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/company-user/contacts',
+            query: {
+                'page': page,
+                'size': size,
+                'sort': sort,
+            },
         });
     }
     /**
