@@ -40,6 +40,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (!accessToken) {
       return redirect('/');
     }
+
     const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
     const response =
       await bookingClient.DailyScheduleControllerService.DailyScheduleControllerService.getDailySchedules();
@@ -87,7 +88,7 @@ export async function action({ request }: ActionFunctionArgs) {
         requestBody: [scheduleWithSeconds],
       });
 
-      return data({ success: true, message: id ? 'Åpningstid oppdatert' : 'Åpningstid opprettet' });
+      return data({ success: true, message: id ? 'Arbeidstid oppdatert' : 'Arbeidstid lagret' });
     }
 
     if (intent === 'create-default') {
@@ -103,13 +104,13 @@ export async function action({ request }: ActionFunctionArgs) {
         requestBody: defaultSchedules,
       });
 
-      return data({ success: true, message: 'Standard åpningstider opprettet' });
+      return data({ success: true, message: 'Standard arbeidstider lagret' });
     }
 
     if (intent === 'delete') {
       const id = Number(formData.get('id'));
       await bookingClient.DailyScheduleControllerService.DailyScheduleControllerService.deleteDailySchedule({ id });
-      return data({ success: true, message: 'Åpningstid slettet' });
+      return data({ success: true, message: 'Arbeidstid fjernet' });
     }
 
     return data({ success: false, message: 'Ugyldig handling' });
@@ -145,7 +146,7 @@ export default function BookingDailySchedule() {
     const formData = new FormData();
     formData.append('intent', 'create-default');
     submit(formData, { method: 'post' });
-    toast.success('Standard åpningstider opprettet');
+    toast.success('Standard arbeidstider lagret');
   };
 
   const handleEdit = (schedule: DailyScheduleDto) => {
@@ -181,51 +182,60 @@ export default function BookingDailySchedule() {
     formData.append('id', String(deletingScheduleId));
 
     submit(formData, { method: 'post' });
-    toast.success('Åpningstid slettet');
+    toast.success('Arbeidstid fjernet');
 
     setIsDeleteDialogOpen(false);
     setDeletingScheduleId(null);
   };
 
   const handleFieldChange = (name: keyof FormData, value: any) => {
-    if (editingSchedule) {
-      setEditingSchedule({ ...editingSchedule, [name]: value });
-    }
+    if (editingSchedule) setEditingSchedule({ ...editingSchedule, [name]: value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingSchedule) return;
 
-    const formData = new FormData();
-    formData.append('intent', editingSchedule.id ? 'update' : 'create');
-    if (editingSchedule.id) {
-      formData.append('id', String(editingSchedule.id));
-    }
-    formData.append('dayOfWeek', editingSchedule.dayOfWeek);
-    formData.append('startTime', editingSchedule.startTime);
-    formData.append('endTime', editingSchedule.endTime);
+    const fd = new FormData();
+    fd.append('intent', editingSchedule.id ? 'update' : 'create');
+    if (editingSchedule.id) fd.append('id', String(editingSchedule.id));
+    fd.append('dayOfWeek', editingSchedule.dayOfWeek);
+    fd.append('startTime', editingSchedule.startTime);
+    fd.append('endTime', editingSchedule.endTime);
 
-    submit(formData, { method: 'post' });
+    submit(fd, { method: 'post' });
 
     setIsDialogOpen(false);
     setEditingSchedule(null);
 
-    toast.success(editingSchedule.id ? 'Åpningstid oppdatert' : 'Åpningstid opprettet');
+    toast.success(editingSchedule.id ? 'Arbeidstid oppdatert' : 'Arbeidstid lagret');
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <div>
-        <div className="flex flex-row items-center justify-between space-y-0 mb-6">
-          <h1>Ukesplan</h1>
-          {sortedSchedules.length === 0 && (
-            <Button onClick={handleCreateDefaultSchedule}>Opprett standard åpningstider</Button>
-          )}
+    <div className="space-y-6 py-6">
+      {/* Header */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Arbeidstider</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Velg hvilke dager og klokkeslett du er tilgjengelig for avtaler.
+          </p>
         </div>
 
+        {sortedSchedules.length === 0 && (
+          <Button onClick={handleCreateDefaultSchedule} className="rounded-md px-5">
+            Sett standard arbeidstider
+          </Button>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="rounded-md border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
         {sortedSchedules.length === 0 ? (
-          <p className="text-muted-foreground">Ingen åpningstider registrert</p>
+          <p className="text-sm text-slate-500">
+            Du har ikke lagt inn noen arbeidstider ennå. Du kan starte med standard arbeidstider eller legge inn dagene
+            manuelt.
+          </p>
         ) : (
           <>
             <DataTable<DailyScheduleDto>
@@ -233,39 +243,33 @@ export default function BookingDailySchedule() {
               getRowKey={(schedule) => schedule.id}
               columns={[
                 {
-                  header: 'Dag',
+                  header: 'Ukedag',
                   accessor: (schedule) => DAY_LABELS[schedule.dayOfWeek],
                   className: 'font-medium',
                 },
-                {
-                  header: 'Starttid',
-                  accessor: (schedule) => schedule.startTime.substring(0, 5),
-                },
-                {
-                  header: 'Sluttid',
-                  accessor: (schedule) => schedule.endTime.substring(0, 5),
-                },
+                { header: 'Start', accessor: (s) => s.startTime.substring(0, 5) },
+                { header: 'Slutt', accessor: (s) => s.endTime.substring(0, 5) },
               ]}
               actions={[
-                {
-                  label: 'Rediger',
-                  onClick: (schedule) => handleEdit(schedule),
-                  variant: 'outline',
-                },
-                {
-                  label: 'Slett',
-                  onClick: (schedule) => handleDeleteClick(schedule.id),
-                  variant: 'destructive',
-                },
+                { label: 'Rediger', onClick: (schedule) => handleEdit(schedule), variant: 'outline' },
+                { label: 'Slett', onClick: (schedule) => handleDeleteClick(schedule.id), variant: 'destructive' },
               ]}
             />
 
             {missingDays.length > 0 && (
-              <div className="mt-6">
-                <p className="text-sm font-medium mb-2">Legg til flere dager:</p>
+              <div className="mt-6 rounded-md bg-slate-50 px-3 py-3">
+                <p className="mb-2 text-sm font-medium text-slate-900">Dager uten arbeidstid</p>
+                <p className="mb-3 text-xs text-slate-500">Klikk på en dag for å legge til arbeidstid.</p>
+
                 <div className="flex flex-wrap gap-2">
                   {missingDays.map((day) => (
-                    <Button key={day} variant="outline" size="sm" onClick={() => handleAddDay(day)}>
+                    <Button
+                      key={day}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-md border-slate-200"
+                      onClick={() => handleAddDay(day)}
+                    >
                       + {DAY_LABELS[day as DailyScheduleDto['dayOfWeek']]}
                     </Button>
                   ))}
@@ -276,18 +280,19 @@ export default function BookingDailySchedule() {
         )}
       </div>
 
+      {/* Dialogs */}
       {editingSchedule && (
         <FormDialog<FormData>
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
-          title={editingSchedule.id ? 'Rediger åpningstid' : 'Legg til åpningstid'}
+          title={editingSchedule.id ? 'Rediger arbeidstid' : 'Legg til arbeidstid'}
           formData={editingSchedule}
           onFieldChange={handleFieldChange}
           onSubmit={handleSubmit}
           fields={[
             {
               name: 'dayOfWeek',
-              label: 'Dag',
+              label: 'Ukedag',
               type: 'select',
               disabled: true,
               options: DAY_ORDER.map((day) => ({
@@ -295,18 +300,8 @@ export default function BookingDailySchedule() {
                 value: day,
               })),
             },
-            {
-              name: 'startTime',
-              label: 'Starttid',
-              type: 'time',
-              required: true,
-            },
-            {
-              name: 'endTime',
-              label: 'Sluttid',
-              type: 'time',
-              required: true,
-            },
+            { name: 'startTime', label: 'Start', type: 'time', required: true },
+            { name: 'endTime', label: 'Slutt', type: 'time', required: true },
           ]}
           actions={[
             {
@@ -317,12 +312,7 @@ export default function BookingDailySchedule() {
                 setEditingSchedule(null);
               },
             },
-            {
-              label: 'Lagre',
-              type: 'submit',
-              variant: 'default',
-              onClick: () => {},
-            },
+            { label: 'Lagre', type: 'submit', variant: 'default' },
           ]}
         />
       )}
@@ -331,7 +321,7 @@ export default function BookingDailySchedule() {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
-        description="Er du sikker på at du vil slette denne åpningstiden? Denne handlingen kan ikke angres."
+        description="Er du sikker på at du vil fjerne denne arbeidstiden? Denne handlingen kan ikke angres."
       />
     </div>
   );

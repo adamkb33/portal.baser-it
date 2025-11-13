@@ -351,51 +351,116 @@ export default function BookingAppointmentsCreate() {
   const allowedDays = new Set(dailySchedules.map((s) => s.dayOfWeek.toString()));
 
   return (
-    <div className="space-y-4">
-      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-      <div>
-        <h3 className="text-base font-medium">Oppi person opplysninger</h3>
-        <ContactPicker contacts={companyContacts} value={selectedContactId} onChange={handleContactChange} />
+    <div className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl space-y-6">
+        {/* Header card */}
+        <div className="flex flex-col gap-3 rounded-md border border-slate-200 bg-white/80 px-4 py-4 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-md font-semibold tracking-tight text-slate-900">Ny avtale</h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Velg kunde, tjenester, dato og tidspunkt for å opprette en ny avtale.
+            </p>
+          </div>
+        </div>
+
+        {/* Error banner */}
+        {error && (
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Steps container */}
+        <div className="space-y-4">
+          {/* Step 1: Contact */}
+          <div className="rounded-md border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Steg 1</p>
+                <h3 className="text-base font-medium text-slate-900">Oppgi personopplysninger</h3>
+                <p className="text-xs text-slate-500">Velg kunden du vil opprette en avtale for.</p>
+              </div>
+            </div>
+
+            <ContactPicker contacts={companyContacts} value={selectedContactId} onChange={handleContactChange} />
+          </div>
+
+          {/* Step 2: Services */}
+          {selectedContactId && (
+            <div className="rounded-md border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Steg 2</p>
+                  <h3 className="text-base font-medium text-slate-900">Velg tjenester</h3>
+                  <p className="text-xs text-slate-500">Du kan velge én eller flere tjenester som inngår i avtalen.</p>
+                </div>
+              </div>
+
+              <ServicePicker
+                groupedServices={companyGroupedServices}
+                selectedServiceIds={selectedServiceIds}
+                onChange={handleServicesChange}
+              />
+            </div>
+          )}
+
+          {/* Step 3: Date */}
+          {selectedContactId && selectedServiceIds.length > 0 && (
+            <div className="rounded-md border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Steg 3</p>
+                  <h3 className="text-base font-medium text-slate-900">Velg dato</h3>
+                  <p className="text-xs text-slate-500">
+                    Kun dager hvor bedriften har åpningstid vil være tilgjengelige.
+                  </p>
+                </div>
+              </div>
+
+              <DatePicker
+                selectedDate={selectedDate ?? undefined}
+                onChange={handleDateChange}
+                isDateAllowed={(date) => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  if (date < today) return false;
+
+                  const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+                  return allowedDays.has(dayName);
+                }}
+              />
+            </div>
+          )}
+
+          {/* Step 4: Time slot */}
+          {schedule && (
+            <div className="rounded-md border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Steg 4</p>
+                  <h3 className="text-base font-medium text-slate-900">Velg tidspunkt</h3>
+                  <p className="text-xs text-slate-500">
+                    Velg et ledig tidspunkt basert på kundens og bedriftens tilgjengelighet.
+                  </p>
+                </div>
+              </div>
+
+              <TimeSlotPicker schedule={schedule} selectedTimeSlot={selectedTimeSlot} onChange={handleTimeSlotChange} />
+            </div>
+          )}
+        </div>
+
+        {/* Action bar */}
+        <div className="flex items-center justify-end">
+          <Button
+            className="rounded-full px-6 shadow-sm hover:shadow-md transition-shadow"
+            onClick={handleCreate}
+            disabled={!selectedContactId || !selectedServiceIds.length || !selectedDate || !selectedTimeSlot}
+          >
+            Fullfør reservering
+          </Button>
+        </div>
       </div>
-
-      {selectedContactId && (
-        <div>
-          <h3 className="text-base font-medium">Velg tjenester</h3>
-          <ServicePicker
-            groupedServices={companyGroupedServices}
-            selectedServiceIds={selectedServiceIds}
-            onChange={handleServicesChange}
-          />
-        </div>
-      )}
-
-      {selectedContactId && selectedServiceIds.length > 0 && (
-        <div>
-          <h3 className="text-base font-medium">Velg dato</h3>
-          <DatePicker
-            selectedDate={selectedDate ?? undefined}
-            onChange={handleDateChange}
-            isDateAllowed={(date) => {
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              if (date < today) return false;
-
-              const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-              return allowedDays.has(dayName);
-            }}
-          />
-        </div>
-      )}
-
-      {schedule && (
-        <TimeSlotPicker schedule={schedule} selectedTimeSlot={selectedTimeSlot} onChange={handleTimeSlotChange} />
-      )}
-
-      {selectedTimeSlot && (
-        <Button className="w-max" onClick={handleCreate}>
-          Fullfør reservering
-        </Button>
-      )}
     </div>
   );
 }

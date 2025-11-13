@@ -13,18 +13,15 @@ export interface FormField<T> {
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
-  options?: { label: string; value: string | number }[]; // For select fields
+  options?: { label: string; value: string | number }[];
   className?: string;
-
-  /** Optional field-level error (overrides `errors` prop for this field) */
   error?: string;
-  /** Optional helper/description text under the field (above the error if both shown) */
   description?: string;
 }
 
 export interface DialogAction {
   label: string;
-  onClick: () => void;
+  onClick?: () => void; // ⬅️ make optional
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   type?: 'button' | 'submit';
   className?: string;
@@ -39,8 +36,6 @@ interface FormDialogProps<T> {
   onFieldChange: (name: keyof T, value: any) => void;
   onSubmit: (e: React.FormEvent) => void;
   actions?: DialogAction[];
-
-  /** Optional central errors map (per field). Example: { givenName: 'Påkrevd' } */
   errors?: Partial<Record<keyof T, string>>;
 }
 
@@ -70,7 +65,7 @@ export function FormDialog<T>({
             onValueChange={(val) => onFieldChange(field.name, val)}
             disabled={field.disabled}
           >
-            <SelectTrigger id={fieldId} aria-invalid={ariaInvalid} aria-describedby={describedById}>
+            <SelectTrigger id={fieldId} aria-invalid={ariaInvalid} aria-describedby={describedById} className="mt-1">
               <SelectValue placeholder={field.placeholder} />
             </SelectTrigger>
             <SelectContent>
@@ -107,7 +102,7 @@ export function FormDialog<T>({
             placeholder={field.placeholder}
             required={field.required}
             disabled={field.disabled}
-            className={field.className}
+            className={field.className ? `mt-1 ${field.className}` : 'mt-1'}
           />
           {field.description && (
             <p id={`${fieldId}-desc`} className="mt-1 text-xs text-muted-foreground">
@@ -135,7 +130,7 @@ export function FormDialog<T>({
           placeholder={field.placeholder}
           required={field.required}
           disabled={field.disabled}
-          className={field.className}
+          className={field.className ? `mt-1 ${field.className}` : 'mt-1'}
         />
         {field.description && (
           <p id={`${fieldId}-desc`} className="mt-1 text-xs text-muted-foreground">
@@ -153,26 +148,34 @@ export function FormDialog<T>({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+      <DialogContent className="sm:max-w-md rounded-md border border-slate-200 bg-white shadow-lg">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg font-semibold tracking-tight text-slate-900">{title}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
-          {fields.map((field) => (
-            <div key={String(field.name)}>
-              <Label htmlFor={String(field.name)}>{field.label}</Label>
-              {renderField(field)}
-            </div>
-          ))}
+
+        <form onSubmit={onSubmit} className="space-y-5 pt-1">
+          <div className="space-y-4">
+            {fields.map((field) => (
+              <div key={String(field.name)} className="space-y-1.5">
+                <Label htmlFor={String(field.name)} className="text-xs font-medium text-slate-700">
+                  {field.label}
+                </Label>
+                {renderField(field)}
+              </div>
+            ))}
+          </div>
+
           {actions && actions.length > 0 && (
-            <div className="flex justify-end gap-2">
+            <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
               {actions.map((action, index) => (
                 <Button
                   key={index}
                   type={action.type || 'button'}
                   variant={action.variant || 'outline'}
                   onClick={action.onClick}
-                  className={action.className}
+                  className={
+                    action.className ?? (action.variant === 'default' ? 'rounded-full px-4' : 'rounded-full px-4')
+                  }
                 >
                   {action.label}
                 </Button>
