@@ -36,7 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const servicesResponse = await bookingClient2.ServiceControllerService.ServiceControllerService.getServices();
 
     return data<BookingServicesLoaderData>({
-      serviceGroups: serviceGroupsResponse.data,
+      serviceGroups: serviceGroupsResponse?.data || [],
       services: servicesResponse.data || [],
     });
   } catch (error: any) {

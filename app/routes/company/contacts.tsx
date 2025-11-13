@@ -40,9 +40,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       token: accessToken,
     });
 
-    const response = await baseClient.ContactControllerService.ContactControllerService.getContacts();
+    const response =
+      await baseClient.CompanyUserContactControllerService.CompanyUserContactControllerService.getContacts();
 
-    return data<CompanyContactsLoaderData>({ contacts: response.data });
+    return data<CompanyContactsLoaderData>({ contacts: response?.data || [] });
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {
@@ -57,17 +58,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
  * NOTE: No Zod here — per request, validation is client-only
  * ================================ */
 
+export type ContactsActionData = {
+  success: boolean;
+  message: string;
+  contact: ContactDto | null;
+};
+
 export async function action({ request }: ActionFunctionArgs) {
   const accessToken = await getAccessToken(request);
   if (!accessToken) return redirect('/');
 
-  const baseClient = createBaseClient({
-    baseUrl: ENV.BASE_SERVICE_BASE_URL,
-    token: accessToken,
-  });
+  const baseClient = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accessToken });
 
   const form = await request.formData();
   const intent = (form.get('intent') as string) || '';
+  const redirectTo = (form.get('redirectTo') as string | null) ?? null;
+  const isSafeRedirect = (url: string) => url.startsWith('/') && !url.startsWith('//');
+
+  const maybeRedirect = (id?: number | null) => {
+    if (redirectTo && isSafeRedirect(redirectTo)) {
+      const url = new URL(redirectTo, 'http://dummy'); // base needed only to use URL API
+      if (id) url.searchParams.set('contactId', String(id));
+      return redirect(url.pathname + url.search);
+    }
+    return null;
+  };
 
   try {
     if (intent === 'create') {
@@ -78,11 +93,18 @@ export async function action({ request }: ActionFunctionArgs) {
         mobileNumber: form.get('mobileNumber') ? String(form.get('mobileNumber')) : undefined,
       };
 
-      await baseClient.ContactControllerService.ContactControllerService.createContact({
-        requestBody: payload,
-      });
+      const res =
+        await baseClient.CompanyUserContactControllerService.CompanyUserContactControllerService.createContact({
+          requestBody: payload,
+        });
 
-      return data({ success: true, message: 'Kontakt opprettet' });
+      // assuming API returns the created contact; if not, re-fetch by some id it returns
+      const createdContact = res?.data ?? null;
+
+      const r = maybeRedirect(createdContact?.id ?? null);
+      if (r) return r;
+
+      return data({ success: true, message: 'Kontakt opprettet', contact: createdContact });
     }
 
     if (intent === 'update') {
@@ -94,18 +116,23 @@ export async function action({ request }: ActionFunctionArgs) {
         mobileNumber: form.get('mobileNumber') ? String(form.get('mobileNumber')) : undefined,
       };
 
-      await baseClient.ContactControllerService.ContactControllerService.updateContact({
-        id,
-        requestBody: payload,
-      });
+      const res =
+        await baseClient.CompanyUserContactControllerService.CompanyUserContactControllerService.updateContact({
+          id,
+          requestBody: payload,
+        });
 
-      return data({ success: true, message: 'Kontakt oppdatert' });
+      return data({ success: true, message: 'Kontakt oppdatert', contact: res?.data || null });
     }
 
     if (intent === 'delete') {
       const id = Number(form.get('id'));
-      await baseClient.ContactControllerService.ContactControllerService.deleteContact({ id });
-      return data({ success: true, message: 'Kontakt slettet' });
+      await baseClient.CompanyUserContactControllerService.CompanyUserContactControllerService.deleteContact({ id });
+
+      const r = maybeRedirect(null);
+      if (r) return r;
+
+      return data({ success: true, message: 'Kontakt slettet', contact: null });
     }
 
     return data({ success: false, message: 'Ugyldig handling' }, { status: 400 });

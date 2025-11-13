@@ -1,7 +1,8 @@
 export { ActuatorService } from './services/ActuatorService';
 export { AdminCompanyControllerService } from './services/AdminCompanyControllerService';
 export { AuthControllerService } from './services/AuthControllerService';
-export { ContactControllerService } from './services/ContactControllerService';
+export { CompanyUserContactControllerService } from './services/CompanyUserContactControllerService';
+export { InternalCompanyContactControllerService } from './services/InternalCompanyContactControllerService';
 export { InternalCompanyUserControllerService } from './services/InternalCompanyUserControllerService';
 export { SystemAdminCompanyControllerService } from './services/SystemAdminCompanyControllerService';
 export { SystemAdminUserControllerService } from './services/SystemAdminUserControllerService';

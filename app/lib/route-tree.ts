@@ -204,6 +204,14 @@ export const ROUTE_TREE: RouteBranch[] = [
         accessType: Access.AUTHENTICATED,
         companyRoles: [Roles.ADMIN],
       },
+      {
+        id: 'booking.appointments',
+        href: '/booking/appointments',
+        label: 'Time bestilling',
+        category: BrachCategory.COMPANY,
+        accessType: Access.AUTHENTICATED,
+        companyRoles: [Roles.ADMIN],
+      },
     ],
   },
 ];

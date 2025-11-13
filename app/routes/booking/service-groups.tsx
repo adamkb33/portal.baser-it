@@ -32,7 +32,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
     const response = await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups();
-    return data<BookingServiceGroupsLoaderData>({ serviceGroups: response.data });
+    return data<BookingServiceGroupsLoaderData>({ serviceGroups: response?.data || [] });
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {

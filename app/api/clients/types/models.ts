@@ -31,6 +31,26 @@ export interface AddressDto {
     city?: string;
 }
 
+export interface AppointmentDto {
+    id: number;
+    userId: number;
+    companyId: number;
+    contactId: number;
+    date: string;
+    startTime: string;
+    endTime: string;
+    services: AppointmentServiceDto[];
+}
+
+export interface AppointmentServiceDto {
+    id: number;
+    appointmentId: number;
+    serviceId: number;
+    name: string;
+    duration: number;
+    price: number;
+}
+
 export interface AuthenticatedUserPayload {
     id: number;
     email: string;
@@ -95,6 +115,14 @@ export interface ContactMobileNumberDto {
     mobileNumber: string;
 }
 
+export interface CreateAppointmentCompanyUserDto {
+    contactId: number;
+    date: string;
+    startTime: string;
+    endTime: string;
+    serviceIds: number[];
+}
+
 export interface CreateCompanyDto {
     orgNumber: string;
 }
@@ -141,6 +169,10 @@ export interface ExistingUserAcceptInviteDto {
 
 export interface ForgotPasswordDto {
     email: string;
+}
+
+export interface GetContactsByIdsDto {
+    contactIds: number[];
 }
 
 export interface InviteCompanyUserDto {
