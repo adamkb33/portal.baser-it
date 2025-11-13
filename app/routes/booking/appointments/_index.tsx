@@ -12,24 +12,24 @@ import * as React from 'react';
 import { toast } from 'sonner';
 import type { AppointmentDto } from 'tmp/openapi/gen/booking';
 import { createBookingClient } from '~/api/clients/booking';
-import { createBaseClient } from '~/api/clients/base';
+import { createBaseClient, type ContactDto } from '~/api/clients/base';
 import type { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { getAccessToken } from '~/lib/auth.utils';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
+import { TableCell, TableRow } from '~/components/ui/table';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { PaginatedTable } from '~/components/table/paginated-data-table';
-import { BinaryIcon, Trash, ZoomIn } from 'lucide-react';
+import { Trash, ZoomIn } from 'lucide-react';
 
 export type ContactSlim = {
   id: number;
   givenName: string;
   familyName: string;
-  email?: { value?: string } | undefined;
-  mobileNumberDto?: { countryCode?: string; number?: string } | undefined;
+  email?: string;
+  mobileNumber?: string;
 };
 
 export type CombinedAppointment = AppointmentDto & {
@@ -84,16 +84,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
               requestBody: { contactIds: uniqueContactIds },
             });
 
-          const contacts = contactsRes.data ?? [];
+          const rawContacts = contactsRes.data as any;
+          const contacts: ContactDto[] = Array.isArray(rawContacts)
+            ? rawContacts
+            : Array.isArray(rawContacts?.content)
+              ? rawContacts.content
+              : [];
+
           const byId = new Map<number, ContactSlim>(
-            contacts.map((c: any) => [
+            contacts.map((c) => [
               c.id,
               {
                 id: c.id,
                 givenName: c.givenName,
                 familyName: c.familyName,
-                email: c.email,
-                mobileNumberDto: c.mobileNumberDto,
+                // ContactDto.email?: { id, email }
+                email: c.email?.email ?? undefined,
+                // ContactDto.mobileNumberDto?: { id, mobileNumber }
+                mobileNumber: c.mobileNumberDto?.mobileNumber ?? undefined,
               },
             ]),
           );
@@ -232,10 +240,11 @@ export default function BookingAppointments() {
         columns={[
           { header: 'Kunde' },
           { header: 'Dato' },
-          { header: 'Tid' },
+          { header: 'Start tid' },
+          { header: 'Slutt tid' },
           { header: 'Tjenester' },
           { header: 'Detaljer', className: 'text-right' },
-          { header: '', className: 'text-right' },
+          { header: 'Slett', className: 'text-right' },
         ]}
         getRowKey={(a) => a.id!}
         renderRow={(a) => (
@@ -244,7 +253,8 @@ export default function BookingAppointments() {
               {a.contact ? `${a.contact.givenName} ${a.contact.familyName}` : 'Ukjent'}
             </TableCell>
             <TableCell>{formatNorDate(String(a.date))}</TableCell>
-            <TableCell>{`${a.startTime ?? '—'}–${a.endTime ?? '—'}`}</TableCell>
+            <TableCell>{a.endTime}</TableCell>
+            <TableCell>{a.endTime}</TableCell>
             <TableCell>
               {a.services?.length ? a.services.map((s) => s?.name ?? 'Ukjent tjeneste').join(', ') : '—'}
             </TableCell>
@@ -282,10 +292,8 @@ export default function BookingAppointments() {
 
 function DetailsPopover({ appt }: { appt: CombinedAppointment }) {
   const fullName = appt.contact ? `${appt.contact.givenName} ${appt.contact.familyName}` : 'Ukjent';
-  const email = appt.contact?.email?.value ?? '—';
-  const phone = appt.contact?.mobileNumberDto
-    ? `${appt.contact.mobileNumberDto.countryCode ?? ''} ${appt.contact.mobileNumberDto.number ?? ''}`.trim()
-    : '—';
+  const email = appt.contact?.email;
+  const phone = appt.contact?.mobileNumber;
   const totalPrice = (appt.services ?? []).reduce((sum, s) => sum + (s?.price ?? 0), 0);
   const totalDuration = (appt.services ?? []).reduce((sum, s) => sum + (s?.duration ?? 0), 0);
 
