@@ -1,8 +1,8 @@
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
-import type { GroupedServiceGroup } from '~/routes/booking/appointments';
 import { Link } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import type { GroupedServiceGroup } from '~/routes/booking/appointments/create';
 
 export type ServicePickerProps = {
   groupedServices: GroupedServiceGroup[];

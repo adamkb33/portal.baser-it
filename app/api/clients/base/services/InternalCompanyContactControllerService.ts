@@ -11,10 +11,20 @@ export class InternalCompanyContactControllerService {
      * @returns ApiResponseBoolean OK
      * @throws ApiError
      */
-    public static validateCompanyContact(): CancelablePromise<ApiResponseBoolean> {
+    public static validateCompanyContact({
+        companyId,
+        contactId,
+    }: {
+        companyId: number,
+        contactId: number,
+    }): CancelablePromise<ApiResponseBoolean> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/internal/company-contact/validate',
+            url: '/internal/company-contact/validate/{companyId}/{contactId}',
+            path: {
+                'companyId': companyId,
+                'contactId': contactId,
+            },
         });
     }
 }

@@ -246,10 +246,15 @@ function convertTypeAliasToInterface(code: string, name: string) {
 
 function getResponseAlias(name: string): string | null {
   if (!name.startsWith('ApiResponse')) return null;
-  const rest = name.replace('ApiResponse', '') || 'unknown';
+  let rest = name.replace('ApiResponse', '') || 'unknown';
   if (rest === 'String') return 'string';
   if (rest === 'Unit') return 'void';
-  return rest;
+  const isList = rest.startsWith('List') && rest.length > 'List'.length;
+  if (isList) {
+    rest = rest.slice('List'.length) || 'unknown';
+  }
+  const target = rest;
+  return isList ? `${target}[]` : target;
 }
 
 function buildTypeFiles({

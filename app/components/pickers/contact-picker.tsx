@@ -59,7 +59,7 @@ export function ContactPicker({ value, onChange, contacts }: ContactPickerProps)
   return (
     <div className="space-y-2">
       {hasContacts ? (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col md:flex-row md:items-center gap-3">
           <Select value={value ? String(value) : undefined} onValueChange={(val) => onChange(val ? Number(val) : null)}>
             <SelectTrigger className="min-w-[260px]">
               <SelectValue placeholder="Velg kontakt" />
@@ -74,7 +74,7 @@ export function ContactPicker({ value, onChange, contacts }: ContactPickerProps)
             </SelectContent>
           </Select>
 
-          <Button variant="outline" onClick={() => setIsDialogOpen(true)}>
+          <Button className="w-max" variant="outline" onClick={() => setIsDialogOpen(true)}>
             Ny kontakt
           </Button>
         </div>

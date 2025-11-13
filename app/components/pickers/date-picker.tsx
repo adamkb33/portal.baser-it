@@ -1,12 +1,8 @@
-// components/pickers/date-picker.tsx
-'use client';
-
 import * as React from 'react';
 import { CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 function formatDate(date: Date | undefined) {

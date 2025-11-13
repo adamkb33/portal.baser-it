@@ -171,6 +171,13 @@ export interface ForgotPasswordDto {
     email: string;
 }
 
+export interface GetCompanyUserScheduleDto {
+    userId: number;
+    companyId: number;
+    date: string;
+    serviceIds: number[];
+}
+
 export interface GetContactsByIdsDto {
     contactIds: number[];
 }
@@ -217,6 +224,16 @@ export interface OrganizationTypeDto {
     retiredAt?: string;
 }
 
+export interface PaginatedResponseAppointmentDto {
+    content: AppointmentDto[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+}
+
 export interface RefreshTokenRequestDto {
     refreshToken: string;
 }
@@ -230,6 +247,18 @@ export interface ResetPasswordDto {
     resetPasswordToken: string;
     password: string;
     password2: string;
+}
+
+export interface ScheduleDto {
+    userId: number;
+    companyId: number;
+    date: string;
+    timeSlots: ScheduleTimeSlot[];
+}
+
+export interface ScheduleTimeSlot {
+    startTime: string;
+    endTime: string;
 }
 
 export interface ServiceDto {

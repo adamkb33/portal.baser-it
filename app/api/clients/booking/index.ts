@@ -1,5 +1,6 @@
 export { ActuatorService } from './services/ActuatorService';
 export { CompanyUserAppointmentControllerService } from './services/CompanyUserAppointmentControllerService';
+export { CompanyUserScheduleControllerService } from './services/CompanyUserScheduleControllerService';
 export { DailyScheduleControllerService } from './services/DailyScheduleControllerService';
 export { ServiceControllerService } from './services/ServiceControllerService';
 export { ServiceGroupControllerService } from './services/ServiceGroupControllerService';

@@ -211,6 +211,16 @@ export const ROUTE_TREE: RouteBranch[] = [
         category: BrachCategory.COMPANY,
         accessType: Access.AUTHENTICATED,
         companyRoles: [Roles.ADMIN],
+        children: [
+          {
+            id: 'booking.appointments.create',
+            href: '/booking/appointments/create',
+            label: 'Bestill ny time',
+            category: BrachCategory.COMPANY,
+            accessType: Access.AUTHENTICATED,
+            companyRoles: [Roles.ADMIN],
+          },
+        ],
       },
     ],
   },
