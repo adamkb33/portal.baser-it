@@ -34,6 +34,8 @@ export type PaginatedTableProps<T> = {
 
   /** Optional className for the container card */
   className?: string;
+  /** Callback when page size changes */
+  onPageSizeChange?: (size: number) => void;
 };
 
 export function PaginatedTable<T>({
@@ -42,10 +44,11 @@ export function PaginatedTable<T>({
   renderRow,
   getRowKey,
   emptyMessage = 'Ingen resultater.',
-  pageSizeOptions = [10, 20, 50],
-  initialPageSize = 10,
+  pageSizeOptions = [5, 10, 20],
+  initialPageSize = 5,
   headerSlot,
   className,
+  onPageSizeChange,
 }: PaginatedTableProps<T>) {
   const [pageSize, setPageSize] = React.useState(initialPageSize);
   const [page, setPage] = React.useState(1);
@@ -55,6 +58,11 @@ export function PaginatedTable<T>({
   React.useEffect(() => {
     setPage((p) => Math.min(Math.max(1, p), totalPages));
   }, [items.length, pageSize, totalPages]);
+
+  React.useEffect(() => {
+    setPageSize(initialPageSize);
+    setPage(1);
+  }, [initialPageSize]);
 
   const startIndex = (page - 1) * pageSize;
   const endIndex = Math.min(items.length, startIndex + pageSize);
@@ -80,8 +88,10 @@ export function PaginatedTable<T>({
               value={String(pageSize)}
               onValueChange={(v) => {
                 const next = Number(v);
+                if (next === pageSize) return;
                 setPageSize(next);
                 setPage(1);
+                onPageSizeChange?.(next);
               }}
             >
               <SelectTrigger className="h-8 w-[92px]">

@@ -17,11 +17,17 @@ export class CompanyUserAppointmentControllerService {
     public static getAppointments({
         page,
         size,
-        sort,
+        sortBy,
+        sortDirection,
+        fromDateTime,
+        toDateTime,
     }: {
         page?: number,
         size?: number,
-        sort?: string,
+        sortBy?: string,
+        sortDirection?: string,
+        fromDateTime?: string,
+        toDateTime?: string,
     }): CancelablePromise<ApiResponsePaginatedResponseAppointmentDto> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -29,7 +35,10 @@ export class CompanyUserAppointmentControllerService {
             query: {
                 'page': page,
                 'size': size,
-                'sort': sort,
+                'sortBy': sortBy,
+                'sortDirection': sortDirection,
+                'fromDateTime': fromDateTime,
+                'toDateTime': toDateTime,
             },
         });
     }

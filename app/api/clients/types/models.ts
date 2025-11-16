@@ -36,7 +36,6 @@ export interface AppointmentDto {
     userId: number;
     companyId: number;
     contactId: number;
-    date: string;
     startTime: string;
     endTime: string;
     services: AppointmentServiceDto[];
