@@ -1,11 +1,10 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import type { ScheduleDto, ScheduleTimeSlot } from 'tmp/openapi/gen/booking';
 
 export type TimeSlotPickerProps = {
   schedule: ScheduleDto;
-  selectedTimeSlot?: string; // format: ISO datetime e.g. "2025-11-16T09:00:00"
+  selectedTimeSlot?: string | null; // format: ISO datetime e.g. "2025-11-16T09:00:00"
   onChange?: (value: string) => void;
   /**
    * Optional external predicate to disable a slot.
@@ -15,7 +14,7 @@ export type TimeSlotPickerProps = {
 };
 
 export default function TimeSlotPicker({ schedule, selectedTimeSlot, onChange, isSlotAllowed }: TimeSlotPickerProps) {
-  const [value, setValue] = React.useState<string | undefined>(selectedTimeSlot);
+  const [value, setValue] = React.useState<string | null | undefined>(selectedTimeSlot);
 
   // keep internal in sync with parent
   React.useEffect(() => {
