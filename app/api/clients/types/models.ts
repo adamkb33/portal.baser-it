@@ -118,7 +118,6 @@ export interface CreateAppointmentCompanyUserDto {
     contactId: number;
     date: string;
     startTime: string;
-    endTime: string;
     serviceIds: number[];
 }
 

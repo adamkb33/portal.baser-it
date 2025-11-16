@@ -37,7 +37,7 @@ export type ContactSlim = {
 
 // Backend defaults to DESC and startTime
 const DEFAULT_SORT_FIELD: SortableColumn = 'startTime';
-const DEFAULT_SORT_DIRECTION: SortDirection = 'desc';
+const DEFAULT_SORT_DIRECTION: SortDirection = 'asc';
 const DEFAULT_PAGE_SIZE = 5;
 
 type DatePreset = 'kommende' | 'utgåtte' | 'custom';
@@ -93,23 +93,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url);
     const pageParam = Number(url.searchParams.get('page'));
     const sizeParam = Number(url.searchParams.get('size'));
-    const sortFieldParam = url.searchParams.get('sortField');
+    const sortByParam = url.searchParams.get('sortBy');
     const sortDirectionParam = url.searchParams.get('sortDirection');
-    const fromDateParam = url.searchParams.get('fromDate');
-    const toDateParam = url.searchParams.get('toDate');
+    const fromDateTimeParam = url.searchParams.get('fromDateTime');
+    const toDateTimeParam = url.searchParams.get('toDateTime');
 
     // Only allow startTime or endTime for sorting (backend restriction)
-    const sortField: SortableColumn = isValidSortField(sortFieldParam) ? sortFieldParam : DEFAULT_SORT_FIELD;
+    const sortField: SortableColumn = isValidSortField(sortByParam) ? sortByParam : DEFAULT_SORT_FIELD;
     const sortDirection: SortDirection =
       sortDirectionParam === 'asc' || sortDirectionParam === 'desc' ? sortDirectionParam : DEFAULT_SORT_DIRECTION;
     const page = Number.isFinite(pageParam) && pageParam >= 0 ? pageParam : 0;
     const size = Number.isFinite(sizeParam) && sizeParam > 0 ? sizeParam : DEFAULT_PAGE_SIZE;
 
-    const hasFromDate = isValidDate(fromDateParam);
-    const hasToDate = isValidDate(toDateParam);
+    const hasFromDate = isValidDate(fromDateTimeParam);
+    const hasToDate = isValidDate(toDateTimeParam);
 
-    const resolvedFromDate = hasFromDate ? fromDateParam! : hasToDate ? undefined : today;
-    const resolvedToDate = hasToDate ? toDateParam! : undefined;
+    const resolvedFromDate = hasFromDate ? fromDateTimeParam! : hasToDate ? undefined : today;
+    const resolvedToDate = hasToDate ? toDateTimeParam! : undefined;
 
     const datePreset: DatePreset =
       resolvedFromDate === today && !resolvedToDate
@@ -352,7 +352,7 @@ export default function BookingAppointments() {
       // Toggle between asc and desc, matching backend expectations
       const nextDirection: SortDirection = isActive && sortDirection === 'desc' ? 'asc' : 'desc';
       submitWithParams((params) => {
-        params.set('sortField', field);
+        params.set('sortBy', field);
         params.set('sortDirection', nextDirection);
         params.set('page', '0'); // Reset to first page on sort change
       });
@@ -365,15 +365,15 @@ export default function BookingAppointments() {
       submitWithParams((params) => {
         if (type === 'from') {
           if (value) {
-            params.set('fromDate', value);
+            params.set('fromDateTime', value);
           } else {
-            params.delete('fromDate');
+            params.delete('fromDateTime');
           }
-        } else {
+        } else if (type === 'to') {
           if (value) {
-            params.set('toDate', value);
+            params.set('toDateTime', value);
           } else {
-            params.delete('toDate');
+            params.delete('toDateTime');
           }
         }
         params.set('page', '0'); // Reset to first page on filter change
@@ -405,14 +405,16 @@ export default function BookingAppointments() {
     (preset: DatePreset) => {
       submitWithParams((params) => {
         if (preset === 'kommende') {
-          params.set('fromDate', today);
-          params.delete('toDate');
+          params.set('fromDateTime', today);
+          params.delete('toDateTime');
+          params.set('sortDirection', 'asc');
         } else if (preset === 'utgåtte') {
-          params.delete('fromDate');
-          params.set('toDate', today);
+          params.delete('fromDateTime');
+          params.set('toDateTime', today);
+          params.set('sortDirection', 'desc');
         } else {
-          params.delete('fromDate');
-          params.delete('toDate');
+          params.delete('fromDateTime');
+          params.delete('toDateTime');
         }
         params.set('page', '0'); // Reset to first page on preset change
       });

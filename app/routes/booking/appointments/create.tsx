@@ -14,7 +14,6 @@ import {
   type CreateAppointmentCompanyUserDto,
   type DailyScheduleDto,
   type GetCompanyUserScheduleDto,
-  type GetContactsByIdsDto,
 } from '~/api/clients/base';
 import { createBookingClient } from '~/api/clients/booking';
 import type { ApiClientError } from '~/api/clients/http';
@@ -144,9 +143,9 @@ export async function action({ request }: ActionFunctionArgs) {
       const contactIdParam = url.searchParams.get('contactId');
       const date = url.searchParams.get('date');
       const serviceIdsParam = url.searchParams.get('serviceIds');
-      const timeSlot = url.searchParams.get('timeSlot');
+      const startTime = url.searchParams.get('startTime');
 
-      if (!contactIdParam || !date || !serviceIdsParam || !timeSlot) {
+      if (!contactIdParam || !date || !serviceIdsParam || !startTime) {
         return data({ error: 'Missing required parameters' }, { status: 400 });
       }
 
@@ -164,18 +163,14 @@ export async function action({ request }: ActionFunctionArgs) {
         return data({ error: 'Invalid serviceIds' }, { status: 400 });
       }
 
-      const [startTime, endTime] = timeSlot.split('-');
-      if (!startTime || !endTime) {
-        return data({ error: 'Invalid timeSlot' }, { status: 400 });
-      }
-
       const requestBody: CreateAppointmentCompanyUserDto = {
         contactId,
         date,
         startTime,
-        endTime,
         serviceIds,
       };
+
+      console.log(requestBody);
 
       const bookingClient = createBookingClient({
         baseUrl: ENV.BOOKING_BASE_URL,
@@ -243,8 +238,8 @@ export default function BookingAppointmentsCreate() {
   const dateParam = searchParams.get('date');
   const [selectedDate, setSelectedDate] = useState<string | null>(dateParam ?? null);
 
-  const slotParam = searchParams.get('timeSlot');
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>(slotParam ?? undefined);
+  const slotParam = searchParams.get('startTime');
+  const [selectedStartTime, setSelectedStartTime] = useState<string | undefined>(slotParam ?? undefined);
 
   const handleContactChange = (id: number | null) => {
     setSelectedContactId(id);
@@ -282,8 +277,8 @@ export default function BookingAppointmentsCreate() {
     const next = new URLSearchParams(searchParams);
     if (isoDate) next.set('date', isoDate);
     else next.delete('date');
-    next.delete('timeSlot');
-    setSelectedTimeSlot(undefined);
+    next.delete('startTime');
+    setSelectedStartTime(undefined);
 
     setSearchParams(next, { replace: true });
   };
@@ -328,15 +323,15 @@ export default function BookingAppointmentsCreate() {
   }, [selectedContactId, selectedServiceIds, selectedDate]);
 
   useEffect(() => {
-    const p = searchParams.get('timeSlot') ?? undefined;
-    if (p !== selectedTimeSlot) setSelectedTimeSlot(p);
+    const p = searchParams.get('startTime') ?? undefined;
+    if (p !== selectedStartTime) setSelectedStartTime(p);
   }, [searchParams]);
 
   const handleTimeSlotChange = (key: string) => {
-    setSelectedTimeSlot(key);
+    setSelectedStartTime(key);
     const next = new URLSearchParams(searchParams);
-    if (key) next.set('timeSlot', key);
-    else next.delete('timeSlot');
+    if (key) next.set('startTime', key);
+    else next.delete('startTime');
     setSearchParams(next, { replace: true });
   };
 
@@ -445,7 +440,11 @@ export default function BookingAppointmentsCreate() {
                 </div>
               </div>
 
-              <TimeSlotPicker schedule={schedule} selectedTimeSlot={selectedTimeSlot} onChange={handleTimeSlotChange} />
+              <TimeSlotPicker
+                schedule={schedule}
+                selectedTimeSlot={selectedStartTime}
+                onChange={handleTimeSlotChange}
+              />
             </div>
           )}
         </div>
@@ -455,7 +454,7 @@ export default function BookingAppointmentsCreate() {
           <Button
             className="rounded-full px-6 shadow-sm hover:shadow-md transition-shadow"
             onClick={handleCreate}
-            disabled={!selectedContactId || !selectedServiceIds.length || !selectedDate || !selectedTimeSlot}
+            disabled={!selectedContactId || !selectedServiceIds.length || !selectedDate || !selectedStartTime}
           >
             Fullfør reservering
           </Button>

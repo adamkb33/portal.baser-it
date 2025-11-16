@@ -10,6 +10,7 @@ export enum Access {
 }
 
 export enum BrachCategory {
+  PUBLIC = 'PUBLIC',
   AUTH = 'AUTH',
   NONE = 'NONE',
   COMPANY = 'COMPANY',
@@ -41,6 +42,14 @@ export type RouteBranch = {
 };
 
 export const ROUTE_TREE: RouteBranch[] = [
+  {
+    id: 'appointments',
+    href: '/appointments',
+    label: 'Bestill time',
+    category: BrachCategory.PUBLIC,
+    placement: RoutePlaceMent.NAVIGATION,
+    accessType: Access.NOT_AUTHENTICATED,
+  },
   {
     id: 'auth.sign-in',
     href: '/auth/sign-in',
