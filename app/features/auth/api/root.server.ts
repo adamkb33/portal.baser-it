@@ -223,7 +223,7 @@ const buildResponseData = async (request: Request, accessToken: string): Promise
     });
 
     try {
-      const companyResponse = await baseClient.AdminCompanyControllerService.AdminCompanyControllerService.getCompany({
+      const companyResponse = await baseClient.CompanyUserControllerService.CompanyUserControllerService.getCompany({
         companyId: authPayload.company.companyId,
       });
 

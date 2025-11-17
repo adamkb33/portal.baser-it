@@ -37,7 +37,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const baseApi = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accesstoken });
 
-    const response = await baseApi.AdminCompanyControllerService.AdminCompanyControllerService.getCompanyUser({
+    const response = await baseApi.CompanyUserControllerService.CompanyUserControllerService.getCompanyUser({
       companyId: user.company.companyId,
       userId: parseInt(userId),
     });

@@ -13,7 +13,7 @@ export type TimeSlotPickerProps = {
   isSlotAllowed?: (slot: ScheduleTimeSlot) => boolean;
 };
 
-export default function TimeSlotPicker({ schedule, selectedTimeSlot, onChange, isSlotAllowed }: TimeSlotPickerProps) {
+export function TimeSlotPicker({ schedule, selectedTimeSlot, onChange, isSlotAllowed }: TimeSlotPickerProps) {
   const [value, setValue] = React.useState<string | null | undefined>(selectedTimeSlot);
 
   // keep internal in sync with parent

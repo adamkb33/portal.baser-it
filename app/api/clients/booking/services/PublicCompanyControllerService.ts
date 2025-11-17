@@ -2,28 +2,25 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ApiResponseBoolean } from '@types';
+import type { ApiResponseCompanyBookingInfoDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
-export class InternalCompanyContactControllerService {
+export class PublicCompanyControllerService {
     /**
-     * @returns ApiResponseBoolean OK
+     * @returns ApiResponseCompanyBookingInfoDto OK
      * @throws ApiError
      */
-    public static validateCompanyContact({
+    public static getCompanyBookingInfo({
         companyId,
-        contactId,
     }: {
         companyId: number,
-        contactId: number,
-    }): CancelablePromise<ApiResponseBoolean> {
+    }): CancelablePromise<ApiResponseCompanyBookingInfoDto> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/internal/company-contact/validate/{companyId}/{contactId}',
+            url: '/public/company/{companyId}/booking-info',
             path: {
                 'companyId': companyId,
-                'contactId': contactId,
             },
         });
     }

@@ -8,13 +8,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const baseApi = (accessToken: string) =>
+export const baseApi = (accessToken?: string) =>
   createBaseClient({
     baseUrl: ENV.BASE_SERVICE_BASE_URL,
     token: accessToken,
   });
 
-export const bookingApi = (accessToken: string) =>
+export const bookingApi = (accessToken?: string) =>
   createBookingClient({
     baseUrl: ENV.BOOKING_BASE_URL,
     token: accessToken,

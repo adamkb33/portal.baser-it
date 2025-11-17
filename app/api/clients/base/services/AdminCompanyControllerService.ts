@@ -2,8 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ApiResponseCompanySummaryDto } from '@types';
-import type { ApiResponseCompanyUserDto } from '@types';
 import type { ApiResponseInvitedUserTokenDto } from '@types';
 import type { ApiResponsePaginatedResponseCompanyUserDto } from '@types';
 import type { ApiResponseUnit } from '@types';
@@ -14,26 +12,6 @@ import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
 export class AdminCompanyControllerService {
-    /**
-     * @returns ApiResponseCompanyUserDto OK
-     * @throws ApiError
-     */
-    public static getCompanyUser({
-        companyId,
-        userId,
-    }: {
-        companyId: number,
-        userId: number,
-    }): CancelablePromise<ApiResponseCompanyUserDto> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/admin/companies/user',
-            query: {
-                'companyId': companyId,
-                'userId': userId,
-            },
-        });
-    }
     /**
      * @returns ApiResponseUnit OK
      * @throws ApiError
@@ -56,23 +34,6 @@ export class AdminCompanyControllerService {
             },
             body: requestBody,
             mediaType: 'application/json',
-        });
-    }
-    /**
-     * @returns ApiResponseCompanySummaryDto OK
-     * @throws ApiError
-     */
-    public static getCompany({
-        companyId,
-    }: {
-        companyId: number,
-    }): CancelablePromise<ApiResponseCompanySummaryDto> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/admin/companies',
-            query: {
-                'companyId': companyId,
-            },
         });
     }
     /**

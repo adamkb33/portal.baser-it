@@ -1,11 +1,12 @@
 // Common Responses
 import type { ApiResponse } from './generic-wrapper';
-import type { AppointmentDto, AuthenticatedUserPayload, AuthenticationTokenDto, CompanySummaryDto, CompanyUserDto, ContactDto, DailyScheduleDto, InvitedUserTokenDto, JwtClaims, PaginatedResponseAppointmentDto, PaginatedResponseCompanyUserDto, PaginatedResponseContactDto, PaginatedResponseServiceDto, PaginatedResponseServiceGroupDto, ScheduleDto, ServiceDto, ServiceGroupDto } from './models';
+import type { AppointmentDto, AuthenticatedUserPayload, AuthenticationTokenDto, CompanyBookingInfoDto, CompanySummaryDto, CompanyUserDto, ContactDto, DailyScheduleDto, InvitedUserTokenDto, JwtClaims, PaginatedResponseAppointmentDto, PaginatedResponseCompanyUserDto, PaginatedResponseContactDto, PaginatedResponseServiceDto, PaginatedResponseServiceGroupDto, PublicCompanyUserDto, ScheduleDto, ServiceDto, ServiceGroupDto } from './models';
 
 export type ApiResponseAppointmentDto = ApiResponse<AppointmentDto>;
 export type ApiResponseAuthenticatedUserPayload = ApiResponse<AuthenticatedUserPayload>;
 export type ApiResponseAuthenticationTokenDto = ApiResponse<AuthenticationTokenDto>;
 export type ApiResponseBoolean = ApiResponse<Boolean>;
+export type ApiResponseCompanyBookingInfoDto = ApiResponse<CompanyBookingInfoDto>;
 export type ApiResponseCompanySummaryDto = ApiResponse<CompanySummaryDto>;
 export type ApiResponseCompanyUserDto = ApiResponse<CompanyUserDto>;
 export type ApiResponseContactDto = ApiResponse<ContactDto>;
@@ -14,6 +15,7 @@ export type ApiResponseJwtClaims = ApiResponse<JwtClaims>;
 export type ApiResponseListCompanySummaryDto = ApiResponse<CompanySummaryDto[]>;
 export type ApiResponseListContactDto = ApiResponse<ContactDto[]>;
 export type ApiResponseListDailyScheduleDto = ApiResponse<DailyScheduleDto[]>;
+export type ApiResponseListPublicCompanyUserDto = ApiResponse<PublicCompanyUserDto[]>;
 export type ApiResponsePaginatedResponseAppointmentDto = ApiResponse<PaginatedResponseAppointmentDto>;
 export type ApiResponsePaginatedResponseCompanyUserDto = ApiResponse<PaginatedResponseCompanyUserDto>;
 export type ApiResponsePaginatedResponseContactDto = ApiResponse<PaginatedResponseContactDto>;

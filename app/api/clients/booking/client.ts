@@ -4,6 +4,7 @@ import * as ActuatorService from './services/ActuatorService';
 import * as CompanyUserAppointmentControllerService from './services/CompanyUserAppointmentControllerService';
 import * as CompanyUserScheduleControllerService from './services/CompanyUserScheduleControllerService';
 import * as DailyScheduleControllerService from './services/DailyScheduleControllerService';
+import * as PublicCompanyControllerService from './services/PublicCompanyControllerService';
 import * as ServiceControllerService from './services/ServiceControllerService';
 import * as ServiceGroupControllerService from './services/ServiceGroupControllerService';
 
@@ -12,6 +13,7 @@ export type BookingClient = {
   CompanyUserAppointmentControllerService: typeof CompanyUserAppointmentControllerService;
   CompanyUserScheduleControllerService: typeof CompanyUserScheduleControllerService;
   DailyScheduleControllerService: typeof DailyScheduleControllerService;
+  PublicCompanyControllerService: typeof PublicCompanyControllerService;
   ServiceControllerService: typeof ServiceControllerService;
   ServiceGroupControllerService: typeof ServiceGroupControllerService
 };
@@ -24,6 +26,7 @@ export function createBookingClient(opts: { baseUrl: string; token?: string }): 
     CompanyUserAppointmentControllerService,
     CompanyUserScheduleControllerService,
     DailyScheduleControllerService,
+    PublicCompanyControllerService,
     ServiceControllerService,
     ServiceGroupControllerService
   };

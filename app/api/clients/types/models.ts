@@ -71,6 +71,10 @@ export interface AuthUserCompany {
     companyProducts: CompanyProducts[];
 }
 
+export interface CompanyBookingInfoDto {
+    companyUser: CompanyUserBookingInfo[];
+}
+
 export interface CompanyRoleAssignmentDto {
     companyId: number;
     roles: Roles[];
@@ -87,6 +91,12 @@ export interface CompanySummaryDto {
     organizationType?: OrganizationTypeDto;
     postalAddress?: AddressDto;
     businessAddress?: AddressDto;
+}
+
+export interface CompanyUserBookingInfo {
+    companyId: number;
+    userId: number;
+    services: GroupedServiceGroupsDto[];
 }
 
 export interface CompanyUserDto {
@@ -169,6 +179,11 @@ export interface ForgotPasswordDto {
     email: string;
 }
 
+export interface GetCompanyUsersByIdDto {
+    companyId: number;
+    userIds: number[];
+}
+
 export interface GetCompanyUserScheduleDto {
     userId: number;
     companyId: number;
@@ -178,6 +193,20 @@ export interface GetCompanyUserScheduleDto {
 
 export interface GetContactsByIdsDto {
     contactIds: number[];
+}
+
+export interface GroupedService {
+    id: number;
+    name: string;
+    price: number;
+    duration: number;
+}
+
+export interface GroupedServiceGroupsDto {
+    companyId: number;
+    id: number;
+    name: string;
+    services: GroupedService[];
 }
 
 export interface InviteCompanyUserDto {
@@ -270,6 +299,11 @@ export interface PaginatedResponseServiceGroupDto {
     totalPages: number;
     hasNext: boolean;
     hasPrevious: boolean;
+}
+
+export interface PublicCompanyUserDto {
+    userId: number;
+    email: string;
 }
 
 export interface RefreshTokenRequestDto {

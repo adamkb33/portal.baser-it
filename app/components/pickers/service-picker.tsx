@@ -2,7 +2,7 @@ import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Link } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import type { GroupedServiceGroup } from '~/routes/booking/appointments/create';
+import type { GroupedServiceGroup } from '~/features/booking/company-user-appointment-state';
 
 export type ServicePickerProps = {
   groupedServices: GroupedServiceGroup[];
@@ -22,26 +22,28 @@ export function ServicePicker({ groupedServices, selectedServiceIds, onChange }:
   return (
     <div className="space-y-4">
       <div className="space-y-6">
-        {groupedServices.map((group) => (
-          <div key={group.id}>
-            <h4 className="font-semibold mb-3">{group.name}</h4>
-            <div className="flex flex-wrap gap-2">
-              {group.services.map((service) => {
-                const selected = selectedServiceIds.includes(service.id);
-                return (
-                  <Button
-                    key={service.id}
-                    variant={selected ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => toggleService(service.id)}
-                  >
-                    {service.name} — {service.price} kr / {service.duration} min
-                  </Button>
-                );
-              })}
+        {groupedServices
+          .filter((group) => group.services.length > 0)
+          .map((group) => (
+            <div key={group.id}>
+              <h4 className="font-semibold mb-3">{group.name}</h4>
+              <div className="flex flex-wrap gap-2">
+                {group.services.map((service) => {
+                  const selected = selectedServiceIds.includes(service.id);
+                  return (
+                    <Button
+                      key={service.id}
+                      variant={selected ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => toggleService(service.id)}
+                    >
+                      {service.name} — {service.price} kr / {service.duration} min
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {selectedServiceIds.length > 0 && (
