@@ -96,6 +96,7 @@ export interface CompanySummaryDto {
 export interface CompanyUserBookingInfo {
     companyId: number;
     userId: number;
+    dailySchedules: DailyScheduleDto[];
     services: GroupedServiceGroupsDto[];
 }
 
@@ -116,17 +117,25 @@ export interface ContactDto {
 
 export interface ContactEmailDto {
     id: number;
-    email: string;
+    value: string;
 }
 
 export interface ContactMobileNumberDto {
     id: number;
-    mobileNumber: string;
+    value: string;
 }
 
 export interface CreateAppointmentCompanyUserDto {
     contactId: number;
     date: string;
+    startTime: string;
+    serviceIds: number[];
+}
+
+export interface CreateAppointmentDto {
+    userId: number;
+    companyId: number;
+    contactId: number;
     startTime: string;
     serviceIds: number[];
 }
@@ -193,6 +202,21 @@ export interface GetCompanyUserScheduleDto {
 
 export interface GetContactsByIdsDto {
     contactIds: number[];
+}
+
+export interface GetOrCreateContactDto {
+    companyId: number;
+    givenName: string;
+    familyName: string;
+    email?: ContactEmailDto;
+    mobileNumberDto?: ContactMobileNumberDto;
+}
+
+export interface GetPublicCompanyUserScheduleDto {
+    companyId: number;
+    userId: number;
+    date: string;
+    serviceIds: number[];
 }
 
 export interface GroupedService {

@@ -17,10 +17,10 @@ export function RootLayout({ children, routeTree, companyContext }: RootLayoutPr
       <div className="fixed inset-0 opacity-20 flex items-center justify-center overflow-hidden z-0">
         <BackgroundSvg className="w-full h-full object-cover" />
       </div>
-      <div className="relative h-screen min-h-dvh flex flex-col bg-transparent text-zinc-900 z-10">
+      <div className="relative h-screen min-h-dvh flex flex-col bg-transparent text-foreground z-10">
         <header
           role="banner"
-          className="h-16 border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70"
+          className="h-16 border-b border-border bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70"
         >
           <div className="mx-auto h-full w-full max-w-[1200px] px-4 flex items-center gap-3">
             <Navbar navRoutes={routeTree} companyContext={companyContext} />
@@ -34,8 +34,8 @@ export function RootLayout({ children, routeTree, companyContext }: RootLayoutPr
           </div>
         </main>
 
-        <footer role="contentinfo" className="hidden h-14 border-t bg-zinc-50 lg:block">
-          <div className="mx-auto h-full w-full max-w-[1200px] px-4 flex items-center text-sm text-zinc-600">
+        <footer role="contentinfo" className="hidden h-14 border-t border-border bg-muted lg:block">
+          <div className="mx-auto h-full w-full max-w-[1200px] px-4 flex items-center text-sm text-muted-foreground">
             <span>© 2025</span>
           </div>
         </footer>
@@ -52,11 +52,11 @@ const BackgroundSvg = ({ className, ...props }: React.SVGProps<SVGSVGElement>) =
     height="1080"
     version="1.1"
     viewBox="0 0 1920 1080"
-    className="{className} -z-50"
+    className={`${className} -z-50`}
     {...props}
   >
     <path
-      fill="#702963"
+      fill="#a13483"
       d="M2367.678 493.379c180 112.5 346.2 306.3 366.6 520.4s-105.1 448.6-285.1 598.5c-180 149.8-414.5 215-639.1 205.1s-439.3-94.9-560.7-244.7c-121.3-149.9-149.3-364.6-145.5-575.5 3.8-211 39.3-418.2 160.6-530.7s328.5-130.3 529-123.6c200.4 6.7 394.2 38 574.2 150.5"
     ></path>
   </svg>

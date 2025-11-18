@@ -46,7 +46,7 @@ export class CompanyUserAppointmentControllerService {
      * @returns ApiResponseAppointmentDto OK
      * @throws ApiError
      */
-    public static createAppointment({
+    public static createAppointment1({
         requestBody,
     }: {
         requestBody: CreateAppointmentCompanyUserDto,

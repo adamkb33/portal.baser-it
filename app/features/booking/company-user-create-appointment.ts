@@ -100,7 +100,7 @@ export async function companyUserCreateAppointment({ request }: ActionFunctionAr
 
       await bookingApi(
         accessToken,
-      ).CompanyUserAppointmentControllerService.CompanyUserAppointmentControllerService.createAppointment({
+      ).CompanyUserAppointmentControllerService.CompanyUserAppointmentControllerService.createAppointment1({
         requestBody,
       });
 

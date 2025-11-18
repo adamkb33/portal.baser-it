@@ -205,8 +205,8 @@ export default function CompanyContactsRoute() {
       id: contact.id,
       givenName: contact.givenName ?? '',
       familyName: contact.familyName ?? '',
-      email: contact.email?.email ?? '',
-      mobileNumber: contact.mobileNumberDto?.mobileNumber ?? '',
+      email: contact.email?.value ?? '',
+      mobileNumber: contact.mobileNumberDto?.value ?? '',
     });
     setErrors({});
     setIsDialogOpen(true);
@@ -282,8 +282,8 @@ export default function CompanyContactsRoute() {
         id: contact.id,
         givenName: contact.givenName ?? '',
         familyName: contact.familyName ?? '',
-        contactEmail: contact.email?.email ?? '',
-        contactMobileNumber: contact.mobileNumberDto?.mobileNumber ?? '',
+        contactEmail: contact.email?.value ?? '',
+        contactMobileNumber: contact.mobileNumberDto?.value ?? '',
         original: contact,
       })),
     [contacts],

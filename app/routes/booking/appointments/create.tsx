@@ -297,9 +297,8 @@ export default function BookingAppointmentsCreate() {
                                   if (contact.givenName || contact.familyName) {
                                     parts.push(`${contact.givenName || ''} ${contact.familyName || ''}`.trim());
                                   }
-                                  if (contact.email?.email) parts.push(contact.email.email);
-                                  if (contact.mobileNumberDto?.mobileNumber)
-                                    parts.push(contact.mobileNumberDto.mobileNumber);
+                                  if (contact.email?.value) parts.push(contact.email.value);
+                                  if (contact.mobileNumberDto?.value) parts.push(contact.mobileNumberDto.value);
                                   return parts.join(' • ');
                                 })()
                               : 'Velg kunden du vil opprette en avtale for'}
@@ -496,12 +495,10 @@ export default function BookingAppointmentsCreate() {
                                 'Ukjent navn'}
                             </p>
                             <p className="text-[11px] text-slate-500">
-                              {selectedContact.email?.email || 'Ingen e-post registrert'}
+                              {selectedContact.email?.value || 'Ingen e-post registrert'}
                             </p>
-                            {selectedContact.mobileNumberDto?.mobileNumber && (
-                              <p className="text-[11px] text-slate-500">
-                                {selectedContact.mobileNumberDto.mobileNumber}
-                              </p>
+                            {selectedContact.mobileNumberDto?.value && (
+                              <p className="text-[11px] text-slate-500">{selectedContact.mobileNumberDto.value}</p>
                             )}
                           </div>
                         ) : null}

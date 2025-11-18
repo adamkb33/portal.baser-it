@@ -191,8 +191,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 id: c.id,
                 givenName: c.givenName,
                 familyName: c.familyName,
-                email: c.email?.email ?? undefined,
-                mobileNumber: c.mobileNumberDto?.mobileNumber ?? undefined,
+                email: c.email?.value ?? undefined,
+                mobileNumber: c.mobileNumberDto?.value ?? undefined,
               },
             ]),
           );

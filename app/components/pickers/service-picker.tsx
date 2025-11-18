@@ -2,10 +2,10 @@ import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Link } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import type { GroupedServiceGroup } from '~/features/booking/company-user-appointment-state';
+import type { GroupedServiceGroupsDto } from 'tmp/openapi/gen/booking';
 
 export type ServicePickerProps = {
-  groupedServices: GroupedServiceGroup[];
+  groupedServices: GroupedServiceGroupsDto[];
   selectedServiceIds: number[];
   onChange: (ids: number[]) => void;
 };
@@ -62,10 +62,6 @@ export function ServicePicker({ groupedServices, selectedServiceIds, onChange }:
           </div>
         </div>
       )}
-
-      <Link to={ROUTES_MAP['booking.services'].href}>
-        <Button variant={'link'}>Legg til flere tjenester</Button>
-      </Link>
     </div>
   );
 }

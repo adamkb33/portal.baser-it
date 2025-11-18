@@ -1,15 +1,13 @@
 import { data, redirect, type LoaderFunctionArgs } from 'react-router';
+import type { GroupedServiceGroupsDto } from 'tmp/openapi/gen/booking';
 import type { ApiClientError } from '~/api/clients/http';
-import type { ServiceDto, ServiceGroupDto, ContactDto, DailyScheduleDto } from '~/api/clients/types';
+import type { ContactDto, DailyScheduleDto } from '~/api/clients/types';
 import { getAccessToken } from '~/lib/auth.utils';
 import { baseApi, bookingApi } from '~/lib/utils';
 
-export type GroupedService = Omit<ServiceDto, 'serviceGroupId'>;
-export type GroupedServiceGroup = ServiceGroupDto & { services: GroupedService[] };
-
 export type BookingAppointmentsLoaderData = {
   companyContacts: ContactDto[];
-  companyGroupedServices: GroupedServiceGroup[];
+  companyGroupedServices: GroupedServiceGroupsDto[];
   dailySchedules: DailyScheduleDto[];
 };
 
@@ -33,7 +31,7 @@ export async function companyUserGetAppointmentState({ request }: LoaderFunction
     const services = servicesResponse.data?.content ?? [];
     const dailySchedules = dailySchedulesResponse.data ?? [];
 
-    const companyGroupedServices: GroupedServiceGroup[] = serviceGroups.map((group) => ({
+    const companyGroupedServices: GroupedServiceGroupsDto[] = serviceGroups.map((group) => ({
       ...group,
       services: services.filter((s) => s.serviceGroupId === group.id).map(({ serviceGroupId, ...rest }) => rest),
     }));
