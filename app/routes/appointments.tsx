@@ -19,6 +19,7 @@ import {
   createAppointmentloader,
   createAppointmentAction,
 } from '~/features/booking/create-appointment-route';
+import { BookingStep } from '~/components/booking/booking-step';
 
 export const loader = createAppointmentloader;
 export const action = createAppointmentAction;
@@ -69,17 +70,20 @@ export default function Appointments() {
       'step-5': step5Ref,
     };
 
-    refs[step]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    refs[step]?.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, []);
 
-  // Handle manual accordion navigation (allows free movement between steps)
   const handleAccordionChange = useCallback(
     (value: string | undefined) => {
-      if (!value) return;
-      setActiveStep(value);
-
-      // Delay scroll to allow accordion animation
-      setTimeout(() => scrollToStepRef(value), 150);
+      if (value) {
+        console.log(value);
+        setActiveStep(value);
+        // Delay scroll to allow accordion animation
+        setTimeout(() => scrollToStepRef(value), 150);
+      } else {
+        // Allow closing by setting to empty string
+        setActiveStep('');
+      }
     },
     [scrollToStepRef],
   );
@@ -367,8 +371,8 @@ export default function Appointments() {
 
         {/* Error banner - Enhanced */}
         {(contactError || scheduleError) && (
-          <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-gradient-to-r from-red-50 via-rose-50 to-red-50 px-5 py-4 text-sm text-red-700 shadow-md">
-            <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-lg bg-red-100 text-sm font-bold">
+          <div className="flex items-start gap-3 rounded-md border border-red-200 bg-gradient-to-r from-red-50 via-rose-50 to-red-50 px-5 py-4 text-sm text-red-700 shadow-md">
+            <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-md bg-red-100 text-sm font-bold">
               !
             </div>
             <div>
@@ -381,324 +385,228 @@ export default function Appointments() {
         <div className="flex flex-col">
           {/* Main steps */}
           <div className="space-y-4">
-            <Accordion type="single" value={activeStep} onValueChange={handleAccordionChange} className="space-y-3">
+            <Accordion
+              type="single"
+              value={activeStep}
+              onValueChange={handleAccordionChange}
+              className="space-y-3"
+              collapsible
+            >
               {/* Step 1: Company User */}
-              <div ref={step1Ref}>
-                <AccordionItem
-                  value="step-1"
-                  className="rounded-xl border border-slate-200/70 bg-white/90 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all hover:shadow-[0_8px_30px_rgba(15,23,42,0.12)]"
-                >
-                  <AccordionTrigger className="px-5 py-5 hover:no-underline sm:px-7">
-                    <div className="text-left">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold shadow-md transition-all ${
-                            userId
-                              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/30'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {userId ? <CheckCircle2 className="h-5 w-5" /> : '1'}
-                        </div>
-                        <div>
-                          <h3 className="text-base font-bold text-slate-900">Velg ansatt</h3>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {userId && selectedUser
-                              ? selectedUser.email
-                              : 'Velg hvilken ansatt du ønsker å bestille time hos'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="border-t border-slate-100 px-5 pb-5 pt-4 sm:px-7">
-                    <CompanyUserPicker
-                      companyUsers={companyUsers}
-                      selectedUserId={userId}
-                      onChange={handleUserChange}
-                    />
-                  </AccordionContent>
-                </AccordionItem>
-              </div>
+              <BookingStep
+                ref={step1Ref}
+                stepNumber={1}
+                stepValue="step-1"
+                title="Velg ansatt"
+                description={
+                  userId && selectedUser ? selectedUser.email : 'Velg hvilken ansatt du ønsker å bestille time hos'
+                }
+                isCompleted={!!userId}
+              >
+                <CompanyUserPicker companyUsers={companyUsers} selectedUserId={userId} onChange={handleUserChange} />
+              </BookingStep>
 
               {/* Step 2: Contact Information */}
-              <div ref={step2Ref}>
-                <AccordionItem
-                  value="step-2"
-                  className="rounded-xl border border-slate-200/70 bg-white/90 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all hover:shadow-[0_8px_30px_rgba(15,23,42,0.12)]"
-                >
-                  <AccordionTrigger className="px-5 py-5 hover:no-underline sm:px-7">
-                    <div className="text-left">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold shadow-md transition-all ${
-                            contactId
-                              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/30'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {contactId ? <CheckCircle2 className="h-5 w-5" /> : '2'}
-                        </div>
-                        <div>
-                          <h3 className="text-base font-bold text-slate-900">Oppgi kontaktopplysninger</h3>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {contactId
-                              ? 'Kontaktopplysninger lagret'
-                              : 'Vi trenger dine kontaktopplysninger for å bekrefte avtalen'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="border-t border-slate-100 px-5 pb-5 pt-4 sm:px-7">
-                    {!userId && (
-                      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                        Vennligst velg en ansatt først
+              <BookingStep
+                ref={step2Ref}
+                stepNumber={2}
+                stepValue="step-2"
+                title="Oppgi kontaktopplysninger"
+                description={
+                  contactId
+                    ? 'Kontaktopplysninger lagret'
+                    : 'Vi trenger dine kontaktopplysninger for å bekrefte avtalen'
+                }
+                isCompleted={!!contactId}
+              >
+                {!userId && (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    Vennligst velg en ansatt først
+                  </div>
+                )}
+                {userId && (
+                  <>
+                    {savedContactData && !contactId && (
+                      <div className="mb-3 flex items-center gap-2 rounded-md bg-indigo-50 px-3 py-2 text-xs text-indigo-700">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Dine tidligere kontaktopplysninger er forhåndsutfylt</span>
                       </div>
                     )}
-                    {userId && (
-                      <>
-                        {savedContactData && !contactId && (
-                          <div className="mb-3 flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-xs text-indigo-700">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span>Dine tidligere kontaktopplysninger er forhåndsutfylt</span>
-                          </div>
-                        )}
-                        <GetOrCreateContactForm
-                          companyId={companyId}
-                          onSubmit={handleContactSubmit}
-                          onChange={handleFormChange}
-                          isSubmitting={isSubmittingContact}
-                          initialValues={savedContactData || undefined}
-                        />
-                      </>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              </div>
+                    <GetOrCreateContactForm
+                      companyId={companyId}
+                      onSubmit={handleContactSubmit}
+                      onChange={handleFormChange}
+                      isSubmitting={isSubmittingContact}
+                      initialValues={savedContactData || undefined}
+                    />
+                  </>
+                )}
+              </BookingStep>
 
               {/* Step 3: Services */}
-              <div ref={step3Ref}>
-                <AccordionItem
-                  value="step-3"
-                  className="rounded-xl border border-slate-200/70 bg-white/90 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all hover:shadow-[0_8px_30px_rgba(15,23,42,0.12)]"
-                >
-                  <AccordionTrigger className="px-5 py-5 hover:no-underline sm:px-7">
-                    <div className="text-left">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold shadow-md transition-all ${
-                            serviceIds.length > 0
-                              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/30'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {serviceIds.length > 0 ? <CheckCircle2 className="h-5 w-5" /> : '3'}
-                        </div>
-                        <div>
-                          <h3 className="text-base font-bold text-slate-900">Velg tjenester</h3>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {serviceIds.length > 0
-                              ? selectedServiceNames.join(', ')
-                              : 'Du kan velge én eller flere tjenester som inngår i avtalen'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="border-t border-slate-100 px-5 pb-5 pt-4 sm:px-7">
-                    {(!userId || !contactId) && (
-                      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                        {!userId && 'Vennligst velg en ansatt først'}
-                        {userId && !contactId && 'Vennligst oppgi kontaktopplysninger først'}
-                      </div>
-                    )}
-                    {userId && contactId && (
-                      <ServicePicker
-                        groupedServices={groupedServices}
-                        selectedServiceIds={serviceIds}
-                        onChange={handleServicesChange}
-                      />
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              </div>
+              <BookingStep
+                ref={step3Ref}
+                stepNumber={3}
+                stepValue="step-3"
+                title="Velg tjenester"
+                description={
+                  serviceIds.length > 0
+                    ? selectedServiceNames.join(', ')
+                    : 'Du kan velge én eller flere tjenester som inngår i avtalen'
+                }
+                isCompleted={serviceIds.length > 0}
+              >
+                {(!userId || !contactId) && (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    {!userId && 'Vennligst velg en ansatt først'}
+                    {userId && !contactId && 'Vennligst oppgi kontaktopplysninger først'}
+                  </div>
+                )}
+                {userId && contactId && (
+                  <ServicePicker
+                    groupedServices={groupedServices}
+                    selectedServiceIds={serviceIds}
+                    onChange={handleServicesChange}
+                  />
+                )}
+              </BookingStep>
 
               {/* Step 4: Date & Time */}
-              <div ref={step4Ref}>
-                <AccordionItem
-                  value="step-4"
-                  className="rounded-xl border border-slate-200/70 bg-white/90 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all hover:shadow-[0_8px_30px_rgba(15,23,42,0.12)]"
-                >
-                  <AccordionTrigger className="px-5 py-5 hover:no-underline sm:px-7">
-                    <div className="text-left">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold shadow-md transition-all ${
-                            date && startTime
-                              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/30'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {date && startTime ? <CheckCircle2 className="h-5 w-5" /> : '4'}
-                        </div>
-                        <div>
-                          <h3 className="text-base font-bold text-slate-900">Velg dato og tidspunkt</h3>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {date && startTime
-                              ? `${formattedDateLong} kl. ${displayedStartTime}`
-                              : 'Velg en dato og et ledig tidspunkt'}
-                          </p>
-                        </div>
-                      </div>
+              <BookingStep
+                ref={step4Ref}
+                stepNumber={4}
+                stepValue="step-4"
+                title="Velg dato og tidspunkt"
+                description={
+                  date && startTime
+                    ? `${formattedDateLong} kl. ${displayedStartTime}`
+                    : 'Velg en dato og et ledig tidspunkt'
+                }
+                isCompleted={!!(date && startTime)}
+              >
+                {(!userId || !contactId || serviceIds.length === 0) && (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    {!userId && 'Vennligst velg en ansatt først'}
+                    {userId && !contactId && 'Vennligst oppgi kontaktopplysninger først'}
+                    {userId && contactId && serviceIds.length === 0 && 'Vennligst velg minst én tjeneste først'}
+                  </div>
+                )}
+                {userId && contactId && serviceIds.length > 0 && (
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="mb-3 text-sm font-semibold text-slate-900">Velg dato</h4>
+                      <DatePicker
+                        selectedDate={date ?? undefined}
+                        onChange={handleDateChange}
+                        isDateAllowed={isDateAllowed}
+                      />
                     </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="border-t border-slate-100 px-5 pb-6 pt-4 sm:px-7">
-                    {(!userId || !contactId || serviceIds.length === 0) && (
-                      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                        {!userId && 'Vennligst velg en ansatt først'}
-                        {userId && !contactId && 'Vennligst oppgi kontaktopplysninger først'}
-                        {userId && contactId && serviceIds.length === 0 && 'Vennligst velg minst én tjeneste først'}
-                      </div>
-                    )}
-                    {userId && contactId && serviceIds.length > 0 && (
-                      <div className="space-y-6">
-                        {/* Date Picker Section */}
-                        <div>
-                          <h4 className="mb-3 text-sm font-semibold text-slate-900">Velg dato</h4>
-                          <DatePicker
-                            selectedDate={date ?? undefined}
-                            onChange={handleDateChange}
-                            isDateAllowed={isDateAllowed}
-                          />
-                        </div>
 
-                        {/* Time Slot Picker Section */}
-                        {date && (
-                          <div>
-                            <h4 className="mb-3 text-sm font-semibold text-slate-900">Velg tidspunkt</h4>
-                            {isLoadingSchedule ? (
-                              <div className="space-y-3 py-2 text-sm text-slate-500">
-                                <div className="flex items-center gap-2">
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                  <span>Laster ledige tider...</span>
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                  {[1, 2, 3].map((i) => (
-                                    <div
-                                      key={i}
-                                      className="h-9 w-20 animate-pulse rounded-full bg-slate-100/80 shadow-inner"
-                                    />
-                                  ))}
-                                </div>
-                              </div>
-                            ) : schedule ? (
-                              hasAvailableTimeSlots ? (
-                                <TimeSlotPicker
-                                  schedule={schedule}
-                                  selectedTimeSlot={startTime}
-                                  onChange={handleTimeSlotChange}
+                    {date && (
+                      <div>
+                        <h4 className="mb-3 text-sm font-semibold text-slate-900">Velg tidspunkt</h4>
+                        {isLoadingSchedule ? (
+                          <div className="space-y-3 py-2 text-sm text-slate-500">
+                            <div className="flex items-center gap-2">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span>Laster ledige tider...</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {[1, 2, 3].map((i) => (
+                                <div
+                                  key={i}
+                                  className="h-9 w-20 animate-pulse rounded-full bg-slate-100/80 shadow-inner"
                                 />
-                              ) : (
-                                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                                  Ingen ledige timer denne dagen
-                                </div>
-                              )
-                            ) : (
-                              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                                Velg en dato for å se ledige tider
-                              </div>
-                            )}
+                              ))}
+                            </div>
+                          </div>
+                        ) : schedule ? (
+                          hasAvailableTimeSlots ? (
+                            <TimeSlotPicker
+                              schedule={schedule}
+                              selectedTimeSlot={startTime}
+                              onChange={handleTimeSlotChange}
+                            />
+                          ) : (
+                            <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                              Ingen ledige timer denne dagen
+                            </div>
+                          )
+                        ) : (
+                          <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+                            Velg en dato for å se ledige tider
                           </div>
                         )}
                       </div>
                     )}
-                  </AccordionContent>
-                </AccordionItem>
-              </div>
+                  </div>
+                )}
+              </BookingStep>
 
-              {/* Step 5: Confirm and Submit - Enhanced with shapes */}
-              <div ref={step5Ref}>
-                <AccordionItem
-                  value="step-5"
-                  className="relative overflow-hidden rounded-xl border border-indigo-200/70 bg-gradient-to-br from-indigo-50/80 via-white to-violet-50/60 shadow-[0_12px_40px_rgba(99,102,241,0.15)] backdrop-blur-sm transition-all hover:shadow-[0_12px_40px_rgba(99,102,241,0.2)]"
-                >
-                  <ShapesDiamondOne />
-                  <AccordionTrigger className="relative z-10 px-5 py-5 hover:no-underline sm:px-7">
-                    <div className="text-left">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/30">
-                          5
+              {/* Step 5: Confirm and Submit */}
+              <BookingStep
+                ref={step5Ref}
+                stepNumber={5}
+                stepValue="step-5"
+                title="Bekreft reservering"
+                description="Sjekk at alt er korrekt og fullfør reserveringen"
+                isCompleted={false}
+                variant="final"
+              >
+                {(!userId || !contactId || serviceIds.length === 0 || !date || !startTime) && (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                    Vennligst fullfør alle trinnene ovenfor før du kan bekrefte reserveringen
+                  </div>
+                )}
+                {userId && contactId && serviceIds.length > 0 && date && startTime && (
+                  <div className="space-y-5">
+                    <div className="rounded-xl border border-slate-200/80 bg-white/80 px-5 py-4 shadow-sm backdrop-blur-sm">
+                      <h4 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        Oppsummering
+                      </h4>
+                      <div className="space-y-2.5 text-sm text-slate-700">
+                        <div className="flex items-start gap-2">
+                          <span className="font-semibold text-slate-900">Ansatt:</span>
+                          <span>{selectedUser?.email}</span>
                         </div>
-                        <div>
-                          <h3 className="text-base font-bold text-slate-900">Bekreft reservering</h3>
-                          <p className="mt-1 text-xs text-slate-600">
-                            Sjekk at alt er korrekt og fullfør reserveringen
-                          </p>
+                        <div className="flex items-start gap-2">
+                          <span className="font-semibold text-slate-900">Tjenester:</span>
+                          <span>{selectedServiceNames.join(', ')}</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="font-semibold text-slate-900">Tidspunkt:</span>
+                          <span>
+                            {formattedDateLong} kl. {displayedStartTime}
+                          </span>
                         </div>
                       </div>
                     </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="relative z-10 border-t border-indigo-100 px-5 pb-6 pt-5 sm:px-7">
-                    {(!userId || !contactId || serviceIds.length === 0 || !date || !startTime) && (
-                      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                        Vennligst fullfør alle trinnene ovenfor før du kan bekrefte reserveringen
-                      </div>
-                    )}
-                    {userId && contactId && serviceIds.length > 0 && date && startTime && (
-                      <div className="space-y-5">
-                        {/* Summary card - Enhanced */}
-                        <div className="rounded-xl border border-slate-200/80 bg-white/80 px-5 py-4 shadow-sm backdrop-blur-sm">
-                          <h4 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                            Oppsummering
-                          </h4>
-                          <div className="space-y-2.5 text-sm text-slate-700">
-                            <div className="flex items-start gap-2">
-                              <span className="font-semibold text-slate-900">Ansatt:</span>
-                              <span>{selectedUser?.email}</span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <span className="font-semibold text-slate-900">Tjenester:</span>
-                              <span>{selectedServiceNames.join(', ')}</span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <span className="font-semibold text-slate-900">Tidspunkt:</span>
-                              <span>
-                                {formattedDateLong} kl. {displayedStartTime}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
 
-                        {/* CTA Button - Enhanced */}
-                        <Button
-                          onClick={handleCreateAppointment}
-                          disabled={isSubmitting}
-                          className="w-full rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 px-8 py-3.5 text-base font-bold shadow-xl shadow-indigo-500/40 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-indigo-500/50 disabled:scale-100 disabled:from-slate-300 disabled:via-slate-300 disabled:to-slate-300 disabled:text-slate-500 disabled:shadow-none"
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                              Fullfører reservering...
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle2 className="mr-2 h-5 w-5" />
-                              Fullfør reservering
-                            </>
-                          )}
-                        </Button>
+                    <Button
+                      onClick={handleCreateAppointment}
+                      disabled={isSubmitting}
+                      className="w-full rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 px-8 py-3.5 text-base font-bold shadow-xl shadow-indigo-500/40 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-indigo-500/50 disabled:scale-100 disabled:from-slate-300 disabled:via-slate-300 disabled:to-slate-300 disabled:text-slate-500 disabled:shadow-none"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Fullfører reservering...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="mr-2 h-5 w-5" />
+                          Fullfør reservering
+                        </>
+                      )}
+                    </Button>
 
-                        {/* Trust signal */}
-                        <p className="text-center text-xs text-slate-500">
-                          Du vil motta en bekreftelse på e-post umiddelbart
-                        </p>
-                      </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              </div>
+                    <p className="text-center text-xs text-slate-500">
+                      Du vil motta en bekreftelse på e-post umiddelbart
+                    </p>
+                  </div>
+                )}
+              </BookingStep>
             </Accordion>
           </div>
         </div>
