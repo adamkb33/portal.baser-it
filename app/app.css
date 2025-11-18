@@ -54,6 +54,7 @@ body {
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -119,7 +120,7 @@ body {
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.25 0.015 335);
 
-  /* Primary - your specified color */
+  /* Primary - #702963 */
   --primary: oklch(0.41 0.12 335);
   --primary-foreground: oklch(0.99 0.01 335);
 
@@ -143,12 +144,13 @@ body {
   --input: oklch(0.89 0.01 335);
   --ring: oklch(0.41 0.12 335);
 
-  /* Chart colors - pink/magenta variations */
-  --chart-1: oklch(0.41 0.12 335);
-  --chart-2: oklch(0.48 0.14 340);
-  --chart-3: oklch(0.55 0.16 330);
-  --chart-4: oklch(0.62 0.12 345);
-  --chart-5: oklch(0.68 0.1 325);
+  /* Chart colors - purple to teal gradient */
+  --chart-1: oklch(0.41 0.12 335); /* #702963 */
+  --chart-2: oklch(0.45 0.12 285); /* #5a4d98 */
+  --chart-3: oklch(0.5 0.14 245); /* #0071bf */
+  --chart-4: oklch(0.6 0.12 230); /* #0092cd */
+  --chart-5: oklch(0.68 0.1 215); /* #00afbf */
+  --chart-6: oklch(0.74 0.12 175); /* #00c79f */
 
   /* Sidebar colors */
   --sidebar: oklch(0.98 0.005 335);

@@ -18,7 +18,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
     <nav className="flex flex-1 items-center justify-between gap-4">
       <div className="flex items-center gap-6">
         <Link to="/" className="text-xl font-semibold">
-          <BiTLogo />
+          <BiTLogo size={'xl'} />
         </Link>
 
         <CompanyHeader company={companyContext} />
