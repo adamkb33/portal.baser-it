@@ -106,6 +106,12 @@ export interface CompanyUserDto {
     roles: Roles[];
 }
 
+export interface ContactAppointmentDto {
+    contactId: number;
+    startTime: string;
+    serviceIds: number[];
+}
+
 export interface ContactDto {
     id: number;
     companyId: number;
@@ -138,6 +144,12 @@ export interface CreateAppointmentDto {
     contactId: number;
     startTime: string;
     serviceIds: number[];
+}
+
+export interface CreateAppointmentsDto {
+    userId: number;
+    companyId: number;
+    appointments: ContactAppointmentDto[];
 }
 
 export interface CreateCompanyDto {

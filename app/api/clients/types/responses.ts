@@ -12,6 +12,7 @@ export type ApiResponseCompanyUserDto = ApiResponse<CompanyUserDto>;
 export type ApiResponseContactDto = ApiResponse<ContactDto>;
 export type ApiResponseInvitedUserTokenDto = ApiResponse<InvitedUserTokenDto>;
 export type ApiResponseJwtClaims = ApiResponse<JwtClaims>;
+export type ApiResponseListAppointmentDto = ApiResponse<AppointmentDto[]>;
 export type ApiResponseListCompanySummaryDto = ApiResponse<CompanySummaryDto[]>;
 export type ApiResponseListContactDto = ApiResponse<ContactDto[]>;
 export type ApiResponseListDailyScheduleDto = ApiResponse<DailyScheduleDto[]>;
