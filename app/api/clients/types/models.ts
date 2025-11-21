@@ -107,6 +107,7 @@ export interface CompanyUserDto {
 }
 
 export interface ContactAppointmentDto {
+    userId: number;
     contactId: number;
     startTime: string;
     serviceIds: number[];
@@ -147,7 +148,6 @@ export interface CreateAppointmentDto {
 }
 
 export interface CreateAppointmentsDto {
-    userId: number;
     companyId: number;
     appointments: ContactAppointmentDto[];
 }
@@ -382,6 +382,13 @@ export interface ServiceGroupDto {
     id: number;
     companyId: number;
     name: string;
+}
+
+export interface ServiceImageDto {
+    id: number;
+    serviceId: number;
+    url: string;
+    label?: string;
 }
 
 export interface SignInDto {

@@ -6,6 +6,7 @@ export { PublicAppointmentControllerService } from './services/PublicAppointment
 export { PublicCompanyControllerService } from './services/PublicCompanyControllerService';
 export { ServiceControllerService } from './services/ServiceControllerService';
 export { ServiceGroupControllerService } from './services/ServiceGroupControllerService';
+export { ServiceImageControllerService } from './services/ServiceImageControllerService';
 export * from './client';
 export * from '@types';
 export { OpenAPI } from './OpenAPI';

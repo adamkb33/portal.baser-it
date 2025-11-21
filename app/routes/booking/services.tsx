@@ -16,9 +16,11 @@ import { getAccessToken } from '~/lib/auth.utils';
 import { Button } from '~/components/ui/button';
 import { PaginatedTable } from '~/components/table/paginated-data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
+import type { FormFieldRenderProps } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
+import axios from 'axios';
 
 export type BookingServicesLoaderData = {
   serviceGroups: ServiceGroupDto[];
@@ -31,6 +33,38 @@ const extractList = <T,>(payload: unknown): T[] => {
   if (Array.isArray((payload as any).content)) return (payload as any).content as T[];
   if (Array.isArray((payload as any).items)) return (payload as any).items as T[];
   return [];
+};
+
+type ExtractedImage = {
+  file: Blob;
+  label: string;
+};
+
+const uploadServiceImages = async (args: { serviceId: number; images: ExtractedImage[]; accessToken: string }) => {
+  const { serviceId, images, accessToken } = args;
+  if (images.length === 0) return;
+
+  const formData = new FormData();
+
+  images.forEach((img) => {
+    formData.append('files', img.file);
+    formData.append('labels', img.label ?? '');
+  });
+
+  // Build headers. In Node, axios may need getHeaders() if available (form-data lib).
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${accessToken}`,
+  };
+
+  // If FormData has getHeaders (Node form-data), merge them
+  const anyFormData = formData as any;
+  if (typeof anyFormData.getHeaders === 'function') {
+    Object.assign(headers, anyFormData.getHeaders());
+  }
+
+  await axios.post(`${ENV.BOOKING_BASE_URL}/company-user/service-images/${serviceId}/images/bulk`, formData, {
+    headers,
+  });
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -59,6 +93,45 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
+// 🔹 Helper: extract images + labels from FormData
+const extractImagesFromFormData = (fd: FormData) => {
+  const byIndex: Record<
+    string,
+    {
+      file?: File;
+      label?: string;
+    }
+  > = {};
+
+  for (const [key, value] of fd.entries()) {
+    const fileMatch = key.match(/^images\[(\d+)]\[file]$/);
+    const labelMatch = key.match(/^images\[(\d+)]\[label]$/);
+
+    if (fileMatch) {
+      const index = fileMatch[1];
+      if (!byIndex[index]) byIndex[index] = {};
+
+      byIndex[index].file = value as File;
+    }
+
+    if (labelMatch) {
+      const index = labelMatch[1];
+      if (!byIndex[index]) byIndex[index] = {};
+      byIndex[index].label = String(value);
+    }
+  }
+
+  const images = Object.keys(byIndex)
+    .sort((a, b) => Number(a) - Number(b))
+    .map((index) => ({
+      file: byIndex[index].file!,
+      label: byIndex[index].label ?? '',
+    }))
+    .filter((img) => img.file);
+
+  return images;
+};
+
 export async function action({ request }: ActionFunctionArgs) {
   const accessToken = await getAccessToken(request);
   if (!accessToken) {
@@ -76,7 +149,9 @@ export async function action({ request }: ActionFunctionArgs) {
       const price = Number(formData.get('price'));
       const duration = Number(formData.get('duration'));
 
-      await bookingClient.ServiceControllerService.ServiceControllerService.createService({
+      const images = extractImagesFromFormData(formData);
+
+      const serviceResponse = await bookingClient.ServiceControllerService.ServiceControllerService.createService({
         requestBody: {
           name,
           serviceGroupId,
@@ -84,6 +159,21 @@ export async function action({ request }: ActionFunctionArgs) {
           duration,
         },
       });
+
+      const createdService = serviceResponse.data as { id?: number } | null | undefined;
+      const serviceId = createdService?.id;
+
+      if (!serviceId) {
+        return data({ success: false, message: 'En feil oppstod' }, { status: 400 });
+      }
+
+      // ⬇️ Axios multipart upload
+      await uploadServiceImages({
+        serviceId,
+        images,
+        accessToken,
+      });
+
       return data({ success: true, message: 'Tjeneste opprettet' });
     }
 
@@ -93,6 +183,8 @@ export async function action({ request }: ActionFunctionArgs) {
       const serviceGroupId = Number(formData.get('serviceGroupId'));
       const price = Number(formData.get('price'));
       const duration = Number(formData.get('duration'));
+
+      const images = extractImagesFromFormData(formData);
 
       await bookingClient.ServiceControllerService.ServiceControllerService.updateService({
         id,
@@ -104,6 +196,14 @@ export async function action({ request }: ActionFunctionArgs) {
           duration,
         },
       });
+
+      // ⬇️ Axios multipart upload for new images
+      await uploadServiceImages({
+        serviceId: id,
+        images,
+        accessToken,
+      });
+
       return data({ success: true, message: 'Tjeneste oppdatert' });
     }
 
@@ -120,12 +220,19 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-type FormData = {
+// Avoid name clash with global FormData
+type ServiceImage = {
+  file: File | null;
+  label: string;
+};
+
+type ServiceFormData = {
   id?: number;
   name: string;
   serviceGroupId: number;
   price: number;
   duration: number;
+  images: ServiceImage[];
 };
 
 export default function BookingServices() {
@@ -133,7 +240,7 @@ export default function BookingServices() {
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [editingService, setEditingService] = useState<FormData | null>(null);
+  const [editingService, setEditingService] = useState<ServiceFormData | null>(null);
   const [deletingServiceId, setDeletingServiceId] = useState<number | null>(null);
   const [filter, setFilter] = useState('');
 
@@ -180,6 +287,7 @@ export default function BookingServices() {
       serviceGroupId: serviceGroups[0]?.id || 0,
       price: 0,
       duration: 30,
+      images: [],
     });
     setIsDialogOpen(true);
   };
@@ -191,6 +299,7 @@ export default function BookingServices() {
       serviceGroupId: service.serviceGroupId,
       price: service.price,
       duration: service.duration,
+      images: [], // you'd load existing images here if API provides them
     });
     setIsDialogOpen(true);
   };
@@ -203,39 +312,49 @@ export default function BookingServices() {
   const handleDeleteConfirm = () => {
     if (!deletingServiceId) return;
 
-    const formData = new FormData();
-    formData.append('intent', 'delete');
-    formData.append('id', String(deletingServiceId));
+    const fd = new FormData();
+    fd.append('intent', 'delete');
+    fd.append('id', String(deletingServiceId));
 
-    fetcher.submit(formData, { method: 'post' });
+    fetcher.submit(fd, { method: 'post' });
   };
 
-  const handleFieldChange = (name: keyof FormData, value: any) => {
-    if (editingService) {
-      if (name === 'serviceGroupId' || name === 'price' || name === 'duration') {
-        setEditingService({ ...editingService, [name]: Number(value) });
-        return;
-      }
+  const handleFieldChange = (name: keyof ServiceFormData, value: any) => {
+    if (!editingService) return;
 
-      setEditingService({ ...editingService, [name]: value });
+    if (name === 'serviceGroupId' || name === 'price' || name === 'duration') {
+      setEditingService({ ...editingService, [name]: Number(value) });
+      return;
     }
+
+    setEditingService({ ...editingService, [name]: value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingService) return;
 
-    const formData = new FormData();
-    formData.append('intent', editingService.id ? 'update' : 'create');
+    const fd = new FormData();
+    fd.append('intent', editingService.id ? 'update' : 'create');
     if (editingService.id) {
-      formData.append('id', String(editingService.id));
+      fd.append('id', String(editingService.id));
     }
-    formData.append('name', editingService.name);
-    formData.append('serviceGroupId', String(editingService.serviceGroupId));
-    formData.append('price', String(editingService.price));
-    formData.append('duration', String(editingService.duration));
+    fd.append('name', editingService.name);
+    fd.append('serviceGroupId', String(editingService.serviceGroupId));
+    fd.append('price', String(editingService.price));
+    fd.append('duration', String(editingService.duration));
 
-    fetcher.submit(formData, { method: 'post' });
+    // Append images with labels
+    if (editingService.images && editingService.images.length > 0) {
+      editingService.images.forEach((img, index) => {
+        if (img.file) {
+          fd.append(`images[${index}][file]`, img.file);
+        }
+        fd.append(`images[${index}][label]`, img.label ?? '');
+      });
+    }
+
+    fetcher.submit(fd, { method: 'post' });
   };
 
   const getServiceGroupName = (serviceGroupId: number) => {
@@ -247,9 +366,56 @@ export default function BookingServices() {
     return amount.toLocaleString('nb-NO', { style: 'currency', currency: 'NOK' });
   };
 
+  // Custom renderer for images field
+  const renderImagesField = ({ value, onChange }: FormFieldRenderProps<ServiceFormData>) => {
+    const images = (value as ServiceImage[] | undefined) ?? [];
+
+    const updateImageAt = (index: number, patch: Partial<ServiceImage>) => {
+      const next = images.map((img, i) => (i === index ? { ...img, ...patch } : img));
+      onChange(next);
+    };
+
+    const addImage = () => {
+      onChange([...images, { file: null, label: '' }]);
+    };
+
+    const removeImage = (index: number) => {
+      onChange(images.filter((_, i) => i !== index));
+    };
+
+    return (
+      <div className="space-y-3">
+        {images.map((img, index) => (
+          <div key={index} className="rounded-md border border-slate-200 bg-slate-50 p-3 space-y-2">
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => updateImageAt(index, { file: e.target.files?.[0] ?? null })}
+            />
+            <Input
+              type="text"
+              placeholder="Skriv bildetekst / label"
+              value={img.label}
+              onChange={(e) => updateImageAt(index, { label: e.target.value })}
+            />
+            <div className="flex justify-end">
+              <Button type="button" variant="ghost" size="sm" onClick={() => removeImage(index)}>
+                Fjern
+              </Button>
+            </div>
+          </div>
+        ))}
+
+        <Button type="button" variant="outline" onClick={addImage}>
+          + Legg til bilde
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className="container mx-auto py-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-semibold">Tjenester</h1>
         <Button onClick={handleAdd}>Ny tjeneste</Button>
       </div>
@@ -300,7 +466,7 @@ export default function BookingServices() {
       />
 
       {editingService && (
-        <FormDialog<FormData>
+        <FormDialog<ServiceFormData>
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
           title={editingService.id ? 'Rediger tjeneste' : 'Ny tjeneste'}
@@ -338,6 +504,12 @@ export default function BookingServices() {
               type: 'number',
               placeholder: '30',
               required: true,
+            },
+            {
+              name: 'images',
+              label: 'Bilder',
+              // custom renderer from Option A
+              render: renderImagesField,
             },
           ]}
           actions={[

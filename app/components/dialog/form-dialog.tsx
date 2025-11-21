@@ -6,10 +6,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '../ui/textarea';
 import * as React from 'react';
 
+export interface FormFieldRenderProps<T> {
+  value: any;
+  onChange: (value: any) => void;
+  field: FormField<T>;
+  error?: string;
+}
+
 export interface FormField<T> {
   name: keyof T;
   label: string;
-  type?: 'text' | 'email' | 'password' | 'number' | 'time' | 'date' | 'select' | 'textarea';
+  type?: 'text' | 'email' | 'password' | 'number' | 'time' | 'date' | 'select' | 'textarea' | 'file';
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
@@ -17,11 +24,18 @@ export interface FormField<T> {
   className?: string;
   error?: string;
   description?: string;
+
+  // file-specific
+  accept?: string; // e.g. "image/*,.pdf"
+  multiple?: boolean; // allow multi file selection
+
+  // custom renderer (Option A)
+  render?: (props: FormFieldRenderProps<T>) => React.ReactNode;
 }
 
 export interface DialogAction {
   label: string;
-  onClick?: () => void; // ⬅️ make optional
+  onClick?: () => void;
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   type?: 'button' | 'submit';
   className?: string;
@@ -57,12 +71,41 @@ export function FormDialog<T>({
     const ariaInvalid = Boolean(fieldError) ? true : undefined;
     const describedById = fieldError || field.description ? `${fieldId}-desc` : undefined;
 
+    const handleValueChange = (val: any) => {
+      onFieldChange(field.name, val);
+    };
+
+    // ✅ Custom renderer takes full control of the input
+    if (field.render) {
+      return (
+        <div>
+          {field.render({
+            value,
+            onChange: handleValueChange,
+            field,
+            error: fieldError,
+          })}
+          {field.description && (
+            <p id={`${fieldId}-desc`} className="mt-1 text-xs text-muted-foreground">
+              {field.description}
+            </p>
+          )}
+          {fieldError && (
+            <p className="mt-1 text-sm text-destructive" role="alert">
+              {fieldError}
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    // select
     if (field.type === 'select' && field.options) {
       return (
         <div>
           <Select
             value={value != null ? String(value) : ''}
-            onValueChange={(val) => onFieldChange(field.name, val)}
+            onValueChange={(val) => handleValueChange(val)}
             disabled={field.disabled}
           >
             <SelectTrigger id={fieldId} aria-invalid={ariaInvalid} aria-describedby={describedById} className="mt-1">
@@ -90,6 +133,7 @@ export function FormDialog<T>({
       );
     }
 
+    // textarea
     if (field.type === 'textarea') {
       return (
         <div>
@@ -98,7 +142,7 @@ export function FormDialog<T>({
             aria-invalid={ariaInvalid}
             aria-describedby={describedById}
             value={String(value ?? '')}
-            onChange={(e) => onFieldChange(field.name, e.target.value)}
+            onChange={(e) => handleValueChange(e.target.value)}
             placeholder={field.placeholder}
             required={field.required}
             disabled={field.disabled}
@@ -118,6 +162,50 @@ export function FormDialog<T>({
       );
     }
 
+    // file
+    if (field.type === 'file') {
+      return (
+        <div>
+          <Input
+            id={fieldId}
+            type="file"
+            aria-invalid={ariaInvalid}
+            aria-describedby={describedById}
+            required={field.required}
+            disabled={field.disabled}
+            accept={field.accept}
+            multiple={field.multiple}
+            className={field.className ? `mt-1 ${field.className}` : 'mt-1'}
+            onChange={(e) => {
+              const files = e.target.files;
+
+              if (!files) {
+                handleValueChange(field.multiple ? [] : null);
+                return;
+              }
+
+              if (field.multiple) {
+                handleValueChange(Array.from(files)); // File[]
+              } else {
+                handleValueChange(files[0] ?? null); // File | null
+              }
+            }}
+          />
+          {field.description && (
+            <p id={`${fieldId}-desc`} className="mt-1 text-xs text-muted-foreground">
+              {field.description}
+            </p>
+          )}
+          {fieldError && (
+            <p className="mt-1 text-sm text-destructive" role="alert">
+              {fieldError}
+            </p>
+          )}
+        </div>
+      );
+    }
+
+    // default input
     return (
       <div>
         <Input
@@ -126,7 +214,7 @@ export function FormDialog<T>({
           aria-describedby={describedById}
           type={field.type || 'text'}
           value={String(value ?? '')}
-          onChange={(e) => onFieldChange(field.name, e.target.value)}
+          onChange={(e) => handleValueChange(e.target.value)}
           placeholder={field.placeholder}
           required={field.required}
           disabled={field.disabled}
@@ -153,7 +241,11 @@ export function FormDialog<T>({
           <DialogTitle className="text-lg font-semibold tracking-tight text-slate-900">{title}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={onSubmit} className="space-y-5 pt-1">
+        <form
+          onSubmit={onSubmit}
+          className="space-y-5 pt-1"
+          encType="multipart/form-data" // important for file uploads
+        >
           <div className="space-y-4">
             {fields.map((field) => (
               <div key={String(field.name)} className="space-y-1.5">

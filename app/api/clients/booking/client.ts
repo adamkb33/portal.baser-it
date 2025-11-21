@@ -8,6 +8,7 @@ import * as PublicAppointmentControllerService from './services/PublicAppointmen
 import * as PublicCompanyControllerService from './services/PublicCompanyControllerService';
 import * as ServiceControllerService from './services/ServiceControllerService';
 import * as ServiceGroupControllerService from './services/ServiceGroupControllerService';
+import * as ServiceImageControllerService from './services/ServiceImageControllerService';
 
 export type BookingClient = {
   ActuatorService: typeof ActuatorService;
@@ -17,7 +18,8 @@ export type BookingClient = {
   PublicAppointmentControllerService: typeof PublicAppointmentControllerService;
   PublicCompanyControllerService: typeof PublicCompanyControllerService;
   ServiceControllerService: typeof ServiceControllerService;
-  ServiceGroupControllerService: typeof ServiceGroupControllerService
+  ServiceGroupControllerService: typeof ServiceGroupControllerService;
+  ServiceImageControllerService: typeof ServiceImageControllerService
 };
 
 export function createBookingClient(opts: { baseUrl: string; token?: string }): BookingClient {
@@ -31,6 +33,7 @@ export function createBookingClient(opts: { baseUrl: string; token?: string }): 
     PublicAppointmentControllerService,
     PublicCompanyControllerService,
     ServiceControllerService,
-    ServiceGroupControllerService
+    ServiceGroupControllerService,
+    ServiceImageControllerService
   };
 }

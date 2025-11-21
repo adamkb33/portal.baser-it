@@ -79,63 +79,42 @@ const BackgroundPattern = ({ className, ...props }: React.SVGProps<SVGSVGElement
     {...props}
   >
     <defs>
-      <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{ stopColor: 'oklch(var(--chart-1))', stopOpacity: 1 }} />
-        <stop offset="50%" style={{ stopColor: 'oklch(var(--chart-3))', stopOpacity: 1 }} />
-        <stop offset="100%" style={{ stopColor: 'oklch(var(--chart-5))', stopOpacity: 1 }} />
+      <linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style={{ stopColor: 'oklch(var(--chart-1))', stopOpacity: 0.9 }} />
+        <stop offset="100%" style={{ stopColor: 'oklch(var(--chart-3))', stopOpacity: 0.9 }} />
       </linearGradient>
-      <linearGradient id="grad2" x1="100%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" style={{ stopColor: 'oklch(var(--chart-2))', stopOpacity: 1 }} />
-        <stop offset="100%" style={{ stopColor: 'oklch(var(--chart-6))', stopOpacity: 1 }} />
+      <linearGradient id="wave2" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style={{ stopColor: 'oklch(var(--chart-2))', stopOpacity: 0.7 }} />
+        <stop offset="100%" style={{ stopColor: 'oklch(var(--chart-5))', stopOpacity: 0.7 }} />
       </linearGradient>
     </defs>
 
-    {/* Flowing wave layers */}
+    {/* Back wave */}
     <path
-      fill="url(#grad1)"
-      fillOpacity="0.4"
-      d="M0 0L320 180L640 0L960 180L1280 0L1600 180L1920 0V400L1600 580L1280 400L960 580L640 400L320 580L0 400Z"
-    >
-      <animate
-        attributeName="d"
-        dur="20s"
-        repeatCount="indefinite"
-        values="
-          M0 0L320 180L640 0L960 180L1280 0L1600 180L1920 0V400L1600 580L1280 400L960 580L640 400L320 580L0 400Z;
-          M0 60L320 240L640 60L960 240L1280 60L1600 240L1920 60V460L1600 640L1280 460L960 640L640 460L320 640L0 460Z;
-          M0 0L320 180L640 0L960 180L1280 0L1600 180L1920 0V400L1600 580L1280 400L960 580L640 400L320 580L0 400Z
-        "
-      />
-    </path>
+      fill="url(#wave1)"
+      fillOpacity="0.6"
+      d="
+        M0,650
+        C320,600 640,700 960,650
+        C1280,600 1600,700 1920,650
+        L1920,1080
+        L0,1080
+        Z
+      "
+    />
 
+    {/* Front wave */}
     <path
-      fill="url(#grad2)"
-      fillOpacity="0.3"
-      d="M0 400L320 580L640 400L960 580L1280 400L1600 580L1920 400V800L1600 980L1280 800L960 980L640 800L320 980L0 800Z"
-    >
-      <animate
-        attributeName="d"
-        dur="25s"
-        repeatCount="indefinite"
-        values="
-          M0 400L320 580L640 400L960 580L1280 400L1600 580L1920 400V800L1600 980L1280 800L960 980L640 800L320 980L0 800Z;
-          M0 360L320 540L640 360L960 540L1280 360L1600 540L1920 360V760L1600 940L1280 760L960 940L640 760L320 940L0 760Z;
-          M0 400L320 580L640 400L960 580L1280 400L1600 580L1920 400V800L1600 980L1280 800L960 980L640 800L320 980L0 800Z
-        "
-      />
-    </path>
-
-    {/* Geometric accent shapes */}
-    <g opacity="0.2">
-      <circle cx="300" cy="200" r="100" fill="oklch(var(--chart-1))" />
-      <circle cx="1600" cy="400" r="150" fill="oklch(var(--chart-3))" />
-      <circle cx="800" cy="800" r="120" fill="oklch(var(--chart-5))" />
-    </g>
-
-    {/* Subtle grid pattern */}
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="oklch(var(--chart-1))" strokeWidth="0.5" opacity="0.3" />
-    </pattern>
-    <rect width="100%" height="100%" fill="url(#grid)" opacity="0.15" />
+      fill="url(#wave2)"
+      fillOpacity="0.8"
+      d="
+        M0,720
+        C320,680 640,760 960,720
+        C1280,680 1600,760 1920,720
+        L1920,1080
+        L0,1080
+        Z
+      "
+    />
   </svg>
 );
