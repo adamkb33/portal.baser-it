@@ -1,7 +1,25 @@
+/* =============================================================================
+   app.css — BRUTALIST THEME SPEC (BLACK / WHITE / PURPLE)
+
+   SCOPE:
+   - Global design tokens (colors, radius, tracking, shadows).
+   - Base body + border behavior.
+   - **Only atomic documentation** for how to style UI with Tailwind utilities.
+   - NO component/domain-specific CSS, NO @apply, NO custom classes.
+
+   RULES:
+   - Components must use Tailwind utilities like:
+       bg-background, text-foreground, border-border, bg-muted, text-muted-foreground, etc.
+   - Colors MUST come from these CSS variables via Tailwind’s @theme inline mapping.
+   - All hierarchies are built with utility class combinations in TSX.
+   ========================================================================== */
+
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@custom-variant dark (&:is(.dark *));
+/* -----------------------------------------------------------------------------
+   1. BASE TYPOGRAPHY TOKEN FOR TAILWIND
+   -------------------------------------------------------------------------- */
 
 @theme {
   --font-sans:
@@ -13,24 +31,33 @@ html,
 body {
 }
 
+/* -----------------------------------------------------------------------------
+   2. INLINE THEME BRIDGE (TAILWIND <-> CSS VARIABLES)
+   - Tailwind utilities like `bg-background` and `border-border` resolve to these.
+   -------------------------------------------------------------------------- */
+
 @theme inline {
-  --animate-aurora: aurora 60s linear infinite;
-  @keyframes aurora {
-    from {
-      background-position:
-        50% 50%,
-        50% 50%;
-    }
-    to {
-      background-position:
-        350% 50%,
-        350% 50%;
-    }
-  }
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* Typography tokens */
+  --font-sans: Inter, sans-serif;
+  --font-serif: Merriweather, serif;
+  --font-mono: JetBrains Mono, monospace;
+
+  /* Radius tokens (brutalist: small, mostly sharp) */
+  --radius: 0.25rem;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.375rem;
+
+  /* Letterspacing / tracking */
+  --tracking-normal: 0em;
+  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+  --tracking-wide: calc(var(--tracking-normal) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+
+  /* Tailwind color aliases */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -49,12 +76,16 @@ body {
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Chart / data tokens (optional) */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-chart-6: var(--chart-6);
+
+  /* Sidebar tokens (for shells) */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -63,135 +94,383 @@ body {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: Inter, sans-serif;
-  --font-mono: JetBrains Mono, monospace;
-  --font-serif: Merriweather, serif;
-  --radius: 0.5rem;
-  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
-  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
-  --tracking-wide: calc(var(--tracking-normal) + 0.025em);
-  --tracking-wider: calc(var(--tracking-normal) + 0.05em);
-  --tracking-widest: calc(var(--tracking-normal) + 0.1em);
-  --letter-spacing: var(--letter-spacing);
-  --tracking-normal: var(--tracking-normal);
-  --shadow-2xl: var(--shadow-2xl);
-  --shadow-xl: var(--shadow-xl);
-  --shadow-lg: var(--shadow-lg);
-  --shadow-md: var(--shadow-md);
-  --shadow: var(--shadow);
-  --shadow-sm: var(--shadow-sm);
-  --shadow-xs: var(--shadow-xs);
-  --shadow-2xs: var(--shadow-2xs);
-  --spacing: var(--spacing);
-  --shadow-offset-y: var(--shadow-offset-y);
-  --shadow-offset-x: var(--shadow-offset-x);
-  --shadow-spread: var(--shadow-spread);
-  --shadow-blur: var(--shadow-blur);
-  --shadow-opacity: var(--shadow-opacity);
-  --color-shadow-color: var(--shadow-color);
-  --animate-aurora: aurora 60s linear infinite;
-  @keyframes aurora {
-    from {
-      backgroundposition:
-        50% 50%,
-        50% 50%;
-    }
-    to {
-      backgroundposition:
-        350% 50%,
-        350% 50%;
-    }
-  }
-  --animate-spin: spin 2s linear infinite;
 }
 
+/* -----------------------------------------------------------------------------
+   3. ROOT THEME VALUES — BLACK / WHITE / PURPLE
+   -------------------------------------------------------------------------- */
+
 :root {
-  --radius: 0.5rem;
+  --radius: 0.25rem;
 
-  /* Base colors - neutral light background */
-  --background: oklch(0.99 0.002 335);
-  --foreground: oklch(0.25 0.015 335);
+  /* Core neutrals */
+  --background: oklch(1 0 0); /* white */
+  --foreground: oklch(0.16 0.01 260); /* near-black */
 
-  /* Card colors */
+  /* Surfaces */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.015 335);
+  --card-foreground: var(--foreground);
 
-  /* Popover colors */
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.015 335);
+  --popover-foreground: var(--foreground);
 
-  /* Primary - #702963 */
-  --primary: oklch(0.41 0.12 335);
-  --primary-foreground: oklch(0.99 0.01 335);
+  /* Primary purple */
+  --primary: oklch(0.48 0.23 330);
+  --primary-foreground: oklch(1 0 0);
 
-  /* Secondary - lighter, less saturated pink */
-  --secondary: oklch(0.92 0.04 335);
-  --secondary-foreground: oklch(0.35 0.12 335);
+  /* Secondary (light purple tint) */
+  --secondary: oklch(0.96 0.04 330);
+  --secondary-foreground: oklch(0.25 0.03 330);
 
-  /* Muted - very subtle pink tint */
-  --muted: oklch(0.96 0.01 335);
-  --muted-foreground: oklch(0.52 0.02 335);
+  /* Muted grays */
+  --muted: oklch(0.95 0.01 260);
+  --muted-foreground: oklch(0.48 0.02 260);
 
-  /* Accent - vibrant magenta */
-  --accent: oklch(0.94 0.04 328);
-  --accent-foreground: oklch(0.38 0.08 335);
+  /* Accent purple/magenta */
+  --accent: oklch(0.86 0.12 330);
+  --accent-foreground: oklch(0.22 0.03 330);
 
-  /* Destructive - warm red */
-  --destructive: oklch(0.58 0.18 15);
+  /* Destructive red */
+  --destructive: oklch(0.58 0.18 25);
 
-  /* Borders and inputs */
-  --border: oklch(0.89 0.01 335);
-  --input: oklch(0.89 0.01 335);
-  --ring: oklch(0.41 0.12 335);
+  /* Borders / inputs / ring */
+  --border: oklch(0.16 0 0); /* near-black */
+  --input: oklch(0.9 0.01 260);
+  --ring: var(--primary);
 
-  /* Chart colors - purple to teal gradient */
-  --chart-1: oklch(0.41 0.12 335); /* #702963 */
-  --chart-2: oklch(0.45 0.12 285); /* #5a4d98 */
-  --chart-3: oklch(0.5 0.14 245); /* #0071bf */
-  --chart-4: oklch(0.6 0.12 230); /* #0092cd */
-  --chart-5: oklch(0.68 0.1 215); /* #00afbf */
-  --chart-6: oklch(0.74 0.12 175); /* #00c79f */
+  /* Chart colors (optional) */
+  --chart-1: oklch(0.48 0.23 330);
+  --chart-2: oklch(0.6 0.18 330);
+  --chart-3: oklch(0.52 0.16 300);
+  --chart-4: oklch(0.68 0.1 260);
+  --chart-5: oklch(0.8 0.06 260);
+  --chart-6: oklch(0.9 0.03 260);
 
-  /* Sidebar colors */
-  --sidebar: oklch(0.98 0.005 335);
-  --sidebar-foreground: oklch(0.25 0.015 335);
-  --sidebar-primary: oklch(0.41 0.12 335);
-  --sidebar-primary-foreground: oklch(0.99 0.01 335);
-  --sidebar-accent: oklch(0.94 0.04 328);
-  --sidebar-accent-foreground: oklch(0.38 0.08 335);
-  --sidebar-border: oklch(0.89 0.01 335);
-  --sidebar-ring: oklch(0.41 0.12 335);
+  /* Sidebar palette */
+  --sidebar: oklch(0.98 0.005 260);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 
-  /* Typography */
-  --font-sans: Inter, sans-serif;
-  --font-serif: Merriweather, serif;
-  --font-mono: JetBrains Mono, monospace;
-
-  /* Shadows */
-  --shadow-color: hsl(0 0% 0%);
+  /* Shadows (minimal, opt-in) */
+  --shadow-color: oklch(0 0 0);
   --shadow-opacity: 0.1;
   --shadow-blur: 8px;
   --shadow-spread: -1px;
   --shadow-offset-x: 0px;
   --shadow-offset-y: 4px;
   --spacing: 0.25rem;
-  --shadow-2xs: 0px 4px 8px -1px oklch(0 0 0 / 0.05);
-  --shadow-xs: 0px 4px 8px -1px oklch(0 0 0 / 0.05);
-  --shadow-sm: 0px 4px 8px -1px oklch(0 0 0 / 0.1), 0px 1px 2px -2px oklch(0 0 0 / 0.1);
-  --shadow: 0px 4px 8px -1px oklch(0 0 0 / 0.1), 0px 1px 2px -2px oklch(0 0 0 / 0.1);
-  --shadow-md: 0px 4px 8px -1px oklch(0 0 0 / 0.1), 0px 2px 4px -2px oklch(0 0 0 / 0.1);
-  --shadow-lg: 0px 4px 8px -1px oklch(0 0 0 / 0.1), 0px 4px 6px -2px oklch(0 0 0 / 0.1);
-  --shadow-xl: 0px 4px 8px -1px oklch(0 0 0 / 0.1), 0px 8px 10px -2px oklch(0 0 0 / 0.1);
-  --shadow-2xl: 0px 4px 8px -1px oklch(0 0 0 / 0.25);
-  --tracking-normal: 0em;
+
+  --shadow-2xs: 0px 2px 4px 0px oklch(0 0 0 / 0.05);
+  --shadow-xs: 0px 2px 4px 0px oklch(0 0 0 / 0.08);
+  --shadow-sm: 0px 3px 6px -1px oklch(0 0 0 / 0.1);
+  --shadow: 0px 4px 8px -1px oklch(0 0 0 / 0.12);
+  --shadow-md: 0px 6px 12px -2px oklch(0 0 0 / 0.14);
+  --shadow-lg: 0px 8px 16px -2px oklch(0 0 0 / 0.16);
+  --shadow-xl: 0px 10px 20px -3px oklch(0 0 0 / 0.18);
+  --shadow-2xl: 0px 14px 24px -4px oklch(0 0 0 / 0.22);
 }
+
+/* -----------------------------------------------------------------------------
+   4. BASE LAYER HOOKS
+   -------------------------------------------------------------------------- */
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
+    font-family: var(--font-sans);
   }
 }
+
+/* =============================================================================
+   5. ATOMIC STYLING DOCUMENTATION (NO CLASSES, ONLY GUIDELINES)
+   -----------------------------------------------------------------------------
+   Use the tokens above with Tailwind utilities in components.
+
+   This is purely HOW TO COMBINE UTILITIES, not actual CSS rules.
+   ========================================================================== */
+
+/*
+===============================================================================
+A. CONTAINERS (BLOCKS, SECTIONS, CARDS)
+-------------------------------------------------------------------------------
+Use these token-driven utilities for any rectangular blocks.
+
+1) Primary block container:
+   - border border-border
+   - bg-background
+   - p-4 sm:p-5
+   - space-y-4 or space-y-5
+
+   Example:
+   className="border border-border bg-background p-4 sm:p-5 space-y-5"
+
+2) Sub-section divider inside a block:
+   - border-t border-border
+   - pt-4
+   - first:border-t-0 first:pt-0
+
+   Example:
+   className="border-t border-border pt-4 first:border-t-0 first:pt-0"
+
+3) Muted sub-block (for secondary info or media wrapper):
+   - border border-border
+   - bg-muted
+   - p-3 sm:p-4
+
+   Example:
+   className="border border-border bg-muted p-3 sm:p-4"
+===============================================================================
+*/
+
+/*
+===============================================================================
+B. TYPOGRAPHY HIERARCHY (ATOMIC)
+-------------------------------------------------------------------------------
+Use typography + tracking tokens via Tailwind utilities.
+
+1) Section label / meta heading:
+   - text-xs
+   - font-medium
+   - uppercase
+   - tracking-[0.12em]
+   - text-muted-foreground
+
+   Example:
+   className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground"
+
+2) Primary small title:
+   - text-sm (or text-base when needed)
+   - font-medium or font-semibold
+   - text-foreground
+
+   Example:
+   className="text-sm font-semibold text-foreground"
+
+3) Meta / helper text:
+   - text-[0.7rem] or text-xs
+   - text-muted-foreground
+   - normal case (no uppercase unless you want that look)
+
+   Example:
+   className="text-[0.7rem] text-muted-foreground"
+
+4) Strong contrast headline:
+   - text-base or text-lg
+   - font-semibold
+   - tracking-tight (if configured) or default
+   - text-foreground
+
+   Example:
+   className="text-base font-semibold text-foreground"
+===============================================================================
+*/
+
+/*
+===============================================================================
+C. BUTTONS (ATOMIC)
+-------------------------------------------------------------------------------
+Stick to two atomic patterns: primary and neutral/outline.
+
+1) Primary action:
+   - bg-foreground
+   - text-background
+   - border border-border
+   - px-3 py-2
+   - text-xs font-medium
+   - rounded-none
+
+   Example:
+   className="border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"
+
+2) Neutral / outline action:
+   - bg-background
+   - text-foreground
+   - border border-border
+   - px-3 py-2
+   - text-xs font-medium
+   - rounded-none
+
+   Example:
+   className="border border-border bg-background text-foreground px-3 py-2 text-xs font-medium rounded-none"
+
+3) Muted text-only action (link-like):
+   - bg-transparent (default)
+   - text-muted-foreground
+   - text-[0.7rem] or text-xs
+   - font-medium
+   - underline-offset-2 hover:underline
+   - px-0
+
+   Example:
+   className="px-0 text-[0.7rem] font-medium text-muted-foreground underline-offset-2 hover:underline"
+===============================================================================
+*/
+
+/*
+===============================================================================
+D. LAYOUT / STACKING (ATOMIC)
+-------------------------------------------------------------------------------
+General patterns for vertical and horizontal layout.
+
+1) Vertical stack:
+   - flex flex-col
+   - gap-x (e.g. gap-1, gap-2, gap-4)
+
+   Example:
+   className="flex flex-col gap-2"
+
+2) Horizontal row with wrapping:
+   - flex flex-wrap
+   - gap-x (e.g. gap-2, gap-3)
+
+   Example:
+   className="flex flex-wrap gap-2.5"
+
+3) Align to left / top:
+   - items-start
+   - justify-start
+   - text-left
+
+4) Full-width block within constrained container:
+   - w-full
+   - max-w-[1200px] (or container class)
+===============================================================================
+*/
+
+/*
+===============================================================================
+E. PILLS / TAGS (ATOMIC)
+-------------------------------------------------------------------------------
+Generic pill/tag style for selected items or labels.
+
+1) Neutral pill:
+   - border border-border
+   - bg-background
+   - text-[0.7rem]
+   - font-medium
+   - rounded-none
+   - px-2.5 py-0.5
+
+   Example:
+   className="rounded-none border border-border bg-background px-2.5 py-0.5 text-[0.7rem] font-medium"
+
+2) Meta label pill:
+   - border border-border
+   - text-xs
+   - text-muted-foreground
+   - px-2 py-0.5
+
+   Example:
+   className="border border-border px-2 py-0.5 text-xs text-muted-foreground"
+===============================================================================
+*/
+
+/*
+===============================================================================
+F. MEDIA / IMAGE WRAPPERS (ATOMIC)
+-------------------------------------------------------------------------------
+For inline galleries, carousels, or media surfaces.
+
+1) Outer media block:
+   - border border-border
+   - bg-muted
+
+   Example:
+   className="border border-border bg-muted"
+
+2) Inner media frame:
+   - border border-border
+   - bg-background
+   - overflow-hidden
+   - w-full
+   - max-w-* (e.g. max-w-xl)
+
+   Example:
+   className="w-full max-w-xl overflow-hidden border border-border bg-background"
+
+3) Image sizing:
+   - h-64 or h-72
+   - w-full
+   - object-cover
+
+   Example:
+   className="h-64 w-full object-cover"
+===============================================================================
+*/
+
+/*
+===============================================================================
+G. DIALOG / OVERLAY CONTENT (ATOMIC)
+-------------------------------------------------------------------------------
+For any modal-like content.
+
+1) Dialog container:
+   - max-w-3xl (or similar)
+   - rounded-none
+   - border border-border
+   - bg-background
+   - px-4 py-5 sm:px-6 sm:py-6
+
+   Example:
+   className="max-w-3xl rounded-none border border-border bg-background px-4 py-5 sm:px-6 sm:py-6"
+
+2) Dialog header:
+   - mb-3
+   - border-b border-border
+   - pb-3
+
+   Example:
+   className="mb-3 border-b border-border pb-3"
+
+3) Dialog title:
+   - text-sm
+   - font-medium
+   - text-foreground
+
+4) Dialog description:
+   - text-[0.8rem]
+   - text-muted-foreground
+===============================================================================
+*/
+
+/*
+===============================================================================
+H. HIERARCHY PRINCIPLES (GLOBAL)
+-------------------------------------------------------------------------------
+1) Color hierarchy:
+   - Use bg-background + text-foreground as the base.
+   - Use text-muted-foreground for less-important information.
+   - Use bg-muted only for secondary surfaces behind content (media, info blocks).
+   - Use primary/secondary/accent colors sparingly, for focus or important affordances.
+
+2) Border hierarchy:
+   - border border-border defines primary separation between UI regions.
+   - border-t border-border is used to divide stacked sections.
+   - Avoid different border colors; rely on near-black and spacing.
+
+3) Spacing:
+   - Outer blocks: p-4 or p-5.
+   - Section spacing: space-y-4 or space-y-5.
+   - Small gaps between inline elements: gap-1 or gap-1.5.
+   - Larger gaps between components: gap-3 or gap-4.
+
+4) Typography:
+   - Use uppercase + tracking for small labels/headings.
+   - Use regular case for main content text.
+   - Keep font sizes small to medium; rely on spacing and borders for hierarchy.
+
+5) Motion:
+   - Default: static. No animations.
+   - If any, must be subtle and not default for core components.
+===============================================================================
+*/

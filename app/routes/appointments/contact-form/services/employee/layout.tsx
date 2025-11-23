@@ -1,5 +1,7 @@
-import React from 'react';
+import { Outlet, useOutletContext } from 'react-router';
+import type { AppointmentsOutletContext } from '~/routes/appointments/layout';
 
-export default function layout() {
-  return <div>layout</div>;
+export default function AppointmentsContactFormServicesEmployeeLayout() {
+  const parentContext = useOutletContext<AppointmentsOutletContext>();
+  return <Outlet context={parentContext} />;
 }

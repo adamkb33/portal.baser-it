@@ -1,79 +1,120 @@
 // app/routes/appointments.$companyId.tsx
-import {
-  createCookie,
-  data,
-  redirect,
-  type LoaderFunctionArgs,
-  Outlet,
-  useLoaderData,
-  useLocation,
-  useNavigate,
-} from 'react-router';
-import type { AppointmentSessionDto } from '~/api/clients/booking';
-import { bookingApi } from '~/lib/utils';
+
+import { data, redirect, useLoaderData, useNavigate, Outlet } from 'react-router';
+import type { LoaderFunctionArgs } from 'react-router';
+import type { AppointmentSessionDto, CompanyBookingInfoDto } from '~/api/clients/booking';
 import { Accordion } from '~/components/ui/accordion';
 import { BiTBusinessHero } from '~/components/heros/BiT-business.hero';
 import { ShapesAngularOne } from '~/components/shapes/shapes';
+import { BookingStep } from '~/components/booking/booking-step';
+import { bookingApi } from '~/lib/utils';
+import { AlertCircle } from 'lucide-react';
+import { getOrCreateSession } from '~/lib/appointments.server';
 
-export const appointmentSessionCookie = createCookie('appointment_session', {
-  httpOnly: true,
-  sameSite: 'lax',
-  secure: true,
-  path: '/',
-});
-
-const STEPS = [
-  { key: 'contact', path: '/contact-form' },
-  { key: 'services', path: '/contact-form/services' },
-  { key: 'employee', path: '/contact-form/services/employee' },
-  { key: 'time', path: '/contact-form/services/employee/time' },
-  { key: 'overview', path: '/contact-form/services/employee/time/overview' },
+const BASE_STEPS = [
+  { key: 'contact', path: 'contact-form' },
+  { key: 'services', path: 'contact-form/services' },
+  { key: 'employee', path: 'contact-form/services/employee' },
+  { key: 'time', path: 'contact-form/services/employee/time' },
+  { key: 'overview', path: 'contact-form/services/employee/time/overview' },
 ] as const;
 
-type Step = (typeof STEPS)[number];
-type StepKey = Step['key'];
-type StepIndex = 0 | 1 | 2 | 3 | 4;
+type StepKey = (typeof BASE_STEPS)[number]['key'];
+type Step = { key: StepKey; path: string };
 
 type LoaderData = {
   companyId: number;
   session: AppointmentSessionDto;
-  nextStepIndex: StepIndex;
-  currentStepKey: StepKey | null;
+  currentStepIndex: number;
+  currentStepKey: StepKey;
+  steps: Step[];
+  hasMultipleEmployees: boolean;
+  hasNoEmployees: boolean;
 };
 
 export type AppointmentsOutletContext = {
   companyId: number;
   session: AppointmentSessionDto;
+  steps: Step[];
+  currentStepIndex: number;
 };
 
-function getNextStepIndex(session: AppointmentSessionDto): StepIndex {
-  const hasContact = session.contactId != null;
-  const hasServices = Array.isArray(session.selectedServices) && session.selectedServices.length > 0;
-  const hasEmployee = session.selectedUserId != null;
-  const hasTime = session.selectedStartTime != null;
-
-  if (!hasContact) return 0;
-  if (!hasServices) return 1;
-  if (!hasEmployee) return 2;
-  if (!hasTime) return 3;
-  return 4;
-}
-
-function normalizeRelative(pathname: string, basePath: string): string {
-  const raw = pathname.startsWith(basePath) ? pathname.slice(basePath.length) : pathname;
-
-  if (raw === '') return '';
-
-  let normalized = raw.startsWith('/') ? raw : `/${raw}`;
-  if (normalized.length > 1 && normalized.endsWith('/')) {
-    normalized = normalized.replace(/\/+$/, '');
+function getStepsForCompany(employeeCount: number): Step[] {
+  if (employeeCount === 1) {
+    return BASE_STEPS.filter((step) => step.key !== 'employee');
   }
-  return normalized;
+  return [...BASE_STEPS];
 }
 
-function getStepIndexFromRelative(relative: string): StepIndex | null {
-  const idx = STEPS.findIndex((s) => s.path === relative);
-  return idx === -1 ? null : (idx as StepIndex);
+function getNextIncompleteStepIndex(
+  session: AppointmentSessionDto,
+  steps: Step[],
+  hasMultipleEmployees: boolean,
+): number {
+  if (!session.contactId) return 0;
+  if (!session.selectedServices?.length) return 1;
+
+  if (hasMultipleEmployees && !session.selectedUserId) {
+    return steps.findIndex((s) => s.key === 'employee');
+  }
+
+  if (!session.selectedStartTime) {
+    return steps.findIndex((s) => s.key === 'time');
+  }
+
+  return steps.findIndex((s) => s.key === 'overview');
+}
+
+function getCurrentStepIndex(pathname: string, companyId: number, steps: Step[]): number | null {
+  const prefix = `/appointments/${companyId}/`;
+  if (!pathname.startsWith(prefix)) return null;
+
+  const routePath = pathname.slice(prefix.length);
+
+  for (let i = steps.length - 1; i >= 0; i--) {
+    if (routePath.startsWith(steps[i].path)) {
+      return i;
+    }
+  }
+
+  return null;
+}
+
+function getStepMeta(stepKey: StepKey, session: AppointmentSessionDto) {
+  switch (stepKey) {
+    case 'contact':
+      return {
+        title: 'Oppgi kontaktopplysninger',
+        description: session.contactId
+          ? 'Kontaktopplysninger lagret'
+          : 'Vi trenger dine kontaktopplysninger for å bekrefte avtalen',
+      };
+    case 'services': {
+      const count = session.selectedServices?.length ?? 0;
+      return {
+        title: 'Velg tjenester',
+        description:
+          count > 0
+            ? `${count} tjeneste${count > 1 ? 'r' : ''} valgt`
+            : 'Du kan velge én eller flere tjenester som inngår i avtalen',
+      };
+    }
+    case 'employee':
+      return {
+        title: 'Velg ansatt',
+        description: session.selectedUserId ? 'Ansatt valgt' : 'Velg hvem som skal utføre timen',
+      };
+    case 'time':
+      return {
+        title: 'Velg tidspunkt',
+        description: session.selectedStartTime ? 'Tidspunkt valgt' : 'Velg et tidspunkt som passer for deg',
+      };
+    case 'overview':
+      return {
+        title: 'Bekreft og fullfør',
+        description: 'Se over detaljene før du bekrefter bestillingen',
+      };
+  }
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -81,125 +122,208 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const companyId = Number(companyIdParam);
 
   if (!companyIdParam || Number.isNaN(companyId)) {
-    return redirect('/');
+    throw redirect('/');
   }
-
-  const url = new URL(request.url);
-  const pathname = url.pathname;
-  const basePath = `/appointments/${companyId}`;
-
-  const cookieHeader = request.headers.get('Cookie');
-  const existingSessionId = (await appointmentSessionCookie.parse(cookieHeader)) ?? null;
 
   let session: AppointmentSessionDto;
+  let setCookieHeader: string;
+  let bookingInfo: CompanyBookingInfoDto | undefined;
+
   try {
-    session =
-      await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getOrCreateAppointmentSession(
-        {
-          companyId,
-          sessionId: existingSessionId ?? undefined,
-        },
-      );
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(error);
-    return redirect('/');
+    const [sessionResult, bookingInfoResult] = await Promise.all([
+      getOrCreateSession(request, companyId),
+      bookingApi().PublicCompanyControllerService.PublicCompanyControllerService.getCompanyBookingInfo({ companyId }),
+    ]);
+
+    session = sessionResult.session;
+    setCookieHeader = sessionResult.setCookieHeader;
+    bookingInfo = bookingInfoResult?.data;
+  } catch {
+    throw redirect('/');
   }
 
-  const setCookieHeader = await appointmentSessionCookie.serialize(session.sessionId);
+  const employeeCount = bookingInfo?.companyUser?.length ?? 0;
+  const hasNoEmployees = employeeCount === 0;
+  const hasMultipleEmployees = employeeCount > 1;
 
-  const nextStepIndex = getNextStepIndex(session);
-  const nextStepPath = basePath + STEPS[nextStepIndex].path;
+  if (hasNoEmployees) {
+    return data<LoaderData>(
+      {
+        companyId,
+        session,
+        currentStepIndex: 0,
+        currentStepKey: 'contact',
+        steps: [],
+        hasMultipleEmployees: false,
+        hasNoEmployees: true,
+      },
+      {
+        headers: { 'Set-Cookie': setCookieHeader },
+      },
+    );
+  }
 
-  const relative = normalizeRelative(pathname, basePath);
-  let currentStepKey: StepKey | null = null;
+  if (employeeCount === 1 && !session.selectedUserId && bookingInfo?.companyUser?.[0]) {
+    const singleEmployee = bookingInfo.companyUser[0];
 
-  if (relative === '') {
-    if (pathname !== nextStepPath) {
-      return redirect(nextStepPath, {
-        headers: {
-          'Set-Cookie': setCookieHeader,
-        },
+    if (singleEmployee.userId) {
+      try {
+        await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.selectAppointmentSessionCompanyUser(
+          {
+            requestBody: {
+              sessionId: session.sessionId,
+              selectedCompanyUserId: singleEmployee.userId,
+            },
+          },
+        );
+        session.selectedUserId = singleEmployee.userId;
+      } catch {}
+    }
+  }
+
+  const steps = getStepsForCompany(employeeCount);
+  const url = new URL(request.url);
+  const nextStepIndex = getNextIncompleteStepIndex(session, steps, hasMultipleEmployees);
+  const currentStepIndex = getCurrentStepIndex(url.pathname, companyId, steps);
+
+  if (currentStepIndex === null || currentStepIndex === -1) {
+    const nextStepPath = `/appointments/${companyId}/${steps[nextStepIndex].path}`;
+    throw redirect(nextStepPath, {
+      headers: { 'Set-Cookie': setCookieHeader },
+    });
+  }
+
+  if (!hasMultipleEmployees && steps[currentStepIndex].key === 'employee') {
+    const timeStepIndex = steps.findIndex((s) => s.key === 'time');
+    if (timeStepIndex !== -1) {
+      throw redirect(`/appointments/${companyId}/${steps[timeStepIndex].path}`, {
+        headers: { 'Set-Cookie': setCookieHeader },
       });
     }
-  } else {
-    const currentIndex = getStepIndexFromRelative(relative);
-    if (currentIndex !== null) {
-      currentStepKey = STEPS[currentIndex].key;
-      if (currentIndex > nextStepIndex) {
-        return redirect(nextStepPath, {
-          headers: {
-            'Set-Cookie': setCookieHeader,
-          },
-        });
-      }
-    }
-    // unknown nested route → allowed
+  }
+
+  if (currentStepIndex > nextStepIndex) {
+    const nextStepPath = `/appointments/${companyId}/${steps[nextStepIndex].path}`;
+    throw redirect(nextStepPath, {
+      headers: { 'Set-Cookie': setCookieHeader },
+    });
   }
 
   return data<LoaderData>(
     {
       companyId,
       session,
-      nextStepIndex,
-      currentStepKey,
+      currentStepIndex,
+      currentStepKey: steps[currentStepIndex].key,
+      steps,
+      hasMultipleEmployees,
+      hasNoEmployees: false,
     },
     {
-      headers: {
-        'Set-Cookie': setCookieHeader,
-      },
+      headers: { 'Set-Cookie': setCookieHeader },
     },
   );
 }
 
 export default function AppointmentsLayout() {
-  const { companyId, session, nextStepIndex, currentStepKey } = useLoaderData<typeof loader>();
+  const { companyId, session, currentStepIndex, currentStepKey, steps, hasNoEmployees } =
+    useLoaderData<typeof loader>();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const activeKey: StepKey = currentStepKey ?? STEPS[nextStepIndex].key;
+  // Build context for child routes
+  const outletContext: AppointmentsOutletContext = {
+    companyId,
+    session,
+    steps,
+    currentStepIndex,
+  };
 
-  const handleAccordionChange = (value: string | undefined) => {
-    if (!value) return;
-    const step = STEPS.find((s) => s.key === value);
+  if (hasNoEmployees) {
+    return (
+      <div className="flex flex-col gap-6 md:flex-row">
+        <div className="flex-2">
+          <div className="border border-border bg-background p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <AlertCircle className="h-6 w-6 shrink-0 text-destructive" />
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-foreground">Ingen ansatte tilgjengelig</h2>
+                <p className="text-sm text-muted-foreground">
+                  Dette selskapet har ingen ansatte tilgjengelig for booking for øyeblikket. Vennligst kontakt selskapet
+                  direkte for å avtale time.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1">
+          <BiTBusinessHero />
+        </div>
+      </div>
+    );
+  }
+
+  const nextIncompleteIndex = getNextIncompleteStepIndex(
+    session,
+    steps,
+    steps.some((s) => s.key === 'employee'),
+  );
+
+  const handleStepClick = (stepKey: string) => {
+    const step = steps.find((s) => s.key === stepKey);
     if (!step) return;
 
-    const basePath = `/appointments/${companyId}`;
-    const targetPath = basePath + step.path;
-    if (targetPath === location.pathname) return;
-
+    const targetPath = `/appointments/${companyId}/${step.path}`;
     navigate(targetPath);
   };
 
   return (
     <div className="flex flex-col gap-6 md:flex-row">
-      <div className="flex-2 space-y-6">
-        <div className="relative overflow-hidden rounded-xl border border-slate-200/70 bg-gradient-to-br from-indigo-50/90 via-white to-violet-50/80 px-6 py-6 shadow-[0_20px_50px_rgba(99,102,241,0.12)] backdrop-blur-sm sm:px-8 sm:py-7">
+      <div className="flex-2 space-y-5">
+        <div className="relative border border-border bg-background px-4 py-4 sm:px-6 sm:py-5">
           <ShapesAngularOne />
           <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">Book Time</h1>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            <div className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Bestilling</p>
+              <h1 className="text-2xl font-semibold text-foreground">Book time</h1>
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 Oppgi kontaktopplysninger, velg tjenester, velg ansatt og tidspunkt.
               </p>
             </div>
-            <div className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 shadow-sm backdrop-blur-sm">
-              <div className="text-sm font-semibold text-indigo-600">
-                Steg {nextStepIndex + 1} av {STEPS.length}
-              </div>
+            <div className="flex items-center border border-border bg-background px-3 py-1 text-xs font-medium uppercase tracking-wider text-foreground">
+              Steg {currentStepIndex + 1} av {steps.length}
             </div>
           </div>
         </div>
 
         <Accordion
           type="single"
-          value={activeKey}
-          onValueChange={handleAccordionChange}
+          value={currentStepKey}
+          onValueChange={handleStepClick}
           className="space-y-3"
           collapsible
         >
-          {/* Each step route renders its own AccordionItem with matching value */}
-          <Outlet context={{ companyId, session }} />
+          {steps.map((step, index) => {
+            const { title, description } = getStepMeta(step.key, session);
+            const isCompleted = index < nextIncompleteIndex;
+            const isActive = index === currentStepIndex;
+            const isFinalStep = index === steps.length - 1;
+
+            return (
+              <BookingStep
+                key={step.key}
+                stepNumber={index + 1}
+                stepValue={step.key}
+                title={title}
+                description={description}
+                isCompleted={isCompleted}
+                isActive={isActive}
+                isFinalStep={isFinalStep}
+              >
+                {/* Render Outlet only in active step, pass context */}
+                {isActive && <Outlet context={outletContext} />}
+              </BookingStep>
+            );
+          })}
         </Accordion>
       </div>
 

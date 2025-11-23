@@ -1,7 +1,9 @@
-import { forwardRef } from 'react';
+// app/components/booking/booking-step.tsx
+
 import { AccordionItem, AccordionTrigger, AccordionContent } from '~/components/ui/accordion';
 import { CheckCircle2 } from 'lucide-react';
 import { ShapesDiamondOne } from '~/components/shapes/shapes';
+import { cn } from '~/lib/utils';
 
 interface BookingStepProps {
   stepNumber: number;
@@ -9,69 +11,85 @@ interface BookingStepProps {
   title: string;
   description: string;
   isCompleted: boolean;
+  isActive: boolean;
+  isFinalStep?: boolean;
   children: React.ReactNode;
-  variant?: 'default' | 'final';
 }
 
-export const BookingStep = forwardRef<HTMLDivElement, BookingStepProps>(
-  ({ stepNumber, stepValue, title, description, isCompleted, children, variant = 'default' }, ref) => {
-    const isFinal = variant === 'final';
+export function BookingStep({
+  stepNumber,
+  stepValue,
+  title,
+  description,
+  isCompleted,
+  isFinalStep = false,
+  children,
+}: BookingStepProps) {
+  return (
+    <AccordionItem
+      value={stepValue}
+      className={cn(
+        'relative rounded-none border-2 bg-background shadow-[4px_4px_0_0_rgba(0,0,0,0.9)] transition-transform duration-150 hover:-translate-y-[1px]',
+        isFinalStep && 'border-foreground/80',
+        isCompleted && !isFinalStep && 'border-emerald-500/80',
+        !isCompleted && !isFinalStep && 'border-foreground/40',
+      )}
+    >
+      {/* Background decoration for final step */}
+      {isFinalStep && (
+        <div className="pointer-events-none absolute inset-0 opacity-25">
+          <ShapesDiamondOne />
+        </div>
+      )}
 
-    return (
-      <div ref={ref}>
-        <AccordionItem
-          value={stepValue}
-          className={
-            isFinal
-              ? 'relative overflow-hidden rounded-md border border-indigo-200/70 bg-gradient-to-br from-indigo-50/80 via-white to-violet-50/60 shadow-[0_12px_40px_rgba(99,102,241,0.15)] backdrop-blur-sm transition-all hover:shadow-[0_12px_40px_rgba(99,102,241,0.2)]'
-              : isCompleted
-                ? 'rounded-md border border-emerald-200/50 bg-emerald-50/30 shadow-sm backdrop-blur-sm transition-all hover:shadow-md'
-                : 'rounded-md border border-slate-200/70 bg-white/90 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all hover:shadow-[0_8px_30px_rgba(15,23,42,0.12)]'
-          }
-        >
-          {isFinal && <ShapesDiamondOne />}
-          <AccordionTrigger
-            className={`hover:no-underline ${
-              isCompleted ? 'px-4 py-3 sm:px-5' : 'px-5 py-5 sm:px-7'
-            } ${isFinal ? 'relative z-10' : ''}`}
+      {/* Trigger */}
+      <AccordionTrigger className={cn('px-5 py-5 hover:no-underline sm:px-7', isFinalStep && 'relative z-10')}>
+        <div className="flex items-center gap-4 text-left">
+          {/* Step number/checkmark badge */}
+          <div
+            className={cn(
+              'flex h-9 w-9 shrink-0 items-center justify-center rounded-none border-2 border-foreground/80 text-xs font-bold uppercase tracking-wider shadow-[3px_3px_0_0_rgba(0,0,0,0.9)]',
+              isCompleted ? 'bg-foreground text-background' : 'bg-background text-foreground',
+            )}
           >
-            <div className="text-left">
-              <div className="flex items-center gap-4">
-                <div
-                  className={`flex items-center justify-center rounded-md text-sm font-bold shadow-md transition-all ${
-                    isCompleted
-                      ? 'h-7 w-7 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/30'
-                      : isFinal
-                        ? 'h-9 w-9 bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30'
-                        : 'h-9 w-9 bg-slate-100 text-slate-600'
-                  }`}
-                >
-                  {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : stepNumber}
-                </div>
-                <div>
-                  <h3 className={`font-bold text-slate-900 ${isCompleted ? 'text-sm' : 'text-base'}`}>{title}</h3>
-                  {!isCompleted && (
-                    <p className={`mt-1 text-xs ${isFinal ? 'text-slate-600' : 'text-slate-500'}`}>{description}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent
-            className={`border-t ${
-              isCompleted
-                ? 'border-emerald-100 px-4 pb-3 pt-3 sm:px-5'
-                : isFinal
-                  ? 'relative z-10 border-indigo-100 px-5 pb-6 pt-5 sm:px-7'
-                  : 'border-slate-100 px-5 pb-5 pt-4 sm:px-7'
-            }`}
-          >
-            {children}
-          </AccordionContent>
-        </AccordionItem>
-      </div>
-    );
-  },
-);
+            {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : stepNumber}
+          </div>
 
-BookingStep.displayName = 'BookingStep';
+          {/* Step title and description */}
+          <div className="min-w-0 flex-1 space-y-1">
+            <h3
+              className={cn(
+                'font-semibold uppercase tracking-wider',
+                isCompleted ? 'text-xs text-muted-foreground' : 'text-xs text-foreground sm:text-sm',
+              )}
+            >
+              {title}
+            </h3>
+
+            <p
+              className={cn(
+                'text-xs uppercase tracking-wider',
+                isFinalStep ? 'text-foreground/70' : 'text-muted-foreground',
+              )}
+            >
+              {description}
+            </p>
+          </div>
+        </div>
+      </AccordionTrigger>
+
+      {/* Content */}
+      <AccordionContent
+        className={cn(
+          'border-t-2 bg-background text-sm sm:text-base',
+          'px-5 pb-5 pt-4 sm:px-7',
+          isFinalStep && 'relative z-10 border-foreground/80',
+          isCompleted && !isFinalStep && 'border-emerald-200',
+          !isCompleted && !isFinalStep && 'border-foreground/20',
+        )}
+      >
+        <div className="border border-dashed border-foreground/30 p-3 sm:p-4">{children}</div>
+      </AccordionContent>
+    </AccordionItem>
+  );
+}

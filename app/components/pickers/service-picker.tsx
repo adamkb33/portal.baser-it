@@ -1,3 +1,5 @@
+// app/components/pickers/service-picker.tsx
+
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
@@ -7,19 +9,29 @@ import type { GroupedServiceGroupsDto, GroupedService, ImageDto } from 'tmp/open
 
 export type ServicePickerProps = {
   groupedServices: GroupedServiceGroupsDto[];
-  selectedServiceIds: number[];
-  onChange: (ids: number[]) => void;
+  initialSelectedIds?: number[];
+  onSubmit: (serviceIds: number[]) => void;
+  isSubmitting?: boolean;
 };
 
-export function ServicePicker({ groupedServices, selectedServiceIds, onChange }: ServicePickerProps) {
+export function ServicePicker({
+  groupedServices,
+  initialSelectedIds = [],
+  onSubmit,
+  isSubmitting = false,
+}: ServicePickerProps) {
+  const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>(initialSelectedIds);
   const [dialogService, setDialogService] = useState<GroupedService | null>(null);
 
   const toggleService = (serviceId: number) => {
-    onChange(
-      selectedServiceIds.includes(serviceId)
-        ? selectedServiceIds.filter((id) => id !== serviceId)
-        : [...selectedServiceIds, serviceId],
+    setSelectedServiceIds((prev) =>
+      prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId],
     );
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(selectedServiceIds);
   };
 
   const handleOpenImages = (service: GroupedService) => {
@@ -35,18 +47,18 @@ export function ServicePicker({ groupedServices, selectedServiceIds, onChange }:
     if (images.length === 0) return null;
 
     return (
-      <div className="mt-6 space-y-4">
-        <div className="border-2 border-foreground/40 bg-muted p-3 sm:p-4">
+      <div className="mt-4 space-y-3">
+        <div className="border border-border bg-muted">
           <Carousel className="w-full">
             <CarouselContent>
               {images.map((image) => (
                 <CarouselItem key={image.id ?? image.url} className="flex justify-center">
-                  <div className="w-full max-w-xl overflow-hidden border-2 border-foreground/60 bg-background">
+                  <div className="w-full max-w-xl overflow-hidden border border-border bg-background">
                     <img
                       src={image.url}
                       alt={image.label || serviceName}
                       loading="lazy"
-                      className="h-72 w-full object-cover"
+                      className="h-64 w-full object-cover"
                     />
                   </div>
                 </CarouselItem>
@@ -54,16 +66,16 @@ export function ServicePicker({ groupedServices, selectedServiceIds, onChange }:
             </CarouselContent>
             {images.length > 1 && (
               <>
-                <CarouselPrevious className="border-2 border-foreground/80 bg-background" />
-                <CarouselNext className="border-2 border-foreground/80 bg-background" />
+                <CarouselPrevious className="border border-border bg-background" />
+                <CarouselNext className="border border-border bg-background" />
               </>
             )}
           </Carousel>
         </div>
 
-        <div className="flex flex-wrap gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="flex flex-wrap gap-1 text-xs text-muted-foreground">
           {images.map((image) => (
-            <span key={`meta-${image.id ?? image.url}`} className="border px-2 py-1">
+            <span key={`meta-${image.id ?? image.url}`} className="border border-border px-2 py-0.5">
               {image.label ?? serviceName}
             </span>
           ))}
@@ -74,96 +86,99 @@ export function ServicePicker({ groupedServices, selectedServiceIds, onChange }:
 
   return (
     <>
-      <div className="space-y-6 border-2 border-foreground/40 bg-background p-4 sm:p-6">
-        <div className="space-y-6">
-          {groupedServices
-            .filter((group) => group.services.length > 0)
-            .map((group) => (
-              <section
-                key={group.id}
-                className="border-t border-dashed border-foreground/30 pt-4 first:border-t-0 first:pt-0"
-              >
-                <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  {group.name}
-                </h4>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-5 border border-border bg-background p-4 sm:p-5">
+          <div className="space-y-5">
+            {groupedServices
+              .filter((group) => group.services.length > 0)
+              .map((group) => (
+                <section key={group.id} className="border-t border-border pt-4 first:border-t-0 first:pt-0">
+                  <h4 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    {group.name}
+                  </h4>
 
-                <div className="flex flex-wrap gap-3">
-                  {group.services.map((service) => {
-                    const selected = selectedServiceIds.includes(service.id);
-                    const hasImages = !!service.images && service.images.length > 0;
+                  <div className="flex flex-wrap gap-2.5">
+                    {group.services.map((service) => {
+                      const selected = selectedServiceIds.includes(service.id);
+                      const hasImages = !!service.images && service.images.length > 0;
 
-                    return (
-                      <div key={service.id} className="flex flex-col items-start gap-1">
-                        <Button
-                          variant={selected ? 'default' : 'outline'}
-                          size="sm"
-                          type="button"
-                          onClick={() => toggleService(service.id)}
-                          className={[
-                            'border-2 px-4 py-2 text-xs font-medium uppercase tracking-[0.14em]',
-                            'rounded-none shadow-[4px_4px_0_0_rgba(0,0,0,0.9)]',
-                            selected ? 'bg-foreground text-background' : 'bg-background text-foreground',
-                          ].join(' ')}
-                        >
-                          <span className="flex flex-col items-start gap-1 text-left sm:flex-row sm:items-center sm:gap-3">
-                            <span>{service.name}</span>
-                            <span className="text-[0.65rem] font-normal uppercase text-muted-foreground">
-                              {service.price} kr · {service.duration} min
-                            </span>
-                          </span>
-                        </Button>
-
-                        {hasImages && (
+                      return (
+                        <div key={service.id} className="flex flex-col items-start gap-1">
                           <Button
+                            variant={selected ? 'default' : 'outline'}
+                            size="sm"
                             type="button"
-                            variant="ghost"
-                            onClick={() => handleOpenImages(service)}
-                            className="px-0 text-[0.7rem] font-medium uppercase tracking-[0.14em] text-muted-foreground underline-offset-4 hover:underline"
+                            onClick={() => toggleService(service.id)}
+                            disabled={isSubmitting}
+                            className={[
+                              'border border-border px-3 py-2 text-xs font-medium',
+                              'rounded-none bg-background transition-colors',
+                              selected ? 'bg-foreground text-background' : 'text-foreground',
+                            ].join(' ')}
                           >
-                            Vis bilder
+                            <span className="flex flex-col items-start gap-0.5 text-left sm:flex-row sm:items-center sm:gap-3">
+                              <span>{service.name}</span>
+                              <span className="text-xs font-normal text-muted-foreground">
+                                {service.price} kr · {service.duration} min
+                              </span>
+                            </span>
                           </Button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            ))}
+
+                          {hasImages && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={() => handleOpenImages(service)}
+                              disabled={isSubmitting}
+                              className="px-0 text-xs font-medium text-muted-foreground underline-offset-2 hover:underline"
+                            >
+                              Vis bilder
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
+          </div>
+
+          {selectedServiceIds.length > 0 && (
+            <div className="border-t border-border pt-4">
+              <h5 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Valgte tjenester
+              </h5>
+              <div className="flex flex-wrap gap-1.5">
+                {groupedServices.flatMap((group) =>
+                  group.services
+                    .filter((s) => selectedServiceIds.includes(s.id))
+                    .map((s) => (
+                      <Badge
+                        key={s.id}
+                        variant="secondary"
+                        className="rounded-none border border-border bg-background px-2.5 py-0.5 text-xs font-medium"
+                      >
+                        {s.name}
+                      </Badge>
+                    )),
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {selectedServiceIds.length > 0 && (
-          <div className="border-t-2 border-foreground/40 pt-4">
-            <h5 className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Valgte tjenester
-            </h5>
-            <div className="flex flex-wrap gap-2">
-              {groupedServices.flatMap((group) =>
-                group.services
-                  .filter((s) => selectedServiceIds.includes(s.id))
-                  .map((s) => (
-                    <Badge
-                      key={s.id}
-                      variant="secondary"
-                      className="rounded-none border-2 border-foreground/60 bg-background px-3 py-1 text-[0.7rem] font-medium uppercase tracking-[0.14em]"
-                    >
-                      {s.name}
-                    </Badge>
-                  )),
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+        <Button type="submit" className="h-9 w-full text-sm" disabled={isSubmitting || selectedServiceIds.length === 0}>
+          {isSubmitting ? 'Lagrer...' : 'Bekreft valg'}
+        </Button>
+      </form>
 
       <Dialog open={dialogService != null} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="max-w-3xl border-2 border-foreground/80 bg-background px-5 py-6 sm:px-8 sm:py-8 rounded-none">
+        <DialogContent className="max-w-3xl rounded-none border border-border bg-background px-4 py-5 sm:px-6 sm:py-6">
           {dialogService && (
             <>
-              <DialogHeader className="space-y-2 border-b-2 border-foreground/40 pb-4">
-                <DialogTitle className="text-base font-semibold uppercase tracking-[0.18em]">
-                  {dialogService.name}
-                </DialogTitle>
-                <DialogDescription className="text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+              <DialogHeader className="mb-3 border-b border-border pb-3">
+                <DialogTitle className="text-sm font-medium">{dialogService.name}</DialogTitle>
+                <DialogDescription className="text-sm text-muted-foreground">
                   Bilder for denne tjenesten.
                 </DialogDescription>
               </DialogHeader>

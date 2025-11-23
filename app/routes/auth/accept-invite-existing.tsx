@@ -7,6 +7,7 @@ import { OpenAPI, ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { accessTokenCookie, refreshTokenCookie } from '~/features/auth/api/cookies.server';
 import { toAuthTokens } from '~/features/auth/token/token-utils';
+import { baseApi } from '~/lib/utils';
 
 interface LoaderData {
   inviteToken: string;
@@ -20,7 +21,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const hasAccepted = formData.get('hasAccepted') === 'true';
 
   try {
-    const response = await AuthControllerService.acceptInviteExisting({
+    const response = await baseApi().AuthControllerService.AuthControllerService.acceptInviteExisting({
       inviteToken: inviteToken,
       requestBody: {
         hasAccepted: hasAccepted,

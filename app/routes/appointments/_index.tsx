@@ -1,3 +1,3 @@
-export default function AppointmentsIndex() {
-  return null;
+export default function _index() {
+  return <div>_index</div>;
 }

@@ -8,6 +8,7 @@ import type { AppointmentSessionDto } from '@types';
 import type { CreateAppointmentDto } from '@types';
 import type { CreateAppointmentsDto } from '@types';
 import type { GroupedServiceGroupsDto } from '@types';
+import type { SelectCompanyUserAppointmentSessionDto } from '@types';
 import type { SelectServicesAppointmentSessionDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
@@ -58,6 +59,22 @@ export class PublicAppointmentControllerService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/public/appointment/select-services',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * @returns AppointmentSessionDto OK
+     * @throws ApiError
+     */
+    public static selectAppointmentSessionCompanyUser({
+        requestBody,
+    }: {
+        requestBody: SelectCompanyUserAppointmentSessionDto,
+    }): CancelablePromise<AppointmentSessionDto> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/public/appointment/select-company-user',
             body: requestBody,
             mediaType: 'application/json',
         });

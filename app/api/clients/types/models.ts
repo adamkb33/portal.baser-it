@@ -399,6 +399,11 @@ export interface ScheduleTimeSlot {
     endTime: string;
 }
 
+export interface SelectCompanyUserAppointmentSessionDto {
+    sessionId: string;
+    selectedCompanyUserId: number;
+}
+
 export interface SelectServicesAppointmentSessionDto {
     sessionId: string;
     selectedServices: number[];
