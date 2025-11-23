@@ -50,6 +50,13 @@ export interface AppointmentServiceDto {
     price: number;
 }
 
+export interface AppointmentSessionDto {
+    sessionId: string;
+    selectedServices?: number[];
+    selectedUserId?: number;
+    selectedStartTime?: string;
+}
+
 export interface AuthenticatedUserPayload {
     id: number;
     email: string;

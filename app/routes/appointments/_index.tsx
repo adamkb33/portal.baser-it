@@ -9,9 +9,8 @@ export const appointmentSessionCookie = createCookie('appointment_session', {
   path: '/',
 });
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  const companyIdParam = url.searchParams.get('companyId');
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  const companyIdParam = params.companyId;
   const companyId = Number(companyIdParam);
 
   if (!companyIdParam || isNaN(companyId)) {
@@ -33,7 +32,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const setCookieHeader = await appointmentSessionCookie.serialize(sessionId);
 
     return data(
-      { sessionId },
+      { sessionId, companyId },
       {
         headers: {
           'Set-Cookie': setCookieHeader,
@@ -41,9 +40,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     );
   } catch (error: unknown) {
-    console.error(JSON.stringify(error, null, 2));
     const apiErr = error as ApiClientError;
-    return data({ error: apiErr?.body?.message ?? 'An unexpected error occurred' }, { status: 400 });
+    return data(
+      {
+        error: apiErr?.body?.message ?? 'An unexpected error occurred',
+      },
+      { status: 400 },
+    );
   }
 }
 

@@ -1,9 +1,16 @@
-import { data, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
+import { data, redirect, type LoaderFunctionArgs, type ActionFunctionArgs, createCookie } from 'react-router';
 import type { PublicCompanyUserDto, ContactDto } from 'tmp/openapi/gen/base';
 import type { GroupedServiceGroupsDto, ScheduleDto } from 'tmp/openapi/gen/booking';
 import type { DailyScheduleDto } from '~/api/clients/base';
 import type { ApiClientError } from '~/api/clients/http';
 import { baseApi, bookingApi } from '~/lib/utils';
+
+export const appointmentSessionCookie = createCookie('appointment_session', {
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: true,
+  path: '/',
+});
 
 type CompanyUserWithEmail = {
   userId: number;
@@ -56,6 +63,19 @@ export async function createAppointmentloader({ request }: LoaderFunctionArgs) {
   }
 
   try {
+    const cookieHeaders = request.headers.get('Cookie');
+    const sessionId: string | null = await appointmentSessionCookie.parse(cookieHeaders);
+
+    console.log(sessionId, 'sessionId from cookie');
+
+    const appointmentSessionResponse =
+      await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getOrCreateSession({
+        companyId,
+        sessionId: sessionId as string,
+      });
+
+    await appointmentSessionCookie.serialize(appointmentSessionResponse.sessionId);
+
     const companyBookingInfoDto =
       await bookingApi().PublicCompanyControllerService.PublicCompanyControllerService.getCompanyBookingInfo({
         companyId,
@@ -102,16 +122,13 @@ export async function createAppointmentAction({ request }: ActionFunctionArgs) {
   try {
     const url = new URL(request.url);
     const companyId = Number(url.searchParams.get('companyId'));
-    const userId = Number(url.searchParams.get('userId'));
+    const userIdParam = url.searchParams.get('userId');
+    const userId = userIdParam ? Number(userIdParam) : null;
     const formData = await request.formData();
     const intent = formData.get('intent') as string;
 
     if (!companyId || isNaN(companyId)) {
       return data({ error: 'Invalid company ID' }, { status: 400 });
-    }
-
-    if (!userId || isNaN(userId)) {
-      return data({ error: 'Invalid user ID' }, { status: 400 });
     }
 
     if (intent === APPOINTMENTS_INTENT.GET_OR_CREATE_CONTACT) {
@@ -137,6 +154,10 @@ export async function createAppointmentAction({ request }: ActionFunctionArgs) {
       }
 
       return data({ error: 'Failed to create contact' }, { status: 400 });
+    }
+
+    if (!userId || isNaN(userId)) {
+      return data({ error: 'Invalid user ID' }, { status: 400 });
     }
 
     if (intent === APPOINTMENTS_INTENT.GET_SCHEDULE) {

@@ -44,11 +44,61 @@ export type RouteBranch = {
 export const ROUTE_TREE: RouteBranch[] = [
   {
     id: 'appointments',
-    href: '/appointments',
+    href: '/appointments/:companyId',
     label: 'Bestill time',
     category: BrachCategory.PUBLIC,
     placement: RoutePlaceMent.NAVIGATION,
     accessType: Access.NOT_AUTHENTICATED,
+    children: [
+      {
+        id: 'appointments.contact-form',
+        href: 'contact-form', // relative to /appointments/:companyId
+        label: 'Kontaktinformasjon',
+        category: BrachCategory.NONE,
+        accessType: Access.PUBLIC,
+        hidden: true,
+        children: [
+          {
+            id: 'appointments.contact-form.services',
+            href: 'services', // /appointments/:companyId/contact-form/services
+            label: 'Velg tjenester',
+            category: BrachCategory.NONE,
+            accessType: Access.PUBLIC,
+            hidden: true,
+            children: [
+              {
+                id: 'appointments.contact-form.services.employee',
+                href: 'employee',
+                label: 'Velg behandler',
+                category: BrachCategory.NONE,
+                accessType: Access.PUBLIC,
+                hidden: true,
+                children: [
+                  {
+                    id: 'appointments.contact-form.services.employee.time',
+                    href: 'time',
+                    label: 'Velg tidspunkt',
+                    category: BrachCategory.NONE,
+                    accessType: Access.PUBLIC,
+                    hidden: true,
+                    children: [
+                      {
+                        id: 'appointments.contact-form.services.employee.time.overview',
+                        href: 'overview',
+                        label: 'Oversikt',
+                        category: BrachCategory.NONE,
+                        accessType: Access.PUBLIC,
+                        hidden: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
   },
   {
     id: 'auth.sign-in',
