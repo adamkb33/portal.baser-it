@@ -1,6 +1,6 @@
 // Common Responses
 import type { ApiResponse } from './generic-wrapper';
-import type { AppointmentDto, AuthenticatedUserPayload, AuthenticationTokenDto, CompanyBookingInfoDto, CompanySummaryDto, CompanyUserDto, ContactDto, DailyScheduleDto, InvitedUserTokenDto, JwtClaims, PaginatedResponseAppointmentDto, PaginatedResponseCompanyUserDto, PaginatedResponseContactDto, PaginatedResponseServiceDto, PaginatedResponseServiceGroupDto, PublicCompanyUserDto, ScheduleDto, ServiceDto, ServiceGroupDto, ServiceImageDto } from './models';
+import type { AppointmentDto, AuthenticatedUserPayload, AuthenticationTokenDto, CompanyBookingInfoDto, CompanySummaryDto, CompanyUserDto, ContactDto, DailyScheduleDto, ImageDto, InvitedUserTokenDto, JwtClaims, PaginatedResponseAppointmentDto, PaginatedResponseCompanyUserDto, PaginatedResponseContactDto, PaginatedResponseServiceDto, PaginatedResponseServiceGroupDto, PublicCompanyUserDto, ScheduleDto, ServiceDto, ServiceGroupDto } from './models';
 
 export type ApiResponseAppointmentDto = ApiResponse<AppointmentDto>;
 export type ApiResponseAuthenticatedUserPayload = ApiResponse<AuthenticatedUserPayload>;
@@ -10,14 +10,15 @@ export type ApiResponseCompanyBookingInfoDto = ApiResponse<CompanyBookingInfoDto
 export type ApiResponseCompanySummaryDto = ApiResponse<CompanySummaryDto>;
 export type ApiResponseCompanyUserDto = ApiResponse<CompanyUserDto>;
 export type ApiResponseContactDto = ApiResponse<ContactDto>;
+export type ApiResponseImageDto = ApiResponse<ImageDto>;
 export type ApiResponseInvitedUserTokenDto = ApiResponse<InvitedUserTokenDto>;
 export type ApiResponseJwtClaims = ApiResponse<JwtClaims>;
 export type ApiResponseListAppointmentDto = ApiResponse<AppointmentDto[]>;
 export type ApiResponseListCompanySummaryDto = ApiResponse<CompanySummaryDto[]>;
 export type ApiResponseListContactDto = ApiResponse<ContactDto[]>;
 export type ApiResponseListDailyScheduleDto = ApiResponse<DailyScheduleDto[]>;
+export type ApiResponseListImageDto = ApiResponse<ImageDto[]>;
 export type ApiResponseListPublicCompanyUserDto = ApiResponse<PublicCompanyUserDto[]>;
-export type ApiResponseListServiceImageDto = ApiResponse<ServiceImageDto[]>;
 export type ApiResponsePaginatedResponseAppointmentDto = ApiResponse<PaginatedResponseAppointmentDto>;
 export type ApiResponsePaginatedResponseCompanyUserDto = ApiResponse<PaginatedResponseCompanyUserDto>;
 export type ApiResponsePaginatedResponseContactDto = ApiResponse<PaginatedResponseContactDto>;
@@ -26,5 +27,4 @@ export type ApiResponsePaginatedResponseServiceGroupDto = ApiResponse<PaginatedR
 export type ApiResponseScheduleDto = ApiResponse<ScheduleDto>;
 export type ApiResponseServiceDto = ApiResponse<ServiceDto>;
 export type ApiResponseServiceGroupDto = ApiResponse<ServiceGroupDto>;
-export type ApiResponseServiceImageDto = ApiResponse<ServiceImageDto>;
 export type ApiResponseUnit = ApiResponse<void>;

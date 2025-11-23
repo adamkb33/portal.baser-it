@@ -1,18 +1,7 @@
-import {
-  data,
-  redirect,
-  useFetcher,
-  useLoaderData,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-} from 'react-router';
+import { useFetcher, useLoaderData } from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { ServiceDto, ServiceGroupDto } from 'tmp/openapi/gen/booking';
-import { createBookingClient } from '~/api/clients/booking';
-import type { ApiClientError } from '~/api/clients/http';
-import { ENV } from '~/api/config/env';
-import { getAccessToken } from '~/lib/auth.utils';
 import { Button } from '~/components/ui/button';
 import { PaginatedTable } from '~/components/table/paginated-data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
@@ -20,210 +9,23 @@ import type { FormFieldRenderProps } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
-import axios from 'axios';
+import { Badge } from '~/components/ui/badge';
+import { getServicesLoader, servicesActions } from '~/features/booking/company-user-services';
+import { X } from 'lucide-react';
 
 export type BookingServicesLoaderData = {
   serviceGroups: ServiceGroupDto[];
   services: ServiceDto[];
 };
 
-const extractList = <T,>(payload: unknown): T[] => {
-  if (!payload) return [];
-  if (Array.isArray(payload)) return payload as T[];
-  if (Array.isArray((payload as any).content)) return (payload as any).content as T[];
-  if (Array.isArray((payload as any).items)) return (payload as any).items as T[];
-  return [];
-};
+export const loader = getServicesLoader;
+export const action = servicesActions;
 
-type ExtractedImage = {
-  file: Blob;
-  label: string;
-};
-
-const uploadServiceImages = async (args: { serviceId: number; images: ExtractedImage[]; accessToken: string }) => {
-  const { serviceId, images, accessToken } = args;
-  if (images.length === 0) return;
-
-  const formData = new FormData();
-
-  images.forEach((img) => {
-    formData.append('files', img.file);
-    formData.append('labels', img.label ?? '');
-  });
-
-  // Build headers. In Node, axios may need getHeaders() if available (form-data lib).
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${accessToken}`,
-  };
-
-  // If FormData has getHeaders (Node form-data), merge them
-  const anyFormData = formData as any;
-  if (typeof anyFormData.getHeaders === 'function') {
-    Object.assign(headers, anyFormData.getHeaders());
-  }
-
-  await axios.post(`${ENV.BOOKING_BASE_URL}/company-user/service-images/${serviceId}/images/bulk`, formData, {
-    headers,
-  });
-};
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  try {
-    const accessToken = await getAccessToken(request);
-    if (!accessToken) {
-      return redirect('/');
-    }
-    const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const serviceGroupsResponse =
-      await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups({});
-    const bookingClient2 = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const servicesResponse = await bookingClient2.ServiceControllerService.ServiceControllerService.getServices({});
-
-    return data<BookingServicesLoaderData>({
-      serviceGroups: extractList<ServiceGroupDto>(serviceGroupsResponse?.data),
-      services: extractList<ServiceDto>(servicesResponse?.data),
-    });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
-  }
-}
-
-// 🔹 Helper: extract images + labels from FormData
-const extractImagesFromFormData = (fd: FormData) => {
-  const byIndex: Record<
-    string,
-    {
-      file?: File;
-      label?: string;
-    }
-  > = {};
-
-  for (const [key, value] of fd.entries()) {
-    const fileMatch = key.match(/^images\[(\d+)]\[file]$/);
-    const labelMatch = key.match(/^images\[(\d+)]\[label]$/);
-
-    if (fileMatch) {
-      const index = fileMatch[1];
-      if (!byIndex[index]) byIndex[index] = {};
-
-      byIndex[index].file = value as File;
-    }
-
-    if (labelMatch) {
-      const index = labelMatch[1];
-      if (!byIndex[index]) byIndex[index] = {};
-      byIndex[index].label = String(value);
-    }
-  }
-
-  const images = Object.keys(byIndex)
-    .sort((a, b) => Number(a) - Number(b))
-    .map((index) => ({
-      file: byIndex[index].file!,
-      label: byIndex[index].label ?? '',
-    }))
-    .filter((img) => img.file);
-
-  return images;
-};
-
-export async function action({ request }: ActionFunctionArgs) {
-  const accessToken = await getAccessToken(request);
-  if (!accessToken) {
-    return redirect('/');
-  }
-
-  const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-  const formData = await request.formData();
-  const intent = formData.get('intent') as string;
-
-  try {
-    if (intent === 'create') {
-      const name = formData.get('name') as string;
-      const serviceGroupId = Number(formData.get('serviceGroupId'));
-      const price = Number(formData.get('price'));
-      const duration = Number(formData.get('duration'));
-
-      const images = extractImagesFromFormData(formData);
-
-      const serviceResponse = await bookingClient.ServiceControllerService.ServiceControllerService.createService({
-        requestBody: {
-          name,
-          serviceGroupId,
-          price,
-          duration,
-        },
-      });
-
-      const createdService = serviceResponse.data as { id?: number } | null | undefined;
-      const serviceId = createdService?.id;
-
-      if (!serviceId) {
-        return data({ success: false, message: 'En feil oppstod' }, { status: 400 });
-      }
-
-      // ⬇️ Axios multipart upload
-      await uploadServiceImages({
-        serviceId,
-        images,
-        accessToken,
-      });
-
-      return data({ success: true, message: 'Tjeneste opprettet' });
-    }
-
-    if (intent === 'update') {
-      const id = Number(formData.get('id'));
-      const name = formData.get('name') as string;
-      const serviceGroupId = Number(formData.get('serviceGroupId'));
-      const price = Number(formData.get('price'));
-      const duration = Number(formData.get('duration'));
-
-      const images = extractImagesFromFormData(formData);
-
-      await bookingClient.ServiceControllerService.ServiceControllerService.updateService({
-        id,
-        requestBody: {
-          id,
-          name,
-          serviceGroupId,
-          price,
-          duration,
-        },
-      });
-
-      // ⬇️ Axios multipart upload for new images
-      await uploadServiceImages({
-        serviceId: id,
-        images,
-        accessToken,
-      });
-
-      return data({ success: true, message: 'Tjeneste oppdatert' });
-    }
-
-    if (intent === 'delete') {
-      const id = Number(formData.get('id'));
-      await bookingClient.ServiceControllerService.ServiceControllerService.deleteService({ id });
-      return data({ success: true, message: 'Tjeneste slettet' });
-    }
-
-    return data({ success: false, message: 'Ugyldig handling' });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    return data({ success: false, message: error.body?.message || 'En feil oppstod' }, { status: 400 });
-  }
-}
-
-// Avoid name clash with global FormData
 type ServiceImage = {
+  id?: number; // backend id for existing images
   file: File | null;
   label: string;
+  previewUrl?: string;
 };
 
 type ServiceFormData = {
@@ -233,6 +35,7 @@ type ServiceFormData = {
   price: number;
   duration: number;
   images: ServiceImage[];
+  deleteImageIds: number[];
 };
 
 export default function BookingServices() {
@@ -245,9 +48,7 @@ export default function BookingServices() {
   const [filter, setFilter] = useState('');
 
   useEffect(() => {
-    if (fetcher.state !== 'idle' || !fetcher.data) {
-      return;
-    }
+    if (fetcher.state !== 'idle' || !fetcher.data) return;
 
     if (fetcher.data.success) {
       toast.success(fetcher.data.message ?? 'Handling fullført');
@@ -260,13 +61,15 @@ export default function BookingServices() {
     }
   }, [fetcher.state, fetcher.data]);
 
-  const groupNameById = useMemo(() => {
-    return new Map(
-      serviceGroups
-        .filter((group): group is ServiceGroupDto & { id: number } => typeof group.id === 'number')
-        .map((group) => [group.id, group.name] as const),
-    );
-  }, [serviceGroups]);
+  const groupNameById = useMemo(
+    () =>
+      new Map(
+        serviceGroups
+          .filter((group): group is ServiceGroupDto & { id: number } => typeof group.id === 'number')
+          .map((group) => [group.id, group.name] as const),
+      ),
+    [serviceGroups],
+  );
 
   const filteredItems = useMemo(() => {
     if (!filter) return services;
@@ -288,6 +91,7 @@ export default function BookingServices() {
       price: 0,
       duration: 30,
       images: [],
+      deleteImageIds: [],
     });
     setIsDialogOpen(true);
   };
@@ -299,7 +103,14 @@ export default function BookingServices() {
       serviceGroupId: service.serviceGroupId,
       price: service.price,
       duration: service.duration,
-      images: [], // you'd load existing images here if API provides them
+      images:
+        service.images?.map((img) => ({
+          id: img.id,
+          file: null,
+          label: img.label ?? '',
+          previewUrl: img.url,
+        })) ?? [],
+      deleteImageIds: [],
     });
     setIsDialogOpen(true);
   };
@@ -330,7 +141,23 @@ export default function BookingServices() {
     setEditingService({ ...editingService, [name]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = (err) => reject(err);
+      reader.onload = () => {
+        const result = reader.result as string;
+        const commaIndex = result.indexOf(',');
+        if (commaIndex >= 0) {
+          resolve(result.slice(commaIndex + 1));
+        } else {
+          resolve(result);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingService) return;
 
@@ -344,29 +171,36 @@ export default function BookingServices() {
     fd.append('price', String(editingService.price));
     fd.append('duration', String(editingService.duration));
 
-    // Append images with labels
+    if (editingService.deleteImageIds && editingService.deleteImageIds.length > 0) {
+      for (const imgId of editingService.deleteImageIds) {
+        fd.append('deleteImageIds', String(imgId));
+      }
+    }
+
     if (editingService.images && editingService.images.length > 0) {
-      editingService.images.forEach((img, index) => {
-        if (img.file) {
-          fd.append(`images[${index}][file]`, img.file);
-        }
+      for (let index = 0; index < editingService.images.length; index++) {
+        const img = editingService.images[index];
+        if (!img.file) continue;
+
+        const base64 = await fileToBase64(img.file);
+
+        fd.append(`images[${index}][fileName]`, img.file.name);
+        fd.append(`images[${index}][contentType]`, img.file.type || 'application/octet-stream');
         fd.append(`images[${index}][label]`, img.label ?? '');
-      });
+        fd.append(`images[${index}][data]`, base64);
+      }
     }
 
     fetcher.submit(fd, { method: 'post' });
   };
 
-  const getServiceGroupName = (serviceGroupId: number) => {
-    return groupNameById.get(serviceGroupId) || 'Ukjent';
-  };
+  const getServiceGroupName = (serviceGroupId: number) => groupNameById.get(serviceGroupId) || 'Ukjent';
 
   const formatNok = (value?: number) => {
     const amount = Number(value ?? 0);
     return amount.toLocaleString('nb-NO', { style: 'currency', currency: 'NOK' });
   };
 
-  // Custom renderer for images field
   const renderImagesField = ({ value, onChange }: FormFieldRenderProps<ServiceFormData>) => {
     const images = (value as ServiceImage[] | undefined) ?? [];
 
@@ -376,37 +210,96 @@ export default function BookingServices() {
     };
 
     const addImage = () => {
-      onChange([...images, { file: null, label: '' }]);
+      onChange([
+        ...images,
+        {
+          id: undefined,
+          file: null,
+          label: '',
+          previewUrl: undefined,
+        },
+      ]);
     };
 
     const removeImage = (index: number) => {
-      onChange(images.filter((_, i) => i !== index));
+      const imageToRemove = images[index];
+      const next = images.filter((_, i) => i !== index);
+      onChange(next);
+
+      // Existing image (has id) => mark for delete so backend actually removes it
+      if (editingService && imageToRemove?.id) {
+        setEditingService({
+          ...editingService,
+          deleteImageIds: [...(editingService.deleteImageIds ?? []), imageToRemove.id],
+        });
+      }
+    };
+
+    const handleFileChange = (index: number, file: File | null) => {
+      if (!file) {
+        // clear new file + preview
+        updateImageAt(index, { file: null, previewUrl: undefined });
+        return;
+      }
+
+      const previewUrl = URL.createObjectURL(file);
+      updateImageAt(index, { file, previewUrl });
     };
 
     return (
-      <div className="space-y-3">
-        {images.map((img, index) => (
-          <div key={index} className="rounded-md border border-slate-200 bg-slate-50 p-3 space-y-2">
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => updateImageAt(index, { file: e.target.files?.[0] ?? null })}
-            />
-            <Input
-              type="text"
-              placeholder="Skriv bildetekst / label"
-              value={img.label}
-              onChange={(e) => updateImageAt(index, { label: e.target.value })}
-            />
-            <div className="flex justify-end">
-              <Button type="button" variant="ghost" size="sm" onClick={() => removeImage(index)}>
-                Fjern
-              </Button>
-            </div>
-          </div>
-        ))}
+      <div className="space-y-4">
+        {images.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {images.map((img, index) => (
+              <div
+                key={img.id ?? index}
+                className="group relative overflow-hidden rounded-md border border-slate-200 bg-slate-50"
+              >
+                {/* X = remove */}
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100 hover:text-slate-700"
+                >
+                  <X className="h-3 w-3" aria-hidden="true" />
+                  <span className="sr-only">Fjern bilde</span>
+                </button>
 
-        <Button type="button" variant="outline" onClick={addImage}>
+                {/* Preview */}
+                {img.previewUrl ? (
+                  <img
+                    src={img.previewUrl}
+                    alt={img.label || 'Forhåndsvisning av bilde'}
+                    className="h-32 w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-32 w-full items-center justify-center text-xs text-slate-400">
+                    Ingen bilde valgt
+                  </div>
+                )}
+
+                {/* File + label */}
+                <div className="space-y-2 border-t border-slate-200 bg-white p-2.5">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    className="h-8 cursor-pointer text-xs"
+                    onChange={(e) => handleFileChange(index, e.target.files?.[0] ?? null)}
+                  />
+                  <Input
+                    type="text"
+                    placeholder="Bildetekst / label"
+                    value={img.label}
+                    onChange={(e) => updateImageAt(index, { label: e.target.value })}
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <Button type="button" variant="outline" onClick={addImage} className="h-9 border-dashed text-xs font-medium">
           + Legg til bilde
         </Button>
       </div>
@@ -437,6 +330,7 @@ export default function BookingServices() {
           { header: 'Tjenestegruppe' },
           { header: 'Pris' },
           { header: 'Varighet' },
+          { header: 'Antall bilder' },
           { header: 'Handlinger', className: 'text-right' },
         ]}
         renderRow={(service) => (
@@ -445,6 +339,17 @@ export default function BookingServices() {
             <TableCell>{getServiceGroupName(service.serviceGroupId)}</TableCell>
             <TableCell>{formatNok(service.price)}</TableCell>
             <TableCell>{service.duration} min</TableCell>
+            <TableCell className="flex items-center">
+              {service.images && service.images.length > 0 ? (
+                <Badge variant="default" className="flex items-center justify-center">
+                  {service.images?.length}
+                </Badge>
+              ) : (
+                <Badge variant="secondary" className="flex items-center justify-center">
+                  Ingen
+                </Badge>
+              )}
+            </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
                 <Button variant="outline" size="sm" onClick={() => handleEdit(service)}>
@@ -508,7 +413,6 @@ export default function BookingServices() {
             {
               name: 'images',
               label: 'Bilder',
-              // custom renderer from Option A
               render: renderImagesField,
             },
           ]}

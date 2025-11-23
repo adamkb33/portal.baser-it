@@ -71,6 +71,10 @@ export interface AuthUserCompany {
     companyProducts: CompanyProducts[];
 }
 
+export interface BulkImageUploadRequest {
+    images: ImageUpload[];
+}
+
 export interface CompanyBookingInfoDto {
     companyUser: CompanyUserBookingInfo[];
 }
@@ -175,6 +179,7 @@ export interface CreateServiceDto {
     name: string;
     price: number;
     duration: number;
+    images: ImageUpload[];
 }
 
 export interface CreateServiceGroupDto {
@@ -236,6 +241,7 @@ export interface GroupedService {
     name: string;
     price: number;
     duration: number;
+    images?: ImageDto[];
 }
 
 export interface GroupedServiceGroupsDto {
@@ -243,6 +249,21 @@ export interface GroupedServiceGroupsDto {
     id: number;
     name: string;
     services: GroupedService[];
+}
+
+export interface ImageDto {
+    id?: number;
+    url: string;
+    label?: string;
+    contentType?: string;
+    size: number;
+}
+
+export interface ImageUpload {
+    fileName: string;
+    label: string;
+    contentType: string;
+    data: string;
 }
 
 export interface InviteCompanyUserDto {
@@ -376,19 +397,13 @@ export interface ServiceDto {
     name: string;
     price: number;
     duration: number;
+    images?: ImageDto[];
 }
 
 export interface ServiceGroupDto {
     id: number;
     companyId: number;
     name: string;
-}
-
-export interface ServiceImageDto {
-    id: number;
-    serviceId: number;
-    url: string;
-    label?: string;
 }
 
 export interface SignInDto {
@@ -398,6 +413,10 @@ export interface SignInDto {
 
 export interface SignOutDto {
     userId: number;
+}
+
+export interface SingleImageUploadRequest {
+    image: ImageUpload;
 }
 
 export interface UpdateContactDto {
@@ -413,6 +432,8 @@ export interface UpdateServiceDto {
     price: number;
     name: string;
     duration: number;
+    newImages: ImageUpload[];
+    deleteImageIds: number[];
 }
 
 export interface UpdateServiceGroupDto {

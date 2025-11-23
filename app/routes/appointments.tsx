@@ -3,14 +3,14 @@ import { CompanyUserPicker } from '~/components/pickers/company-user-picker';
 import { ServicePicker } from '~/components/pickers/service-picker';
 import { DatePicker } from '~/components/pickers/date-picker';
 import { TimeSlotPicker } from '~/components/pickers/time-slot-picker';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
+import { Accordion } from '~/components/ui/accordion';
 import { Button } from '~/components/ui/button';
 import { Loader2, CheckCircle2 } from 'lucide-react';
 import { useEffect, useRef, useState, useMemo, useTransition, useCallback } from 'react';
 import { GetOrCreateContactForm } from '~/components/forms/get-or-create-contact.form';
 import { type GetOrCreateContactSchema } from '~/features/booking/get-or-create-contact.schema';
 import { BiTBusinessHero } from '~/components/heros/BiT-business.hero';
-import { ShapesAngularOne, ShapesDiamondOne } from '~/components/shapes/shapes';
+import { ShapesAngularOne } from '~/components/shapes/shapes';
 import { parseSearchParams } from '~/features/booking/company-user-create-appointment';
 import {
   type AppointmentsLoaderData,
