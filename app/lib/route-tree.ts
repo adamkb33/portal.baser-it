@@ -52,7 +52,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     children: [
       {
         id: 'appointments.contact-form',
-        href: 'contact-form', // relative to /appointments/:companyId
+        href: 'contact-form',
         label: 'Kontaktinformasjon',
         category: BrachCategory.NONE,
         accessType: Access.PUBLIC,
@@ -60,7 +60,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         children: [
           {
             id: 'appointments.contact-form.services',
-            href: 'services', // /appointments/:companyId/contact-form/services
+            href: 'services',
             label: 'Velg tjenester',
             category: BrachCategory.NONE,
             accessType: Access.PUBLIC,

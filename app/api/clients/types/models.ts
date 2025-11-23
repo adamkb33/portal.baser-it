@@ -52,6 +52,8 @@ export interface AppointmentServiceDto {
 
 export interface AppointmentSessionDto {
     sessionId: string;
+    companyId: number;
+    contactId?: number;
     selectedServices?: number[];
     selectedUserId?: number;
     selectedStartTime?: string;
@@ -395,6 +397,11 @@ export interface ScheduleDto {
 export interface ScheduleTimeSlot {
     startTime: string;
     endTime: string;
+}
+
+export interface SelectServicesAppointmentSessionDto {
+    sessionId: string;
+    selectedServices: number[];
 }
 
 export interface ServiceDto {
