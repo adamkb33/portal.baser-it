@@ -1,8 +1,8 @@
 import { Outlet, useOutletContext } from 'react-router';
-import type { ServicesOutletContext } from '../../layout';
+import type { AppointmentsOutletContext } from '~/routes/appointments/layout';
 
 export default function AppointmentsContactFormServicesEmployeeTimeLayout() {
-  const parentContext = useOutletContext<ServicesOutletContext>();
+  const parentContext = useOutletContext<AppointmentsOutletContext>();
 
   return <Outlet context={parentContext} />;
 }
