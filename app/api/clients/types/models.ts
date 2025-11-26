@@ -119,6 +119,14 @@ export interface CompanyUserDto {
     roles: Roles[];
 }
 
+export interface CompanyUserProfileDto {
+    id: number;
+    userId: number;
+    companyId: number;
+    imageId?: number;
+    description?: string;
+}
+
 export interface ContactAppointmentDto {
     userId: number;
     contactId: number;
@@ -436,6 +444,12 @@ export interface SignOutDto {
 
 export interface SingleImageUploadRequest {
     image: ImageUpload;
+}
+
+export interface UpdateCompanyUserProfileDto {
+    image?: ImageUpload;
+    description?: string;
+    services: number[];
 }
 
 export interface UpdateContactDto {

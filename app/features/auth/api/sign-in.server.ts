@@ -6,6 +6,7 @@ import { toAuthTokens } from '../token/token-utils';
 import type { ApiClientError } from '~/api/clients/http';
 import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
 import { redirect, type ActionFunctionArgs } from 'react-router';
+import { baseApi } from '~/lib/utils';
 
 export async function signIn({ request }: ActionFunctionArgs) {
   OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
@@ -14,7 +15,7 @@ export async function signIn({ request }: ActionFunctionArgs) {
   const payload = Object.fromEntries(formData) as unknown as SignInSchema;
 
   try {
-    const response = await AuthControllerService.signIn({
+    const response = await baseApi().AuthControllerService.AuthControllerService.signIn({
       requestBody: {
         email: payload.email,
         password: payload.password,
