@@ -5,26 +5,115 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '~/lib/utils';
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  [
+    // D. Layout / Stacking (ATOMIC) - Horizontal row
+    'inline-flex items-center justify-center',
+    'gap-2', // spacing between icon + text
+    'whitespace-nowrap', // prevent text wrap
+    // Typography
+    'text-sm', // small text per spec
+    'font-medium', // medium weight
+    // Accessibility & interaction
+    'outline-none', // remove default outline
+    'focus-visible:outline-ring/50', // focus ring per spec
+    'disabled:pointer-events-none', // disable interactions
+    'disabled:opacity-50', // visual disabled state
+    // SVG handling
+    '[&_svg]:pointer-events-none',
+    '[&_svg:not([class*="size-"])]:size-4',
+    '[&_svg]:shrink-0',
+    'shrink-0',
+    // Brutalist: NO rounded corners by default, NO transitions
+    'rounded-none', // sharp corners
+  ].join(' '),
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        destructive:
-          'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
-        outline:
-          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-        link: 'text-primary underline-offset-4 hover:underline',
+        // C. Buttons (ATOMIC) - Primary action
+        default: [
+          'bg-foreground', // near-black bg
+          'text-background', // white text
+          'border border-border', // near-black border
+          'hover:bg-foreground/90', // subtle hover
+        ].join(' '),
+
+        // Destructive action
+        destructive: [
+          'bg-destructive', // red bg
+          'text-background', // white text
+          'border border-border', // near-black border
+          'hover:bg-destructive/90', // subtle hover
+          'focus-visible:outline-destructive/50', // destructive focus ring
+        ].join(' '),
+
+        // C. Buttons (ATOMIC) - Neutral / outline action
+        outline: [
+          'bg-background', // white bg
+          'text-foreground', // near-black text
+          'border border-border', // near-black border
+          'hover:bg-muted', // light gray hover
+        ].join(' '),
+
+        // Secondary (light purple tint)
+        secondary: [
+          'bg-secondary', // light purple
+          'text-secondary-foreground', // dark purple text
+          'border border-border', // near-black border
+          'hover:bg-secondary/80', // subtle hover
+        ].join(' '),
+
+        // Ghost (transparent)
+        ghost: [
+          'bg-transparent', // no background
+          'text-foreground', // near-black text
+          'border border-transparent', // no border
+          'hover:bg-muted', // light gray hover
+          'hover:border-border', // show border on hover
+        ].join(' '),
+
+        // C. Buttons (ATOMIC) - Muted text-only action (link-like)
+        link: [
+          'bg-transparent', // no background
+          'text-muted-foreground', // muted text
+          'underline-offset-2', // consistent offset
+          'hover:underline', // underline on hover
+          'border-none', // no border
+          'px-0', // no horizontal padding
+        ].join(' '),
       },
       size: {
-        default: 'h-9 px-4 py-2 has-[>svg]:px-3',
-        sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
-        lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
-        icon: 'size-9',
-        'icon-sm': 'size-8',
-        'icon-lg': 'size-10',
+        // C. Buttons (ATOMIC) - Standard button sizing
+        default: [
+          'px-3 py-2', // per spec
+          'has-[>svg]:px-2.5', // adjust when icon present
+        ].join(' '),
+
+        sm: [
+          'px-2.5 py-1.5', // smaller
+          'text-xs', // smaller text
+          'has-[>svg]:px-2', // adjust when icon present
+        ].join(' '),
+
+        lg: [
+          'px-4 py-2.5', // larger
+          'text-sm', // keep text small per brutalist
+          'has-[>svg]:px-3.5', // adjust when icon present
+        ].join(' '),
+
+        icon: [
+          'size-9', // square icon button
+          'p-0', // no padding
+        ].join(' '),
+
+        'icon-sm': [
+          'size-8', // smaller square
+          'p-0',
+        ].join(' '),
+
+        'icon-lg': [
+          'size-10', // larger square
+          'p-0',
+        ].join(' '),
       },
     },
     defaultVariants: {

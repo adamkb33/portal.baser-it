@@ -86,12 +86,26 @@ export function FormDialog<T>({
             error: fieldError,
           })}
           {field.description && (
-            <p id={`${fieldId}-desc`} className="mt-1 text-xs text-muted-foreground">
+            <p
+              id={`${fieldId}-desc`}
+              className={[
+                'mt-1', // spacing
+                'text-[0.7rem]', // typography
+                'text-muted-foreground', // color
+              ].join(' ')}
+            >
               {field.description}
             </p>
           )}
           {fieldError && (
-            <p className="mt-1 text-sm text-destructive" role="alert">
+            <p
+              className={[
+                'mt-1', // spacing
+                'text-xs', // typography
+                'text-destructive', // color
+              ].join(' ')}
+              role="alert"
+            >
               {fieldError}
             </p>
           )}
@@ -120,12 +134,26 @@ export function FormDialog<T>({
             </SelectContent>
           </Select>
           {field.description && (
-            <p id={`${fieldId}-desc`} className="mt-1 text-xs text-muted-foreground">
+            <p
+              id={`${fieldId}-desc`}
+              className={[
+                'mt-1', // spacing
+                'text-[0.7rem]', // typography
+                'text-muted-foreground', // color
+              ].join(' ')}
+            >
               {field.description}
             </p>
           )}
           {fieldError && (
-            <p className="mt-1 text-sm text-destructive" role="alert">
+            <p
+              className={[
+                'mt-1', // spacing
+                'text-xs', // typography
+                'text-destructive', // color
+              ].join(' ')}
+              role="alert"
+            >
               {fieldError}
             </p>
           )}
@@ -149,12 +177,26 @@ export function FormDialog<T>({
             className={field.className ? `mt-1 ${field.className}` : 'mt-1'}
           />
           {field.description && (
-            <p id={`${fieldId}-desc`} className="mt-1 text-xs text-muted-foreground">
+            <p
+              id={`${fieldId}-desc`}
+              className={[
+                'mt-1', // spacing
+                'text-[0.7rem]', // typography
+                'text-muted-foreground', // color
+              ].join(' ')}
+            >
               {field.description}
             </p>
           )}
           {fieldError && (
-            <p className="mt-1 text-sm text-destructive" role="alert">
+            <p
+              className={[
+                'mt-1', // spacing
+                'text-xs', // typography
+                'text-destructive', // color
+              ].join(' ')}
+              role="alert"
+            >
               {fieldError}
             </p>
           )}
@@ -192,12 +234,26 @@ export function FormDialog<T>({
             }}
           />
           {field.description && (
-            <p id={`${fieldId}-desc`} className="mt-1 text-xs text-muted-foreground">
+            <p
+              id={`${fieldId}-desc`}
+              className={[
+                'mt-1', // spacing
+                'text-[0.7rem]', // typography
+                'text-muted-foreground', // color
+              ].join(' ')}
+            >
               {field.description}
             </p>
           )}
           {fieldError && (
-            <p className="mt-1 text-sm text-destructive" role="alert">
+            <p
+              className={[
+                'mt-1', // spacing
+                'text-xs', // typography
+                'text-destructive', // color
+              ].join(' ')}
+              role="alert"
+            >
               {fieldError}
             </p>
           )}
@@ -221,12 +277,26 @@ export function FormDialog<T>({
           className={field.className ? `mt-1 ${field.className}` : 'mt-1'}
         />
         {field.description && (
-          <p id={`${fieldId}-desc`} className="mt-1 text-xs text-muted-foreground">
+          <p
+            id={`${fieldId}-desc`}
+            className={[
+              'mt-1', // spacing
+              'text-[0.7rem]', // typography
+              'text-muted-foreground', // color
+            ].join(' ')}
+          >
             {field.description}
           </p>
         )}
         {fieldError && (
-          <p className="mt-1 text-sm text-destructive" role="alert">
+          <p
+            className={[
+              'mt-1', // spacing
+              'text-xs', // typography
+              'text-destructive', // color
+            ].join(' ')}
+            role="alert"
+          >
             {fieldError}
           </p>
         )}
@@ -236,20 +306,72 @@ export function FormDialog<T>({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-md border border-slate-200 bg-white shadow-lg">
-        <DialogHeader className="pb-2">
-          <DialogTitle className="text-lg font-semibold tracking-tight text-slate-900">{title}</DialogTitle>
+      <DialogContent
+        className={[
+          // G. Dialog / Overlay Content (ATOMIC) - Dialog container
+          'max-w-3xl', // sizing
+          'rounded-none', // brutalist: sharp corners
+          'border border-border', // visual tokens
+          'bg-background', // visual tokens
+          'px-4 py-5 sm:px-6 sm:py-6', // spacing
+        ].join(' ')}
+      >
+        <DialogHeader
+          className={[
+            // G. Dialog / Overlay Content (ATOMIC) - Dialog header
+            'mb-3', // spacing
+            'border-b border-border', // visual tokens
+            'pb-3', // spacing
+          ].join(' ')}
+        >
+          <DialogTitle
+            className={[
+              // G. Dialog / Overlay Content (ATOMIC) - Dialog title
+              'text-sm', // typography
+              'font-medium', // typography
+              'text-foreground', // color
+            ].join(' ')}
+          >
+            {title}
+          </DialogTitle>
         </DialogHeader>
 
         <form
           onSubmit={onSubmit}
-          className="space-y-5 pt-1"
+          className={[
+            // A. Containers - Primary block container
+            'space-y-5', // spacing
+            'pt-1', // spacing adjustment
+          ].join(' ')}
           encType="multipart/form-data" // important for file uploads
         >
-          <div className="space-y-4">
+          <div
+            className={[
+              // D. Layout / Stacking (ATOMIC) - Vertical stack
+              'flex flex-col', // layout
+              'gap-4', // spacing
+            ].join(' ')}
+          >
             {fields.map((field) => (
-              <div key={String(field.name)} className="space-y-1.5">
-                <Label htmlFor={String(field.name)} className="text-xs font-medium text-slate-700">
+              <div
+                key={String(field.name)}
+                className={[
+                  // D. Layout / Stacking (ATOMIC) - Vertical stack
+                  'flex flex-col', // layout
+                  'gap-1.5', // spacing
+                ].join(' ')}
+              >
+                <Label
+                  htmlFor={String(field.name)}
+                  className={[
+                    // B. Typography Hierarchy (ATOMIC) - Section label / meta heading
+                    'text-xs', // typography
+                    'font-medium', // typography
+                    'uppercase', // typography
+                    'tracking-[0.12em]', // typography
+                    'text-muted-foreground', // color
+                  ].join(' ')}
+                >
                   {field.label}
                 </Label>
                 {renderField(field)}
@@ -258,16 +380,23 @@ export function FormDialog<T>({
           </div>
 
           {actions && actions.length > 0 && (
-            <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+            <div
+              className={[
+                // A. Containers - Sub-section divider inside a block
+                'mt-4', // spacing
+                'flex items-center justify-end', // layout
+                'gap-2', // spacing
+                'border-t border-border', // visual tokens
+                'pt-4', // spacing
+              ].join(' ')}
+            >
               {actions.map((action, index) => (
                 <Button
                   key={index}
                   type={action.type || 'button'}
                   variant={action.variant || 'outline'}
                   onClick={action.onClick}
-                  className={
-                    action.className ?? (action.variant === 'default' ? 'rounded-full px-4' : 'rounded-full px-4')
-                  }
+                  className={action.className}
                 >
                   {action.label}
                 </Button>
