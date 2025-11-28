@@ -2,9 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ApiResponseCompanyBookingInfoDto } from '@types';
+import type { ApiResponseBoolean } from '@types';
 import type { ApiResponseScheduleDto } from '@types';
-import type { GetPublicCompanyUserScheduleDto } from '@types';
+import type { AppointmentSessionGetScheduleDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
@@ -16,7 +16,7 @@ export class PublicCompanyControllerService {
     public static getPublicCompanyUserSchedule({
         requestBody,
     }: {
-        requestBody: GetPublicCompanyUserScheduleDto,
+        requestBody: AppointmentSessionGetScheduleDto,
     }): CancelablePromise<ApiResponseScheduleDto> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -26,14 +26,14 @@ export class PublicCompanyControllerService {
         });
     }
     /**
-     * @returns ApiResponseCompanyBookingInfoDto OK
+     * @returns ApiResponseBoolean OK
      * @throws ApiError
      */
     public static getCompanyBookingInfo({
         companyId,
     }: {
         companyId: number,
-    }): CancelablePromise<ApiResponseCompanyBookingInfoDto> {
+    }): CancelablePromise<ApiResponseBoolean> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/public/company/{companyId}/booking-info',

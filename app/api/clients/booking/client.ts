@@ -1,8 +1,8 @@
 
 import { setAuth, setBaseUrl } from '@http';
 import * as ActuatorService from './services/ActuatorService';
+import * as BookingProfileControllerService from './services/BookingProfileControllerService';
 import * as CompanyUserAppointmentControllerService from './services/CompanyUserAppointmentControllerService';
-import * as CompanyUserProfileControllerService from './services/CompanyUserProfileControllerService';
 import * as CompanyUserScheduleControllerService from './services/CompanyUserScheduleControllerService';
 import * as DailyScheduleControllerService from './services/DailyScheduleControllerService';
 import * as PublicAppointmentControllerService from './services/PublicAppointmentControllerService';
@@ -13,8 +13,8 @@ import * as ServiceImageControllerService from './services/ServiceImageControlle
 
 export type BookingClient = {
   ActuatorService: typeof ActuatorService;
+  BookingProfileControllerService: typeof BookingProfileControllerService;
   CompanyUserAppointmentControllerService: typeof CompanyUserAppointmentControllerService;
-  CompanyUserProfileControllerService: typeof CompanyUserProfileControllerService;
   CompanyUserScheduleControllerService: typeof CompanyUserScheduleControllerService;
   DailyScheduleControllerService: typeof DailyScheduleControllerService;
   PublicAppointmentControllerService: typeof PublicAppointmentControllerService;
@@ -29,8 +29,8 @@ export function createBookingClient(opts: { baseUrl: string; token?: string }): 
   setAuth(opts.token);
   return {
     ActuatorService,
+    BookingProfileControllerService,
     CompanyUserAppointmentControllerService,
-    CompanyUserProfileControllerService,
     CompanyUserScheduleControllerService,
     DailyScheduleControllerService,
     PublicAppointmentControllerService,

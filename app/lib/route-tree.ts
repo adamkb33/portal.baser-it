@@ -233,18 +233,20 @@ export const ROUTE_TREE: RouteBranch[] = [
       {
         id: 'booking.profile',
         href: '/booking/profile',
-        label: 'Instillinger',
-        category: BrachCategory.COMPANY,
-        accessType: Access.AUTHENTICATED,
-        companyRoles: [Roles.ADMIN],
-      },
-      {
-        id: 'booking.daily-schedule',
-        href: '/booking/daily-schedule',
-        label: 'Timeplan',
+        label: 'Profil',
         category: BrachCategory.COMPANY,
         accessType: Access.AUTHENTICATED,
         companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+        children: [
+          {
+            id: 'booking.profile.daily-schedule',
+            href: '/booking/profile/daily-schedule',
+            label: 'Timeplan',
+            category: BrachCategory.COMPANY,
+            accessType: Access.AUTHENTICATED,
+            companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+          },
+        ],
       },
       {
         id: 'booking.service-groups',

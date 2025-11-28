@@ -3,10 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ApiResponseAppointmentDto } from '@types';
-import type { ApiResponseListAppointmentDto } from '@types';
 import type { AppointmentSessionDto } from '@types';
 import type { CreateAppointmentDto } from '@types';
-import type { CreateAppointmentsDto } from '@types';
 import type { GroupedServiceGroupsDto } from '@types';
 import type { SelectCompanyUserAppointmentSessionDto } from '@types';
 import type { SelectServicesAppointmentSessionDto } from '@types';
@@ -80,19 +78,20 @@ export class PublicAppointmentControllerService {
         });
     }
     /**
-     * @returns ApiResponseListAppointmentDto OK
+     * @returns boolean OK
      * @throws ApiError
      */
-    public static createAppointments({
-        requestBody,
+    public static validateCompany({
+        companyId,
     }: {
-        requestBody: CreateAppointmentsDto,
-    }): CancelablePromise<ApiResponseListAppointmentDto> {
+        companyId: number,
+    }): CancelablePromise<boolean> {
         return __request(OpenAPI, {
-            method: 'POST',
-            url: '/public/appointment/create-many',
-            body: requestBody,
-            mediaType: 'application/json',
+            method: 'GET',
+            url: '/public/appointment/validate/{companyId}',
+            path: {
+                'companyId': companyId,
+            },
         });
     }
     /**

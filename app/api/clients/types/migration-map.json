@@ -2,6 +2,7 @@
   "merged": [
     "ApiError",
     "ApiMeta",
+    "ApiResponseBoolean",
     "ApiResponseUnit",
     "FilteringMeta",
     "Link",

@@ -3,25 +3,20 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ApiResponseCompanyUserProfileDto } from '@types';
+import type { CompanyUserProfileDto } from '@types';
 import type { UpdateCompanyUserProfileDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
-export class CompanyUserProfileControllerService {
+export class BookingProfileControllerService {
     /**
-     * @returns ApiResponseCompanyUserProfileDto OK
+     * @returns CompanyUserProfileDto OK
      * @throws ApiError
      */
-    public static updateProfile({
-        requestBody,
-    }: {
-        requestBody: UpdateCompanyUserProfileDto,
-    }): CancelablePromise<ApiResponseCompanyUserProfileDto> {
+    public static getBookingProfile(): CancelablePromise<CompanyUserProfileDto> {
         return __request(OpenAPI, {
-            method: 'PUT',
+            method: 'GET',
             url: '/company-user/profile',
-            body: requestBody,
-            mediaType: 'application/json',
         });
     }
     /**

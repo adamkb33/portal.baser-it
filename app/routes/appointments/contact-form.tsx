@@ -1,8 +1,9 @@
 import { data, redirect, useLoaderData, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import type { ApiClientError } from '~/api/clients/http';
-import type { AppointmentSessionDto } from '~/api/clients/types';
+import type { AppointmentSessionDto, GetOrCreateContactDto } from '~/api/clients/types';
 import { GetOrCreateContactFetcherForm } from '~/components/forms/contact-form';
 import { getSession } from '~/lib/appointments.server';
+import { baseApi, bookingApi } from '~/lib/utils';
 
 export type AppointmentsContactFormLoaderData = {
   session: AppointmentSessionDto;
@@ -29,26 +30,47 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
-/**
- * Server action:
- * - Trusts client-side validation (no zod here).
- * - Logs submitted values.
- */
 export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData();
+  try {
+    const session = await getSession(request);
 
-  const values = {
-    companyId: Number(formData.get('companyId')),
-    givenName: String(formData.get('givenName') ?? ''),
-    familyName: String(formData.get('familyName') ?? ''),
-    email: formData.get('email') ? String(formData.get('email')) : undefined,
-    mobileNumber: formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined,
-  };
+    if (!session) {
+      return redirect('/appointments');
+    }
 
-  // Server-side log (only for debugging; validation is done on the client)
-  console.log('Appointments contact form submission:', values);
+    const formData = await request.formData();
 
-  return data({ ok: true });
+    const requestBody: GetOrCreateContactDto = {
+      companyId: Number(formData.get('companyId')),
+      givenName: String(formData.get('givenName') ?? ''),
+      familyName: String(formData.get('familyName') ?? ''),
+      email: formData.get('email') ? String(formData.get('email')) : undefined,
+      mobileNumber: formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined,
+    };
+
+    const contactResponse =
+      await baseApi().PublicCompanyContactControllerService.PublicCompanyContactControllerService.getOrCreateContact({
+        requestBody,
+      });
+
+    if (!contactResponse.data) {
+      return { error: 'En feil har skjedd med lagring av kontakt' };
+    }
+
+    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.addContactToSession({
+      sessionId: session.sessionId,
+      contactId: contactResponse.data.id,
+    });
+
+    return redirect('/appointments/employee');
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+    if (error as ApiClientError) {
+      return { error: error.body.message };
+    }
+
+    throw error;
+  }
 }
 
 export default function AppointmentsContactForm() {

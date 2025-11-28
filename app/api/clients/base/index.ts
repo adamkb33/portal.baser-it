@@ -8,6 +8,7 @@ export { PublicCompanyContactControllerService } from './services/PublicCompanyC
 export { PublicCompanyControllerService } from './services/PublicCompanyControllerService';
 export { SystemAdminCompanyControllerService } from './services/SystemAdminCompanyControllerService';
 export { SystemAdminUserControllerService } from './services/SystemAdminUserControllerService';
+export { UserControllerService } from './services/UserControllerService';
 export * from './client';
 export * from '@types';
 export { OpenAPI } from './OpenAPI';
