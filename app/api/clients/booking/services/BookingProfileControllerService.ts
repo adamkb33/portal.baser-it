@@ -2,32 +2,32 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ApiResponseCompanyUserProfileDto } from '@types';
-import type { CompanyUserProfileDto } from '@types';
+import type { ApiResponseBookingProfileDto } from '@types';
+import type { BookingProfileDto } from '@types';
 import type { UpdateCompanyUserProfileDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
 export class BookingProfileControllerService {
     /**
-     * @returns CompanyUserProfileDto OK
+     * @returns BookingProfileDto OK
      * @throws ApiError
      */
-    public static getBookingProfile(): CancelablePromise<CompanyUserProfileDto> {
+    public static getBookingProfile(): CancelablePromise<BookingProfileDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/company-user/profile',
         });
     }
     /**
-     * @returns ApiResponseCompanyUserProfileDto OK
+     * @returns ApiResponseBookingProfileDto OK
      * @throws ApiError
      */
     public static createOrUpdateProfile({
         requestBody,
     }: {
         requestBody: UpdateCompanyUserProfileDto,
-    }): CancelablePromise<ApiResponseCompanyUserProfileDto> {
+    }): CancelablePromise<ApiResponseBookingProfileDto> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/company-user/profile',

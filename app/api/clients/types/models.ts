@@ -85,6 +85,15 @@ export interface AuthUserCompany {
     companyProducts: CompanyProducts[];
 }
 
+export interface BookingProfileDto {
+    id: number;
+    userId: number;
+    companyId: number;
+    imageId?: number;
+    description?: string;
+    services?: ServiceDto[];
+}
+
 export interface BulkImageUploadRequest {
     images: ImageUpload[];
 }
@@ -111,14 +120,6 @@ export interface CompanyUserDto {
     userId: number;
     email: string;
     roles: Roles[];
-}
-
-export interface CompanyUserProfileDto {
-    id: number;
-    userId: number;
-    companyId: number;
-    imageId?: number;
-    description?: string;
 }
 
 export interface ContactDto {

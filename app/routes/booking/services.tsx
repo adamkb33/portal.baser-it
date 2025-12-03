@@ -12,6 +12,7 @@ import { TableCell, TableRow } from '~/components/ui/table';
 import { Badge } from '~/components/ui/badge';
 import { getServicesLoader, servicesActions } from '~/features/booking/company-user-services';
 import { X } from 'lucide-react';
+import { fileToBase64 } from '~/lib/file.utils';
 
 export type BookingServicesLoaderData = {
   serviceGroups: ServiceGroupDto[];
@@ -140,22 +141,6 @@ export default function BookingServices() {
 
     setEditingService({ ...editingService, [name]: value });
   };
-
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = (err) => reject(err);
-      reader.onload = () => {
-        const result = reader.result as string;
-        const commaIndex = result.indexOf(',');
-        if (commaIndex >= 0) {
-          resolve(result.slice(commaIndex + 1));
-        } else {
-          resolve(result);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
