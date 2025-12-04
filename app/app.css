@@ -10,8 +10,120 @@
    RULES:
    - Components must use Tailwind utilities like:
        bg-background, text-foreground, border-border, bg-muted, text-muted-foreground, etc.
-   - Colors MUST come from these CSS variables via Tailwind’s @theme inline mapping.
+   - Colors MUST come from these CSS variables via Tailwind's @theme inline mapping.
    - All hierarchies are built with utility class combinations in TSX.
+   ========================================================================== */
+
+/* =============================================================================
+   FRONTEND CREATION RULES — READ THIS FIRST
+   =============================================================================
+
+   When building ANY component, follow these concrete rules:
+
+   ✓ ALWAYS DO:
+   ───────────────────────────────────────────────────────────────────────────
+   1. Use theme colors ONLY:
+      - bg-background, text-foreground (default surfaces)
+      - bg-muted, text-muted-foreground (secondary surfaces, helper text)
+      - bg-primary, text-primary-foreground (CTAs only)
+      - border-border (ALL borders, no exceptions)
+      
+   2. Every container/card needs:
+      - border border-border
+      - bg-background (or bg-muted for secondary)
+      - p-4 sm:p-5 (padding)
+      
+   3. Sharp corners, no rounding:
+      - rounded-none on buttons, inputs, cards
+      - Never use rounded-md, rounded-lg, etc.
+      
+   4. Black borders everywhere:
+      - border border-border on containers
+      - border-t border-border between sections
+      - divide-y divide-border for lists
+      
+   5. Spacing hierarchy:
+      - space-y-5 between major sections
+      - space-y-3 or space-y-4 within sections
+      - gap-2 for inline items (pills, buttons)
+      - p-4 sm:p-5 for outer padding
+      
+   6. Typography scale:
+      - text-xs + uppercase + tracking-[0.12em] for labels
+      - text-sm + font-semibold for headings
+      - text-base for body text
+      - text-[0.7rem] or text-xs for meta info
+      - Always text-foreground or text-muted-foreground
+      
+   7. Button pattern (pick one):
+      PRIMARY: bg-foreground text-background border border-border px-3 py-2 text-xs font-medium rounded-none
+      OUTLINE: bg-background text-foreground border border-border px-3 py-2 text-xs font-medium rounded-none
+      
+   8. Input pattern:
+      - border border-border bg-background text-foreground px-3 py-2 text-sm rounded-none
+      - focus:outline-none focus:ring-2 focus:ring-ring
+
+   ✗ NEVER DO:
+   ───────────────────────────────────────────────────────────────────────────
+   1. NO custom colors:
+      ✗ bg-gray-100, text-gray-500, border-gray-300
+      ✓ bg-muted, text-muted-foreground, border-border
+      
+   2. NO rounded corners (except minimal tokens):
+      ✗ rounded-md, rounded-lg, rounded-full
+      ✓ rounded-none
+      
+   3. NO arbitrary values for colors:
+      ✗ bg-[#f5f5f5], border-[#cccccc]
+      ✓ bg-muted, border-border
+      
+   4. NO shadows by default:
+      ✗ shadow-md, shadow-lg
+      ✓ No shadow (flat design)
+      (opt-in with shadow tokens if absolutely needed)
+      
+   5. NO gradients:
+      ✗ bg-gradient-to-r
+      ✓ Solid colors only
+      
+   6. NO custom spacing outside tokens:
+      ✗ p-7, gap-5
+      ✓ p-4, p-5, gap-2, gap-3, gap-4
+      
+   7. NO text decorations by default:
+      ✗ underline everywhere
+      ✓ underline only on hover for links
+
+   QUICK COMPONENT TEMPLATES:
+   ───────────────────────────────────────────────────────────────────────────
+   
+   Card/Container:
+   <div className="border border-border bg-background p-4 sm:p-5 space-y-4">
+   
+   Section Divider:
+   <div className="border-t border-border pt-4 first:border-t-0 first:pt-0">
+   
+   Label:
+   <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+   
+   Heading:
+   <h2 className="text-sm font-semibold text-foreground">
+   
+   Meta Text:
+   <p className="text-[0.7rem] text-muted-foreground">
+   
+   Primary Button:
+   <button className="border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none">
+   
+   Input Field:
+   <input className="w-full border border-border bg-background text-foreground px-3 py-2 text-sm rounded-none focus:outline-none focus:ring-2 focus:ring-ring" />
+   
+   Pill/Tag:
+   <span className="border border-border bg-background px-2.5 py-0.5 text-[0.7rem] font-medium rounded-none">
+   
+   Muted Surface (for media, info blocks):
+   <div className="border border-border bg-muted p-3 sm:p-4">
+
    ========================================================================== */
 
 @import 'tailwindcss';

@@ -19,7 +19,7 @@ export async function getOrCreateSession(
   const cookieHeader = request.headers.get('Cookie');
   const existingSessionId = (await appointmentSessionCookie.parse(cookieHeader)) ?? undefined;
 
-  const session =
+  const sessionResponse =
     await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getOrCreateAppointmentSession(
       {
         companyId,
@@ -27,9 +27,13 @@ export async function getOrCreateSession(
       },
     );
 
-  const setCookieHeader = await appointmentSessionCookie.serialize(session.sessionId);
+  if (!sessionResponse.data) {
+    throw Error('Kunne ikke hente session');
+  }
 
-  return { session, setCookieHeader };
+  const setCookieHeader = await appointmentSessionCookie.serialize(sessionResponse.data.sessionId);
+
+  return { session: sessionResponse.data, setCookieHeader };
 }
 
 export async function getSession(request: Request): Promise<AppointmentSessionDto> {
@@ -39,10 +43,16 @@ export async function getSession(request: Request): Promise<AppointmentSessionDt
   if (!sessionId || typeof sessionId !== 'string') {
     throw new Response('Missing appointment session', { status: 400 });
   }
+  const sessionResponse =
+    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getAppointmentSession({
+      sessionId,
+    });
 
-  return bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getAppointmentSession({
-    sessionId,
-  });
+  if (!sessionResponse.data) {
+    throw Error('Kunne ikke hente session');
+  }
+
+  return sessionResponse.data;
 }
 
 export async function getSessionId(request: Request): Promise<string> {

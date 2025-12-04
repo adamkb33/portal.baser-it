@@ -5,7 +5,7 @@ import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '~/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
-import type { GroupedServiceGroupsDto, GroupedService, ImageDto } from 'tmp/openapi/gen/booking';
+import type { GroupedService, GroupedServiceGroupsDto, ImageDto } from '~/api/clients/types';
 
 export type ServicePickerProps = {
   groupedServices: GroupedServiceGroupsDto[];

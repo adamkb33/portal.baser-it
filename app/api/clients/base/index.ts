@@ -4,6 +4,7 @@ export { AuthControllerService } from './services/AuthControllerService';
 export { CompanyUserContactControllerService } from './services/CompanyUserContactControllerService';
 export { CompanyUserControllerService } from './services/CompanyUserControllerService';
 export { InternalCompanyControllerService } from './services/InternalCompanyControllerService';
+export { InternalUserControllerService } from './services/InternalUserControllerService';
 export { PublicCompanyContactControllerService } from './services/PublicCompanyContactControllerService';
 export { PublicCompanyControllerService } from './services/PublicCompanyControllerService';
 export { SystemAdminCompanyControllerService } from './services/SystemAdminCompanyControllerService';

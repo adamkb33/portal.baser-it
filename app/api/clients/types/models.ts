@@ -40,6 +40,15 @@ export interface AppointmentDto {
     services: AppointmentServiceDto[];
 }
 
+export interface AppointmentOverviewDto {
+    sessionId: string;
+    companyId: number;
+    contact: ContactDto;
+    selectedProfile: BookingProfileDto;
+    selectedServices: AppointmentSessionSelectedServicesDto[];
+    selectedStartTime: string;
+}
+
 export interface AppointmentServiceDto {
     id: number;
     appointmentId: number;
@@ -54,7 +63,7 @@ export interface AppointmentSessionDto {
     companyId: number;
     contactId?: number;
     selectedServices?: number[];
-    selectedUserId?: number;
+    selectedProfileId?: number;
     selectedStartTime?: string;
 }
 
@@ -62,6 +71,12 @@ export interface AppointmentSessionGetScheduleDto {
     sessionId: string;
     date: string;
     serviceIds: number[];
+}
+
+export interface AppointmentSessionSelectedServicesDto {
+    serviceGroup: ServiceGroupDto;
+    services: ServiceDto;
+    count: number;
 }
 
 export interface AuthenticatedUserPayload {
@@ -89,7 +104,9 @@ export interface BookingProfileDto {
     id: number;
     userId: number;
     companyId: number;
-    imageId?: number;
+    givenName: string;
+    familyName: string;
+    image?: ImageDto;
     description?: string;
     services?: ServiceDto[];
 }
@@ -378,16 +395,6 @@ export interface ScheduleDto {
 export interface ScheduleTimeSlot {
     startTime: string;
     endTime: string;
-}
-
-export interface SelectCompanyUserAppointmentSessionDto {
-    sessionId: string;
-    selectedCompanyUserId: number;
-}
-
-export interface SelectServicesAppointmentSessionDto {
-    sessionId: string;
-    selectedServices: number[];
 }
 
 export interface ServiceDto {
