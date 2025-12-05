@@ -50,7 +50,7 @@ export async function action({ request }: ActionFunctionArgs) {
       sessionId: session.sessionId,
     });
 
-    return redirect(`${ROUTES_MAP['booking.public.appointment.overview'].href}?companyId=${session.companyId}`);
+    return redirect(`${ROUTES_MAP['booking.public.appointment.success'].href}?companyId=${session.companyId}`);
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {

@@ -1,8 +1,9 @@
-import { data, redirect, type LoaderFunctionArgs } from 'react-router';
+import { data, type LoaderFunctionArgs } from 'react-router';
 import { useLoaderData } from 'react-router';
 import { Check, MapPin } from 'lucide-react';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 import { baseApi, bookingApi } from '~/lib/utils';
+import type { ApiClientError } from '~/api/clients/http';
 
 export type AppointmentsSuccessLoaderData = {
   companySummary: CompanySummaryDto;
@@ -13,7 +14,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url);
     const companyId = url.searchParams.get('companyId');
     if (!companyId) {
-      return redirect('/');
+      throw Error('Selskap ikke gjenkjent');
     }
 
     await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.validateCompany({
@@ -34,12 +35,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
-    return redirect('/');
+    if (error as ApiClientError) {
+      return { error: error.body.message };
+    }
+
+    throw error;
   }
 }
 
 export default function AppointmentsSuccess() {
-  const { companySummary } = useLoaderData<typeof loader>();
+  const { companySummary } = useLoaderData<AppointmentsSuccessLoaderData>();
 
   const formatAddress = () => {
     const address = companySummary.businessAddress;

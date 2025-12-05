@@ -8,7 +8,7 @@ import {
   useSearchParams,
   useSubmit,
 } from 'react-router';
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import type { ScheduleDto } from 'tmp/openapi/gen/booking';
 import type { ApiClientError } from '~/api/clients/http';
 import type { AppointmentSessionDto } from '~/api/clients/types';
@@ -90,24 +90,25 @@ export default function AppointmentsSelectTime() {
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
 
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
   const urlSelectedTime = searchParams.get('time');
   const selectedTime = urlSelectedTime || session.selectedStartTime;
 
-  const selectedDate = useMemo(() => {
-    return selectedTime ? findScheduleWithTime(schedules, selectedTime) : null;
-  }, [schedules, selectedTime]);
-
   const selectedSchedule = schedules.find((s) => s.date === selectedDate);
 
-  useMemo(() => {
+  useEffect(() => {
     if (session.selectedStartTime && !urlSelectedTime) {
       setSearchParams({ time: session.selectedStartTime }, { replace: true });
     }
-  }, []);
 
-  const handleDateSelect = (date: string) => {
-    setSearchParams({}, { replace: true });
-  };
+    if (selectedTime && !selectedDate) {
+      const scheduleDate = findScheduleWithTime(schedules, selectedTime);
+      if (scheduleDate) {
+        setSelectedDate(scheduleDate);
+      }
+    }
+  }, [session.selectedStartTime, urlSelectedTime, selectedTime, selectedDate, schedules, setSearchParams]);
 
   const handleTimeSelect = (startTime: string) => {
     const formData = new FormData();
@@ -138,7 +139,7 @@ export default function AppointmentsSelectTime() {
                 <button
                   key={schedule.date}
                   type="button"
-                  onClick={() => handleDateSelect(schedule.date)}
+                  onClick={() => setSelectedDate(schedule.date)}
                   className={`w-full border text-left px-2.5 py-2 rounded-none ${
                     isSelected
                       ? 'border-primary bg-primary text-primary-foreground'
