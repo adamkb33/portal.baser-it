@@ -1,11 +1,13 @@
 import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData } from 'react-router';
 import type { ApiClientError } from '~/api/clients/http';
-import type { AppointmentOverviewDto } from '~/api/clients/types';
 import { getSession } from '~/lib/appointments.server';
 import { bookingApi } from '~/lib/utils';
+import { type ActionFunctionArgs } from 'react-router';
+import type { AppointmentSessionOverviewDto } from 'tmp/openapi/gen/booking';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 type AppointmentsOverviewLoaderData = {
-  sessionOverview: AppointmentOverviewDto;
+  sessionOverview: AppointmentSessionOverviewDto;
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -13,7 +15,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const session = await getSession(request);
 
     if (!session) {
-      return redirect('/appointments');
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
     const response =
@@ -24,12 +26,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
       );
 
     if (!response.data) {
-      return redirect('/appointments');
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
     return data<AppointmentsOverviewLoaderData>({
       sessionOverview: response.data,
     });
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+    return redirect('/');
+  }
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  try {
+    const session = await getSession(request);
+
+    if (!session) {
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
+    }
+
+    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.appointmentSessionSubmit({
+      sessionId: session.sessionId,
+    });
+
+    return redirect(`${ROUTES_MAP['booking.public.appointment.overview'].href}?companyId=${session.companyId}`);
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {
@@ -70,11 +91,8 @@ function formatNorwegianDateTime(dateTimeString: string): string {
 export default function AppointmentsOverview() {
   const { sessionOverview } = useLoaderData<AppointmentsOverviewLoaderData>();
 
-  const totalDuration = sessionOverview.selectedServices.reduce(
-    (sum, item) => sum + item.services.duration * item.count,
-    0,
-  );
-  const totalPrice = sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.price * item.count, 0);
+  const totalDuration = sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.duration, 0);
+  const totalPrice = sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.price, 0);
 
   return (
     <div className="space-y-5">
@@ -106,10 +124,10 @@ export default function AppointmentsOverview() {
                 <span className="text-sm text-foreground">{sessionOverview.contact.email.value}</span>
               </div>
             )}
-            {sessionOverview.contact.mobileNumberDto?.value && (
+            {sessionOverview.contact.mobileNumber?.value && (
               <div className="flex items-baseline gap-2">
                 <span className="text-[0.7rem] text-muted-foreground min-w-20">Mobil:</span>
-                <span className="text-sm text-foreground">{sessionOverview.contact.mobileNumberDto.value}</span>
+                <span className="text-sm text-foreground">{sessionOverview.contact.mobileNumber.value}</span>
               </div>
             )}
           </div>
@@ -152,13 +170,10 @@ export default function AppointmentsOverview() {
             {sessionOverview.selectedServices.map((item, index) => (
               <div key={index} className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm text-foreground">
-                    {item.count > 1 ? `${item.count}x ` : ''}
-                    {item.services.name}
-                  </span>
+                  <span className="text-sm text-foreground">{item.services.name}</span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-xs text-muted-foreground">{item.services.duration * item.count} min</span>
-                    <span className="text-sm font-medium text-foreground">{item.services.price * item.count} kr</span>
+                    <span className="text-xs text-muted-foreground">{item.services.duration} min</span>
+                    <span className="text-sm font-medium text-foreground">{item.services.price} kr</span>
                   </div>
                 </div>
               </div>

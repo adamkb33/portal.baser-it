@@ -4,6 +4,7 @@ import type { ApiClientError } from '~/api/clients/http';
 import type { AppointmentSessionDto, GetOrCreateContactDto } from '~/api/clients/types';
 import { GetOrCreateContactFetcherForm } from '~/components/forms/contact-form';
 import { getSession } from '~/lib/appointments.server';
+import { ROUTES_MAP } from '~/lib/route-tree';
 import { baseApi, bookingApi } from '~/lib/utils';
 
 export type AppointmentsContactFormLoaderData = {
@@ -78,7 +79,7 @@ export async function action({ request }: ActionFunctionArgs) {
       contactId: contactResponse.data.id,
     });
 
-    return redirect('/appointments/employee');
+    return redirect(ROUTES_MAP['booking.public.appointment.employee'].href);
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {
@@ -98,7 +99,7 @@ export default function AppointmentsContactForm() {
         givenName: existingContact.givenName,
         familyName: existingContact.familyName,
         email: existingContact.email?.value ?? '',
-        mobileNumber: existingContact.mobileNumberDto?.value ?? '',
+        mobileNumber: existingContact.mobileNumber?.value ?? '',
       }
     : undefined;
 
@@ -130,10 +131,10 @@ export default function AppointmentsContactForm() {
                     <span className="text-sm text-foreground">{existingContact.email.value}</span>
                   </div>
                 )}
-                {existingContact.mobileNumberDto?.value && (
+                {existingContact.mobileNumber?.value && (
                   <div className="flex items-baseline gap-2">
                     <span className="text-[0.7rem] text-muted-foreground">Mobil:</span>
-                    <span className="text-sm text-foreground">{existingContact.mobileNumberDto.value}</span>
+                    <span className="text-sm text-foreground">{existingContact.mobileNumber.value}</span>
                   </div>
                 )}
               </div>

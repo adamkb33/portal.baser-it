@@ -2,10 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ApiResponseAppointmentDto } from '@types';
 import type { ApiResponsePaginatedResponseAppointmentDto } from '@types';
 import type { ApiResponseUnit } from '@types';
-import type { CreateAppointmentCompanyUserDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
@@ -40,22 +38,6 @@ export class CompanyUserAppointmentControllerService {
                 'fromDateTime': fromDateTime,
                 'toDateTime': toDateTime,
             },
-        });
-    }
-    /**
-     * @returns ApiResponseAppointmentDto OK
-     * @throws ApiError
-     */
-    public static createAppointment1({
-        requestBody,
-    }: {
-        requestBody: CreateAppointmentCompanyUserDto,
-    }): CancelablePromise<ApiResponseAppointmentDto> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/company-user/appointments',
-            body: requestBody,
-            mediaType: 'application/json',
         });
     }
     /**

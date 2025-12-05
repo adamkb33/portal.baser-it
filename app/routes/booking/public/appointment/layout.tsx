@@ -3,6 +3,7 @@ import type { LoaderFunctionArgs } from 'react-router';
 import type { AppointmentSessionDto } from 'tmp/openapi/gen/booking';
 import type { ApiClientError } from '~/api/clients/http';
 import { getOrCreateSession } from '~/lib/appointments.server';
+import { ROUTES_MAP } from '~/lib/route-tree';
 import { bookingApi } from '~/lib/utils';
 
 export type AppointmentsLayoutLoaderData = {
@@ -22,14 +23,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
       const session = await getOrCreateSession(request, parseInt(companyId));
 
-      return data<AppointmentsLayoutLoaderData>(
-        { session: session.session },
-        {
-          headers: {
-            'Set-Cookie': session.setCookieHeader,
-          },
+      return redirect(ROUTES_MAP['booking.public.appointment.contact'].href, {
+        headers: {
+          'Set-Cookie': session.setCookieHeader,
         },
-      );
+      });
     } else {
       return data<AppointmentsLayoutLoaderData>({});
     }
@@ -49,6 +47,7 @@ export default function AppointmentsLayout() {
 
   return (
     <div>
+      {loaderData.session?.sessionId}
       <Outlet context={loaderData} />
     </div>
   );

@@ -34,28 +34,10 @@ export interface AddressDto {
 export interface AppointmentDto {
     id: number;
     profileId: number;
-    contactId: number;
+    contact: ContactDto;
     startTime: string;
     endTime: string;
-    services: AppointmentServiceDto[];
-}
-
-export interface AppointmentOverviewDto {
-    sessionId: string;
-    companyId: number;
-    contact: ContactDto;
-    selectedProfile: BookingProfileDto;
-    selectedServices: AppointmentSessionSelectedServicesDto[];
-    selectedStartTime: string;
-}
-
-export interface AppointmentServiceDto {
-    id: number;
-    appointmentId: number;
-    serviceId: number;
-    name: string;
-    duration: number;
-    price: number;
+    groupedServiceGroups: GroupedServiceGroupsDto[];
 }
 
 export interface AppointmentSessionDto {
@@ -67,16 +49,18 @@ export interface AppointmentSessionDto {
     selectedStartTime?: string;
 }
 
-export interface AppointmentSessionGetScheduleDto {
+export interface AppointmentSessionOverviewDto {
     sessionId: string;
-    date: string;
-    serviceIds: number[];
+    companyId: number;
+    contact: ContactDto;
+    selectedProfile: BookingProfileDto;
+    selectedServices: AppointmentSessionSelectedServicesDto[];
+    selectedStartTime: string;
 }
 
 export interface AppointmentSessionSelectedServicesDto {
     serviceGroup: ServiceGroupDto;
     services: ServiceDto;
-    count: number;
 }
 
 export interface AuthenticatedUserPayload {
@@ -145,7 +129,7 @@ export interface ContactDto {
     givenName: string;
     familyName: string;
     email?: ContactEmailDto;
-    mobileNumberDto?: ContactMobileNumberDto;
+    mobileNumber?: ContactMobileNumberDto;
 }
 
 export interface ContactEmailDto {
@@ -156,20 +140,6 @@ export interface ContactEmailDto {
 export interface ContactMobileNumberDto {
     id: number;
     value: string;
-}
-
-export interface CreateAppointmentCompanyUserDto {
-    contactId: number;
-    date: string;
-    startTime: string;
-    serviceIds: number[];
-}
-
-export interface CreateAppointmentDto {
-    profileId: number;
-    contactId: number;
-    startTime: string;
-    serviceIds: number[];
 }
 
 export interface CreateCompanyDto {
@@ -244,7 +214,7 @@ export interface GetOrCreateContactDto {
     mobileNumber?: string;
 }
 
-export interface GroupedService {
+export interface GroupedServiceDto {
     id: number;
     name: string;
     price: number;
@@ -253,10 +223,10 @@ export interface GroupedService {
 }
 
 export interface GroupedServiceGroupsDto {
-    companyId: number;
     id: number;
+    companyId: number;
     name: string;
-    services: GroupedService[];
+    services: GroupedServiceDto[];
 }
 
 export interface ImageDto {

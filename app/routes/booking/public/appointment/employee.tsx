@@ -5,6 +5,7 @@ import type { AppointmentSessionDto } from '~/api/clients/types';
 import { getSession } from '~/lib/appointments.server';
 import { bookingApi } from '~/lib/utils';
 import { type ActionFunctionArgs } from 'react-router';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 export type AppointmentsEmployeeLoaderData = {
   session: AppointmentSessionDto;
@@ -18,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const session = await getSession(request);
 
     if (!session) {
-      return redirect('/appointments');
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
     const profilesResponse =
       await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getAppointmentSessionProfiles(
@@ -48,7 +49,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const session = await getSession(request);
 
     if (!session) {
-      return redirect('/appointments');
+      return ROUTES_MAP['booking.public.appointment.contact'].href;
     }
 
     const formData = await request.formData();
@@ -61,7 +62,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     );
 
-    return redirect('/appointments/select-services');
+    return redirect(ROUTES_MAP['booking.public.appointment.select-services'].href);
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {

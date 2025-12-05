@@ -31,10 +31,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function CompanyIndex() {
   const loaderData = useLoaderData<CompanyIndexLoaderResponse>();
-  console.log(loaderData);
   const { companyContext } = useOutletContext<RootOutletContext>();
-
-  console.log(companyContext);
 
   return (
     <div className="flex flex-col gap-2">

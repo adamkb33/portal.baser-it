@@ -1,10 +1,10 @@
 // Common Responses
 import type { ApiResponse } from './generic-wrapper';
-import type { AppointmentDto, AppointmentOverviewDto, AppointmentSessionDto, AuthenticatedUserPayload, AuthenticationTokenDto, BookingProfileDto, CompanySummaryDto, CompanyUserDto, ContactDto, DailyScheduleDto, GroupedServiceGroupsDto, ImageDto, InvitedUserTokenDto, JwtClaims, PaginatedResponseAppointmentDto, PaginatedResponseCompanyUserDto, PaginatedResponseContactDto, PaginatedResponseServiceDto, PaginatedResponseServiceGroupDto, PublicCompanyUserDto, ScheduleDto, ServiceDto, ServiceGroupDto, UserDto } from './models';
+import type { AppointmentDto, AppointmentSessionDto, AppointmentSessionOverviewDto, AuthenticatedUserPayload, AuthenticationTokenDto, BookingProfileDto, CompanySummaryDto, CompanyUserDto, ContactDto, DailyScheduleDto, GroupedServiceGroupsDto, ImageDto, InvitedUserTokenDto, JwtClaims, PaginatedResponseAppointmentDto, PaginatedResponseCompanyUserDto, PaginatedResponseContactDto, PaginatedResponseServiceDto, PaginatedResponseServiceGroupDto, PublicCompanyUserDto, ScheduleDto, ServiceDto, ServiceGroupDto, UserDto } from './models';
 
 export type ApiResponseAppointmentDto = ApiResponse<AppointmentDto>;
-export type ApiResponseAppointmentOverviewDto = ApiResponse<AppointmentOverviewDto>;
 export type ApiResponseAppointmentSessionDto = ApiResponse<AppointmentSessionDto>;
+export type ApiResponseAppointmentSessionOverviewDto = ApiResponse<AppointmentSessionOverviewDto>;
 export type ApiResponseAuthenticatedUserPayload = ApiResponse<AuthenticatedUserPayload>;
 export type ApiResponseAuthenticationTokenDto = ApiResponse<AuthenticationTokenDto>;
 export type ApiResponseBookingProfileDto = ApiResponse<BookingProfileDto>;

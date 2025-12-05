@@ -1,11 +1,9 @@
-// app/components/pickers/service-picker.tsx
-
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '~/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
-import type { GroupedService, GroupedServiceGroupsDto, ImageDto } from '~/api/clients/types';
+import type { GroupedServiceDto, GroupedServiceGroupsDto, ImageDto } from '~/api/clients/types';
 
 export type ServicePickerProps = {
   groupedServices: GroupedServiceGroupsDto[];
@@ -21,7 +19,7 @@ export function ServicePicker({
   isSubmitting = false,
 }: ServicePickerProps) {
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>(initialSelectedIds);
-  const [dialogService, setDialogService] = useState<GroupedService | null>(null);
+  const [dialogService, setDialogService] = useState<GroupedServiceDto | null>(null);
 
   const toggleService = (serviceId: number) => {
     setSelectedServiceIds((prev) =>
@@ -34,7 +32,7 @@ export function ServicePicker({
     onSubmit(selectedServiceIds);
   };
 
-  const handleOpenImages = (service: GroupedService) => {
+  const handleOpenImages = (service: GroupedServiceDto) => {
     if (!service.images || service.images.length === 0) return;
     setDialogService(service);
   };

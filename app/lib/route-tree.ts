@@ -31,7 +31,7 @@ export enum RoutePlaceMent {
 export type RouteBranch = {
   id: string;
   href: string;
-  label: string;
+  label?: string;
   accessType: Access;
   placement?: RoutePlaceMent;
   hidden?: boolean;
@@ -43,48 +43,55 @@ export type RouteBranch = {
 
 export const ROUTE_TREE: RouteBranch[] = [
   {
-    id: 'appointments',
-    href: '/appointments',
+    id: 'booking.public.appointment',
+    href: '/booking/public/appointment',
     label: 'Bestill time',
     category: BrachCategory.PUBLIC,
     accessType: Access.NOT_AUTHENTICATED,
     children: [
       {
-        id: 'appointments.contact-form',
-        href: '/appointments/contact-form',
+        id: 'booking.public.appointment.contact',
+        href: '/booking/public/appointment/contact-form',
         label: 'Kontaktinformasjon',
         category: BrachCategory.NONE,
         accessType: Access.PUBLIC,
         hidden: true,
       },
       {
-        id: 'appointments.employee',
-        href: '/appointments/employee',
+        id: 'booking.public.appointment.employee',
+        href: '/booking/public/appointment/employee',
         label: 'Velg behandler',
         category: BrachCategory.NONE,
         accessType: Access.PUBLIC,
         hidden: true,
       },
       {
-        id: 'appointments.select-services',
-        href: '/appointments/select-services',
+        id: 'booking.public.appointment.select-services',
+        href: '/booking/public/appointment/select-services',
         label: 'Velg tjenester',
         category: BrachCategory.NONE,
         accessType: Access.PUBLIC,
         hidden: true,
       },
       {
-        id: 'appointments.select-time',
-        href: '/appointments/select-time',
+        id: 'booking.public.appointment.select-time',
+        href: '/booking/public/appointment/select-time',
         label: 'Velg tidspunkt',
         category: BrachCategory.NONE,
         accessType: Access.PUBLIC,
         hidden: true,
       },
       {
-        id: 'appointments.overview',
-        href: '/appointments/overview',
+        id: 'booking.public.appointment.overview',
+        href: '/booking/public/appointment/overview',
         label: 'Oversikt',
+        category: BrachCategory.NONE,
+        accessType: Access.PUBLIC,
+        hidden: true,
+      },
+      {
+        id: 'booking.public.appointment.success',
+        href: '/booking/public/appointment/success',
         category: BrachCategory.NONE,
         accessType: Access.PUBLIC,
         hidden: true,

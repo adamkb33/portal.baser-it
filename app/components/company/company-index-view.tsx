@@ -1,6 +1,5 @@
 import type { BrregEnhetResponse } from '~/api/brreg/types';
 import type { CompanySummaryDto } from '~/api/clients/types';
-import { CompanyHeader } from './company-header';
 import { CompanyStatusSection } from './brreg/company-status-section';
 import { CompanyInfoSection } from './brreg/company-info-section';
 import { RegistrationsSection } from './brreg/registration-section';

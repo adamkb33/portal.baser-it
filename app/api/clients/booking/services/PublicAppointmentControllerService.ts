@@ -3,13 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ApiResponseAppointmentDto } from '@types';
-import type { ApiResponseAppointmentOverviewDto } from '@types';
 import type { ApiResponseAppointmentSessionDto } from '@types';
+import type { ApiResponseAppointmentSessionOverviewDto } from '@types';
 import type { ApiResponseBoolean } from '@types';
 import type { ApiResponseListBookingProfileDto } from '@types';
 import type { ApiResponseListGroupedServiceGroupsDto } from '@types';
 import type { ApiResponseListScheduleDto } from '@types';
-import type { CreateAppointmentDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
@@ -35,16 +34,17 @@ export class PublicAppointmentControllerService {
      * @returns ApiResponseAppointmentDto OK
      * @throws ApiError
      */
-    public static createAppointment({
-        requestBody,
+    public static appointmentSessionSubmit({
+        sessionId,
     }: {
-        requestBody: CreateAppointmentDto,
+        sessionId: string,
     }): CancelablePromise<ApiResponseAppointmentDto> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/public/appointment',
-            body: requestBody,
-            mediaType: 'application/json',
+            query: {
+                'sessionId': sessionId,
+            },
         });
     }
     /**
@@ -196,14 +196,14 @@ export class PublicAppointmentControllerService {
         });
     }
     /**
-     * @returns ApiResponseAppointmentOverviewDto OK
+     * @returns ApiResponseAppointmentSessionOverviewDto OK
      * @throws ApiError
      */
     public static getAppointmentSessionOverview({
         sessionId,
     }: {
         sessionId: string,
-    }): CancelablePromise<ApiResponseAppointmentOverviewDto> {
+    }): CancelablePromise<ApiResponseAppointmentSessionOverviewDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/public/appointment/get-appointment-session-overview',

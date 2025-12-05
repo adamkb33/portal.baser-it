@@ -1,12 +1,14 @@
 import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData } from 'react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ApiClientError } from '~/api/clients/http';
-import type { AppointmentSessionDto, GroupedService, GroupedServiceGroupsDto } from '~/api/clients/types';
 import { getSession } from '~/lib/appointments.server';
 import { bookingApi } from '~/lib/utils';
 import { type ActionFunctionArgs } from 'react-router';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '~/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
+import type { AppointmentSessionDto, GroupedServiceGroupsDto } from '~/api/clients/types';
+import type { GroupedServiceDto } from 'tmp/openapi/gen/booking';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 export type AppointmentsSelectServicesLoaderData = {
   session: AppointmentSessionDto;
@@ -19,7 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const session = await getSession(request);
 
     if (!session) {
-      return redirect('/appointments');
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
     const serviceGroupsResponse =
@@ -48,7 +50,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const session = await getSession(request);
 
     if (!session) {
-      return redirect('/appointments');
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
     const formData = await request.formData();
@@ -61,7 +63,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     );
 
-    return redirect('/appointments/select-time');
+    return redirect(ROUTES_MAP['booking.public.appointment.select-time'].href);
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {
@@ -73,33 +75,29 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AppointmentsSelectServices() {
-  const { serviceGroups } = useLoaderData<AppointmentsSelectServicesLoaderData>();
-  const [selectedServices, setSelectedServices] = useState<Map<number, number>>(new Map());
-  const [dialogService, setDialogService] = useState<GroupedService | null>(null);
+  const { serviceGroups, session } = useLoaderData<AppointmentsSelectServicesLoaderData>();
+  const [selectedServices, setSelectedServices] = useState<Set<number>>(new Set());
+  const [dialogService, setDialogService] = useState<GroupedServiceDto | null>(null);
 
-  const addService = (serviceId: number) => {
-    setSelectedServices((prev) => {
-      const newMap = new Map(prev);
-      const current = newMap.get(serviceId) || 0;
-      newMap.set(serviceId, current + 1);
-      return newMap;
-    });
-  };
+  useEffect(() => {
+    if (session.selectedServices) {
+      setSelectedServices(new Set(session.selectedServices));
+    }
+  }, [session]);
 
-  const removeService = (serviceId: number) => {
+  const toggleService = (serviceId: number) => {
     setSelectedServices((prev) => {
-      const newMap = new Map(prev);
-      const current = newMap.get(serviceId) || 0;
-      if (current <= 1) {
-        newMap.delete(serviceId);
+      const newSet = new Set(prev);
+      if (newSet.has(serviceId)) {
+        newSet.delete(serviceId);
       } else {
-        newMap.set(serviceId, current - 1);
+        newSet.add(serviceId);
       }
-      return newMap;
+      return newSet;
     });
   };
 
-  const findService = (serviceId: number): GroupedService | undefined => {
+  const findService = (serviceId: number): GroupedServiceDto | undefined => {
     for (const group of serviceGroups) {
       const service = group.services.find((s) => s.id === serviceId);
       if (service) return service;
@@ -109,10 +107,10 @@ export default function AppointmentsSelectServices() {
 
   const getTotalDuration = () => {
     let total = 0;
-    selectedServices.forEach((quantity, serviceId) => {
+    selectedServices.forEach((serviceId) => {
       const service = findService(serviceId);
       if (service) {
-        total += service.duration * quantity;
+        total += service.duration;
       }
     });
     return total;
@@ -120,10 +118,10 @@ export default function AppointmentsSelectServices() {
 
   const getTotalPrice = () => {
     let total = 0;
-    selectedServices.forEach((quantity, serviceId) => {
+    selectedServices.forEach((serviceId) => {
       const service = findService(serviceId);
       if (service) {
-        total += service.price * quantity;
+        total += service.price;
       }
     });
     return total;
@@ -136,9 +134,7 @@ export default function AppointmentsSelectServices() {
       <div className="space-y-5">
         <div className="border-b border-border pb-4">
           <h1 className="text-base font-semibold text-foreground">Velg tjenester</h1>
-          <p className="text-[0.7rem] text-muted-foreground mt-1">
-            Velg én eller flere tjenester. Klikk flere ganger for å legge til samme tjeneste flere ganger.
-          </p>
+          <p className="text-[0.7rem] text-muted-foreground mt-1">Velg én eller flere tjenester.</p>
         </div>
 
         <div className="space-y-5">
@@ -154,18 +150,11 @@ export default function AppointmentsSelectServices() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {group.services.map((service) => {
-                    const quantity = selectedServices.get(service.id) || 0;
-                    const isSelected = quantity > 0;
+                    const isSelected = selectedServices.has(service.id);
                     const hasImages = service.images && service.images.length > 0;
 
                     return (
-                      <div key={service.id} className="border border-border bg-background p-4 space-y-3 relative">
-                        {isSelected && (
-                          <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-foreground text-background border-2 border-background flex items-center justify-center">
-                            <span className="text-xs font-medium">{quantity}</span>
-                          </div>
-                        )}
-
+                      <div key={service.id} className="border border-border bg-background p-4 space-y-3">
                         <div className="space-y-1">
                           <h3 className="text-sm font-semibold text-foreground">{service.name}</h3>
                           <div className="flex items-baseline gap-2">
@@ -184,23 +173,16 @@ export default function AppointmentsSelectServices() {
                           </button>
                         )}
 
-                        <div className="flex gap-2 pt-2">
+                        <div className="pt-2">
                           <button
                             type="button"
-                            onClick={() => addService(service.id)}
-                            className="flex-1 border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"
+                            onClick={() => toggleService(service.id)}
+                            className={`w-full border border-border px-3 py-2 text-xs font-medium rounded-none ${
+                              isSelected ? 'bg-background text-foreground' : 'bg-foreground text-background'
+                            }`}
                           >
-                            Legg til
+                            {isSelected ? 'Fjern' : 'Legg til'}
                           </button>
-                          {isSelected && (
-                            <button
-                              type="button"
-                              onClick={() => removeService(service.id)}
-                              className="border border-border bg-background text-foreground px-3 py-2 text-xs font-medium rounded-none"
-                            >
-                              Fjern
-                            </button>
-                          )}
                         </div>
                       </div>
                     );
@@ -217,21 +199,16 @@ export default function AppointmentsSelectServices() {
                 Valgte tjenester
               </span>
               <div className="space-y-2">
-                {Array.from(selectedServices.entries()).map(([serviceId, quantity]) => {
+                {Array.from(selectedServices).map((serviceId) => {
                   const service = findService(serviceId);
                   if (!service) return null;
 
                   return (
                     <div key={serviceId} className="flex items-center justify-between gap-3">
+                      <span className="text-sm text-foreground">{service.name}</span>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-sm text-foreground">
-                          {quantity > 1 ? `${quantity}x ` : ''}
-                          {service.name}
-                        </span>
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xs text-muted-foreground">{service.duration * quantity} min</span>
-                        <span className="text-sm font-medium text-foreground">{service.price * quantity} kr</span>
+                        <span className="text-xs text-muted-foreground">{service.duration} min</span>
+                        <span className="text-sm font-medium text-foreground">{service.price} kr</span>
                       </div>
                     </div>
                   );
@@ -250,11 +227,9 @@ export default function AppointmentsSelectServices() {
             </div>
 
             <Form method="post" className="border-t border-border pt-4">
-              {Array.from(selectedServices.entries()).map(([serviceId, quantity]) =>
-                Array.from({ length: quantity }).map((_, index) => (
-                  <input key={`${serviceId}-${index}`} type="hidden" name="serviceId" value={serviceId} />
-                )),
-              )}
+              {Array.from(selectedServices).map((serviceId) => (
+                <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
+              ))}
               <button
                 type="submit"
                 className="w-full border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"

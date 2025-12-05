@@ -8,28 +8,27 @@ import {
   useSearchParams,
   useSubmit,
 } from 'react-router';
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import type { ScheduleDto } from 'tmp/openapi/gen/booking';
 import type { ApiClientError } from '~/api/clients/http';
 import type { AppointmentSessionDto } from '~/api/clients/types';
 import { getSession } from '~/lib/appointments.server';
 import { bookingApi } from '~/lib/utils';
+import { ROUTES_MAP } from '~/lib/route-tree';
+import { formatCompactDate, formatFullDate, formatTime } from '~/lib/date.utils';
 
 export type AppointmentsSelectTimeLoaderData = {
   session: AppointmentSessionDto;
   schedules: ScheduleDto[];
-  selectedStartTime?: string;
-  error?: string;
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await getSession(request);
+  if (!session) {
+    return redirect(ROUTES_MAP['booking.public.appointment'].href);
+  }
+
   try {
-    const session = await getSession(request);
-
-    if (!session) {
-      return redirect('/appointments');
-    }
-
     const schedulesResponse =
       await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getAppointmentSessionSchedules(
         {
@@ -40,29 +39,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return data<AppointmentsSelectTimeLoaderData>({
       session,
       schedules: schedulesResponse.data || [],
-      selectedStartTime: session.selectedStartTime,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
+    if ((error as ApiClientError).body) {
+      return { error: (error as ApiClientError).body.message };
     }
-
     throw error;
   }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  const session = await getSession(request);
+  if (!session) {
+    return redirect(ROUTES_MAP['booking.public.appointment'].href);
+  }
+
+  const formData = await request.formData();
+  const selectedStartTime = formData.get('selectedStartTime') as string;
+
   try {
-    const session = await getSession(request);
-
-    if (!session) {
-      return redirect('/appointments');
-    }
-
-    const formData = await request.formData();
-    const selectedStartTime = formData.get('selectedStartTime') as string;
-
     await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.selectAppointmentSessionStartTime(
       {
         sessionId: session.sessionId,
@@ -70,54 +66,23 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     );
 
-    return redirect(`/appointments/select-time?time=${selectedStartTime}`);
-  } catch (error: any) {
+    return redirect(`${ROUTES_MAP['booking.public.appointment.select-time'].href}?time=${selectedStartTime}`);
+  } catch (error) {
     console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
+    if ((error as ApiClientError).body) {
+      return { error: (error as ApiClientError).body.message };
     }
-
     throw error;
   }
 }
 
-const DAYS_NO_SHORT = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
-const MONTHS_NO_SHORT = ['jan', 'feb', 'mar', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'des'];
-
-function formatCompactDate(dateString: string): { day: string; date: string; month: string } {
-  const date = new Date(dateString);
-  const dayName = DAYS_NO_SHORT[date.getDay()];
-  const day = date.getDate();
-  const month = MONTHS_NO_SHORT[date.getMonth()];
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const compareDate = new Date(date);
-  compareDate.setHours(0, 0, 0, 0);
-
-  if (compareDate.getTime() === today.getTime()) {
-    return { day: 'I dag', date: String(day), month };
+function findScheduleWithTime(schedules: ScheduleDto[], startTime: string): string | null {
+  for (const schedule of schedules) {
+    if (schedule.timeSlots.some((slot) => slot.startTime === startTime)) {
+      return schedule.date;
+    }
   }
-
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  if (compareDate.getTime() === tomorrow.getTime()) {
-    return { day: 'I morgen', date: String(day), month };
-  }
-
-  return { day: dayName, date: String(day), month };
-}
-
-function formatFullDate(dateString: string): string {
-  const date = new Date(dateString);
-  const { day, date: dateNum, month } = formatCompactDate(dateString);
-  return `${day} ${dateNum}. ${month}`;
-}
-
-function formatTimeOnly(dateTimeString: string): string {
-  // Format: 2025-12-08T09:00:00 -> 09:00
-  const timePart = dateTimeString.split('T')[1];
-  return timePart ? timePart.substring(0, 5) : '';
+  return null;
 }
 
 export default function AppointmentsSelectTime() {
@@ -125,43 +90,24 @@ export default function AppointmentsSelectTime() {
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
 
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-
   const urlSelectedTime = searchParams.get('time');
+  const selectedTime = urlSelectedTime || session.selectedStartTime;
 
-  // Set URL param only if session has selected time
-  useEffect(() => {
-    if (session.selectedStartTime && !urlSelectedTime) {
-      setSearchParams({ time: session.selectedStartTime }, { replace: true });
-    }
-  }, [session.selectedStartTime, urlSelectedTime, setSearchParams]);
-
-  // Pre-select date based on session time
-  useEffect(() => {
-    if (session.selectedStartTime && !selectedDate) {
-      for (const schedule of schedules) {
-        const matchingSlot = schedule.timeSlots.find((slot) => slot.startTime === session.selectedStartTime);
-        if (matchingSlot) {
-          setSelectedDate(schedule.date);
-          break;
-        }
-      }
-    }
-  }, [session.selectedStartTime, schedules, selectedDate]);
+  const selectedDate = useMemo(() => {
+    return selectedTime ? findScheduleWithTime(schedules, selectedTime) : null;
+  }, [schedules, selectedTime]);
 
   const selectedSchedule = schedules.find((s) => s.date === selectedDate);
 
-  // Find confirmed date from selected time
-  let confirmedDate = selectedDate;
-  if (session.selectedStartTime && !confirmedDate) {
-    for (const schedule of schedules) {
-      const matchingSlot = schedule.timeSlots.find((slot) => slot.startTime === session.selectedStartTime);
-      if (matchingSlot) {
-        confirmedDate = schedule.date;
-        break;
-      }
+  useMemo(() => {
+    if (session.selectedStartTime && !urlSelectedTime) {
+      setSearchParams({ time: session.selectedStartTime }, { replace: true });
     }
-  }
+  }, []);
+
+  const handleDateSelect = (date: string) => {
+    setSearchParams({}, { replace: true });
+  };
 
   const handleTimeSelect = (startTime: string) => {
     const formData = new FormData();
@@ -174,27 +120,25 @@ export default function AppointmentsSelectTime() {
       <div className="border-b border-border pb-4">
         <h1 className="text-base font-semibold text-foreground">Velg tidspunkt</h1>
         <p className="text-[0.7rem] text-muted-foreground mt-1">
-          {urlSelectedTime
+          {selectedTime
             ? 'Du har allerede valgt et tidspunkt. Du kan endre valget eller gå videre til oversikt.'
             : 'Velg først en dato, deretter et ledig tidspunkt for avtalen din'}
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Date selection - compact scrollable */}
         <div className="lg:col-span-1 border border-border bg-background p-3 space-y-3">
           <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Velg dato</span>
           <div className="space-y-1 max-h-[500px] overflow-y-auto">
             {schedules.map((schedule) => {
-              const isSelected = selectedDate === schedule.date;
-              const availableSlots = schedule.timeSlots.length;
               const { day, date, month } = formatCompactDate(schedule.date);
+              const isSelected = selectedDate === schedule.date;
 
               return (
                 <button
                   key={schedule.date}
                   type="button"
-                  onClick={() => setSelectedDate(schedule.date)}
+                  onClick={() => handleDateSelect(schedule.date)}
                   className={`w-full border text-left px-2.5 py-2 rounded-none ${
                     isSelected
                       ? 'border-primary bg-primary text-primary-foreground'
@@ -208,7 +152,7 @@ export default function AppointmentsSelectTime() {
                         {date}. {month}
                       </span>
                     </div>
-                    <span className="text-[0.7rem] text-muted-foreground">{availableSlots}</span>
+                    <span className="text-[0.7rem] text-muted-foreground">{schedule.timeSlots.length}</span>
                   </div>
                 </button>
               );
@@ -222,13 +166,10 @@ export default function AppointmentsSelectTime() {
           </div>
         </div>
 
-        {/* Time slot selection - scrollable */}
         <div className="lg:col-span-2 border border-border bg-background p-3 sm:p-4 space-y-3">
           {!selectedDate ? (
             <div className="flex items-center justify-center h-full min-h-[300px]">
-              <div className="text-center space-y-2">
-                <p className="text-sm text-muted-foreground">Velg en dato for å se ledige tidspunkt</p>
-              </div>
+              <p className="text-sm text-muted-foreground">Velg en dato for å se ledige tidspunkt</p>
             </div>
           ) : (
             <>
@@ -241,12 +182,12 @@ export default function AppointmentsSelectTime() {
 
               <div className="max-h-[400px] overflow-y-auto">
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-                  {selectedSchedule?.timeSlots.map((slot, index) => {
-                    const isSelected = urlSelectedTime === slot.startTime;
+                  {selectedSchedule?.timeSlots.map((slot) => {
+                    const isSelected = selectedTime === slot.startTime;
 
                     return (
                       <button
-                        key={`${slot.startTime}-${index}`}
+                        key={slot.startTime}
                         type="button"
                         onClick={() => handleTimeSelect(slot.startTime)}
                         className={`border px-2 py-2 text-sm font-medium rounded-none ${
@@ -255,7 +196,7 @@ export default function AppointmentsSelectTime() {
                             : 'border-border bg-background text-foreground'
                         }`}
                       >
-                        {formatTimeOnly(slot.startTime)}
+                        {formatTime(slot.startTime)}
                       </button>
                     );
                   })}
@@ -266,18 +207,21 @@ export default function AppointmentsSelectTime() {
         </div>
       </div>
 
-      {/* Confirmation section */}
-      {session.selectedStartTime && (
+      {selectedTime && (
         <div className="border border-border bg-background p-3 sm:p-4 space-y-3">
           <div className="space-y-1">
             <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Valgt tid</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-sm font-semibold text-foreground">{formatFullDate(session.selectedStartTime)}</span>
-              <span className="text-sm text-foreground">kl. {formatTimeOnly(session.selectedStartTime)}</span>
+              <span className="text-sm font-semibold text-foreground">{formatFullDate(selectedTime)}</span>
+              <span className="text-sm text-foreground">kl. {formatTime(selectedTime)}</span>
             </div>
           </div>
 
-          <Form method="get" action="/appointments/overview" className="border-t border-border pt-3">
+          <Form
+            method="get"
+            action={ROUTES_MAP['booking.public.appointment.overview'].href}
+            className="border-t border-border pt-3"
+          >
             <button
               type="submit"
               className="w-full border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"

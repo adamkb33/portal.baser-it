@@ -6,6 +6,7 @@ import * as AuthControllerService from './services/AuthControllerService';
 import * as CompanyUserContactControllerService from './services/CompanyUserContactControllerService';
 import * as CompanyUserControllerService from './services/CompanyUserControllerService';
 import * as InternalCompanyControllerService from './services/InternalCompanyControllerService';
+import * as InternalContactControllerService from './services/InternalContactControllerService';
 import * as InternalUserControllerService from './services/InternalUserControllerService';
 import * as PublicCompanyContactControllerService from './services/PublicCompanyContactControllerService';
 import * as PublicCompanyControllerService from './services/PublicCompanyControllerService';
@@ -20,6 +21,7 @@ export type BaseClient = {
   CompanyUserContactControllerService: typeof CompanyUserContactControllerService;
   CompanyUserControllerService: typeof CompanyUserControllerService;
   InternalCompanyControllerService: typeof InternalCompanyControllerService;
+  InternalContactControllerService: typeof InternalContactControllerService;
   InternalUserControllerService: typeof InternalUserControllerService;
   PublicCompanyContactControllerService: typeof PublicCompanyContactControllerService;
   PublicCompanyControllerService: typeof PublicCompanyControllerService;
@@ -38,6 +40,7 @@ export function createBaseClient(opts: { baseUrl: string; token?: string }): Bas
     CompanyUserContactControllerService,
     CompanyUserControllerService,
     InternalCompanyControllerService,
+    InternalContactControllerService,
     InternalUserControllerService,
     PublicCompanyContactControllerService,
     PublicCompanyControllerService,
