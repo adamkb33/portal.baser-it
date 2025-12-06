@@ -14,23 +14,6 @@ import { OpenAPI } from '@http';
 import { request as __request } from '@http';
 export class PublicAppointmentControllerService {
     /**
-     * @returns ApiResponseAppointmentSessionDto OK
-     * @throws ApiError
-     */
-    public static getAppointmentSession({
-        sessionId,
-    }: {
-        sessionId: string,
-    }): CancelablePromise<ApiResponseAppointmentSessionDto> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/public/appointment',
-            query: {
-                'sessionId': sessionId,
-            },
-        });
-    }
-    /**
      * @returns ApiResponseAppointmentDto OK
      * @throws ApiError
      */

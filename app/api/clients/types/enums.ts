@@ -26,6 +26,16 @@ export const DayOfWeek = {
 
 export type DayOfWeek = (typeof DayOfWeek)[keyof typeof DayOfWeek];
 
+export const Id = {
+  ADD_CONTACT: 'ADD_CONTACT',
+  SELECT_SERVICES: 'SELECT_SERVICES',
+  SELECT_PROFILE: 'SELECT_PROFILE',
+  SELECT_START_TIME: 'SELECT_START_TIME',
+  OVERVIEW: 'OVERVIEW',
+} as const;
+
+export type Id = (typeof Id)[keyof typeof Id];
+
 export const Products = {
   BOOKING: 'BOOKING',
   EVENT: 'EVENT',

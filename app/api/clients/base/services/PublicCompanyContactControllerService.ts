@@ -12,7 +12,7 @@ export class PublicCompanyContactControllerService {
      * @returns ApiResponseContactDto OK
      * @throws ApiError
      */
-    public static getOrCreateContact({
+    public static publicGetCreateOrUpdateContact({
         requestBody,
     }: {
         requestBody: GetCreateOrUpdateContactDto,

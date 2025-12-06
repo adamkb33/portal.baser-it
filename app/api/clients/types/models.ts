@@ -1,5 +1,5 @@
 // Models
-import type { CompanyProducts, DayOfWeek, Roles, UserRole } from './enums';
+import type { CompanyProducts, DayOfWeek, Id, Roles, UserRole } from './enums';
 
 export interface AcceptNewInviteDto {
     givenName: string;
@@ -47,6 +47,7 @@ export interface AppointmentSessionDto {
     selectedServices?: number[];
     selectedProfileId?: number;
     selectedStartTime?: string;
+    steps?: AppointmentSessionStepDto[];
 }
 
 export interface AppointmentSessionOverviewDto {
@@ -61,6 +62,13 @@ export interface AppointmentSessionOverviewDto {
 export interface AppointmentSessionSelectedServicesDto {
     serviceGroup: ServiceGroupDto;
     services: ServiceDto;
+}
+
+export interface AppointmentSessionStepDto {
+    id: Id;
+    order: number;
+    name: string;
+    isComplete: boolean;
 }
 
 export interface AuthenticatedUserPayload {
