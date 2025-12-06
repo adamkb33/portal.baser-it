@@ -5,6 +5,7 @@ const mobileNumberValidator = z.string().length(8, 'Mobilnummer må være 8 siff
 
 export const getOrCreateContactSchema = z
   .object({
+    id: z.number().optional(),
     companyId: z.number(),
     givenName: z.string().min(1, 'Fornavn er påkrevd'),
     familyName: z.string().min(1, 'Etternavn er påkrevd'),

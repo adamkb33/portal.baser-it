@@ -206,7 +206,8 @@ export interface GetContactsByIdsDto {
     contactIds: number[];
 }
 
-export interface GetOrCreateContactDto {
+export interface GetCreateOrUpdateContactDto {
+    id?: number;
     companyId: number;
     givenName: string;
     familyName: string;

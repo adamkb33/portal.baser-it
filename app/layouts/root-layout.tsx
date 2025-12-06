@@ -21,7 +21,7 @@ export function RootLayout({ children, routeTree, companyContext }: RootLayoutPr
           </div>
         </header>
 
-        <main role="main" className="flex-1">
+        <main role="main" className="flex-1 bg-muted">
           <div className="flex h-full flex-col gap-4 px-4 py-6">
             <div className="w-full flex-1">{children}</div>
             <Toaster />

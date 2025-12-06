@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ApiResponseContactDto } from '@types';
-import type { GetOrCreateContactDto } from '@types';
+import type { GetCreateOrUpdateContactDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
@@ -15,7 +15,7 @@ export class PublicCompanyContactControllerService {
     public static getOrCreateContact({
         requestBody,
     }: {
-        requestBody: GetOrCreateContactDto,
+        requestBody: GetCreateOrUpdateContactDto,
     }): CancelablePromise<ApiResponseContactDto> {
         return __request(OpenAPI, {
             method: 'POST',

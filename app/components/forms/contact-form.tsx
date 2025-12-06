@@ -14,24 +14,13 @@ import {
 
 export interface GetOrCreateContactFetcherFormProps {
   companyId: number;
-  /** Called with parsed Zod data after submit succeeds (HTTP 2xx). */
   onSuccess?: (values: GetOrCreateContactSchema) => void;
-  /** Optional callback whenever any field changes. */
   onChange?: () => void;
-  /** Optional initial values (e.g. from loader). */
   initialValues?: Partial<GetOrCreateContactSchema>;
-  /** Optional action URL (defaults to current route). */
   action?: string;
-  /** Optional HTTP method (defaults to "post"). */
   method?: 'post' | 'put' | 'patch';
 }
 
-/**
- * Brutalist-themed contact form using:
- * - zod + react-hook-form for validation
- * - shadcn Form / Input / Button
- * - React Router v7 useFetcher for submission
- */
 export function GetOrCreateContactFetcherForm({
   companyId,
   onSuccess,
@@ -40,6 +29,7 @@ export function GetOrCreateContactFetcherForm({
   action,
   method = 'post',
 }: GetOrCreateContactFetcherFormProps) {
+  console.log(initialValues);
   const fetcher = useFetcher({ key: 'appointment-contact-form-fetcher' });
 
   const form = useForm<GetOrCreateContactSchema>({
@@ -55,19 +45,6 @@ export function GetOrCreateContactFetcherForm({
   });
 
   React.useEffect(() => {
-    if (!initialValues) return;
-
-    form.reset({
-      companyId,
-      givenName: initialValues.givenName ?? '',
-      familyName: initialValues.familyName ?? '',
-      email: initialValues.email ?? '',
-      mobileNumber: initialValues.mobileNumber ?? '',
-    });
-  }, [initialValues, form, companyId]);
-
-  // Notify parent when any field changes
-  React.useEffect(() => {
     if (!onChange) return;
 
     const subscription = form.watch(() => {
@@ -80,8 +57,8 @@ export function GetOrCreateContactFetcherForm({
   const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
 
   const handleSubmit = form.handleSubmit((values) => {
-    // Submit via fetcher as FormData to hit the route action
     const formData = new FormData();
+    formData.set('id', String(values.id));
     formData.set('companyId', String(values.companyId));
     formData.set('givenName', values.givenName);
     formData.set('familyName', values.familyName);
@@ -101,12 +78,11 @@ export function GetOrCreateContactFetcherForm({
       <fetcher.Form
         method={method}
         action={action}
-        // brutalist layout: vertical stack, tight gaps
         className="flex flex-col gap-3 bg-white"
         onSubmit={handleSubmit}
         noValidate
       >
-        {/* Hidden company id (still submitted for progressive enhancement) */}
+        {initialValues && initialValues.id && <input type="hidden" name="id" value={initialValues.id} />}
         <input type="hidden" name="companyId" value={companyId} />
 
         <div className="flex flex-col gap-3 sm:flex-row">
