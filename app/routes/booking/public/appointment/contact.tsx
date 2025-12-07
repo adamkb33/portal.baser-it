@@ -1,4 +1,3 @@
-import { id } from 'date-fns/locale';
 import { data, redirect, useLoaderData, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import type { ContactDto } from 'tmp/openapi/gen/base';
 import type { ApiClientError } from '~/api/clients/http';
