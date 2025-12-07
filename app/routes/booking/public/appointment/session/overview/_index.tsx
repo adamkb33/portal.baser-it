@@ -6,7 +6,7 @@ import { type ActionFunctionArgs } from 'react-router';
 import type { AppointmentSessionOverviewDto } from 'tmp/openapi/gen/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 
-type AppointmentsOverviewLoaderData = {
+type BookingPublicAppointmentSessionOverviewRouteLoaderData = {
   sessionOverview: AppointmentSessionOverviewDto;
 };
 
@@ -29,7 +29,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
-    return data<AppointmentsOverviewLoaderData>({
+    return data<BookingPublicAppointmentSessionOverviewRouteLoaderData>({
       sessionOverview: response.data,
     });
   } catch (error: any) {
@@ -90,8 +90,8 @@ function formatNorwegianDateTime(dateTimeString: string): string {
   return `${dayName} ${day}. ${month} ${year} kl. ${hours}`;
 }
 
-export default function AppointmentsOverview() {
-  const { sessionOverview } = useLoaderData<AppointmentsOverviewLoaderData>();
+export default function BookingPublicAppointmentSessionOverviewRoute() {
+  const { sessionOverview } = useLoaderData<BookingPublicAppointmentSessionOverviewRouteLoaderData>();
 
   const totalDuration = sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.duration, 0);
   const totalPrice = sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.price, 0);

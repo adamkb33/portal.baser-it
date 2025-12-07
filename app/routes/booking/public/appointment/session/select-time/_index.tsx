@@ -85,7 +85,7 @@ function findScheduleWithTime(schedules: ScheduleDto[], startTime: string): stri
   return null;
 }
 
-export default function AppointmentsSelectTime() {
+export default function BookingPublicAppointmentSessionSelectTimeRoute() {
   const { schedules, session } = useLoaderData<AppointmentsSelectTimeLoaderData>();
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();

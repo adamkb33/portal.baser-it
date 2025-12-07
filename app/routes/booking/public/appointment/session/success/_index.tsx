@@ -5,7 +5,7 @@ import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 import { baseApi, bookingApi } from '~/lib/utils';
 import type { ApiClientError } from '~/api/clients/http';
 
-export type AppointmentsSuccessLoaderData = {
+export type BookingPublicAppointmentSessionSuccessRouteLoaderData = {
   companySummary: CompanySummaryDto;
 };
 
@@ -30,7 +30,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       throw Error('Selskap ikke funnet');
     }
 
-    return data<AppointmentsSuccessLoaderData>({
+    return data<BookingPublicAppointmentSessionSuccessRouteLoaderData>({
       companySummary: companyResponse.data,
     });
   } catch (error: any) {
@@ -43,8 +43,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
-export default function AppointmentsSuccess() {
-  const { companySummary } = useLoaderData<AppointmentsSuccessLoaderData>();
+export default function BookingPublicAppointmentSessionSuccessRoute() {
+  const { companySummary } = useLoaderData<BookingPublicAppointmentSessionSuccessRouteLoaderData>();
 
   const formatAddress = () => {
     const address = companySummary.businessAddress;
@@ -75,7 +75,6 @@ export default function AppointmentsSuccess() {
 
   return (
     <div className="w-full border border-border bg-background p-4 sm:p-5 space-y-5">
-      {/* Success confirmation */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <div className="border border-border bg-foreground p-2">
@@ -90,7 +89,6 @@ export default function AppointmentsSuccess() {
         </p>
       </div>
 
-      {/* Company info */}
       <div className="border-t border-border pt-4 space-y-3">
         <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Møtested</span>
         <div className="space-y-2">
@@ -99,7 +97,6 @@ export default function AppointmentsSuccess() {
         </div>
       </div>
 
-      {/* Address and map link */}
       {companySummary.businessAddress && (
         <div className="border-t border-border pt-4 space-y-3">
           <div className="border border-border bg-muted p-3 sm:p-4 space-y-3">

@@ -74,7 +74,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-export default function AppointmentsSelectServices() {
+export default function BookingPublicAppointmentSessionSelectServicesRoute() {
   const { serviceGroups, session } = useLoaderData<AppointmentsSelectServicesLoaderData>();
   const [selectedServices, setSelectedServices] = useState<Set<number>>(new Set());
   const [dialogService, setDialogService] = useState<GroupedServiceDto | null>(null);
