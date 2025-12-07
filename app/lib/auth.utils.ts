@@ -1,6 +1,6 @@
 import type { AuthenticatedUserPayload } from 'tmp/openapi/gen/base';
-import { accessTokenCookie } from '~/features/auth/api/cookies.server';
-import { toAuthPayload } from '~/features/auth/token/token-payload';
+import { accessTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
+import { toAuthPayload } from '~/routes/auth/_utils/token-payload';
 
 export type CompanyContextSession = {
   companyId: number;

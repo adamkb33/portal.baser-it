@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { tokenValidator, passwordValidator } from '~/lib/form-validators';
 
-export const resetPasswordSchema = z
+export const resetPasswordFormSchema = z
   .object({
     resetPasswordToken: tokenValidator,
     password: passwordValidator,
@@ -17,4 +17,4 @@ export const resetPasswordSchema = z
     }
   });
 
-export type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
+export type ResetPasswordFormSchema = z.infer<typeof resetPasswordFormSchema>;

@@ -1,4 +1,4 @@
-import { decodeBase64Url } from './token-payload';
+import { decodeBase64Url } from '../../_utils/token-payload';
 
 type ResetPasswordTokenClaims = {
   email?: string;

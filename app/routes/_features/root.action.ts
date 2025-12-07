@@ -1,14 +1,14 @@
 import { redirect, type LoaderFunctionArgs } from 'react-router';
-import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
+import { accessTokenCookie, refreshTokenCookie } from '../auth/_features/auth.cookies.server';
 import { createNavigation, type UserNavigation } from '~/lib/route-tree';
-import { toAuthTokens } from '../token/token-utils';
 import { AuthControllerService, createBaseClient, UserRole, type AuthenticatedUserPayload } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
 import { OpenAPI } from '~/api/clients/http';
-import { toAuthPayload, toJwtClaims } from '../token/token-payload';
+import { toAuthPayload, toJwtClaims } from '../auth/_utils/token-payload';
 import { data } from 'react-router';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
+import { toAuthTokens } from '../auth/_utils/token.utils';
 
 export type RootLoaderLoaderData = {
   user?: AuthenticatedUserPayload | null;
@@ -55,7 +55,7 @@ const isTokenExpired = (accessToken: string): boolean => {
 
     const expiresAt = jwt.exp * 1000;
     const now = Date.now();
-    const bufferMs = 5 * 60 * 1000; // 5 minutes buffer
+    const bufferMs = 5 * 60 * 1000;
     return expiresAt <= now + bufferMs;
   } catch (err) {
     console.error('[isTokenExpired] Failed to parse token:', err);

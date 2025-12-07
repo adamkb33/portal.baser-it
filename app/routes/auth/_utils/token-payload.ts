@@ -10,13 +10,10 @@ export const toJwtClaims = (accessToken: string): JwtClaims => {
 
   const payload = parts[1];
 
-  // Decode base64url to base64
   const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
 
-  // Decode base64 to JSON string
   const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
 
-  // Parse and return claims
   const claims = JSON.parse(jsonPayload) as JwtClaims;
 
   return claims;

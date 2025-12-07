@@ -2,12 +2,12 @@ import * as React from 'react';
 import { useFetcher, Link } from 'react-router';
 
 import { SignInForm } from '~/components/forms/sign-in.form';
-import { type SignInSchema } from '~/features/auth/schemas/sign-in.schema';
+import { type SignInFormSchema } from '~/routes/auth/sign-in/_schemas/sign-in.form.schema';
 
-import { signIn } from '@/features/auth/api/sign-in.server';
+import { AuthSignInAction } from '~/routes/auth/sign-in/_features/auth.sign-in.action';
 import { ROUTES_MAP } from '~/lib/route-tree';
 
-export const action = signIn;
+export const action = AuthSignInAction;
 
 export default function AuthSignIn() {
   const fetcher = useFetcher({ key: 'sign-in' });
@@ -15,7 +15,7 @@ export default function AuthSignIn() {
   const actionData = fetcher.data;
 
   const handleSubmit = React.useCallback(
-    (values: SignInSchema) => {
+    (values: SignInFormSchema) => {
       const payload = new FormData();
       payload.set('email', values.email);
       payload.set('password', values.password);

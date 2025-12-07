@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { signInSchema, type SignInSchema } from '~/features/auth/schemas/sign-in.schema';
+import { signInFormSchema, type SignInFormSchema } from '~/routes/auth/sign-in/_schemas/sign-in.form.schema';
 import {
   forgotPasswordSchema,
   type ForgotPasswordSchema,
@@ -59,5 +59,5 @@ export function ForgotPasswordForm({ onSubmit, isSubmitting = false, initialValu
   );
 }
 
-export { signInSchema };
-export type { SignInSchema as SignInInput };
+export { signInFormSchema as signInSchema };
+export type { SignInFormSchema as SignInInput };

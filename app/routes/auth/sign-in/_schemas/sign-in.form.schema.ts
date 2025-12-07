@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { emailValidator, passwordValidator } from '~/lib/form-validators';
 
-export const signInSchema = z.object({
+export const signInFormSchema = z.object({
   email: emailValidator,
   password: passwordValidator,
 });
 
-export type SignInSchema = z.infer<typeof signInSchema>;
+export type SignInFormSchema = z.infer<typeof signInFormSchema>;

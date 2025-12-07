@@ -1,18 +1,17 @@
-import { AuthControllerService } from '~/api/clients/base';
 import { OpenAPI } from '~/api/clients/base/OpenAPI';
 import { ENV } from '~/api/config/env';
-import { type SignInSchema } from '../schemas/sign-in.schema';
-import { toAuthTokens } from '../token/token-utils';
+import { type SignInFormSchema } from '../_schemas/sign-in.form.schema';
 import type { ApiClientError } from '~/api/clients/http';
-import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
+import { accessTokenCookie, refreshTokenCookie } from '../../_features/auth.cookies.server';
 import { redirect, type ActionFunctionArgs } from 'react-router';
 import { baseApi } from '~/lib/utils';
+import { toAuthTokens } from '../../_utils/token.utils';
 
-export async function signIn({ request }: ActionFunctionArgs) {
+export async function AuthSignInAction({ request }: ActionFunctionArgs) {
   OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
 
   const formData = await request.formData();
-  const payload = Object.fromEntries(formData) as unknown as SignInSchema;
+  const payload = Object.fromEntries(formData) as unknown as SignInFormSchema;
 
   try {
     const response = await baseApi().AuthControllerService.AuthControllerService.signIn({

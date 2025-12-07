@@ -5,14 +5,17 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { resetPasswordSchema, type ResetPasswordSchema } from '~/features/auth/schemas/reset-password.schema';
+import {
+  resetPasswordFormSchema,
+  type ResetPasswordFormSchema,
+} from '~/routes/auth/reset-password/_schemas/reset-password.form.schema';
 
 export interface ResetPasswordFormProps {
   email: string;
   resetPasswordToken: string;
-  onSubmit: (values: ResetPasswordSchema) => void;
+  onSubmit: (values: ResetPasswordFormSchema) => void;
   isSubmitting?: boolean;
-  initialValues?: Partial<ResetPasswordSchema>;
+  initialValues?: Partial<ResetPasswordFormSchema>;
 }
 
 export function ResetPasswordForm({
@@ -22,8 +25,8 @@ export function ResetPasswordForm({
   isSubmitting = false,
   initialValues,
 }: ResetPasswordFormProps) {
-  const form = useForm<ResetPasswordSchema>({
-    resolver: zodResolver(resetPasswordSchema),
+  const form = useForm<ResetPasswordFormSchema>({
+    resolver: zodResolver(resetPasswordFormSchema),
     defaultValues: {
       resetPasswordToken,
       password: '',

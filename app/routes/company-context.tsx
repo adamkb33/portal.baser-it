@@ -3,7 +3,7 @@ import { createBaseClient, type CompanySummaryDto } from '~/api/clients/base';
 import { type ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { CompanyCard } from '~/components/cards/company-summary.card';
-import { accessTokenCookie, refreshTokenCookie } from '~/features/auth/api/cookies.server';
+import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { getAccessToken } from '~/lib/auth.utils';
 
 export type LoaderResponse = {

@@ -2,8 +2,8 @@ import { Link, redirect, useFetcher, type LoaderFunctionArgs } from 'react-route
 import { ApiClientError, OpenAPI } from '~/api/clients/http';
 import { AuthControllerService } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
-import { accessTokenCookie, refreshTokenCookie } from '~/features/auth/api/cookies.server';
-import { toAuthPayload } from '~/features/auth/token/token-payload';
+import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
+import { toAuthPayload } from '~/routes/auth/_utils/token-payload';
 
 interface ActionData {
   success?: boolean;
@@ -51,7 +51,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
-export default function AuthSignOut() {
+export default function AuthSignOutRoute() {
   const fetcher = useFetcher<ActionData>();
 
   const isProcessing = fetcher.state !== 'idle';

@@ -2,14 +2,14 @@ import * as React from 'react';
 import { Link, redirect, useFetcher, useLoaderData } from 'react-router';
 
 import { ResetPasswordForm } from '~/components/forms/reset-password.form';
-import type { ResetPasswordSchema } from '~/features/auth/schemas/reset-password.schema';
-import { decodeResetPasswordToken } from '~/features/auth/token/reset-password-token';
-import type { Route } from '../+types/home';
+import type { ResetPasswordFormSchema } from '~/routes/auth/reset-password/_schemas/reset-password.form.schema';
+import { decodeResetPasswordToken } from '~/routes/auth/reset-password/_utils/auth.reset-password.utils';
+import type { Route } from '../../+types/home';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { AuthControllerService } from '~/api/clients/base';
 import type { ApiClientError } from '~/api/clients/http';
-import { accessTokenCookie, refreshTokenCookie } from '~/features/auth/api/cookies.server';
-import { toAuthTokens } from '~/features/auth/token/token-utils';
+import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
+import { toAuthTokens } from '../_utils/token.utils';
 
 interface LoaderData {
   resetPasswordToken: string;
@@ -72,7 +72,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function AuthResetPassword() {
+export default function AuthResetPasswordRoute() {
   const { resetPasswordToken, email } = useLoaderData<LoaderData>();
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state !== 'idle';
@@ -80,7 +80,7 @@ export default function AuthResetPassword() {
   const tokenInvalid = Boolean(actionData?.tokenInvalid);
 
   const handleSubmit = React.useCallback(
-    (values: ResetPasswordSchema) => {
+    (values: ResetPasswordFormSchema) => {
       const payload = new FormData();
       payload.set('resetPasswordToken', resetPasswordToken);
       payload.set('password', values.password);
