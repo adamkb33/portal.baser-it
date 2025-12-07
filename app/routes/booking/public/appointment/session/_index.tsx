@@ -2,7 +2,7 @@ import { data, redirect } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 import type { AppointmentSessionDto } from 'tmp/openapi/gen/booking';
 import type { ApiClientError } from '~/api/clients/http';
-import { createAppointmentSession } from '~/lib/appointments.server';
+import { createAppointmentSession, getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { bookingApi } from '~/lib/utils';
 
@@ -29,7 +29,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
         },
       });
     } else {
-      return data<AppointmentsLayoutLoaderData>({});
+      const session = await getSession(request);
+
+      if (session) {
+        await bookingApi().AppointmentsControllerService.AppointmentsControllerService.validateCompanyBooking({
+          companyId: session.companyId,
+        });
+
+        return redirect(ROUTES_MAP['booking.public.appointment.session.contact'].href);
+      }
+
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
@@ -43,5 +53,5 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function BookingPublicAppointmentSessionRoute() {
-  return <div>_index</div>;
+  return <div>BookingPublicAppointmentSessionRoute</div>;
 }

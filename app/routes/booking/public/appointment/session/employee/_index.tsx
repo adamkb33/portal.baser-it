@@ -1,4 +1,4 @@
-import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData } from 'react-router';
+import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData, Link } from 'react-router';
 import type { BookingProfileDto } from 'tmp/openapi/gen/booking';
 import type { ApiClientError } from '~/api/clients/http';
 import type { AppointmentSessionDto } from '~/api/clients/types';
@@ -6,6 +6,7 @@ import { getSession } from '~/lib/appointments.server';
 import { bookingApi } from '~/lib/utils';
 import { type ActionFunctionArgs } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import { Button } from '~/components/ui/button';
 
 export type AppointmentsEmployeeLoaderData = {
   session: AppointmentSessionDto;
@@ -49,7 +50,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const session = await getSession(request);
 
     if (!session) {
-      return ROUTES_MAP['booking.public.appointment.contact'].href;
+      return ROUTES_MAP['booking.public.appointment'].href;
     }
 
     const formData = await request.formData();
@@ -142,20 +143,21 @@ export default function AppointmentsEmployee() {
               )}
 
               <div className="border-t border-border pt-4">
-                <Form method="post">
-                  <input type="hidden" name="selectedProfileId" value={profile.id} />
-                  <button
-                    type="submit"
-                    className={`w-full border px-3 py-2 text-xs font-medium rounded-none ${
-                      isSelected
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-foreground text-background'
-                    }`}
-                  >
-                    {isSelected ? 'Fortsett med ' : 'Velg '}
-                    {profile.givenName}
-                  </button>
-                </Form>
+                {isSelected ? (
+                  <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>
+                    <Button variant="primary" className="w-full" type="submit">
+                      Fortsett med {profile.givenName}
+                    </Button>
+                  </Link>
+                ) : (
+                  <Form method="post">
+                    <input type="hidden" name="selectedProfileId" value={profile.id} />
+                    <Button type="submit">
+                      {isSelected ? 'Fortsett med ' : 'Velg '}
+                      {profile.givenName}
+                    </Button>
+                  </Form>
+                )}
               </div>
             </div>
           );
