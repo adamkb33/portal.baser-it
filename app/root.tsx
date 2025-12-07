@@ -10,12 +10,12 @@ import {
   useLoaderData,
 } from 'react-router';
 
-import type { Route } from './+types/root';
 import './app.css';
 import { RootLayout } from './layouts/root-layout';
-import { rootLoader, type RootLoaderLoaderData } from './routes/_features/root.action';
+import { rootLoader, type RootLoaderLoaderData } from './routes/_features/root.loader';
 import type { RouteBranch, UserNavigation } from './lib/route-tree';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
+import type { Route } from './routes/+types/home';
 
 export const loader = rootLoader;
 
