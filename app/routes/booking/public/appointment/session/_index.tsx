@@ -1,4 +1,4 @@
-import { data, redirect } from 'react-router';
+import { redirect } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 import type { AppointmentSessionDto } from 'tmp/openapi/gen/booking';
 import type { ApiClientError } from '~/api/clients/http';

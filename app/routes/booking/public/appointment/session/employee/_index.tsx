@@ -1,7 +1,7 @@
 import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData, Link } from 'react-router';
 import type { BookingProfileDto } from 'tmp/openapi/gen/booking';
 import type { ApiClientError } from '~/api/clients/http';
-import type { AppointmentSessionDto } from '~/api/clients/types';
+import { AppointmentSessionStepId, type AppointmentSessionDto } from '~/api/clients/types';
 import { getSession } from '~/lib/appointments.server';
 import { bookingApi } from '~/lib/utils';
 import { type ActionFunctionArgs } from 'react-router';
@@ -22,6 +22,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
+
+    if (
+      !session.steps?.some((step) => step.appointmentSessionStepId === AppointmentSessionStepId.SELECT_PROFILE) &&
+      session.selectedProfileId
+    ) {
+      return redirect(ROUTES_MAP['booking.public.appointment.session.select-services'].href);
+    }
+
     const profilesResponse =
       await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.getAppointmentSessionProfiles(
         {

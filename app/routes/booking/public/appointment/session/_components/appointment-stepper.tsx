@@ -51,7 +51,7 @@ export function AppointmentStepper({ session }: { session: AppointmentSessionDto
             const isLast = index === steps.length - 1;
 
             return (
-              <div key={step.id} className="flex items-center">
+              <div key={step.appointmentSessionStepId} className="flex items-center">
                 <div
                   className={cn(
                     'flex items-center gap-2 border border-border px-3 py-2',

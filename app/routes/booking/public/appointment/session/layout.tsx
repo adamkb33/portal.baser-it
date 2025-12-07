@@ -11,7 +11,7 @@ export type BookingPublicAppointmentSessionLayoutLoaderData = {
   error?: string;
 };
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const session = await getSession(request);
     return data<BookingPublicAppointmentSessionLayoutLoaderData>({ session });
@@ -42,7 +42,7 @@ export default function BookingPublicAppointmentSessionLayout() {
     <div className="flex flex-col gap-6">
       {data.session && <AppointmentStepper session={data.session} />}
 
-      <main className="bg-background shadow-[8px_8px_0px_0px_rgb(120,40,180)]">
+      <main className="shadow-[8px_8px_0px_0px_rgb(120,40,180)]">
         <Outlet />
       </main>
     </div>

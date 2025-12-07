@@ -132,114 +132,105 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
   return (
     <>
       <div className="space-y-5">
-        <div className="border-b border-border pb-4">
-          <h1 className="text-base font-semibold text-foreground">Velg tjenester</h1>
-          <p className="text-[0.7rem] text-muted-foreground mt-1">Velg én eller flere tjenester.</p>
-        </div>
-
-        <div className="space-y-5">
-          {serviceGroups
-            .filter((group) => group.services.length > 0)
-            .map((group) => (
-              <div key={group.id} className="border border-border bg-background p-4 sm:p-5 space-y-4">
-                <div className="border-b border-border pb-3">
-                  <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                    {group.name}
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {group.services.map((service) => {
-                    const isSelected = selectedServices.has(service.id);
-                    const hasImages = service.images && service.images.length > 0;
-
-                    return (
-                      <div key={service.id} className="border border-border bg-background p-4 space-y-3">
-                        <div className="space-y-1">
-                          <h3 className="text-sm font-semibold text-foreground">{service.name}</h3>
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-sm font-medium text-foreground">{service.price} kr</span>
-                            <span className="text-xs text-muted-foreground">{service.duration} min</span>
-                          </div>
-                        </div>
-
-                        {hasImages && (
-                          <button
-                            type="button"
-                            onClick={() => setDialogService(service)}
-                            className="px-0 text-[0.7rem] font-medium text-muted-foreground underline-offset-2 hover:underline"
-                          >
-                            Vis bilder
-                          </button>
-                        )}
-
-                        <div className="pt-2">
-                          <button
-                            type="button"
-                            onClick={() => toggleService(service.id)}
-                            className={`w-full border border-border px-3 py-2 text-xs font-medium rounded-none ${
-                              isSelected ? 'bg-background text-foreground' : 'bg-foreground text-background'
-                            }`}
-                          >
-                            {isSelected ? 'Fjern' : 'Legg til'}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+        {serviceGroups
+          .filter((group) => group.services.length > 0)
+          .map((group) => (
+            <div key={group.id} className="border border-border bg-background p-4 sm:p-5 space-y-4">
+              <div className="border-b border-border pb-3">
+                <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{group.name}</h2>
               </div>
-            ))}
-        </div>
 
-        {hasSelections && (
-          <div className="border border-border bg-background p-4 sm:p-5 space-y-4">
-            <div className="space-y-2">
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                Valgte tjenester
-              </span>
-              <div className="space-y-2">
-                {Array.from(selectedServices).map((serviceId) => {
-                  const service = findService(serviceId);
-                  if (!service) return null;
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {group.services.map((service) => {
+                  const isSelected = selectedServices.has(service.id);
+                  const hasImages = service.images && service.images.length > 0;
 
                   return (
-                    <div key={serviceId} className="flex items-center justify-between gap-3">
-                      <span className="text-sm text-foreground">{service.name}</span>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xs text-muted-foreground">{service.duration} min</span>
-                        <span className="text-sm font-medium text-foreground">{service.price} kr</span>
+                    <div key={service.id} className="border border-border bg-background p-4 space-y-3">
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-semibold text-foreground">{service.name}</h3>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-sm font-medium text-foreground">{service.price} kr</span>
+                          <span className="text-xs text-muted-foreground">{service.duration} min</span>
+                        </div>
+                      </div>
+
+                      {hasImages && (
+                        <button
+                          type="button"
+                          onClick={() => setDialogService(service)}
+                          className="px-0 text-[0.7rem] font-medium text-muted-foreground underline-offset-2 hover:underline"
+                        >
+                          Vis bilder
+                        </button>
+                      )}
+
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleService(service.id)}
+                          className={`w-full border border-border px-3 py-2 text-xs font-medium rounded-none ${
+                            isSelected ? 'bg-background text-foreground' : 'bg-foreground text-background'
+                          }`}
+                        >
+                          {isSelected ? 'Fjern' : 'Legg til'}
+                        </button>
                       </div>
                     </div>
                   );
                 })}
               </div>
             </div>
+          ))}
+      </div>
 
-            <div className="border-t border-border pt-4">
-              <div className="flex items-baseline justify-between">
-                <span className="text-sm font-semibold text-foreground">Totalt</span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xs text-muted-foreground">{getTotalDuration()} min</span>
-                  <span className="text-base font-semibold text-foreground">{getTotalPrice()} kr</span>
-                </div>
+      {hasSelections && (
+        <div className="border border-border bg-background p-4 sm:p-5 space-y-4">
+          <div className="space-y-2">
+            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+              Valgte tjenester
+            </span>
+            <div className="space-y-2">
+              {Array.from(selectedServices).map((serviceId) => {
+                const service = findService(serviceId);
+                if (!service) return null;
+
+                return (
+                  <div key={serviceId} className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-foreground">{service.name}</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xs text-muted-foreground">{service.duration} min</span>
+                      <span className="text-sm font-medium text-foreground">{service.price} kr</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm font-semibold text-foreground">Totalt</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs text-muted-foreground">{getTotalDuration()} min</span>
+                <span className="text-base font-semibold text-foreground">{getTotalPrice()} kr</span>
               </div>
             </div>
-
-            <Form method="post" className="border-t border-border pt-4">
-              {Array.from(selectedServices).map((serviceId) => (
-                <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
-              ))}
-              <button
-                type="submit"
-                className="w-full border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"
-              >
-                Fortsett til tidspunkt
-              </button>
-            </Form>
           </div>
-        )}
-      </div>
+
+          <Form method="post" className="border-t border-border pt-4">
+            {Array.from(selectedServices).map((serviceId) => (
+              <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
+            ))}
+            <button
+              type="submit"
+              className="w-full border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"
+            >
+              Fortsett til tidspunkt
+            </button>
+          </Form>
+        </div>
+      )}
 
       <Dialog open={dialogService !== null} onOpenChange={(open) => !open && setDialogService(null)}>
         <DialogContent className="max-w-3xl rounded-none border border-border bg-background px-4 py-5 sm:px-6 sm:py-6">

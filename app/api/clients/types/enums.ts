@@ -1,4 +1,14 @@
 // Enums
+export const AppointmentSessionStepId = {
+  ADD_CONTACT: 'ADD_CONTACT',
+  SELECT_SERVICES: 'SELECT_SERVICES',
+  SELECT_PROFILE: 'SELECT_PROFILE',
+  SELECT_START_TIME: 'SELECT_START_TIME',
+  OVERVIEW: 'OVERVIEW',
+} as const;
+
+export type AppointmentSessionStepId = (typeof AppointmentSessionStepId)[keyof typeof AppointmentSessionStepId];
+
 export const CompanyProducts = {
   BOOKING: 'BOOKING',
   EVENT: 'EVENT',
@@ -25,16 +35,6 @@ export const DayOfWeek = {
 } as const;
 
 export type DayOfWeek = (typeof DayOfWeek)[keyof typeof DayOfWeek];
-
-export const Id = {
-  ADD_CONTACT: 'ADD_CONTACT',
-  SELECT_SERVICES: 'SELECT_SERVICES',
-  SELECT_PROFILE: 'SELECT_PROFILE',
-  SELECT_START_TIME: 'SELECT_START_TIME',
-  OVERVIEW: 'OVERVIEW',
-} as const;
-
-export type Id = (typeof Id)[keyof typeof Id];
 
 export const Products = {
   BOOKING: 'BOOKING',
