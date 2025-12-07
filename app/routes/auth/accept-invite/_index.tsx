@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Link, redirect, useFetcher, useLoaderData, type LoaderFunctionArgs } from 'react-router';
 
-import { AcceptInviteForm } from '~/components/forms/accept-invite.form';
+import { AcceptInviteForm } from '~/routes/auth/accept-invite/forms/accept-invite.form';
 import { authAcceptInviteAction } from './features/auth.accept-invite.action';
-import type { AcceptInviteSchema } from './schemas/accept-invite-form.schema';
+import type { AcceptInviteSchema } from './schemas/accept-invite.form.schema';
 
 interface LoaderData {
   inviteToken: string;

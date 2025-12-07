@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { signInSchema, type SignInSchema } from '~/features/auth/schemas/sign-in.schema';
-import { forgotPasswordSchema, type ForgotPasswordSchema } from '~/features/auth/schemas/forgot-password.schema';
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordSchema,
+} from '~/routes/auth/forgot-password/schemas/forgot-password-form.schema';
 
 export interface ForgotPasswordFormProps {
   onSubmit: (values: ForgotPasswordSchema) => void;

@@ -3,9 +3,9 @@ import { ENV } from '~/api/config/env';
 import type { ApiClientError } from '~/api/clients/http';
 import { redirect, type ActionFunctionArgs } from 'react-router';
 import { baseApi } from '~/lib/utils';
-import type { AcceptInviteSchema } from '../schemas/accept-invite-form.schema';
-import { toAuthTokens } from '../../utils/token.utils';
-import { accessTokenCookie, refreshTokenCookie } from '../../features/auth.cookies.server';
+import type { AcceptInviteSchema } from '../schemas/accept-invite.form.schema';
+import { toAuthTokens } from '../../_utils/token.utils';
+import { accessTokenCookie, refreshTokenCookie } from '../../_features/auth.cookies.server';
 
 export async function authAcceptInviteAction({ request }: ActionFunctionArgs) {
   OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;

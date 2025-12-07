@@ -1,4 +1,4 @@
-import { type AuthTokens } from './types';
+import type { AuthTokens } from '../_types/auth.types';
 
 export function toAuthTokens(dto: {
   accessToken: string;
