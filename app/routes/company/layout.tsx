@@ -1,10 +1,10 @@
 import { Outlet, useLoaderData, useOutletContext } from 'react-router';
 import type { RootOutletContext } from '~/root';
 
-import { getLayoutloader, type GetLayoutloaderData } from '~/features/company/get-layout';
+import { companyLoader, type GetLayoutloaderData } from '~/routes/company/_features/company.loader';
 import { CompanyRootLayout } from '~/layouts/company-root-layout';
 
-export const loader = getLayoutloader;
+export const loader = companyLoader;
 
 export default function CompanyLayout() {
   const data = useLoaderData<GetLayoutloaderData>();

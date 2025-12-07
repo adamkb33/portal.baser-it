@@ -4,7 +4,7 @@ import { ROUTE_TREE, Access, type RouteBranch } from '~/lib/route-tree';
 
 export type GetLayoutloaderData = { userBranches: RouteBranch[] | undefined };
 
-export async function getLayoutloader({ request }: LoaderFunctionArgs) {
+export async function companyLoader({ request }: LoaderFunctionArgs) {
   const authPayload = await getAuthPayloadFromRequest(request);
 
   if (!authPayload || authPayload.company?.companyRoles.length === 0) {

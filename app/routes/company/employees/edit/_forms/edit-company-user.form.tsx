@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   editCompanyUserSchema,
   type EditCompanyUserSchema,
-} from '~/features/company/admin/schemas/edit-company-user.schema';
+} from '~/routes/company/employees/edit/_schemas/edit-company-user.form.schema';
 
 export interface EditCompanyUserFormProps {
   email: string;

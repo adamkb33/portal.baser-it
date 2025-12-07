@@ -2,7 +2,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { NavBreadcrumbs } from '~/components/layout/nav-breadcrums';
 import { NavLink, type NavItem } from '~/components/layout/nav-link';
-import type { GetLayoutloaderData } from '~/features/company/get-layout';
+import type { GetLayoutloaderData } from '~/routes/company/_features/company.loader';
 import type { RouteBranch } from '~/lib/route-tree';
 
 export type CompanyLayoutProps = {

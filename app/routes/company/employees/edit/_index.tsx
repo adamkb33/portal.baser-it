@@ -1,8 +1,8 @@
 import React from 'react';
 import { useFetcher, useLoaderData, useLocation } from 'react-router';
 
-import { EditCompanyUserForm } from '~/components/forms/edit-company-user-form';
-import type { EditCompanyUserSchema } from '~/features/company/admin/schemas/edit-company-user.schema';
+import { EditCompanyUserForm } from '~/routes/company/employees/edit/_forms/edit-company-user.form';
+import type { EditCompanyUserSchema } from '~/routes/company/employees/edit/_schemas/edit-company-user.form.schema';
 
 import { editEmployeeLoader, type CompanyEmployeesEditLoaderData } from './_features/edit-employee.loader';
 import { editEmployeeAction } from './_features/edit-employee.action';
