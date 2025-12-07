@@ -12,18 +12,13 @@ export const appointmentSessionCookie = createCookie('appointment_session', {
   maxAge: 60 * 60 * 24,
 });
 
-export async function getOrCreateSession(
-  request: Request,
+export async function createAppointmentSession(
   companyId: number,
 ): Promise<{ session: AppointmentSessionDto; setCookieHeader: string }> {
-  const cookieHeader = request.headers.get('Cookie');
-  const existingSessionId = (await appointmentSessionCookie.parse(cookieHeader)) ?? undefined;
-
   const sessionResponse =
-    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getOrCreateAppointmentSession(
+    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.createAppointmentSession(
       {
         companyId,
-        sessionId: existingSessionId,
       },
     );
 
@@ -44,9 +39,11 @@ export async function getSession(request: Request): Promise<AppointmentSessionDt
     throw new Response('Missing appointment session', { status: 400 });
   }
   const sessionResponse =
-    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getAppointmentSession({
-      sessionId,
-    });
+    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.getAppointmentSession(
+      {
+        sessionId,
+      },
+    );
 
   if (!sessionResponse.data) {
     throw Error('Kunne ikke hente session');

@@ -30,7 +30,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     const schedulesResponse =
-      await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getAppointmentSessionSchedules(
+      await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.getAppointmentSessionSchedules(
         {
           sessionId: session.sessionId,
         },
@@ -59,7 +59,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const selectedStartTime = formData.get('selectedStartTime') as string;
 
   try {
-    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.selectAppointmentSessionStartTime(
+    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.submitAppointmentSessionStartTime(
       {
         sessionId: session.sessionId,
         selectedStartTime,

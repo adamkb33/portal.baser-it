@@ -5,26 +5,25 @@
 import type { ApiResponseAppointmentDto } from '@types';
 import type { ApiResponseAppointmentSessionDto } from '@types';
 import type { ApiResponseAppointmentSessionOverviewDto } from '@types';
-import type { ApiResponseBoolean } from '@types';
 import type { ApiResponseListBookingProfileDto } from '@types';
 import type { ApiResponseListGroupedServiceGroupsDto } from '@types';
 import type { ApiResponseListScheduleDto } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
-export class PublicAppointmentControllerService {
+export class PublicAppointmentSessionControllerService {
     /**
      * @returns ApiResponseAppointmentDto OK
      * @throws ApiError
      */
-    public static appointmentSessionSubmit({
+    public static submitAppointmentSession({
         sessionId,
     }: {
         sessionId: string,
     }): CancelablePromise<ApiResponseAppointmentDto> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/public/appointment',
+            url: '/public/appointment-session/submit',
             query: {
                 'sessionId': sessionId,
             },
@@ -34,7 +33,7 @@ export class PublicAppointmentControllerService {
      * @returns ApiResponseAppointmentSessionDto OK
      * @throws ApiError
      */
-    public static selectAppointmentSessionStartTime({
+    public static submitAppointmentSessionStartTime({
         sessionId,
         selectedStartTime,
     }: {
@@ -43,10 +42,30 @@ export class PublicAppointmentControllerService {
     }): CancelablePromise<ApiResponseAppointmentSessionDto> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/public/appointment/select-start-time',
+            url: '/public/appointment-session/submit-start-time',
             query: {
                 'sessionId': sessionId,
                 'selectedStartTime': selectedStartTime,
+            },
+        });
+    }
+    /**
+     * @returns ApiResponseAppointmentSessionDto OK
+     * @throws ApiError
+     */
+    public static submitAppointmentSessionContact({
+        sessionId,
+        contactId,
+    }: {
+        sessionId: string,
+        contactId: number,
+    }): CancelablePromise<ApiResponseAppointmentSessionDto> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/public/appointment-session/submit-contact',
+            query: {
+                'sessionId': sessionId,
+                'contactId': contactId,
             },
         });
     }
@@ -63,7 +82,7 @@ export class PublicAppointmentControllerService {
     }): CancelablePromise<ApiResponseAppointmentSessionDto> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/public/appointment/select-profile',
+            url: '/public/appointment-session/select-profile',
             query: {
                 'sessionId': sessionId,
                 'selectedProfileId': selectedProfileId,
@@ -83,7 +102,7 @@ export class PublicAppointmentControllerService {
     }): CancelablePromise<ApiResponseAppointmentSessionDto> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/public/appointment/select-profile-services',
+            url: '/public/appointment-session/select-profile-services',
             query: {
                 'sessionId': sessionId,
                 'selectedServiceIds': selectedServiceIds,
@@ -91,51 +110,34 @@ export class PublicAppointmentControllerService {
         });
     }
     /**
-     * @returns ApiResponseBoolean OK
+     * @returns ApiResponseAppointmentSessionDto OK
      * @throws ApiError
      */
-    public static validateCompany({
+    public static createAppointmentSession({
         companyId,
     }: {
         companyId: number,
-    }): CancelablePromise<ApiResponseBoolean> {
+    }): CancelablePromise<ApiResponseAppointmentSessionDto> {
         return __request(OpenAPI, {
-            method: 'GET',
-            url: '/public/appointment/validate/{companyId}',
-            path: {
+            method: 'POST',
+            url: '/public/appointment-session/create-session',
+            query: {
                 'companyId': companyId,
             },
         });
     }
     /**
-     * @returns ApiResponseListBookingProfileDto OK
+     * @returns ApiResponseAppointmentSessionDto OK
      * @throws ApiError
      */
-    public static getAppointmentSessionProfiles({
+    public static getAppointmentSession({
         sessionId,
     }: {
         sessionId: string,
-    }): CancelablePromise<ApiResponseListBookingProfileDto> {
+    }): CancelablePromise<ApiResponseAppointmentSessionDto> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/public/appointment/get-profiles',
-            query: {
-                'sessionId': sessionId,
-            },
-        });
-    }
-    /**
-     * @returns ApiResponseListGroupedServiceGroupsDto OK
-     * @throws ApiError
-     */
-    public static getAppointmentSessionProfileServices({
-        sessionId,
-    }: {
-        sessionId: string,
-    }): CancelablePromise<ApiResponseListGroupedServiceGroupsDto> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/public/appointment/get-profile-services',
+            url: '/public/appointment-session/get-session',
             query: {
                 'sessionId': sessionId,
             },
@@ -152,28 +154,42 @@ export class PublicAppointmentControllerService {
     }): CancelablePromise<ApiResponseListScheduleDto> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/public/appointment/get-profile-schedules',
+            url: '/public/appointment-session/get-schedules',
             query: {
                 'sessionId': sessionId,
             },
         });
     }
     /**
-     * @returns ApiResponseAppointmentSessionDto OK
+     * @returns ApiResponseListBookingProfileDto OK
      * @throws ApiError
      */
-    public static getOrCreateAppointmentSession({
-        companyId,
+    public static getAppointmentSessionProfiles({
         sessionId,
     }: {
-        companyId: number,
-        sessionId?: string,
-    }): CancelablePromise<ApiResponseAppointmentSessionDto> {
+        sessionId: string,
+    }): CancelablePromise<ApiResponseListBookingProfileDto> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/public/appointment/get-or-create',
+            url: '/public/appointment-session/get-profiles',
             query: {
-                'companyId': companyId,
+                'sessionId': sessionId,
+            },
+        });
+    }
+    /**
+     * @returns ApiResponseListGroupedServiceGroupsDto OK
+     * @throws ApiError
+     */
+    public static getAppointmentSessionProfileServices({
+        sessionId,
+    }: {
+        sessionId: string,
+    }): CancelablePromise<ApiResponseListGroupedServiceGroupsDto> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/public/appointment-session/get-profile-services',
+            query: {
                 'sessionId': sessionId,
             },
         });
@@ -189,29 +205,9 @@ export class PublicAppointmentControllerService {
     }): CancelablePromise<ApiResponseAppointmentSessionOverviewDto> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/public/appointment/get-appointment-session-overview',
+            url: '/public/appointment-session/get-overview',
             query: {
                 'sessionId': sessionId,
-            },
-        });
-    }
-    /**
-     * @returns ApiResponseAppointmentSessionDto OK
-     * @throws ApiError
-     */
-    public static addContactToSession({
-        sessionId,
-        contactId,
-    }: {
-        sessionId: string,
-        contactId: number,
-    }): CancelablePromise<ApiResponseAppointmentSessionDto> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/public/appointment/add-contact-to-session/{sessionId}/{contactId}',
-            path: {
-                'sessionId': sessionId,
-                'contactId': contactId,
             },
         });
     }

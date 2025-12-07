@@ -17,7 +17,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       throw Error('Selskap ikke gjenkjent');
     }
 
-    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.validateCompany({
+    await bookingApi().AppointmentsControllerService.AppointmentsControllerService.validateCompanyBooking({
       companyId: parseInt(companyId),
     });
 

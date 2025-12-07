@@ -8,15 +8,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 
 import {
-  type GetOrCreateContactSchema,
-  getOrCreateContactSchema,
+  type GetCreateOrUpdateContactSchema,
+  getCreateOrUpdateContactSchema,
 } from '~/features/booking/get-or-create-contact.schema';
 
 export interface GetOrCreateContactFetcherFormProps {
   companyId: number;
-  onSuccess?: (values: GetOrCreateContactSchema) => void;
+  onSuccess?: (values: GetCreateOrUpdateContactSchema) => void;
   onChange?: () => void;
-  initialValues?: Partial<GetOrCreateContactSchema>;
+  initialValues?: Partial<GetCreateOrUpdateContactSchema>;
   action?: string;
   method?: 'post' | 'put' | 'patch';
 }
@@ -32,8 +32,8 @@ export function GetOrCreateContactFetcherForm({
   console.log(initialValues);
   const fetcher = useFetcher({ key: 'appointment-contact-form-fetcher' });
 
-  const form = useForm<GetOrCreateContactSchema>({
-    resolver: zodResolver(getOrCreateContactSchema),
+  const form = useForm<GetCreateOrUpdateContactSchema>({
+    resolver: zodResolver(getCreateOrUpdateContactSchema),
     defaultValues: {
       companyId,
       givenName: '',

@@ -3,7 +3,7 @@ import { emailValidator } from '~/lib/form-validators';
 
 const mobileNumberValidator = z.string().length(8, 'Mobilnummer må være 8 siffer');
 
-export const getOrCreateContactSchema = z
+export const getCreateOrUpdateContactSchema = z
   .object({
     id: z.number().optional(),
     companyId: z.number(),
@@ -17,4 +17,4 @@ export const getOrCreateContactSchema = z
     path: ['email'],
   });
 
-export type GetOrCreateContactSchema = z.infer<typeof getOrCreateContactSchema>;
+export type GetCreateOrUpdateContactSchema = z.infer<typeof getCreateOrUpdateContactSchema>;

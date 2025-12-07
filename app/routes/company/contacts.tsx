@@ -206,7 +206,7 @@ export default function CompanyContactsRoute() {
       givenName: contact.givenName ?? '',
       familyName: contact.familyName ?? '',
       email: contact.email?.value ?? '',
-      mobileNumber: contact.mobileNumberDto?.value ?? '',
+      mobileNumber: contact.mobileNumber?.value ?? '',
     });
     setErrors({});
     setIsDialogOpen(true);
@@ -283,7 +283,7 @@ export default function CompanyContactsRoute() {
         givenName: contact.givenName ?? '',
         familyName: contact.familyName ?? '',
         contactEmail: contact.email?.value ?? '',
-        contactMobileNumber: contact.mobileNumberDto?.value ?? '',
+        contactMobileNumber: contact.mobileNumber?.value ?? '',
         original: contact,
       })),
     [contacts],

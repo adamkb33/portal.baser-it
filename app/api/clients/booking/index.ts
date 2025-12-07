@@ -1,10 +1,10 @@
 export { ActuatorService } from './services/ActuatorService';
+export { AppointmentsControllerService } from './services/AppointmentsControllerService';
 export { BookingProfileControllerService } from './services/BookingProfileControllerService';
 export { CompanyUserAppointmentControllerService } from './services/CompanyUserAppointmentControllerService';
 export { CompanyUserScheduleControllerService } from './services/CompanyUserScheduleControllerService';
 export { DailyScheduleControllerService } from './services/DailyScheduleControllerService';
-export { PublicAppointmentControllerService } from './services/PublicAppointmentControllerService';
-export { PublicCompanyControllerService } from './services/PublicCompanyControllerService';
+export { PublicAppointmentSessionControllerService } from './services/PublicAppointmentSessionControllerService';
 export { ServiceControllerService } from './services/ServiceControllerService';
 export { ServiceGroupControllerService } from './services/ServiceGroupControllerService';
 export { ServiceImageControllerService } from './services/ServiceImageControllerService';

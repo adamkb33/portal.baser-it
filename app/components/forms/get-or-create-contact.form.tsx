@@ -6,16 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
-  type GetOrCreateContactSchema,
-  getOrCreateContactSchema,
+  type GetCreateOrUpdateContactSchema,
+  getCreateOrUpdateContactSchema,
 } from '~/features/booking/get-or-create-contact.schema';
 
 export interface GetOrCreateContactFormProps {
   companyId: number;
-  onSubmit: (values: GetOrCreateContactSchema) => void;
+  onSubmit: (values: GetCreateOrUpdateContactSchema) => void;
   onChange?: () => void;
   isSubmitting?: boolean;
-  initialValues?: Partial<GetOrCreateContactSchema>;
+  initialValues?: Partial<GetCreateOrUpdateContactSchema>;
 }
 
 export function GetOrCreateContactForm({
@@ -25,8 +25,8 @@ export function GetOrCreateContactForm({
   isSubmitting = false,
   initialValues,
 }: GetOrCreateContactFormProps) {
-  const form = useForm<GetOrCreateContactSchema>({
-    resolver: zodResolver(getOrCreateContactSchema),
+  const form = useForm<GetCreateOrUpdateContactSchema>({
+    resolver: zodResolver(getCreateOrUpdateContactSchema),
     defaultValues: {
       companyId,
       givenName: '',

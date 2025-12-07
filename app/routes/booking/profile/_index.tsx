@@ -226,9 +226,8 @@ export default function BookingProfilePage() {
         {bookingProfile && (
           <BookingProfileCard
             description={bookingProfile.description}
-            imageId={bookingProfile.imageId}
+            image={bookingProfile.image}
             onEditProfile={handleEditBookingProfile}
-            onResetDescription={handleResetDescription}
           />
         )}
       </div>
@@ -242,7 +241,7 @@ export default function BookingProfilePage() {
             name: 'image',
             label: 'Profilbilde',
             render: renderImageUpload,
-            description: bookingProfile?.imageId
+            description: bookingProfile?.image?.url
               ? 'Last opp et nytt bilde for å erstatte det eksisterende.'
               : undefined,
           },

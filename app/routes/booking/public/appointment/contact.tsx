@@ -57,25 +57,29 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
 
     const contactResponse =
-      await baseApi().PublicCompanyContactControllerService.PublicCompanyContactControllerService.getOrCreateContact({
-        requestBody: {
-          id: Number(formData.get('id')) ?? null,
-          companyId: Number(formData.get('companyId')),
-          givenName: String(formData.get('givenName') ?? ''),
-          familyName: String(formData.get('familyName') ?? ''),
-          email: formData.get('email') ? String(formData.get('email')) : undefined,
-          mobileNumber: formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined,
+      await baseApi().PublicCompanyContactControllerService.PublicCompanyContactControllerService.publicGetCreateOrUpdateContact(
+        {
+          requestBody: {
+            id: Number(formData.get('id')) ?? null,
+            companyId: Number(formData.get('companyId')),
+            givenName: String(formData.get('givenName') ?? ''),
+            familyName: String(formData.get('familyName') ?? ''),
+            email: formData.get('email') ? String(formData.get('email')) : undefined,
+            mobileNumber: formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined,
+          },
         },
-      });
+      );
 
     if (!contactResponse.data) {
       return { error: 'En feil har skjedd med lagring av kontakt' };
     }
 
-    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.addContactToSession({
-      sessionId: session.sessionId,
-      contactId: contactResponse.data.id,
-    });
+    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.submitAppointmentSessionContact(
+      {
+        sessionId: session.sessionId,
+        contactId: contactResponse.data.id,
+      },
+    );
 
     return redirect(ROUTES_MAP['booking.public.appointment.employee'].href);
   } catch (error: any) {

@@ -19,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     const response =
-      await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getAppointmentSessionOverview(
+      await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.getAppointmentSessionOverview(
         {
           sessionId: session.sessionId,
         },
@@ -46,9 +46,11 @@ export async function action({ request }: ActionFunctionArgs) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
-    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.appointmentSessionSubmit({
-      sessionId: session.sessionId,
-    });
+    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.submitAppointmentSession(
+      {
+        sessionId: session.sessionId,
+      },
+    );
 
     return redirect(`${ROUTES_MAP['booking.public.appointment.success'].href}?companyId=${session.companyId}`);
   } catch (error: any) {

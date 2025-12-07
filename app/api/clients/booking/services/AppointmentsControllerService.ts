@@ -6,19 +6,19 @@ import type { ApiResponseBoolean } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
-export class PublicCompanyControllerService {
+export class AppointmentsControllerService {
     /**
      * @returns ApiResponseBoolean OK
      * @throws ApiError
      */
-    public static getCompanyBookingInfo({
+    public static validateCompanyBooking({
         companyId,
     }: {
         companyId: number,
     }): CancelablePromise<ApiResponseBoolean> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/public/company/{companyId}/booking-info',
+            url: '/appointments/validate-company/{companyId}',
             path: {
                 'companyId': companyId,
             },

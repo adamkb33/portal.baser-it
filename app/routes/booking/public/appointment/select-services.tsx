@@ -25,7 +25,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     const serviceGroupsResponse =
-      await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getAppointmentSessionProfileServices(
+      await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.getAppointmentSessionProfileServices(
         {
           sessionId: session.sessionId,
         },
@@ -56,7 +56,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
     const selectedServices = formData.getAll('serviceId').map(Number);
 
-    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.selectAppointmentSessionProfileServices(
+    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.selectAppointmentSessionProfileServices(
       {
         sessionId: session.sessionId,
         selectedServiceIds: selectedServices,

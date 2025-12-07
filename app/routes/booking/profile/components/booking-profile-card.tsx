@@ -1,16 +1,16 @@
 import * as React from 'react';
+import type { ImageDto } from 'tmp/openapi/gen/booking';
 import { Button } from '~/components/ui/button';
 
 export interface BookingProfileCardProps {
   description?: string | null;
-  imageId?: number | null;
+  image?: ImageDto | null;
   onEditProfile?: () => void;
-  onResetDescription?: () => void;
 }
 
 export const BookingProfileCard = React.forwardRef<HTMLElement, BookingProfileCardProps>(
-  ({ description, imageId, onEditProfile, onResetDescription }, ref) => {
-    const hasProfileImage = Boolean(imageId);
+  ({ description, image, onEditProfile }, ref) => {
+    const hasProfileImage = Boolean(image);
     const hasDescription = Boolean(description?.trim());
 
     return (
@@ -24,9 +24,9 @@ export const BookingProfileCard = React.forwardRef<HTMLElement, BookingProfileCa
             >
               Offentlig bookingprofil
             </p>
-            <p className={['text-sm', 'font-semibold', 'text-foreground'].join(' ')}>Slik vises du til bedriften</p>
+            <p className={['text-sm', 'font-semibold', 'text-foreground'].join(' ')}>Slik vises du til kunder</p>
             <p className={['text-[0.7rem]', 'text-muted-foreground'].join(' ')}>
-              Denne beskrivelsen og bildet er synlig for bedriftens ansatte når de administrerer bookingene dine.
+              Denne beskrivelsen og bildet er synlig for kunder når de booker time med deg.
             </p>
           </div>
 
@@ -48,11 +48,11 @@ export const BookingProfileCard = React.forwardRef<HTMLElement, BookingProfileCa
                 'leading-snug',
               ].join(' ')}
             >
-              {hasProfileImage ? (
+              {hasProfileImage && image ? (
                 <>
-                  Bilde #{imageId}
+                  Bilde #{image.id}
                   <br />
-                  (vises i bedriftens verktøy)
+                  (vises til kunder)
                 </>
               ) : (
                 <>
@@ -77,8 +77,8 @@ export const BookingProfileCard = React.forwardRef<HTMLElement, BookingProfileCa
               <p className={['text-[0.8rem]', 'text-foreground', 'leading-relaxed'].join(' ')}>{description}</p>
             ) : (
               <p className={['text-[0.8rem]', 'text-muted-foreground'].join(' ')}>
-                Ingen beskrivelse lagt til ennå. Du kan bruke dette feltet til å fortelle bedriften om dine preferanser,
-                tilgangsbehov eller andre relevante notater.
+                Ingen beskrivelse lagt til ennå. Du kan bruke dette feltet til å fortelle kunder om dine spesialiteter,
+                arbeidsområder eller andre relevante detaljer.
               </p>
             )}
           </div>
@@ -87,9 +87,6 @@ export const BookingProfileCard = React.forwardRef<HTMLElement, BookingProfileCa
         <div className={['border-t border-border', 'pt-4', 'flex items-center justify-between', 'gap-3'].join(' ')}>
           <Button type="button" variant="outline" size="default" onClick={onEditProfile}>
             Rediger bookingprofil
-          </Button>
-          <Button type="button" variant="link" size="default" onClick={onResetDescription}>
-            Tilbakestill beskrivelse
           </Button>
         </div>
       </section>

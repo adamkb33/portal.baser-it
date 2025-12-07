@@ -22,7 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
     const profilesResponse =
-      await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.getAppointmentSessionProfiles(
+      await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.getAppointmentSessionProfiles(
         {
           sessionId: session.sessionId,
         },
@@ -55,7 +55,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
     const selectedProfileId = formData.get('selectedProfileId') as string;
 
-    await bookingApi().PublicAppointmentControllerService.PublicAppointmentControllerService.selectAppointmentSessionProfile(
+    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.selectAppointmentSessionProfile(
       {
         sessionId: session.sessionId,
         selectedProfileId: Number(selectedProfileId),

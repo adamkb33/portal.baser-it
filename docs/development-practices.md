@@ -3,6 +3,7 @@
 ## Code Style & Formatting
 
 ### TypeScript Standards
+
 - **Strict mode enabled** - All TypeScript strict checks are enforced
 - **Explicit return types** for public functions and API boundaries
 - **Interface over type** for object definitions when possible
@@ -12,12 +13,14 @@
   - `SCREAMING_SNAKE_CASE` for constants
 
 ### File Naming Conventions
+
 - **Routes**: `kebab-case.tsx` (e.g., `select-time.tsx`, `overview.tsx`)
 - **Components**: `PascalCase.tsx` or `kebab-case.tsx` depending on context
 - **Utilities**: `kebab-case.ts` with descriptive names
 - **Types**: `types.ts` or embedded in relevant files
 
 ### Import Organization
+
 ```typescript
 // 1. External libraries
 import { data, redirect, type LoaderFunctionArgs } from 'react-router';
@@ -37,6 +40,7 @@ import { formatTime } from './date-utils';
 ## Component Architecture
 
 ### Component Structure
+
 ```typescript
 // Type definitions first
 export type ComponentNameProps = {
@@ -63,12 +67,14 @@ export default function ComponentName() {
 ```
 
 ### React Router Patterns
+
 - **Loaders for data fetching** - Use React Router loaders for server-side data
 - **Actions for mutations** - Form submissions and state changes
 - **Type-safe data flow** - Always type loader data and form data
 - **Error boundaries** - Implement proper error handling
 
 ### Form Handling
+
 ```typescript
 // Use FormData for simple forms
 const formData = await request.formData();
@@ -83,16 +89,17 @@ const form = useForm<FormData>({
 ## API Integration
 
 ### Generated API Clients
+
 - **Use generated clients** from OpenAPI specifications
 - **Consistent error handling** with `ApiClientError` type
 - **Server-side API calls** in loaders and actions only
 
 ```typescript
 try {
-  const response = await bookingApi()
-    .PublicAppointmentControllerService
-    .PublicAppointmentControllerService
-    .getAppointmentSessionOverview({ sessionId });
+  const response =
+    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.getAppointmentSessionOverview(
+      { sessionId },
+    );
 
   return data({ sessionOverview: response.data });
 } catch (error: any) {
@@ -105,6 +112,7 @@ try {
 ```
 
 ### Error Handling
+
 - **Structured error logging** with `JSON.stringify(error, null, 2)`
 - **User-friendly error messages** in Norwegian
 - **Graceful fallbacks** and redirects on errors
@@ -113,12 +121,14 @@ try {
 ## State Management
 
 ### React Router State
+
 - **URL state** for shareable/bookmarkable state
 - **Search params** for filter and selection state
 - **Form state** managed by React Hook Form
 - **Server state** via loaders and actions
 
 ### Local State Patterns
+
 ```typescript
 // Simple state
 const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -135,12 +145,14 @@ useEffect(() => {
 ## Routing Architecture
 
 ### Custom Route System
+
 - **Declarative route tree** in `lib/route-tree.ts`
 - **Access control** built into route definitions
 - **Automatic route generation** via `routes-builder.ts`
 - **Type-safe navigation** with `ROUTES_MAP`
 
 ### Route Organization
+
 ```typescript
 {
   id: 'booking.public.appointment.select-time',
@@ -153,6 +165,7 @@ useEffect(() => {
 ```
 
 ### Navigation Patterns
+
 - **Programmatic navigation** with `redirect()` in loaders/actions
 - **Form-based navigation** with React Router `<Form>`
 - **Link-based navigation** for simple transitions
@@ -160,18 +173,20 @@ useEffect(() => {
 ## Internationalization
 
 ### Norwegian Localization
+
 - **Norwegian text** as default throughout the application
 - **Custom date/time formatting** for Norwegian conventions
 - **Consistent terminology** across features
 
 ```typescript
 const DAYS_NO = ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag'];
-const MONTHS_NO = ['januar', 'februar', 'mars', /* ... */];
+const MONTHS_NO = ['januar', 'februar', 'mars' /* ... */];
 ```
 
 ## Styling Conventions
 
 ### TailwindCSS Usage
+
 - **Utility-first approach** with semantic grouping
 - **Consistent spacing scale** using Tailwind defaults
 - **Responsive design patterns**:
@@ -180,6 +195,7 @@ const MONTHS_NO = ['januar', 'februar', 'mars', /* ... */];
   ```
 
 ### Component Styling
+
 - **Border-based design system** with consistent border usage
 - **Semantic color tokens**: `text-foreground`, `bg-background`, `border-border`
 - **Typography scale**: `text-xs`, `text-sm`, `text-base`
@@ -188,12 +204,14 @@ const MONTHS_NO = ['januar', 'februar', 'mars', /* ... */];
 ## Testing Practices
 
 ### Testing Strategy
+
 - **Vitest** for unit testing
 - **Type checking** as first line of defense
 - **Integration testing** via React Router patterns
 - **API mocking** for external service dependencies
 
 ### Test Organization
+
 ```bash
 npm run test        # Run unit tests
 npm run typecheck   # Type checking
@@ -203,6 +221,7 @@ npm run build       # Production build verification
 ## Development Workflow
 
 ### Local Development
+
 ```bash
 npm run dev         # Start development server (kills port 5173 first)
 npm run typecheck   # Verify types
@@ -210,11 +229,13 @@ npm run gen:api     # Regenerate API clients
 ```
 
 ### Code Generation
+
 - **OpenAPI client generation** via `scripts/openapi/generate.ts`
 - **Route type generation** via React Router
 - **Automated type safety** from backend API specs
 
 ### Environment Management
+
 - **Environment variables** via `.env` file
 - **Type-safe environment** access patterns
 - **Development vs production** configuration
@@ -222,12 +243,14 @@ npm run gen:api     # Regenerate API clients
 ## Security Practices
 
 ### Authentication & Authorization
+
 - **JWT token management** with secure cookie handling
 - **Role-based access control** (ADMIN, EMPLOYEE)
 - **Route-level protection** via access control system
 - **Session validation** in loaders
 
 ### Data Validation
+
 - **Runtime validation** with Zod schemas
 - **API response validation**
 - **Form input sanitization**
@@ -236,16 +259,19 @@ npm run gen:api     # Regenerate API clients
 ## Performance Considerations
 
 ### SSR Optimization
+
 - **Server-side rendering** enabled by default
 - **Progressive enhancement** patterns
 - **Minimal hydration** footprint
 
 ### Code Splitting
+
 - **Route-based code splitting** via React Router
 - **Dynamic imports** for heavy features
 - **Optimized bundle sizes**
 
 ### Caching Strategy
+
 - **HTTP caching** for API responses
 - **Static asset optimization**
 - **Service worker** considerations for production

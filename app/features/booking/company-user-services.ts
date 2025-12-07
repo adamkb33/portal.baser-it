@@ -1,6 +1,6 @@
 import { data, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import type { ServiceDto, ServiceGroupDto } from 'tmp/openapi/gen/booking';
-import { createBookingClient, type BulkImageUploadRequest, type ImageUpload } from '~/api/clients/booking';
+import { createBookingClient, type ImageUpload } from '~/api/clients/booking';
 import type { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { getAccessToken } from '~/lib/auth.utils';

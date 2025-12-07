@@ -18,6 +18,10 @@ export const RenderRouteBranch = ({ routeBranch }: RenderRouteBranchProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = routeBranch.children && routeBranch.children.length > 0;
 
+  if (!routeBranch.label) {
+    return null;
+  }
+
   const navItem: NavItem = {
     href: routeBranch.href,
     label: routeBranch.label,

@@ -1,6 +1,5 @@
 import { data, redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router';
 import type { AuthenticatedUserPayload } from '~/api/clients/types';
-import { accessTokenCookie } from '~/features/auth/api/cookies.server';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 
 export type ProfileLoaderData = {
