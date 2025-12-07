@@ -8,7 +8,7 @@ interface CompanyCardProps {
   onSubmit?: (values: { companyId: string }) => void;
 }
 
-export function CompanyCard({ company }: CompanyCardProps) {
+export function CompanyContextSummaryCard({ company }: CompanyCardProps) {
   const { id, name, orgNumber, organizationType, postalAddress, businessAddress } = company;
 
   const formatAddress = (address?: typeof company.postalAddress) => {

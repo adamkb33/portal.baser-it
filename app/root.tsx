@@ -8,6 +8,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  type LinksFunction,
 } from 'react-router';
 
 import './app.css';
@@ -15,11 +16,11 @@ import { RootLayout } from './layouts/root-layout';
 import { rootLoader, type RootLoaderLoaderData } from './routes/_features/root.loader';
 import type { RouteBranch, UserNavigation } from './lib/route-tree';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
-import type { Route } from './routes/+types/home';
+import type { Route } from './routes/booking/+types/_index';
 
 export const loader = rootLoader;
 
-export const links: Route.LinksFunction = () => [
+export const links: LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   {
     rel: 'preconnect',

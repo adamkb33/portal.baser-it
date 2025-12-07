@@ -2,7 +2,7 @@ import { data, Form, useLoaderData, type LoaderFunctionArgs, type ActionFunction
 import { createBaseClient, type CompanySummaryDto } from '~/api/clients/base';
 import { type ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
-import { CompanyCard } from '~/components/cards/company-summary.card';
+import { CompanyContextSummaryCard } from '~/routes/user/company-context/_components/company-context-summary-card';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { getAccessToken } from '~/lib/auth.utils';
 
@@ -108,7 +108,7 @@ export default function CompanyContextPage() {
         <Form key={company.id} method="post">
           <input type="hidden" name="companyId" value={company.id} />
           <input type="hidden" name="orgNumber" value={company.orgNumber} />
-          <CompanyCard company={company} />
+          <CompanyContextSummaryCard company={company} />
         </Form>
       ))}
     </div>

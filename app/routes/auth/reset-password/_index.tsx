@@ -1,10 +1,16 @@
 import * as React from 'react';
-import { Link, redirect, useFetcher, useLoaderData } from 'react-router';
+import {
+  Link,
+  redirect,
+  useFetcher,
+  useLoaderData,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from 'react-router';
 
 import { ResetPasswordForm } from '~/components/forms/reset-password.form';
 import type { ResetPasswordFormSchema } from '~/routes/auth/reset-password/_schemas/reset-password.form.schema';
 import { decodeResetPasswordToken } from '~/routes/auth/reset-password/_utils/auth.reset-password.utils';
-import type { Route } from '../../+types/home';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { AuthControllerService } from '~/api/clients/base';
 import type { ApiClientError } from '~/api/clients/http';
@@ -16,7 +22,7 @@ interface LoaderData {
   email: string;
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const resetPasswordToken = url.searchParams.get('token');
 
@@ -32,7 +38,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { resetPasswordToken, email: decodedToken.email };
 }
 
-export async function action({ request }: Route.ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
 
   try {
