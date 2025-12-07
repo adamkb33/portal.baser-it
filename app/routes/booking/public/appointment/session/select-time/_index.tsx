@@ -66,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     );
 
-    return redirect(`${ROUTES_MAP['booking.public.appointment.select-time'].href}?time=${selectedStartTime}`);
+    return redirect(`${ROUTES_MAP['booking.public.appointment.session.select-time'].href}?time=${selectedStartTime}`);
   } catch (error) {
     console.error(JSON.stringify(error, null, 2));
     if ((error as ApiClientError).body) {
@@ -220,7 +220,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
 
           <Form
             method="get"
-            action={ROUTES_MAP['booking.public.appointment.overview'].href}
+            action={ROUTES_MAP['booking.public.appointment.session.overview'].href}
             className="border-t border-border pt-3"
           >
             <button

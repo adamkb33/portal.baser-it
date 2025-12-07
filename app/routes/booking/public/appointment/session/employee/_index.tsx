@@ -62,7 +62,7 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     );
 
-    return redirect(ROUTES_MAP['booking.public.appointment.select-services'].href);
+    return redirect(ROUTES_MAP['booking.public.appointment.session.select-services'].href);
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {

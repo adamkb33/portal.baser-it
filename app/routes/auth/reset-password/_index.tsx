@@ -8,7 +8,6 @@ import {
   type LoaderFunctionArgs,
 } from 'react-router';
 
-import { ResetPasswordForm } from '~/routes/auth/reset-password/forms/reset-password.form';
 import type { ResetPasswordFormSchema } from '~/routes/auth/reset-password/_schemas/reset-password.form.schema';
 import { decodeResetPasswordToken } from '~/routes/auth/reset-password/_utils/auth.reset-password.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
@@ -16,6 +15,7 @@ import { AuthControllerService } from '~/api/clients/base';
 import type { ApiClientError } from '~/api/clients/http';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { toAuthTokens } from '../_utils/token.utils';
+import { ResetPasswordForm } from './forms/reset-password.form';
 
 interface LoaderData {
   resetPasswordToken: string;

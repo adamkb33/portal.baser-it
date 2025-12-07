@@ -364,20 +364,37 @@ export const ROUTE_TREE: RouteBranch[] = [
   },
 ];
 
-export const ROUTES_MAP: Record<string, RouteBranch> = ROUTE_TREE.reduce(
-  (acc, branch) => {
-    const flattenBranch = (b: RouteBranch): void => {
-      acc[b.id] = b;
-      if (b.children) {
-        b.children.forEach(flattenBranch);
-      }
+export const ROUTES_MAP: Record<
+  string,
+  {
+    id: string;
+    href: string;
+  }
+> = (() => {
+  const map: Record<
+    string,
+    {
+      id: string;
+      href: string;
+    }
+  > = {};
+
+  const flattenBranch = (branch: RouteBranch, parentPath = ''): void => {
+    const absolutePath = parentPath ? `${parentPath}/${branch.href}`.replace(/\/+/g, '/') : branch.href;
+
+    map[branch.id] = {
+      id: branch.id,
+      href: absolutePath,
     };
 
-    flattenBranch(branch);
-    return acc;
-  },
-  {} as Record<string, RouteBranch>,
-);
+    if (branch.children) {
+      branch.children.forEach((child) => flattenBranch(child, absolutePath));
+    }
+  };
+
+  ROUTE_TREE.forEach((branch) => flattenBranch(branch));
+  return map;
+})();
 
 export type UserNavigation = Record<BrachCategory, BranchGroup>;
 
