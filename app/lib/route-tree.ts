@@ -83,13 +83,6 @@ export const ROUTE_TREE: RouteBranch[] = [
         accessType: Access.NOT_AUTHENTICATED,
       },
       {
-        id: 'auth.accept-invite-existing',
-        href: 'accept-invite/existing',
-        label: 'Aksepter invitasjon',
-        category: BrachCategory.NONE,
-        accessType: Access.NOT_AUTHENTICATED,
-      },
-      {
         id: 'auth.sign-out',
         href: 'sign-out',
         label: 'Logg ut',

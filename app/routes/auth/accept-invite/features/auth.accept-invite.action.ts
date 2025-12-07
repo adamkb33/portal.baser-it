@@ -1,14 +1,13 @@
-import { AuthControllerService } from '~/api/clients/base';
 import { OpenAPI } from '~/api/clients/base/OpenAPI';
 import { ENV } from '~/api/config/env';
-import { toAuthTokens } from '../token/token-utils';
 import type { ApiClientError } from '~/api/clients/http';
-import { accessTokenCookie, refreshTokenCookie } from './cookies.server';
 import { redirect, type ActionFunctionArgs } from 'react-router';
-import type { AcceptInviteSchema } from '../schemas/accept-invite.schema';
 import { baseApi } from '~/lib/utils';
+import type { AcceptInviteSchema } from '../schemas/accept-invite-form.schema';
+import { toAuthTokens } from '../../utils/token.utils';
+import { accessTokenCookie, refreshTokenCookie } from '../../features/auth.cookies.server';
 
-export async function acceptInvite({ request }: ActionFunctionArgs) {
+export async function authAcceptInviteAction({ request }: ActionFunctionArgs) {
   OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
 
   const formData = await request.formData();

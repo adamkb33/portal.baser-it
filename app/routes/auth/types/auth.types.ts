@@ -6,7 +6,7 @@ export interface AuthTokens {
 }
 
 export interface TokenChangeEvent {
-  type: "tokens";
+  type: 'tokens';
   value: AuthTokens | null;
 }
 
