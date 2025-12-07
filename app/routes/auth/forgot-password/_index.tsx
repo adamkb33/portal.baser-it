@@ -2,9 +2,9 @@ import * as React from 'react';
 import { useFetcher, Link, type ActionFunctionArgs, redirect } from 'react-router';
 import type { ApiClientError } from '~/api/clients/http';
 import { AuthControllerService } from '~/api/clients/base';
-import { ForgotPasswordForm } from '~/routes/auth/forgot-password/forms/forgot-password.form';
+import { ForgotPasswordForm } from '~/routes/auth/forgot-password/_forms/forgot-password.form';
 
-import type { ForgotPasswordSchema } from '~/routes/auth/forgot-password/schemas/forgot-password-form.schema';
+import type { ForgotPasswordSchema } from '~/routes/auth/forgot-password/_schemas/forgot-password-form.schema';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
 

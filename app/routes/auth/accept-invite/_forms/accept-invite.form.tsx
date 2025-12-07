@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { type AcceptInviteSchema, acceptInviteSchema } from '../schemas/accept-invite.form.schema';
+import { type AcceptInviteSchema, acceptInviteSchema } from '../_schemas/accept-invite.form.schema';
 
 export interface AcceptInviteFormProps {
   inviteToken: string;

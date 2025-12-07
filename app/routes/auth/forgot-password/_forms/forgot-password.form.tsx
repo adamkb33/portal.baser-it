@@ -9,7 +9,7 @@ import { signInSchema, type SignInSchema } from '~/features/auth/schemas/sign-in
 import {
   forgotPasswordSchema,
   type ForgotPasswordSchema,
-} from '~/routes/auth/forgot-password/schemas/forgot-password-form.schema';
+} from '~/routes/auth/forgot-password/_schemas/forgot-password-form.schema';
 
 export interface ForgotPasswordFormProps {
   onSubmit: (values: ForgotPasswordSchema) => void;
