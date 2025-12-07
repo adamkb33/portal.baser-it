@@ -8,7 +8,7 @@ import {
   type LoaderFunctionArgs,
 } from 'react-router';
 
-import { ResetPasswordForm } from '~/components/forms/reset-password.form';
+import { ResetPasswordForm } from '~/routes/auth/reset-password/forms/reset-password.form';
 import type { ResetPasswordFormSchema } from '~/routes/auth/reset-password/_schemas/reset-password.form.schema';
 import { decodeResetPasswordToken } from '~/routes/auth/reset-password/_utils/auth.reset-password.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';

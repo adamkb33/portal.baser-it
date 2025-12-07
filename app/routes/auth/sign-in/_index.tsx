@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useFetcher, Link } from 'react-router';
 
-import { SignInForm } from '~/components/forms/sign-in.form';
+import { SignInForm } from '~/routes/auth/sign-in/_forms/sign-in.form';
 import { type SignInFormSchema } from '~/routes/auth/sign-in/_schemas/sign-in.form.schema';
 
 import { AuthSignInAction } from '~/routes/auth/sign-in/_features/auth.sign-in.action';
