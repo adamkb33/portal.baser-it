@@ -1,10 +1,9 @@
-// ~/routes/company/employees/invite.tsx
 import * as React from 'react';
 import { useFetcher } from 'react-router';
 
-import { InviteEmployeeForm } from '~/components/forms/invite-employee.form';
-import { inviteEmployee } from '~/features/auth/api/invite-employee';
-import type { InviteEmployeeSchema } from '~/features/company/admin/schemas/invite-employee.schema';
+import type { InviteEmployeeSchema } from './_schemas/invite-employee.schema';
+import { InviteEmployeeForm } from './_forms/invite-employee.form';
+import { inviteEmployee } from './_features/invite-employee.action';
 
 export const action = inviteEmployee;
 
