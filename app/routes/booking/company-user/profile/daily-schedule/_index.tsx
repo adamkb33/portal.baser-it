@@ -1,26 +1,20 @@
-import {
-  data,
-  redirect,
-  useLoaderData,
-  useSubmit,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-} from 'react-router';
+import { useLoaderData, useSubmit } from 'react-router';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import type { DailyScheduleDto } from 'tmp/openapi/gen/booking';
-import { createBookingClient, DayOfWeek } from '~/api/clients/booking';
-import type { ApiClientError } from '~/api/clients/http';
-import { ENV } from '~/api/config/env';
-import { getAccessToken } from '~/lib/auth.utils';
 import { Button } from '~/components/ui/button';
 import { DataTable } from '~/components/table/data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 
-export type BookingDailyScheduleLoaderArgs = {
-  dailySchedules: DailyScheduleDto[];
-};
+import {
+  dailyScheduleLoader,
+  dailyScheduleAction,
+  type BookingDailyScheduleLoaderArgs,
+} from './_features/daily-schedule.feature';
+
+export const loader = dailyScheduleLoader;
+export const action = dailyScheduleAction;
 
 const DAY_LABELS: Record<DailyScheduleDto['dayOfWeek'], string> = {
   MONDAY: 'Mandag',
@@ -34,92 +28,6 @@ const DAY_LABELS: Record<DailyScheduleDto['dayOfWeek'], string> = {
 
 const DAY_ORDER = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  try {
-    const accessToken = await getAccessToken(request);
-    if (!accessToken) {
-      return redirect('/');
-    }
-
-    const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const response =
-      await bookingClient.DailyScheduleControllerService.DailyScheduleControllerService.getDailySchedules();
-
-    if (!response.data) {
-      return data({ dailySchedules: [] });
-    }
-
-    return data({ dailySchedules: response.data });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
-  }
-}
-
-export async function action({ request }: ActionFunctionArgs) {
-  const accessToken = await getAccessToken(request);
-  if (!accessToken) {
-    return redirect('/');
-  }
-
-  const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-  const formData = await request.formData();
-  const intent = formData.get('intent') as string;
-
-  try {
-    if (intent === 'create' || intent === 'update') {
-      const id = formData.get('id') ? Number(formData.get('id')) : null;
-      const dayOfWeek = formData.get('dayOfWeek') as DailyScheduleDto['dayOfWeek'];
-      const startTime = formData.get('startTime') as string;
-      const endTime = formData.get('endTime') as string;
-
-      const scheduleWithSeconds = {
-        id: id ?? undefined,
-        dayOfWeek,
-        startTime: startTime.includes(':') && startTime.split(':').length === 2 ? `${startTime}:00` : startTime,
-        endTime: endTime.includes(':') && endTime.split(':').length === 2 ? `${endTime}:00` : endTime,
-      };
-
-      await bookingClient.DailyScheduleControllerService.DailyScheduleControllerService.createOrUpdateDailySchedules({
-        requestBody: [scheduleWithSeconds],
-      });
-
-      return data({ success: true, message: id ? 'Arbeidstid oppdatert' : 'Arbeidstid lagret' });
-    }
-
-    if (intent === 'create-default') {
-      const defaultSchedules = [
-        { dayOfWeek: DayOfWeek.MONDAY, startTime: '09:00:00', endTime: '15:00:00' },
-        { dayOfWeek: DayOfWeek.TUESDAY, startTime: '09:00:00', endTime: '16:00:00' },
-        { dayOfWeek: DayOfWeek.WEDNESDAY, startTime: '09:00:00', endTime: '17:00:00' },
-        { dayOfWeek: DayOfWeek.THURSDAY, startTime: '09:00:00', endTime: '17:00:00' },
-        { dayOfWeek: DayOfWeek.FRIDAY, startTime: '09:00:00', endTime: '17:00:00' },
-      ];
-
-      await bookingClient.DailyScheduleControllerService.DailyScheduleControllerService.createOrUpdateDailySchedules({
-        requestBody: defaultSchedules,
-      });
-
-      return data({ success: true, message: 'Standard arbeidstider lagret' });
-    }
-
-    if (intent === 'delete') {
-      const id = Number(formData.get('id'));
-      await bookingClient.DailyScheduleControllerService.DailyScheduleControllerService.deleteDailySchedule({ id });
-      return data({ success: true, message: 'Arbeidstid fjernet' });
-    }
-
-    return data({ success: false, message: 'Ugyldig handling' });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    return data({ success: false, message: error.body?.message || 'En feil oppstod' }, { status: 400 });
-  }
-}
-
 type FormData = {
   id?: number | null;
   dayOfWeek: DailyScheduleDto['dayOfWeek'];
@@ -127,7 +35,7 @@ type FormData = {
   endTime: string;
 };
 
-export default function BookingDailySchedule() {
+export default function BookingCompanyUserDailySchedule() {
   const { dailySchedules } = useLoaderData<BookingDailyScheduleLoaderArgs>();
   const submit = useSubmit();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -213,7 +121,6 @@ export default function BookingDailySchedule() {
 
   return (
     <div className="space-y-6 py-6">
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Arbeidstider</h1>
@@ -229,7 +136,6 @@ export default function BookingDailySchedule() {
         )}
       </div>
 
-      {/* Content */}
       <div className="rounded-md border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
         {sortedSchedules.length === 0 ? (
           <p className="text-sm text-slate-500">
@@ -280,7 +186,6 @@ export default function BookingDailySchedule() {
         )}
       </div>
 
-      {/* Dialogs */}
       {editingSchedule && (
         <FormDialog<FormData>
           open={isDialogOpen}

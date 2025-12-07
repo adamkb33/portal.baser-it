@@ -1,18 +1,7 @@
-import {
-  data,
-  redirect,
-  useFetcher,
-  useLoaderData,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-} from 'react-router';
+import { useFetcher, useLoaderData } from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { createBookingClient } from '~/api/clients/booking';
-import type { ApiClientError } from '~/api/clients/http';
 import type { ServiceGroupDto } from '~/api/clients/types';
-import { ENV } from '~/api/config/env';
-import { getAccessToken } from '~/lib/auth.utils';
 import { Button } from '~/components/ui/button';
 import { PaginatedTable } from '~/components/table/paginated-data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
@@ -20,78 +9,11 @@ import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
 
-export type BookingServiceGroupsLoaderData = {
-  serviceGroups: ServiceGroupDto[];
-};
+import { serviceGroupsLoader, type BookingServiceGroupsLoaderData } from './_features/service-groups.loader';
+import { serviceGroupsAction } from './_features/service-groups.action';
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  try {
-    const accessToken = await getAccessToken(request);
-    if (!accessToken) {
-      return redirect('/');
-    }
-
-    const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const response = await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups(
-      {},
-    );
-    return data<BookingServiceGroupsLoaderData>({ serviceGroups: response.data?.content || [] });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
-  }
-}
-
-export async function action({ request }: ActionFunctionArgs) {
-  const accessToken = await getAccessToken(request);
-  if (!accessToken) {
-    return redirect('/');
-  }
-
-  const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-  const formData = await request.formData();
-  const intent = formData.get('intent') as string;
-
-  try {
-    if (intent === 'create') {
-      const name = formData.get('name') as string;
-      await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.createServiceGroup({
-        requestBody: {
-          name,
-        },
-      });
-      return data({ success: true, message: 'Tjenestegruppe opprettet' });
-    }
-
-    if (intent === 'update') {
-      const id = Number(formData.get('id'));
-      const name = formData.get('name') as string;
-      await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.updateServiceGroup({
-        id,
-        requestBody: {
-          id,
-          name,
-        },
-      });
-      return data({ success: true, message: 'Tjenestegruppe oppdatert' });
-    }
-
-    if (intent === 'delete') {
-      const id = Number(formData.get('id'));
-      await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.deleteServiceGroup({ id: id });
-      return data({ success: true, message: 'Tjenestegruppe slettet' });
-    }
-
-    return data({ success: false, message: 'Ugyldig handling' });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    return data({ success: false, message: error.body?.message || 'En feil oppstod' }, { status: 400 });
-  }
-}
+export const loader = serviceGroupsLoader;
+export const action = serviceGroupsAction;
 
 type FormData = {
   id?: number;

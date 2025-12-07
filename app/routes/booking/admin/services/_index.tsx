@@ -10,20 +10,16 @@ import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
 import { Badge } from '~/components/ui/badge';
-import { getServicesLoader, servicesActions } from '~/features/booking/company-user-services';
 import { X } from 'lucide-react';
 import { fileToBase64 } from '~/lib/file.utils';
 
-export type BookingServicesLoaderData = {
-  serviceGroups: ServiceGroupDto[];
-  services: ServiceDto[];
-};
+import { getServicesLoader, servicesActions, type BookingServicesLoaderData } from './_features/services.feature';
 
 export const loader = getServicesLoader;
 export const action = servicesActions;
 
 type ServiceImage = {
-  id?: number; // backend id for existing images
+  id?: number;
   file: File | null;
   label: string;
   previewUrl?: string;
@@ -39,7 +35,7 @@ type ServiceFormData = {
   deleteImageIds: number[];
 };
 
-export default function BookingServices() {
+export default function BookingAdminServices() {
   const { serviceGroups, services } = useLoaderData<BookingServicesLoaderData>();
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -211,7 +207,6 @@ export default function BookingServices() {
       const next = images.filter((_, i) => i !== index);
       onChange(next);
 
-      // Existing image (has id) => mark for delete so backend actually removes it
       if (editingService && imageToRemove?.id) {
         setEditingService({
           ...editingService,
@@ -222,7 +217,6 @@ export default function BookingServices() {
 
     const handleFileChange = (index: number, file: File | null) => {
       if (!file) {
-        // clear new file + preview
         updateImageAt(index, { file: null, previewUrl: undefined });
         return;
       }
@@ -240,7 +234,6 @@ export default function BookingServices() {
                 key={img.id ?? index}
                 className="group relative overflow-hidden rounded-md border border-slate-200 bg-slate-50"
               >
-                {/* X = remove */}
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
@@ -250,7 +243,6 @@ export default function BookingServices() {
                   <span className="sr-only">Fjern bilde</span>
                 </button>
 
-                {/* Preview */}
                 {img.previewUrl ? (
                   <img
                     src={img.previewUrl}
@@ -263,7 +255,6 @@ export default function BookingServices() {
                   </div>
                 )}
 
-                {/* File + label */}
                 <div className="space-y-2 border-t border-slate-200 bg-white p-2.5">
                   <Input
                     type="file"

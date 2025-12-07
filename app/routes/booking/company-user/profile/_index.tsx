@@ -1,120 +1,26 @@
-import { data, redirect, useFetcher, useLoaderData, type LoaderFunctionArgs } from 'react-router';
+import { useFetcher, useLoaderData } from 'react-router';
 import { useState, useEffect } from 'react';
-import type { ApiClientError } from '~/api/clients/http';
-import { getAccessToken } from '~/lib/auth.utils';
-import { baseApi, bookingApi } from '~/lib/utils';
-import { FormDialog, type FormFieldRenderProps } from '~/components/dialog/form-dialog';
-import { EmptyBookingProfile } from '~/routes/booking/profile/components/booking-profile-placeholder';
-import { BookingProfileCard } from '~/routes/booking/profile/components/booking-profile-card';
-import { PageHeader } from './components/page-header';
+import { FormDialog } from '~/components/dialog/form-dialog';
 import { ErrorMessage } from '~/components/errors/error-messages';
 import { UserProfileCard } from '~/components/cards/user-card';
-import { type ActionFunctionArgs } from 'react-router';
 import { fileToBase64 } from '~/lib/file.utils';
 import { createImageUploadRenderer } from '~/components/dialog/create-image-upload-renderer';
 import { createServicesSelectionRenderer } from '~/components/dialog/create-services-rendrer';
-import type { BookingProfileDto } from 'tmp/openapi/gen/booking';
-import type { UserDto } from '~/api/clients/types';
 
-export type BookingProfileLoaderData = {
-  user?: UserDto;
-  bookingProfile?: BookingProfileDto;
-  services?: Array<{ id: number; name: string }>;
-  error?: string;
-};
+import {
+  profileLoader,
+  profileAction,
+  actions,
+  type BookingProfileLoaderData,
+} from './_features/profile.feature';
+import { EmptyBookingProfile } from './_components/booking-profile-placeholder';
+import { BookingProfileCard } from './_components/booking-profile-card';
+import { PageHeader } from './_components/page-header';
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  try {
-    const accesToken = await getAccessToken(request);
-    if (!accesToken) {
-      return redirect('/');
-    }
+export const loader = profileLoader;
+export const action = profileAction;
 
-    const userResponse = await baseApi(accesToken).UserControllerService.UserControllerService.getAuthenticatedUser();
-
-    const bookingProfileResponse =
-      await bookingApi(accesToken).BookingProfileControllerService.BookingProfileControllerService.getBookingProfile();
-
-    const servicesResponse = await bookingApi(accesToken).ServiceControllerService.ServiceControllerService.getServices(
-      {},
-    );
-
-    return data<BookingProfileLoaderData>({
-      user: userResponse.data as UserDto,
-      bookingProfile: bookingProfileResponse,
-      services: servicesResponse.data?.content.map((s: any) => ({ id: s.id, name: s.name })) ?? [],
-    });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-
-    const apiError = error as ApiClientError;
-
-    if (apiError?.body?.message) {
-      return data<BookingProfileLoaderData>({
-        error: apiError.body.message,
-      });
-    }
-
-    throw error;
-  }
-}
-
-const actions = {
-  GET_OR_CREATE_BOOKING_PROFILE: 'GET_OR_CREATE_BOOKING_PROFILE',
-};
-
-export async function action({ request }: ActionFunctionArgs) {
-  try {
-    const accesToken = await getAccessToken(request);
-    if (!accesToken) {
-      return redirect('/');
-    }
-
-    const formData = await request.formData();
-    const actionType = formData.get('actionType');
-    console.log(actionType);
-
-    if (actionType === actions.GET_OR_CREATE_BOOKING_PROFILE) {
-      const description = formData.get('description') as string;
-      const services = formData.getAll('services[]').map(Number);
-
-      const imageFileName = formData.get('image[fileName]') as string | null;
-      const imageContentType = formData.get('image[contentType]') as string | null;
-      const imageData = formData.get('image[data]') as string | null;
-
-      const payload: any = {
-        description: description || undefined,
-        services,
-      };
-
-      if (imageFileName && imageContentType && imageData) {
-        payload.image = {
-          fileName: imageFileName,
-          label: imageFileName,
-          contentType: imageContentType,
-          data: imageData,
-        };
-      }
-
-      await bookingApi(
-        accesToken,
-      ).BookingProfileControllerService.BookingProfileControllerService.createOrUpdateProfile({
-        requestBody: payload,
-      });
-
-      return data({ success: true, message: 'Bookingprofil lagret' });
-    }
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
-  }
-}
-
-export default function BookingProfilePage() {
+export default function BookingCompanyUserProfile() {
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
 
   const { user, bookingProfile, services = [], error } = useLoaderData() as BookingProfileLoaderData;
@@ -127,16 +33,14 @@ export default function BookingProfilePage() {
 
   const initials = (user?.givenName?.[0] ?? '').toUpperCase() + (user?.familyName?.[0] ?? '').toUpperCase();
 
-  // ✅ Populate form with existing profile data when dialog opens
   useEffect(() => {
     if (createOrUpdateDialogOpen && bookingProfile) {
       setCreateOrUpdateDialogForm({
         description: bookingProfile.description || '',
         services: bookingProfile.services?.map((s: any) => s.id) || [],
-        image: null, // Existing image is already saved, user can upload new one to replace
+        image: null,
       });
     } else if (createOrUpdateDialogOpen && !bookingProfile) {
-      // Reset form for new profile
       setCreateOrUpdateDialogForm({
         description: '',
         services: [],
@@ -185,13 +89,9 @@ export default function BookingProfilePage() {
     setCreateOrUpdateBookingProfileDialogOpen(true);
   };
 
-  const handleResetDescription = () => {};
-
   const renderImageUpload = createImageUploadRenderer();
-
   const renderServicesSelection = createServicesSelectionRenderer({ services });
 
-  // ✅ Dynamic dialog title based on whether profile exists
   const dialogTitle = bookingProfile ? 'Rediger bookingprofil' : 'Lag bookingprofil';
   const dialogSubmitLabel = bookingProfile ? 'Lagre endringer' : 'Opprett';
 
