@@ -42,9 +42,6 @@ export type RouteBranch = {
 };
 
 export const ROUTE_TREE: RouteBranch[] = [
-  // ============================================
-  // AUTH ROUTES - Grouped authentication flows
-  // ============================================
   {
     id: 'auth',
     href: '/auth',
@@ -92,10 +89,6 @@ export const ROUTE_TREE: RouteBranch[] = [
       },
     ],
   },
-
-  // ============================================
-  // USER ROUTES - Authenticated user specific
-  // ============================================
   {
     id: 'user',
     href: '/user',
@@ -123,10 +116,6 @@ export const ROUTE_TREE: RouteBranch[] = [
       },
     ],
   },
-
-  // ============================================
-  // COMPANY ROUTES - Company management
-  // ============================================
   {
     id: 'company',
     href: '/company',
@@ -190,10 +179,6 @@ export const ROUTE_TREE: RouteBranch[] = [
       },
     ],
   },
-
-  // ============================================
-  // BOOKING ROUTES - Split by access level
-  // ============================================
   {
     id: 'booking',
     href: '/booking',
@@ -201,7 +186,6 @@ export const ROUTE_TREE: RouteBranch[] = [
     category: BrachCategory.COMPANY,
     accessType: Access.PUBLIC,
     children: [
-      // PUBLIC BOOKING - No authentication required
       {
         id: 'booking.public',
         href: 'public',
@@ -274,8 +258,6 @@ export const ROUTE_TREE: RouteBranch[] = [
           },
         ],
       },
-
-      // ADMIN ONLY BOOKING ROUTES
       {
         id: 'booking.admin',
         href: 'admin',
@@ -329,8 +311,6 @@ export const ROUTE_TREE: RouteBranch[] = [
           },
         ],
       },
-
-      // COMPANY USER BOOKING ROUTES (Admin + Employee)
       {
         id: 'booking.company-user',
         href: 'company-user',

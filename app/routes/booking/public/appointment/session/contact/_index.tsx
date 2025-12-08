@@ -1,11 +1,20 @@
-import { data, redirect, useLoaderData, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
+import {
+  data,
+  redirect,
+  useLoaderData,
+  useFetcher,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+} from 'react-router';
 import type { ContactDto } from 'tmp/openapi/gen/base';
 import type { ApiClientError } from '~/api/clients/http';
 import type { AppointmentSessionDto } from '~/api/clients/types';
-import { GetOrCreateContactFetcherForm } from '~/components/forms/contact-form';
+import { SubmitContactForm } from '~/routes/booking/public/appointment/session/contact/_forms/submit-contact.form';
 import { getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { baseApi, bookingApi } from '~/lib/utils';
+import { BookingContainer, BookingSection, BookingMeta } from '../../_components/booking-layout';
+import type { SubmitContactFormSchema } from './_schemas/submit-contact.form.schema';
 
 export type AppointmentsContactFormLoaderData = {
   session: AppointmentSessionDto;
@@ -93,6 +102,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function AppointmentsContactForm() {
   const { session, existingContact, error } = useLoaderData<AppointmentsContactFormLoaderData>();
+  const fetcher = useFetcher({ key: 'appointment-contact-form-fetcher' });
 
   const initialValues = existingContact
     ? {
@@ -105,54 +115,54 @@ export default function AppointmentsContactForm() {
       }
     : undefined;
 
+  const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
+
+  const handleSubmit = (values: SubmitContactFormSchema) => {
+    const formData = new FormData();
+    if (values.id) formData.set('id', String(values.id));
+    formData.set('companyId', String(values.companyId));
+    formData.set('givenName', values.givenName);
+    formData.set('familyName', values.familyName);
+    if (values.email) formData.set('email', values.email);
+    if (values.mobileNumber) formData.set('mobileNumber', values.mobileNumber);
+
+    fetcher.submit(formData, {
+      method: 'post',
+    });
+  };
+
   return (
-    <div className="w-full space-y-5">
-      <div className="border border-border bg-background p-4 sm:p-5 space-y-5">
-        <div className="space-y-1.5">
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Kontaktinformasjon</p>
-          <h1 className="text-base font-semibold text-foreground">Hvem skal vi registrere avtalen på?</h1>
-          {error && <p className="text-[0.8rem] text-destructive">{error}</p>}
-        </div>
+    <BookingContainer>
+      <BookingSection label="Kontaktinformasjon" title="Hvem skal vi registrere avtalen på?">
+        {error && <p className="text-[0.8rem] text-destructive">{error}</p>}
 
         {existingContact && (
-          <div className="border-t border-border pt-4 space-y-2">
+          <div className="border-t border-border pt-4 space-y-3">
             <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
               Eksisterende kontakt
             </span>
-            <div className="border border-border bg-muted p-3 space-y-2">
-              <div className="flex items-baseline gap-2">
-                <span className="text-[0.7rem] text-muted-foreground">Navn:</span>
-                <span className="text-sm text-foreground">
-                  {existingContact.givenName} {existingContact.familyName}
-                </span>
-              </div>
-              {existingContact.email?.value && (
-                <div className="flex items-baseline gap-2">
-                  <span className="text-[0.7rem] text-muted-foreground">E-post:</span>
-                  <span className="text-sm text-foreground">{existingContact.email.value}</span>
-                </div>
-              )}
-              {existingContact.mobileNumber?.value && (
-                <div className="flex items-baseline gap-2">
-                  <span className="text-[0.7rem] text-muted-foreground">Mobil:</span>
-                  <span className="text-sm text-foreground">{existingContact.mobileNumber.value}</span>
-                </div>
-              )}
-            </div>
-            <p className="text-[0.7rem] text-muted-foreground">Du kan oppdatere informasjonen under om nødvendig</p>
+            <BookingSection variant="muted" className="space-y-2">
+              <BookingMeta
+                items={[
+                  { label: 'Navn', value: `${existingContact.givenName} ${existingContact.familyName}` },
+                  ...(existingContact.email?.value ? [{ label: 'E-post', value: existingContact.email.value }] : []),
+                  ...(existingContact.mobileNumber?.value
+                    ? [{ label: 'Mobil', value: existingContact.mobileNumber.value }]
+                    : []),
+                ]}
+              />
+              <p className="text-[0.7rem] text-muted-foreground">Du kan oppdatere informasjonen under om nødvendig</p>
+            </BookingSection>
           </div>
         )}
 
-        <div className="border-t border-border pt-4">
-          <GetOrCreateContactFetcherForm
-            companyId={session.companyId}
-            initialValues={initialValues}
-            onSuccess={(values) => {
-              console.log('Client-side contact form submission:', values);
-            }}
-          />
-        </div>
-      </div>
-    </div>
+        <SubmitContactForm
+          companyId={session.companyId}
+          initialValues={initialValues}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+        />
+      </BookingSection>
+    </BookingContainer>
   );
 }

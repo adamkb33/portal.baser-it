@@ -1,39 +1,33 @@
 import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useFetcher } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
 import {
-  type GetCreateOrUpdateContactSchema,
-  getCreateOrUpdateContactSchema,
-} from '~/features/booking/get-or-create-contact.schema';
+  type SubmitContactFormSchema,
+  submitContactFormSchema,
+} from '~/routes/booking/public/appointment/session/contact/_schemas/submit-contact.form.schema';
 
 export interface GetOrCreateContactFetcherFormProps {
   companyId: number;
-  onSuccess?: (values: GetCreateOrUpdateContactSchema) => void;
+  onSubmit: (values: SubmitContactFormSchema) => void;
   onChange?: () => void;
-  initialValues?: Partial<GetCreateOrUpdateContactSchema>;
-  action?: string;
-  method?: 'post' | 'put' | 'patch';
+  initialValues?: Partial<SubmitContactFormSchema>;
+  isSubmitting?: boolean;
 }
 
-export function GetOrCreateContactFetcherForm({
+export function SubmitContactForm({
   companyId,
-  onSuccess,
+  onSubmit,
   onChange,
   initialValues,
-  action,
-  method = 'post',
+  isSubmitting = false,
 }: GetOrCreateContactFetcherFormProps) {
-  console.log(initialValues);
-  const fetcher = useFetcher({ key: 'appointment-contact-form-fetcher' });
-
-  const form = useForm<GetCreateOrUpdateContactSchema>({
-    resolver: zodResolver(getCreateOrUpdateContactSchema),
+  const form = useForm<SubmitContactFormSchema>({
+    resolver: zodResolver(submitContactFormSchema),
     defaultValues: {
       companyId,
       givenName: '',
@@ -54,37 +48,13 @@ export function GetOrCreateContactFetcherForm({
     return () => subscription.unsubscribe();
   }, [form, onChange]);
 
-  const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
-
   const handleSubmit = form.handleSubmit((values) => {
-    const formData = new FormData();
-    formData.set('id', String(values.id));
-    formData.set('companyId', String(values.companyId));
-    formData.set('givenName', values.givenName);
-    formData.set('familyName', values.familyName);
-    if (values.email) formData.set('email', values.email);
-    if (values.mobileNumber) formData.set('mobileNumber', values.mobileNumber);
-
-    fetcher.submit(formData, {
-      method,
-      action,
-    });
-
-    onSuccess?.(values);
+    onSubmit(values);
   });
 
   return (
     <Form {...form}>
-      <fetcher.Form
-        method={method}
-        action={action}
-        className="flex flex-col gap-3 bg-white"
-        onSubmit={handleSubmit}
-        noValidate
-      >
-        {initialValues && initialValues.id && <input type="hidden" name="id" value={initialValues.id} />}
-        <input type="hidden" name="companyId" value={companyId} />
-
+      <form className="flex flex-col gap-3" onSubmit={handleSubmit} noValidate>
         <div className="flex flex-col gap-3 sm:flex-row">
           <FormField
             control={form.control}
@@ -162,14 +132,10 @@ export function GetOrCreateContactFetcherForm({
           )}
         />
 
-        <Button
-          type="submit"
-          className="h-9 w-full rounded-none border border-border bg-foreground text-sm text-background"
-          disabled={isSubmitting}
-        >
+        <Button variant="primary" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Lagrer…' : 'Fortsett'}
         </Button>
-      </fetcher.Form>
+      </form>
     </Form>
   );
 }

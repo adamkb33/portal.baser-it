@@ -3,7 +3,7 @@ import { data, Outlet, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 import type { ApiClientError } from '~/api/clients/http';
 import { getSession } from '~/lib/appointments.server';
-import { AppointmentStepper } from './_components/appointment-stepper';
+import { RouteAwareStepper } from './_components/route-aware-stepper';
 import type { AppointmentSessionDto } from '~/api/clients/types';
 
 export type BookingPublicAppointmentSessionLayoutLoaderData = {
@@ -39,10 +39,10 @@ export default function BookingPublicAppointmentSessionLayout() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {data.session && <AppointmentStepper session={data.session} />}
+    <div className="space-y-6">
+      {data.session && <RouteAwareStepper session={data.session} />}
 
-      <main className="shadow-[8px_8px_0px_0px_rgb(120,40,180)]">
+      <main className="sm:border sm:p-2 shadow-[8px_8px_0px_0px_rgb(120,40,180)]">
         <Outlet />
       </main>
     </div>

@@ -5,6 +5,13 @@ import { bookingApi } from '~/lib/utils';
 import { type ActionFunctionArgs } from 'react-router';
 import type { AppointmentSessionOverviewDto } from 'tmp/openapi/gen/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import {
+  BookingContainer,
+  BookingPageHeader,
+  BookingSection,
+  BookingMeta,
+  BookingButton,
+} from '../../_components/booking-layout';
 
 type BookingPublicAppointmentSessionOverviewRouteLoaderData = {
   sessionOverview: AppointmentSessionOverviewDto;
@@ -97,153 +104,108 @@ export default function BookingPublicAppointmentSessionOverviewRoute() {
   const totalPrice = sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.price, 0);
 
   return (
-    <div className="space-y-5">
-      <div className="border-b border-border pb-4">
-        <h1 className="text-base font-semibold text-foreground">Oversikt over avtalen</h1>
-        <p className="text-[0.7rem] text-muted-foreground mt-1">
-          Sjekk at alle opplysningene stemmer før du bekrefter avtalen
-        </p>
-      </div>
+    <BookingContainer>
+      <BookingPageHeader
+        title="Oversikt over avtalen"
+        description="Sjekk at alle opplysningene stemmer før du bekrefter avtalen"
+      />
 
-      <div className="space-y-4">
-        {/* Contact information */}
-        <div className="border border-border bg-background p-4 sm:p-5 space-y-3">
-          <div className="border-b border-border pb-3">
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-              Kontaktinformasjon
-            </span>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-baseline gap-2">
-              <span className="text-[0.7rem] text-muted-foreground min-w-20">Navn:</span>
-              <span className="text-sm text-foreground">
-                {sessionOverview.contact.givenName} {sessionOverview.contact.familyName}
-              </span>
+      {/* Contact information */}
+      <BookingSection label="Kontaktinformasjon">
+        <BookingMeta
+          items={[
+            { label: 'Navn', value: `${sessionOverview.contact.givenName} ${sessionOverview.contact.familyName}` },
+            ...(sessionOverview.contact.email?.value
+              ? [{ label: 'E-post', value: sessionOverview.contact.email.value }]
+              : []),
+            ...(sessionOverview.contact.mobileNumber?.value
+              ? [{ label: 'Mobil', value: sessionOverview.contact.mobileNumber.value }]
+              : []),
+          ]}
+        />
+      </BookingSection>
+
+      {/* Selected profile */}
+      <BookingSection label="Valgt frisør">
+        <div className="flex gap-3">
+          {sessionOverview.selectedProfile.image && (
+            <div className="border border-border bg-muted w-16 h-16 flex-shrink-0">
+              <img
+                src={sessionOverview.selectedProfile.image.url}
+                alt={`${sessionOverview.selectedProfile.givenName} ${sessionOverview.selectedProfile.familyName}`}
+                className="w-full h-full object-cover"
+              />
             </div>
-            {sessionOverview.contact.email?.value && (
-              <div className="flex items-baseline gap-2">
-                <span className="text-[0.7rem] text-muted-foreground min-w-20">E-post:</span>
-                <span className="text-sm text-foreground">{sessionOverview.contact.email.value}</span>
-              </div>
-            )}
-            {sessionOverview.contact.mobileNumber?.value && (
-              <div className="flex items-baseline gap-2">
-                <span className="text-[0.7rem] text-muted-foreground min-w-20">Mobil:</span>
-                <span className="text-sm text-foreground">{sessionOverview.contact.mobileNumber.value}</span>
-              </div>
+          )}
+          <div className="flex-1">
+            <h2 className="text-sm font-semibold text-foreground">
+              {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
+            </h2>
+            {sessionOverview.selectedProfile.description && (
+              <p className="text-xs text-muted-foreground mt-1">{sessionOverview.selectedProfile.description}</p>
             )}
           </div>
         </div>
+      </BookingSection>
 
-        {/* Selected profile */}
-        <div className="border border-border bg-background p-4 sm:p-5 space-y-3">
-          <div className="border-b border-border pb-3">
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Valgt frisør</span>
-          </div>
-          <div className="flex gap-3">
-            {sessionOverview.selectedProfile.image && (
-              <div className="border border-border bg-muted w-16 h-16 flex-shrink-0">
-                <img
-                  src={sessionOverview.selectedProfile.image.url}
-                  alt={`${sessionOverview.selectedProfile.givenName} ${sessionOverview.selectedProfile.familyName}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            <div className="flex-1">
-              <h2 className="text-sm font-semibold text-foreground">
-                {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
-              </h2>
-              {sessionOverview.selectedProfile.description && (
-                <p className="text-xs text-muted-foreground mt-1">{sessionOverview.selectedProfile.description}</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Selected services */}
-        <div className="border border-border bg-background p-4 sm:p-5 space-y-3">
-          <div className="border-b border-border pb-3">
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-              Valgte tjenester
-            </span>
-          </div>
-          <div className="space-y-3">
-            {sessionOverview.selectedServices.map((item, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm text-foreground">{item.services.name}</span>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-xs text-muted-foreground">{item.services.duration} min</span>
-                    <span className="text-sm font-medium text-foreground">{item.services.price} kr</span>
-                  </div>
+      {/* Selected services */}
+      <BookingSection label="Valgte tjenester">
+        <div className="space-y-3">
+          {sessionOverview.selectedServices.map((item, index) => (
+            <div key={index} className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm text-foreground">{item.services.name}</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs text-muted-foreground">{item.services.duration} min</span>
+                  <span className="text-sm font-medium text-foreground">{item.services.price} kr</span>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
 
-          <div className="border-t border-border pt-3">
-            <div className="flex items-baseline justify-between">
-              <span className="text-sm font-semibold text-foreground">Totalt</span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-xs text-muted-foreground">{totalDuration} min</span>
-                <span className="text-base font-semibold text-foreground">{totalPrice} kr</span>
-              </div>
+        <div className="border-t border-border pt-3">
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm font-semibold text-foreground">Totalt</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-xs text-muted-foreground">{totalDuration} min</span>
+              <span className="text-base font-semibold text-foreground">{totalPrice} kr</span>
             </div>
           </div>
         </div>
+      </BookingSection>
 
-        {/* Selected time */}
-        <div className="border border-border bg-background p-4 sm:p-5 space-y-3">
-          <div className="border-b border-border pb-3">
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Tidspunkt</span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm text-foreground">
-              {formatNorwegianDateTime(sessionOverview.selectedStartTime)}
-            </span>
-          </div>
-        </div>
+      {/* Selected time */}
+      <BookingSection label="Tidspunkt">
+        <span className="text-sm text-foreground">{formatNorwegianDateTime(sessionOverview.selectedStartTime)}</span>
+      </BookingSection>
 
-        {/* Action buttons */}
-        <div className="border border-border bg-background p-4 sm:p-5 space-y-3">
-          <Form method="post">
-            <button
-              type="submit"
-              className="w-full border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"
-            >
-              Bekreft og book time
-            </button>
+      {/* Action buttons */}
+      <BookingSection>
+        <Form method="post">
+          <BookingButton type="submit" variant="primary" fullWidth>
+            Bekreft og book time
+          </BookingButton>
+        </Form>
+
+        <div className="flex gap-2">
+          <Form method="get" action="/appointments/contact" className="flex-1">
+            <BookingButton type="submit" variant="outline" fullWidth>
+              Endre kontakt
+            </BookingButton>
           </Form>
-
-          <div className="flex gap-2">
-            <Form method="get" action="/appointments/contact" className="flex-1">
-              <button
-                type="submit"
-                className="w-full border border-border bg-background text-foreground px-3 py-2 text-xs font-medium rounded-none"
-              >
-                Endre kontakt
-              </button>
-            </Form>
-            <Form method="get" action="/appointments/select-services" className="flex-1">
-              <button
-                type="submit"
-                className="w-full border border-border bg-background text-foreground px-3 py-2 text-xs font-medium rounded-none"
-              >
-                Endre tjenester
-              </button>
-            </Form>
-            <Form method="get" action="/appointments/select-time" className="flex-1">
-              <button
-                type="submit"
-                className="w-full border border-border bg-background text-foreground px-3 py-2 text-xs font-medium rounded-none"
-              >
-                Endre tidspunkt
-              </button>
-            </Form>
-          </div>
+          <Form method="get" action="/appointments/select-services" className="flex-1">
+            <BookingButton type="submit" variant="outline" fullWidth>
+              Endre tjenester
+            </BookingButton>
+          </Form>
+          <Form method="get" action="/appointments/select-time" className="flex-1">
+            <BookingButton type="submit" variant="outline" fullWidth>
+              Endre tidspunkt
+            </BookingButton>
+          </Form>
         </div>
-      </div>
-    </div>
+      </BookingSection>
+    </BookingContainer>
   );
 }

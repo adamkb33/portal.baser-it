@@ -8,6 +8,7 @@ import { appointmentSessionSelectTimeAction } from './_features/appointment.sess
 import { appointmentSessionSelectTimeLoader } from './_features/appointment.session.select-time.action';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { BookingContainer, BookingPageHeader } from '../../_components/booking-layout';
 
 export type AppointmentsSelectTimeLoaderData = {
   session: AppointmentSessionDto;
@@ -156,24 +157,20 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
   const totalSlots = currentWeekSchedules.reduce((sum, s) => sum + s.timeSlots.length, 0);
 
   return (
-    <div className="flex flex-col md:h-auto">
+    <BookingContainer>
       {/* Header */}
-      <div className="border-b border-border bg-background p-3 md:p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1">
-            <h1 className="text-sm font-semibold text-foreground">Velg tidspunkt</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {displayTime ? 'Valgt tidspunkt kan endres' : 'Velg dato og klokkeslett'}
-            </p>
-          </div>
-          {weekGroups.length > 0 && (
+      <BookingPageHeader
+        title="Velg tidspunkt"
+        description={displayTime ? 'Valgt tidspunkt kan endres' : 'Velg dato og klokkeslett'}
+        meta={
+          weekGroups.length > 0 && (
             <div className="flex items-center gap-1 border border-border bg-muted px-2 py-1">
               <Calendar className="w-3 h-3 text-muted-foreground" />
               <span className="text-[0.7rem] font-medium text-muted-foreground">{schedules.length} dager</span>
             </div>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       {/* Week Navigator - Mobile & Desktop */}
       {weekGroups.length > 1 && (
@@ -435,7 +432,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
 
       {/* Sticky Selected Time Footer */}
       {displayTime && (
-        <div className="border-t border-border bg-primary text-primary-foreground p-3 md:p-4">
+        <div className="border-t border-border bg-primary text-primary-foreground p-4 sm:p-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="space-y-1">
               <span className="text-[0.65rem] font-medium uppercase tracking-[0.12em] opacity-80">Valgt tidspunkt</span>
@@ -455,6 +452,6 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
           </div>
         </div>
       )}
-    </div>
+    </BookingContainer>
   );
 }

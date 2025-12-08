@@ -4,6 +4,7 @@ import { Check, MapPin } from 'lucide-react';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 import { baseApi, bookingApi } from '~/lib/utils';
 import type { ApiClientError } from '~/api/clients/http';
+import { BookingContainer, BookingSection, BookingStepList, BookingButton } from '../_components/booking-layout';
 
 export type BookingPublicAppointmentSessionSuccessRouteLoaderData = {
   companySummary: CompanySummaryDto;
@@ -74,8 +75,8 @@ export default function BookingPublicAppointmentSessionSuccessRoute() {
   const mapsUrl = getGoogleMapsUrl();
 
   return (
-    <div className="w-full border border-border bg-background p-4 sm:p-5 space-y-5">
-      <div className="space-y-3">
+    <BookingContainer>
+      <BookingSection>
         <div className="flex items-center gap-2">
           <div className="border border-border bg-foreground p-2">
             <Check className="h-5 w-5 text-background" strokeWidth={2} />
@@ -87,97 +88,74 @@ export default function BookingPublicAppointmentSessionSuccessRoute() {
           Vi har mottatt din timebestilling og sender deg en bekreftelse på e-post innen kort tid. Du vil motta en
           påminnelse før timen din.
         </p>
-      </div>
+      </BookingSection>
 
-      <div className="border-t border-border pt-4 space-y-3">
-        <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Møtested</span>
+      <BookingSection label="Møtested">
         <div className="space-y-2">
           <h2 className="text-sm font-semibold text-foreground">{companySummary.name || 'Ukjent selskap'}</h2>
           {formattedAddress && <p className="text-sm text-muted-foreground">{formattedAddress}</p>}
         </div>
-      </div>
+      </BookingSection>
 
       {companySummary.businessAddress && (
-        <div className="border-t border-border pt-4 space-y-3">
-          <div className="border border-border bg-muted p-3 sm:p-4 space-y-3">
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Adresse</span>
-            <div className="space-y-1">
-              {companySummary.businessAddress.addressLines?.map((line, idx) => (
-                <p key={idx} className="text-sm text-foreground">
-                  {line}
-                </p>
-              ))}
-              {(companySummary.businessAddress.postalCode || companySummary.businessAddress.city) && (
-                <p className="text-sm text-foreground">
-                  {[companySummary.businessAddress.postalCode, companySummary.businessAddress.city]
-                    .filter(Boolean)
-                    .join(' ')}
-                </p>
-              )}
-              {companySummary.businessAddress.country && (
-                <p className="text-sm text-foreground">{companySummary.businessAddress.country}</p>
-              )}
-            </div>
-            {mapsUrl && (
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"
-              >
-                <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
-                Åpne i Google Maps
-              </a>
+        <BookingSection variant="muted" label="Adresse">
+          <div className="space-y-1">
+            {companySummary.businessAddress.addressLines?.map((line, idx) => (
+              <p key={idx} className="text-sm text-foreground">
+                {line}
+              </p>
+            ))}
+            {(companySummary.businessAddress.postalCode || companySummary.businessAddress.city) && (
+              <p className="text-sm text-foreground">
+                {[companySummary.businessAddress.postalCode, companySummary.businessAddress.city]
+                  .filter(Boolean)
+                  .join(' ')}
+              </p>
+            )}
+            {companySummary.businessAddress.country && (
+              <p className="text-sm text-foreground">{companySummary.businessAddress.country}</p>
             )}
           </div>
-        </div>
+          {mapsUrl && (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none hover:bg-foreground/90"
+            >
+              <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
+              Åpne i Google Maps
+            </a>
+          )}
+        </BookingSection>
       )}
 
       {/* Next steps */}
-      <div className="border-t border-border pt-4 space-y-3">
-        <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Hva skjer nå?</span>
-        <div className="space-y-2">
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 mt-0.5">
-              <div className="border border-border bg-background px-2 py-0.5 text-[0.7rem] font-medium">1</div>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-sm font-medium text-foreground">Du mottar en bekreftelse</p>
-              <p className="text-[0.7rem] text-muted-foreground">
-                Vi sender deg en e-post med alle detaljer om timen din
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 mt-0.5">
-              <div className="border border-border bg-background px-2 py-0.5 text-[0.7rem] font-medium">2</div>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-sm font-medium text-foreground">Du får en påminnelse</p>
-              <p className="text-[0.7rem] text-muted-foreground">Vi sender deg en påminnelse dagen før timen din</p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 mt-0.5">
-              <div className="border border-border bg-background px-2 py-0.5 text-[0.7rem] font-medium">3</div>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-sm font-medium text-foreground">Møt opp til avtalt tid</p>
-              <p className="text-[0.7rem] text-muted-foreground">Husk å møte opp i god tid på angitt adresse</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <BookingSection label="Hva skjer nå?">
+        <BookingStepList
+          steps={[
+            {
+              title: 'Du mottar en bekreftelse',
+              description: 'Vi sender deg en e-post med alle detaljer om timen din',
+            },
+            {
+              title: 'Du får en påminnelse',
+              description: 'Vi sender deg en påminnelse dagen før timen din',
+            },
+            {
+              title: 'Møt opp til avtalt tid',
+              description: 'Husk å møte opp i god tid på angitt adresse',
+            },
+          ]}
+        />
+      </BookingSection>
 
       {/* CTA */}
-      <div className="border-t border-border pt-4">
-        <a
-          href="/"
-          className="inline-flex border border-border bg-background text-foreground px-3 py-2 text-xs font-medium rounded-none"
-        >
-          Tilbake til forsiden
+      <BookingSection>
+        <a href="/">
+          <BookingButton variant="outline">Tilbake til forsiden</BookingButton>
         </a>
-      </div>
-    </div>
+      </BookingSection>
+    </BookingContainer>
   );
 }

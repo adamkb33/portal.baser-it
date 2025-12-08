@@ -9,6 +9,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import type { AppointmentSessionDto, GroupedServiceGroupsDto } from '~/api/clients/types';
 import type { GroupedServiceDto } from 'tmp/openapi/gen/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import { BookingContainer, BookingSection, BookingGrid, BookingButton } from '../../_components/booking-layout';
 
 export type AppointmentsSelectServicesLoaderData = {
   session: AppointmentSessionDto;
@@ -131,16 +132,12 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
 
   return (
     <>
-      <div className="space-y-5">
+      <BookingContainer>
         {serviceGroups
           .filter((group) => group.services.length > 0)
           .map((group) => (
-            <div key={group.id} className="border border-border bg-background p-4 sm:p-5 space-y-4">
-              <div className="border-b border-border pb-3">
-                <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{group.name}</h2>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <BookingSection key={group.id} label={group.name}>
+              <BookingGrid cols={3}>
                 {group.services.map((service) => {
                   const isSelected = selectedServices.has(service.id);
                   const hasImages = service.images && service.images.length > 0;
@@ -156,56 +153,45 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
                       </div>
 
                       {hasImages && (
-                        <button
-                          type="button"
-                          onClick={() => setDialogService(service)}
-                          className="px-0 text-[0.7rem] font-medium text-muted-foreground underline-offset-2 hover:underline"
-                        >
+                        <BookingButton variant="text" size="sm" onClick={() => setDialogService(service)}>
                           Vis bilder
-                        </button>
+                        </BookingButton>
                       )}
 
                       <div className="pt-2">
-                        <button
-                          type="button"
+                        <BookingButton
+                          variant={isSelected ? 'outline' : 'primary'}
+                          fullWidth
                           onClick={() => toggleService(service.id)}
-                          className={`w-full border border-border px-3 py-2 text-xs font-medium rounded-none ${
-                            isSelected ? 'bg-background text-foreground' : 'bg-foreground text-background'
-                          }`}
                         >
                           {isSelected ? 'Fjern' : 'Legg til'}
-                        </button>
+                        </BookingButton>
                       </div>
                     </div>
                   );
                 })}
-              </div>
-            </div>
+              </BookingGrid>
+            </BookingSection>
           ))}
-      </div>
+      </BookingContainer>
 
       {hasSelections && (
-        <div className="border border-border bg-background p-4 sm:p-5 space-y-4">
+        <BookingSection label="Valgte tjenester">
           <div className="space-y-2">
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-              Valgte tjenester
-            </span>
-            <div className="space-y-2">
-              {Array.from(selectedServices).map((serviceId) => {
-                const service = findService(serviceId);
-                if (!service) return null;
+            {Array.from(selectedServices).map((serviceId) => {
+              const service = findService(serviceId);
+              if (!service) return null;
 
-                return (
-                  <div key={serviceId} className="flex items-center justify-between gap-3">
-                    <span className="text-sm text-foreground">{service.name}</span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xs text-muted-foreground">{service.duration} min</span>
-                      <span className="text-sm font-medium text-foreground">{service.price} kr</span>
-                    </div>
+              return (
+                <div key={serviceId} className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-foreground">{service.name}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs text-muted-foreground">{service.duration} min</span>
+                    <span className="text-sm font-medium text-foreground">{service.price} kr</span>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="border-t border-border pt-4">
@@ -222,14 +208,11 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
             {Array.from(selectedServices).map((serviceId) => (
               <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
             ))}
-            <button
-              type="submit"
-              className="w-full border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"
-            >
+            <BookingButton type="submit" variant="primary" fullWidth>
               Fortsett til tidspunkt
-            </button>
+            </BookingButton>
           </Form>
-        </div>
+        </BookingSection>
       )}
 
       <Dialog open={dialogService !== null} onOpenChange={(open) => !open && setDialogService(null)}>

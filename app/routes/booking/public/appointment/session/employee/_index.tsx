@@ -6,7 +6,13 @@ import { getSession } from '~/lib/appointments.server';
 import { bookingApi } from '~/lib/utils';
 import { type ActionFunctionArgs } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { Button } from '~/components/ui/button';
+import {
+  BookingContainer,
+  BookingPageHeader,
+  BookingGrid,
+  BookingSection,
+  BookingButton,
+} from '../../_components/booking-layout';
 
 export type AppointmentsEmployeeLoaderData = {
   session: AppointmentSessionDto;
@@ -86,33 +92,26 @@ export default function AppointmentsEmployee() {
   const { profiles, selectedProfileId } = useLoaderData<AppointmentsEmployeeLoaderData>();
 
   return (
-    <div className="space-y-5">
-      <div className="border-b border-border pb-4">
-        <h1 className="text-base font-semibold text-foreground">Velg frisør</h1>
-        <p className="text-[0.7rem] text-muted-foreground mt-1">
-          {selectedProfileId
+    <BookingContainer>
+      <BookingPageHeader
+        title="Velg frisør"
+        description={
+          selectedProfileId
             ? 'Du har allerede valgt en frisør. Du kan endre valget eller fortsette.'
-            : 'Velg en frisør for å fortsette med timebestilling'}
-        </p>
-      </div>
+            : 'Velg en frisør for å fortsette med timebestilling'
+        }
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <BookingGrid cols={2}>
         {profiles.map((profile) => {
           const isSelected = selectedProfileId === profile.id;
 
           return (
-            <div
+            <BookingSection
               key={profile.id}
-              className={`border p-4 sm:p-5 space-y-4 ${
-                isSelected ? 'border-primary bg-background' : 'border-border bg-background'
-              }`}
+              label={isSelected ? 'Valgt frisør' : undefined}
+              className={isSelected ? 'border-primary' : ''}
             >
-              {isSelected && (
-                <div className="border-b border-border pb-3">
-                  <span className="text-xs font-medium uppercase tracking-[0.12em] text-primary">Valgt frisør</span>
-                </div>
-              )}
-
               <div className="flex gap-3">
                 {profile.image && (
                   <div className="border border-border bg-muted w-16 h-16 flex-shrink-0">
@@ -153,24 +152,23 @@ export default function AppointmentsEmployee() {
               <div className="border-t border-border pt-4">
                 {isSelected ? (
                   <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>
-                    <Button variant="primary" className="w-full" type="submit">
+                    <BookingButton variant="primary" fullWidth>
                       Fortsett med {profile.givenName}
-                    </Button>
+                    </BookingButton>
                   </Link>
                 ) : (
                   <Form method="post">
                     <input type="hidden" name="selectedProfileId" value={profile.id} />
-                    <Button type="submit">
-                      {isSelected ? 'Fortsett med ' : 'Velg '}
-                      {profile.givenName}
-                    </Button>
+                    <BookingButton type="submit" fullWidth>
+                      Velg {profile.givenName}
+                    </BookingButton>
                   </Form>
                 )}
               </div>
-            </div>
+            </BookingSection>
           );
         })}
-      </div>
-    </div>
+      </BookingGrid>
+    </BookingContainer>
   );
 }
