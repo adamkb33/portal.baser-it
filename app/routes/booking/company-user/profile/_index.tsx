@@ -7,12 +7,7 @@ import { fileToBase64 } from '~/lib/file.utils';
 import { createImageUploadRenderer } from '~/components/dialog/create-image-upload-renderer';
 import { createServicesSelectionRenderer } from '~/components/dialog/create-services-rendrer';
 
-import {
-  profileLoader,
-  profileAction,
-  actions,
-  type BookingProfileLoaderData,
-} from './_features/profile.feature';
+import { profileLoader, profileAction, actions, type BookingProfileLoaderData } from './_features/profile.feature';
 import { EmptyBookingProfile } from './_components/booking-profile-placeholder';
 import { BookingProfileCard } from './_components/booking-profile-card';
 import { PageHeader } from './_components/page-header';
@@ -72,7 +67,6 @@ export default function BookingCompanyUserProfile() {
         formData.append('image[data]', base64Data);
       }
 
-      console.log('Submitting form data:', Object.fromEntries(formData));
       fetcher.submit(formData, {
         method: 'post',
       });

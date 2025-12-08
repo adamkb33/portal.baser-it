@@ -170,7 +170,8 @@ const buildResponseData = async (request: Request, accessToken: string): Promise
 
 const defaultResponse = async () => {
   const headers = await clearAuthCookies();
-  return data(
+  console.log(createNavigation());
+  return data<RootLoaderLoaderData>(
     {
       user: null,
       companyContext: null,

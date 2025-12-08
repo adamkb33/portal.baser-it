@@ -10,8 +10,6 @@ export async function editEmployeeAction({ request }: ActionFunctionArgs) {
     const userId = formData.get('userId');
     const rolesToUpdate = formData.get('roles');
 
-    console.log(userId, rolesToUpdate);
-
     if (!userId || !rolesToUpdate) {
       return { error: 'Form data not provided' };
     }

@@ -385,13 +385,12 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
     filteredBranches = ROUTE_TREE.filter(
       (branch) => branch.accessType === Access.NOT_AUTHENTICATED || branch.accessType === Access.PUBLIC,
     );
+    console.log(filteredBranches);
   } else {
     filteredBranches = ROUTE_TREE.filter((route) => route.accessType === Access.AUTHENTICATED);
   }
 
   return filteredBranches.reduce((acc, branch) => {
-    if (!branch.placement) return acc;
-
     if (!acc[branch.category]) {
       acc[branch.category] = {
         label: getCategoryLabel(branch.category),

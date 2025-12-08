@@ -69,7 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
       await baseApi().PublicCompanyContactControllerService.PublicCompanyContactControllerService.publicGetCreateOrUpdateContact(
         {
           requestBody: {
-            id: Number(formData.get('id')) ?? null,
+            ...(formData.get('id') ? { id: Number(formData.get('id')) } : {}),
             companyId: Number(formData.get('companyId')),
             givenName: String(formData.get('givenName') ?? ''),
             familyName: String(formData.get('familyName') ?? ''),
@@ -78,7 +78,6 @@ export async function action({ request }: ActionFunctionArgs) {
           },
         },
       );
-
     if (!contactResponse.data) {
       return { error: 'En feil har skjedd med lagring av kontakt' };
     }

@@ -15,7 +15,7 @@ export function RootLayout({ children, routeTree, companyContext }: RootLayoutPr
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <div className="mx-auto flex min-h-dvh max-w-[1200px] flex-col border-x border-border">
-        <header role="banner" className="border-b border-border bg-background">
+        <header role="banner" className="border-b bg-background">
           <div className="flex h-16 w-full items-center gap-3 px-4">
             <Navbar navRoutes={routeTree} companyContext={companyContext} />
           </div>

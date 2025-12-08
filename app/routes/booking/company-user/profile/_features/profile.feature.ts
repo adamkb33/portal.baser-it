@@ -61,7 +61,6 @@ export async function profileAction({ request }: ActionFunctionArgs) {
 
     const formData = await request.formData();
     const actionType = formData.get('actionType');
-    console.log(actionType);
 
     if (actionType === actions.GET_OR_CREATE_BOOKING_PROFILE) {
       const description = formData.get('description') as string;

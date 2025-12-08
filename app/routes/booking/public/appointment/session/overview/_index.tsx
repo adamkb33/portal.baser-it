@@ -105,12 +105,6 @@ export default function BookingPublicAppointmentSessionOverviewRoute() {
 
   return (
     <BookingContainer>
-      <BookingPageHeader
-        title="Oversikt over avtalen"
-        description="Sjekk at alle opplysningene stemmer før du bekrefter avtalen"
-      />
-
-      {/* Contact information */}
       <BookingSection label="Kontaktinformasjon">
         <BookingMeta
           items={[

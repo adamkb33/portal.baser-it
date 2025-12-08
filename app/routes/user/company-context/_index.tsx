@@ -21,7 +21,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     const response = await baseApi.AuthControllerService.AuthControllerService.getCompanyContexts();
-    console.log(response);
 
     return data<LoaderResponse>({
       companyContexts: response.data,
@@ -70,8 +69,6 @@ export async function action({ request }: ActionFunctionArgs) {
     const refreshCookie = await refreshTokenCookie.serialize(payload.refreshToken, {
       expires: new Date(payload.refreshTokenExpiresAt * 1000),
     });
-
-    console.log(payload);
 
     return redirect('/', {
       headers: [
