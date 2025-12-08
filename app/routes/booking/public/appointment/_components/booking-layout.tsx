@@ -58,10 +58,8 @@ interface BookingContainerProps {
   withShadow?: boolean;
 }
 
-export function BookingContainer({ children, className = '', withShadow = false }: BookingContainerProps) {
-  const shadowClass = withShadow ? 'shadow-[8px_8px_0px_0px_rgb(120,40,180)]' : '';
-
-  return <div className={`space-y-5 ${shadowClass} ${className}`}>{children}</div>;
+export function BookingContainer({ children, className = '' }: BookingContainerProps) {
+  return <div className={`space-y-5 shadow-[8px_8px_0px_0px_rgb(120,40,180)] ${className}`}>{children}</div>;
 }
 
 interface BookingGridProps {

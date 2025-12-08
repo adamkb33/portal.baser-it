@@ -15,6 +15,7 @@ import { ROUTES_MAP } from '~/lib/route-tree';
 import { baseApi, bookingApi } from '~/lib/utils';
 import { BookingContainer, BookingSection, BookingMeta } from '../../_components/booking-layout';
 import type { SubmitContactFormSchema } from './_schemas/submit-contact.form.schema';
+import { ErrorBanner } from '../../_components/error.banner';
 
 export type AppointmentsContactFormLoaderData = {
   session: AppointmentSessionDto;
@@ -101,7 +102,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function AppointmentsContactForm() {
-  const { session, existingContact, error } = useLoaderData<AppointmentsContactFormLoaderData>();
+  const { session, existingContact, error: loaderError } = useLoaderData<AppointmentsContactFormLoaderData>();
   const fetcher = useFetcher({ key: 'appointment-contact-form-fetcher' });
 
   const initialValues = existingContact
@@ -116,6 +117,8 @@ export default function AppointmentsContactForm() {
     : undefined;
 
   const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
+  const actionError = fetcher.data?.error;
+  const error = loaderError || actionError;
 
   const handleSubmit = (values: SubmitContactFormSchema) => {
     const formData = new FormData();
@@ -132,37 +135,39 @@ export default function AppointmentsContactForm() {
   };
 
   return (
-    <BookingContainer>
-      <BookingSection label="Kontaktinformasjon" title="Hvem skal vi registrere avtalen på?">
-        {error && <p className="text-[0.8rem] text-destructive">{error}</p>}
+    <>
+      {error && <ErrorBanner message={error} />}
 
-        {existingContact && (
-          <div className="border-t border-border pt-4 space-y-3">
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-              Eksisterende kontakt
-            </span>
-            <BookingSection variant="muted" className="space-y-2">
-              <BookingMeta
-                items={[
-                  { label: 'Navn', value: `${existingContact.givenName} ${existingContact.familyName}` },
-                  ...(existingContact.email?.value ? [{ label: 'E-post', value: existingContact.email.value }] : []),
-                  ...(existingContact.mobileNumber?.value
-                    ? [{ label: 'Mobil', value: existingContact.mobileNumber.value }]
-                    : []),
-                ]}
-              />
-              <p className="text-[0.7rem] text-muted-foreground">Du kan oppdatere informasjonen under om nødvendig</p>
-            </BookingSection>
-          </div>
-        )}
+      <BookingContainer>
+        <BookingSection label="Kontaktinformasjon" title="Hvem skal vi registrere avtalen på?">
+          {existingContact && (
+            <div className="border-t border-border pt-4 space-y-3">
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                Eksisterende kontakt
+              </span>
+              <BookingSection variant="muted" className="space-y-2">
+                <BookingMeta
+                  items={[
+                    { label: 'Navn', value: `${existingContact.givenName} ${existingContact.familyName}` },
+                    ...(existingContact.email?.value ? [{ label: 'E-post', value: existingContact.email.value }] : []),
+                    ...(existingContact.mobileNumber?.value
+                      ? [{ label: 'Mobil', value: existingContact.mobileNumber.value }]
+                      : []),
+                  ]}
+                />
+                <p className="text-[0.7rem] text-muted-foreground">Du kan oppdatere informasjonen under om nødvendig</p>
+              </BookingSection>
+            </div>
+          )}
 
-        <SubmitContactForm
-          companyId={session.companyId}
-          initialValues={initialValues}
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-        />
-      </BookingSection>
-    </BookingContainer>
+          <SubmitContactForm
+            companyId={session.companyId}
+            initialValues={initialValues}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+          />
+        </BookingSection>
+      </BookingContainer>
+    </>
   );
 }
