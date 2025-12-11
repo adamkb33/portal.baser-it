@@ -63,8 +63,6 @@ export default function App() {
   const [companyContext, setCompanyContext] = React.useState<CompanySummaryDto | null | undefined>(undefined);
   const data = useLoaderData<RootLoaderLoaderData>();
 
-  console.log(data.userNavigation);
-
   React.useEffect(() => {
     setUserNav(data.userNavigation || undefined);
     setCompanyContext(data.companyContext);

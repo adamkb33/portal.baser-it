@@ -1,6 +1,6 @@
 import { redirect, type LoaderFunctionArgs } from 'react-router';
 import { accessTokenCookie, refreshTokenCookie } from '../auth/_features/auth.cookies.server';
-import { createNavigation, type UserNavigation } from '~/lib/route-tree';
+import { createNavigation, ROUTES_MAP, type UserNavigation } from '~/lib/route-tree';
 import { AuthControllerService, createBaseClient, UserRole, type AuthenticatedUserPayload } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
 import { OpenAPI } from '~/api/clients/http';
@@ -97,7 +97,7 @@ const refreshAndBuildResponse = async (request: Request, refreshToken: string) =
     const isCompanyUser = authPayload?.roles.includes(UserRole.COMPANY_USER);
 
     if (!authPayload?.company && isCompanyUser) {
-      if (url.pathname === '/company-context') {
+      if (url.pathname === ROUTES_MAP['user.company-context'].href) {
         return data(
           {
             user: authPayload,
@@ -110,7 +110,7 @@ const refreshAndBuildResponse = async (request: Request, refreshToken: string) =
         );
       }
 
-      return redirect('/company-context', { headers });
+      return redirect(ROUTES_MAP['user.company-context'].href, { headers });
     }
 
     const body = await buildResponseData(request, tokens.accessToken);
@@ -131,7 +131,7 @@ const buildResponseData = async (request: Request, accessToken: string): Promise
   const isCompanyUser = authPayload?.roles.includes(UserRole.COMPANY_USER);
 
   if (!authPayload?.company && isCompanyUser) {
-    if (url.pathname === '/company-context') {
+    if (url.pathname === ROUTES_MAP['user.company-context'].href) {
       return {
         user: authPayload,
         userNavigation: navigation,
@@ -139,7 +139,7 @@ const buildResponseData = async (request: Request, accessToken: string): Promise
       };
     }
 
-    throw redirect('/company-context');
+    throw redirect(ROUTES_MAP['user.company-context'].href);
   }
 
   // Fetch company summary if user has company context
@@ -170,7 +170,6 @@ const buildResponseData = async (request: Request, accessToken: string): Promise
 
 const defaultResponse = async () => {
   const headers = await clearAuthCookies();
-  console.log(createNavigation());
   return data<RootLoaderLoaderData>(
     {
       user: null,

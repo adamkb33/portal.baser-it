@@ -1,22 +1,25 @@
 import * as React from 'react';
-import { useFetcher, Link, type ActionFunctionArgs, redirect } from 'react-router';
+import { Link, redirect, useSubmit, useNavigation } from 'react-router';
+import type { Route } from './+types/_index';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+
+import { forgotPasswordSchema, type ForgotPasswordSchema } from './_schemas/forgot-password-form.schema';
 import type { ApiClientError } from '~/api/clients/http';
 import { AuthControllerService } from '~/api/clients/base';
-import { ForgotPasswordForm } from '~/routes/auth/forgot-password/_forms/forgot-password.form';
-
-import type { ForgotPasswordSchema } from '~/routes/auth/forgot-password/_schemas/forgot-password-form.schema';
-
 import { ROUTES_MAP } from '~/lib/route-tree';
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
-  const email = formData.get('email') as string;
+  const email = String(formData.get('email'));
 
   try {
     await AuthControllerService.forgotPassword({
-      requestBody: {
-        email: email,
-      },
+      requestBody: { email },
     });
 
     return redirect('/');
@@ -29,22 +32,26 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-export default function AuthForgotPasswordRoute() {
-  const fetcher = useFetcher();
-  const isSubmitting = fetcher.state !== 'idle';
-  const actionData = fetcher.data;
+export default function AuthForgotPasswordRoute({ actionData }: Route.ComponentProps) {
+  const submit = useSubmit();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === 'submitting';
+
+  const form = useForm<ForgotPasswordSchema>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
 
   const handleSubmit = React.useCallback(
     (values: ForgotPasswordSchema) => {
-      const payload = new FormData();
-      payload.set('email', values.email);
+      const formData = new FormData();
+      formData.set('email', values.email);
 
-      fetcher.submit(payload, {
-        method: 'post',
-        action: '/auth/forgot-password',
-      });
+      submit(formData, { method: 'post' });
     },
-    [fetcher],
+    [submit],
   );
 
   return (
@@ -65,7 +72,33 @@ export default function AuthForgotPasswordRoute() {
         </div>
       ) : null}
 
-      <ForgotPasswordForm onSubmit={handleSubmit} isSubmitting={isSubmitting} initialValues={actionData?.values} />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" noValidate>
+          <FormField
+            name="email"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>E-post</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="email"
+                    autoComplete="email"
+                    placeholder="din@e-post.no"
+                    disabled={isSubmitting}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Behandler…' : 'Send kode for tilbakestilling'}
+          </Button>
+        </form>
+      </Form>
 
       <p className="text-center text-sm text-muted-foreground">
         Var det ikke denne siden du letet etter?{' '}

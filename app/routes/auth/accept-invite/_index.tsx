@@ -1,13 +1,26 @@
 import * as React from 'react';
-import { Link, redirect, useFetcher, useLoaderData, type LoaderFunctionArgs } from 'react-router';
+import {
+  Link,
+  redirect,
+  useSubmit,
+  useNavigation,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from 'react-router';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
-import { AcceptInviteForm } from '~/routes/auth/accept-invite/_forms/accept-invite.form';
-import { authAcceptInviteAction } from './_features/auth.accept-invite.action';
-import type { AcceptInviteSchema } from './_schemas/accept-invite.form.schema';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
-interface LoaderData {
-  inviteToken: string;
-}
+import { acceptInviteSchema, type AcceptInviteSchema } from './_schemas/accept-invite.form.schema';
+import { OpenAPI, ApiClientError } from '~/api/clients/http';
+import { ENV } from '~/api/config/env';
+import { baseApi } from '~/lib/utils';
+import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
+import { toAuthTokens } from '../_utils/token.utils';
+import type { Route } from './+types/_index';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -20,30 +33,80 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { inviteToken };
 }
 
-export const action = authAcceptInviteAction;
+export async function action({ request }: ActionFunctionArgs) {
+  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
 
-export default function AuthAcceptInviteRoute() {
-  const { inviteToken } = useLoaderData<LoaderData>();
-  const fetcher = useFetcher();
-  const isSubmitting = fetcher.state !== 'idle';
-  const actionData = fetcher.data;
-  const inviteInvalid = Boolean(actionData?.inviteInvalid);
+  const formData = await request.formData();
+  const payload = Object.fromEntries(formData) as unknown as AcceptInviteSchema;
+
+  try {
+    const response = await baseApi().AuthControllerService.AuthControllerService.acceptInvite({
+      inviteToken: payload.inviteToken,
+      requestBody: {
+        givenName: payload.givenName,
+        familyName: payload.familyName,
+        password: payload.password,
+        password2: payload.confirmPassword,
+      },
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error();
+    }
+
+    const tokens = toAuthTokens(response.data);
+
+    const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
+      expires: new Date(tokens.accessTokenExpiresAt * 1000),
+    });
+    const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
+      expires: new Date(tokens.refreshTokenExpiresAt * 1000),
+    });
+
+    return redirect('/', {
+      headers: [
+        ['Set-Cookie', accessCookie],
+        ['Set-Cookie', refreshCookie],
+      ],
+    });
+  } catch (error: any) {
+    if (error as ApiClientError) {
+      return { error: error.body.message };
+    }
+
+    throw error;
+  }
+}
+
+export default function AuthAcceptInviteRoute({ loaderData, actionData }: Route.ComponentProps) {
+  const { inviteToken } = loaderData;
+  const submit = useSubmit();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === 'submitting';
+
+  const form = useForm<AcceptInviteSchema>({
+    resolver: zodResolver(acceptInviteSchema),
+    defaultValues: {
+      inviteToken,
+      givenName: '',
+      familyName: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
   const handleSubmit = React.useCallback(
     (values: AcceptInviteSchema) => {
-      const payload = new FormData();
-      payload.set('inviteToken', inviteToken);
-      payload.set('givenName', values.givenName);
-      payload.set('familyName', values.familyName);
-      payload.set('password', values.password);
-      payload.set('confirmPassword', values.confirmPassword);
+      const formData = new FormData();
+      formData.set('inviteToken', values.inviteToken);
+      formData.set('givenName', values.givenName);
+      formData.set('familyName', values.familyName);
+      formData.set('password', values.password);
+      formData.set('confirmPassword', values.confirmPassword);
 
-      fetcher.submit(payload, {
-        method: 'post',
-        action: '/auth/accept-invite',
-      });
+      submit(formData, { method: 'post' });
     },
-    [fetcher, inviteToken],
+    [submit],
   );
 
   return (
@@ -62,22 +125,73 @@ export default function AuthAcceptInviteRoute() {
         </div>
       ) : null}
 
-      {inviteInvalid ? (
-        <div className="space-y-3 rounded-md border border-destructive/20 bg-destructive/5 px-5 py-6 text-center">
-          <h2 className="text-xl font-semibold">Invite expired</h2>
-          <p className="text-sm text-muted-foreground">
-            {actionData?.formError ??
-              'This invitation link is no longer valid. Please request a new invite from your administrator.'}
-          </p>
-        </div>
-      ) : (
-        <AcceptInviteForm
-          inviteToken={inviteToken}
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          initialValues={actionData?.values}
-        />
-      )}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" noValidate>
+          <input type="hidden" name="inviteToken" value={inviteToken} />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="givenName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First name</FormLabel>
+                  <FormControl>
+                    <Input {...field} autoComplete="given-name" disabled={isSubmitting} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="familyName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last name</FormLabel>
+                  <FormControl>
+                    <Input {...field} autoComplete="family-name" disabled={isSubmitting} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input {...field} type="password" autoComplete="new-password" disabled={isSubmitting} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm password</FormLabel>
+                <FormControl>
+                  <Input {...field} type="password" autoComplete="new-password" disabled={isSubmitting} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Creating account…' : 'Create account'}
+          </Button>
+        </form>
+      </Form>
 
       <div className="text-center text-sm">
         <Link to="/" className="text-primary hover:underline">
