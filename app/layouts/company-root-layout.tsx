@@ -2,11 +2,12 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { NavBreadcrumbs } from '~/components/layout/nav-breadcrums';
 import { NavLink, type NavItem } from '~/components/layout/nav-link';
-import type { GetLayoutloaderData } from '~/routes/company/_features/company.loader';
 import type { RouteBranch } from '~/lib/route-tree';
 
 export type CompanyLayoutProps = {
-  data: GetLayoutloaderData;
+  data: {
+    userBranches: RouteBranch[];
+  };
   children: ReactNode;
 };
 
@@ -74,18 +75,20 @@ const filterHiddenBranches = (branch: RouteBranch): RouteBranch => {
 };
 
 export function CompanyRootLayout({ data, children }: CompanyLayoutProps) {
+  const sidebarBranches = data.userBranches || [];
+
   return (
     <div className="relative flex h-full gap-4">
       <aside className="hidden md:block absolute -left-68 top-0 flex-shrink-0 rounded-sm transition-all duration-300 z-10 w-64">
         <div className="flex flex-col gap-6">
-          {data.userBranches?.map(filterHiddenBranches).map((branch) => (
+          {sidebarBranches.map(filterHiddenBranches).map((branch) => (
             <RenderRouteBranch key={branch.id} routeBranch={branch} />
           ))}
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col gap-4 border rounded-sm p-4 transition-all duration-300 ml-0 bg-white">
-        <NavBreadcrumbs items={data.userBranches} />
+        <NavBreadcrumbs items={sidebarBranches} />
         {children}
       </div>
     </div>

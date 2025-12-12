@@ -3,7 +3,7 @@ import type { ApiClientError } from '~/api/clients/http';
 import { getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { bookingApi } from '~/lib/utils';
-import type { AppointmentsSelectTimeLoaderData } from '../_index';
+import type { AppointmentsSelectTimeLoaderData } from '../booking.public.appointment.session.select-time.route';
 
 export async function appointmentSessionSelectTimeLoader({ request }: ActionFunctionArgs) {
   const session = await getSession(request);

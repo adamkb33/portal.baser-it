@@ -1,5 +1,5 @@
 import { Form, Link, redirect, data, useNavigation } from 'react-router';
-import type { Route } from './+types/_index';
+import type { Route } from './+types/auth.sign-out.route';
 
 import { ApiClientError, OpenAPI } from '~/api/clients/http';
 import { AuthControllerService } from '~/api/clients/base';

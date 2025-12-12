@@ -14,10 +14,12 @@
 
 ### File Naming Conventions
 
-- **Routes**: `kebab-case.tsx` (e.g., `select-time.tsx`, `overview.tsx`)
-- **Components**: `PascalCase.tsx` or `kebab-case.tsx` depending on context
-- **Utilities**: `kebab-case.ts` with descriptive names
-- **Types**: `types.ts` or embedded in relevant files
+**Routes follow dot notation pattern:**
+- **Route files**: `[category].[feature].route.tsx` (e.g., `auth.sign-in.route.tsx`)
+- **Layout files**: `[category].[feature].layout.tsx` (e.g., `auth.sign-in.layout.tsx`)
+- **Feature modules**: Group in `_features/`, `_schemas/`, `_forms/`, `_utils/` folders
+- **Components**: `PascalCase.tsx` or `kebab-case.tsx` for UI components
+- **Types**: `*.types.ts` or embedded in relevant files
 
 ### Import Organization
 
@@ -68,22 +70,39 @@ export default function ComponentName() {
 
 ### React Router Patterns
 
-- **Loaders for data fetching** - Use React Router loaders for server-side data
-- **Actions for mutations** - Form submissions and state changes
-- **Type-safe data flow** - Always type loader data and form data
-- **Error boundaries** - Implement proper error handling
+- **Type-safe route handlers** - Use generated `+types` imports for actions/loaders
+- **Feature-based organization** - Group related functionality in `_features/` folders
+- **Schema-first validation** - Define Zod schemas in `_schemas/` for all forms
+- **Server-only utilities** - Use `.server.ts` suffix for server-side modules
+- **Progressive enhancement** - Forms work without JavaScript enabled
 
 ### Form Handling
 
 ```typescript
-// Use FormData for simple forms
-const formData = await request.formData();
-const selectedTime = formData.get('selectedTime') as string;
+// Server action pattern - simple FormData extraction
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const email = String(formData.get('email'));
 
-// Use React Hook Form + Zod for complex forms
-const form = useForm<FormData>({
-  resolver: zodResolver(formSchema),
-});
+  // Return error state with form values preserved
+  return data({
+    error: 'Validation failed',
+    values: { email }
+  }, { status: 400 });
+}
+
+// Client component - preserve state on error
+export default function MyRoute({ actionData }: Route.ComponentProps) {
+  return (
+    <Form method="post">
+      <Input
+        name="email"
+        defaultValue={actionData?.values?.email}
+        disabled={isSubmitting}
+      />
+    </Form>
+  );
+}
 ```
 
 ## API Integration
@@ -153,15 +172,26 @@ useEffect(() => {
 
 ### Route Organization
 
+**Centralized route definitions in `lib/route-tree.ts`:**
 ```typescript
 {
-  id: 'booking.public.appointment.select-time',
-  href: '/booking/public/appointment/select-time',
-  label: 'Velg tidspunkt',
-  category: BrachCategory.NONE,
-  accessType: Access.PUBLIC,
-  hidden: true,
+  id: 'auth.sign-in',
+  href: 'sign-in',
+  label: 'Logg inn',
+  category: BrachCategory.AUTH,
+  accessType: Access.NOT_AUTHENTICATED,
+  placement: RoutePlaceMent.NAVIGATION
 }
+```
+
+**Feature-based folder structure:**
+```
+app/routes/auth/sign-in/
+├── _features/auth.sign-in.action.ts
+├── _schemas/sign-in.form.schema.ts
+├── _forms/sign-in.form.tsx
+├── auth.sign-in.layout.tsx
+└── auth.sign-in.route.tsx
 ```
 
 ### Navigation Patterns

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link, redirect, useSubmit, useNavigation, data } from 'react-router';
-import type { Route } from './+types/_index';
+import type { Route } from './+types/auth.reset-password.route';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 

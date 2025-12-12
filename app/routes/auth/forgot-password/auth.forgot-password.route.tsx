@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Link, redirect, useSubmit, useNavigation } from 'react-router';
-import type { Route } from './+types/_index';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
@@ -12,6 +11,7 @@ import { forgotPasswordSchema, type ForgotPasswordSchema } from './_schemas/forg
 import type { ApiClientError } from '~/api/clients/http';
 import { AuthControllerService } from '~/api/clients/base';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import type { Route } from './+types/auth.forgot-password.route';
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();

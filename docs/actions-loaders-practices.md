@@ -1,21 +1,46 @@
-# React Router v7 Loader & Action Best Practices
+# Actions & Loaders Best Practices
 
-## Using Route Types
+## File Structure Pattern (From /auth routes)
+
+**Separate action from route component:**
+
+```
+app/routes/auth/sign-in/
+├── _features/auth.sign-in.action.ts  # Action logic
+├── _schemas/sign-in.form.schema.ts   # Validation
+└── auth.sign-in.route.tsx            # Route component
+```
+
+## Type-Safe Actions
 
 ```typescript
-import type { Route } from './+types/my-route';
+// _features/auth.sign-in.action.ts
+import type { ActionFunctionArgs } from 'react-router';
+import { baseApi } from '~/lib/utils';
 
-// Use generated types from Route namespace
-export async function loader({ request }: Route.LoaderArgs) {
-  // ...
-}
+export async function AuthSignInAction({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const email = String(formData.get('email'));
+  const password = String(formData.get('password'));
 
-export async function action({ request }: Route.ActionArgs) {
-  // ...
-}
+  try {
+    const response = await baseApi().AuthControllerService.signIn({
+      requestBody: { email, password },
+    });
 
-export default function Component({ loaderData, actionData }: Route.ComponentProps) {
-  // loaderData and actionData are automatically typed
+    // Backend throws on error - response is always success
+    const tokens = toAuthTokens(response.data);
+    const cookieHeaders = await createAuthCookies(tokens);
+    return redirect('/', { headers: cookieHeaders });
+  } catch (error: any) {
+    return data(
+      {
+        error: error.body?.message || 'Noe gikk galt',
+        values: { email },
+      },
+      { status: 400 },
+    );
+  }
 }
 ```
 
@@ -28,7 +53,7 @@ import { data } from 'react-router';
 import type { Route } from './+types/home';
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const projects = await db.projects.getAll();
+  // API call
 
   return data({ projects });
 }
@@ -65,21 +90,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 ```
 
-### With Headers (Cookies, Auth)
+### Root Loader Pattern
 
 ```typescript
-import type { Route } from './+types/auth';
+export async function rootLoader({ request }: LoaderFunctionArgs) {
+  const accessToken = await accessTokenCookie.parse(request.headers.get('Cookie'));
+  const refreshToken = await refreshTokenCookie.parse(request.headers.get('Cookie'));
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const cookieHeader = request.headers.get('Cookie');
-  const token = await tokenCookie.parse(cookieHeader);
-
-  if (!token) {
-    return data({ user: null });
+  if (!refreshToken) return defaultResponse();
+  if (!accessToken || isTokenExpired(accessToken)) {
+    return refreshAndBuildResponse(request, refreshToken);
   }
 
-  const user = await verifyToken(token);
-  return data({ user });
+  return data(await buildResponseData(request, accessToken));
 }
 ```
 
@@ -160,97 +183,53 @@ export async function action({ request }: Route.ActionArgs) {
 }
 ```
 
-### With Validation Errors
+### Form Schemas
 
 ```typescript
-import type { Route } from './+types/signup';
+// _schemas/sign-in.form.schema.ts
+export const signInFormSchema = z.object({
+  email: emailValidator,
+  password: passwordValidator,
+});
 
-export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  const email = String(formData.get('email'));
-  const password = String(formData.get('password'));
-
-  const errors: Record<string, string> = {};
-
-  if (!email.includes('@')) {
-    errors.email = 'Invalid email';
-  }
-
-  if (password.length < 8) {
-    errors.password = 'Password too short';
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return data(
-      {
-        errors,
-        values: { email },
-      },
-      { status: 400 },
-    );
-  }
-
-  await createUser({ email, password });
-  return redirect('/dashboard');
-}
+// In action
+const email = String(formData.get('email'));
+const password = String(formData.get('password'));
 ```
 
-### With Headers (Set Cookies)
+### Cookie Management
 
 ```typescript
-import type { Route } from './+types/login';
+// _features/auth.cookies.server.ts
+export const accessTokenCookie = createCookie('access_token', {
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: true,
+  path: '/',
+});
 
-export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  const { token, user } = await login(formData);
+// Set multiple cookies
+const accessCookie = await accessTokenCookie.serialize(token, {
+  expires: new Date(expiresAt * 1000),
+});
 
-  const cookie = await authCookie.serialize(token, {
-    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  });
-
-  return redirect('/dashboard', {
-    headers: {
-      'Set-Cookie': cookie,
-    },
-  });
-}
+return redirect('/', {
+  headers: [
+    ['Set-Cookie', accessCookie],
+    ['Set-Cookie', refreshCookie],
+  ],
+});
 ```
 
-### Multiple Cookies
+### Error Handling
 
 ```typescript
-import type { Route } from './+types/auth';
-
-export async function action({ request }: Route.ActionArgs) {
-  const { accessToken, refreshToken } = await authenticate();
-
-  const accessCookie = await accessTokenCookie.serialize(accessToken);
-  const refreshCookie = await refreshTokenCookie.serialize(refreshToken);
-
-  return redirect('/', {
-    headers: [
-      ['Set-Cookie', accessCookie],
-      ['Set-Cookie', refreshCookie],
-    ],
-  });
-}
-```
-
-### Error Handling Pattern
-
-```typescript
-import type { Route } from './+types/update';
-
-export async function action({ request, params }: Route.ActionArgs) {
-  const formData = await request.formData();
-
+export async function action({ request }: ActionFunctionArgs) {
   try {
-    await db.update(params.id, formData);
-    return data({ success: true });
-  } catch (err) {
-    console.error('[action] Update failed:', err);
-
-    return data({ error: 'Failed to update' }, { status: 400 });
+    const response = await api.call();
+    return redirect('/success');
+  } catch (error: any) {
+    return data({ error: error.body?.message }, { status: 400 });
   }
 }
 ```
@@ -391,56 +370,50 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 ---
 
-## Key Rules
+## Key Patterns
 
-1. **Use Route types** - Import from `'./+types/route-name'`
-2. **Always use `data()` helper** - Explicit and consistent
-3. **Status 400 for validation errors** - Prevents revalidation
-4. **Throw redirect in loaders** - Use `throw redirect()`
-5. **Return redirect in actions** - Use `return redirect()`
-6. **Use Route.ComponentProps** - Automatic type inference for loaderData/actionData
-7. **Error handling** - Try/catch in loaders/actions, return safe defaults
-8. **Headers for cookies** - Use `headers` option in redirect/data
-9. **FormData keys as strings** - Always cast: `String(formData.get('key'))`
-10. **Check token expiry with buffer** - 5 min buffer before actual expiry
+1. **Separate actions** - `_features/` folder
+2. **Preserve form state** - `{ error, values }` on error
+3. **Secure cookies** - `httpOnly: true, sameSite: 'lax'`
+4. **Backend throws errors** - Just catch and show `error.body.message`
+5. **Status 400** - For validation/business logic errors
+6. **Multiple cookies** - Use headers array
+7. **Token expiry buffer** - 5min before actual expiry
 
 ---
 
 ## Quick Reference
 
 ```typescript
-// Import Route types
-import type { Route } from './+types/my-route';
-import { data, redirect } from 'react-router';
-
-// Loader
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const items = await db.getAll();
-  return data({ items });
-}
-
-// Action
-export async function action({ request }: Route.ActionArgs) {
+// _features/auth.sign-in.action.ts
+export async function AuthSignInAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
+  const email = String(formData.get('email'));
+  const password = String(formData.get('password'));
 
-  // Validate
-  const errors = validate(formData);
-  if (errors) {
-    return data({ errors }, { status: 400 });
+  try {
+    const response = await baseApi().AuthControllerService.signIn({
+      requestBody: { email, password }
+    });
+
+    const tokens = toAuthTokens(response.data);
+    const cookieHeaders = await createAuthCookies(tokens);
+    return redirect('/', { headers: cookieHeaders });
+  } catch (error: any) {
+    return data({ error: error.body?.message, values: { email } }, { status: 400 });
   }
-
-  // Process
-  await db.create(formData);
-  return redirect('/success');
 }
 
-// Component
-export default function Component({ loaderData, actionData }: Route.ComponentProps) {
+// auth.sign-in.route.tsx
+export default function AuthSignIn({ actionData }: Route.ComponentProps) {
+  const isSubmitting = useNavigation().state === 'submitting';
+
   return (
-    <div>
-      {actionData?.errors && <ErrorDisplay errors={actionData.errors} />}
-      {loaderData.items.map(item => <div key={item.id}>{item.name}</div>)}
-    </div>
+    <Form method="post">
+      {actionData?.error && <div role="alert">{actionData.error}</div>}
+      <Input name="email" defaultValue={actionData?.values?.email} disabled={isSubmitting} />
+      <Button disabled={isSubmitting}>{isSubmitting ? 'Logger inn…' : 'Logg inn'}</Button>
+    </Form>
   );
 }
 ```
@@ -716,173 +689,6 @@ export default function Component({ actionData }: Route.ComponentProps) {
 ---
 
 ## Best Practices Summary
-
-### ✅ DO
-
-```typescript
-// 1. Type your action return
-type ActionData = {
-  error?: string;
-  tokenInvalid?: boolean;
-  errors?: Record<string, string>;
-};
-
-export async function action(): Promise<ActionData | Response> {
-  // ...
-}
-
-// 2. Return data with status 400 for expected errors
-return data({ error: 'Invalid token', tokenInvalid: true }, { status: 400 });
-
-// 3. Throw unexpected errors
-try {
-  // ...
-} catch (error) {
-  console.error('[action] Unexpected:', error);
-  throw error; // ErrorBoundary handles it
-}
-
-// 4. Use discriminated unions for complex states
-type ActionData = { type: 'success'; data: T } | { type: 'error'; message: string; code: string };
-
-// 5. Check for specific API error codes
-if (response.error?.code === 'TOKEN_EXPIRED') {
-  return data({ tokenInvalid: true }, { status: 400 });
-}
-```
-
-### ❌ DON'T
-
-```typescript
-// 1. Don't throw expected errors
-if (tokenExpired) {
-  throw new Error('Token expired'); // ❌ Use return instead
-}
-
-// 2. Don't return errors without status
-return { error: 'Failed' }; // ❌ Missing status code
-
-// 3. Don't mix return patterns
-return { error: 'A' };
-return { success: false, message: 'B' }; // ❌ Inconsistent
-
-// 4. Don't check properties that don't exist
-if (actionData?.tokenInvalid) {
-  /* ... */
-}
-// But action only returns { error: string } ❌
-
-// 5. Don't use generic error messages
-return { error: 'An error occurred' }; // ❌ Not helpful
-```
-
----
-
-## Your Specific Case: Reset Password
-
-```typescript
-import { data, redirect } from 'react-router';
-import type { Route } from './+types/_index';
-
-type ActionData = {
-  error?: string;
-  tokenInvalid?: boolean;
-};
-
-export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-
-  try {
-    const response = await AuthControllerService.resetPassword({
-      requestBody: {
-        resetPasswordToken: String(formData.get('resetPasswordToken')),
-        password: String(formData.get('password')),
-        password2: String(formData.get('confirmPassword')),
-      },
-    });
-
-    if (!response.success || !response.data) {
-      // Check if it's a token error
-      const errorMessage = response.error?.message || 'Failed to reset password';
-      const isTokenError =
-        errorMessage.includes('token') ||
-        errorMessage.includes('expired') ||
-        errorMessage.includes('invalid');
-
-      return data(
-        {
-          error: errorMessage,
-          tokenInvalid: isTokenError,
-        },
-        { status: 400 }
-      );
-    }
-
-    const tokens = toAuthTokens(response.data);
-
-    const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
-      expires: new Date(tokens.accessTokenExpiresAt * 1000),
-    });
-    const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
-      expires: new Date(tokens.refreshTokenExpiresAt * 1000),
-    });
-
-    return redirect('/', {
-      headers: [
-        ['Set-Cookie', accessCookie],
-        ['Set-Cookie', refreshCookie],
-      ],
-    });
-
-  } catch (error: any) {
-    // API client errors
-    if (error.body?.message) {
-      const errorMessage = error.body.message;
-      const isTokenError =
-        errorMessage.includes('token') ||
-        errorMessage.includes('expired') ||
-        errorMessage.includes('invalid');
-
-      return data(
-        {
-          error: errorMessage,
-          tokenInvalid: isTokenError,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Truly unexpected errors
-    console.error('[reset-password] Unexpected error:', error);
-    throw error;
-  }
-}
-
-export default function Component({ loaderData, actionData }: Route.ComponentProps) {
-  if (actionData?.tokenInvalid) {
-    return (
-      <div>
-        <h2>Invalid or Expired Link</h2>
-        <p>{actionData.error}</p>
-        <Link to="/forgot-password">Request new link</Link>
-      </div>
-    );
-  }
-
-  if (actionData?.error) {
-    return (
-      <div>
-        <p className="error">{actionData.error}</p>
-        <ResetPasswordForm />
-      </div>
-    );
-  }
-
-  return <ResetPasswordForm />;
-}
-```
-
----
 
 ## Key Takeaways
 

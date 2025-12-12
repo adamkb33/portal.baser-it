@@ -20,7 +20,7 @@ import { ENV } from '~/api/config/env';
 import { baseApi } from '~/lib/utils';
 import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
 import { toAuthTokens } from '../_utils/token.utils';
-import type { Route } from './+types/_index';
+import type { Route } from './+types/auth.accept-invite.route';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);

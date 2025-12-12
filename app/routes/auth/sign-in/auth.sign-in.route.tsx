@@ -1,5 +1,5 @@
 import { Form, Link, redirect, data, useNavigation } from 'react-router';
-import type { Route } from './+types/_index';
+import type { Route } from './+types/auth.sign-in.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { OpenAPI } from '~/api/clients/base/OpenAPI';
