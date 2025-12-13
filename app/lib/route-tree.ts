@@ -136,14 +136,6 @@ export const ROUTE_TREE: RouteBranch[] = [
         companyRoles: [Roles.ADMIN],
       },
       {
-        id: 'company.contacts',
-        href: '/company/contacts',
-        label: 'Kontakter',
-        category: BrachCategory.COMPANY,
-        accessType: Access.AUTHENTICATED,
-        companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
-      },
-      {
         id: 'company.employees',
         href: '/company/employees',
         label: 'Ansatte',
@@ -170,13 +162,102 @@ export const ROUTE_TREE: RouteBranch[] = [
           },
         ],
       },
+      {
+        id: 'company.contacts',
+        href: '/company/contacts',
+        label: 'Kontakter',
+        category: BrachCategory.COMPANY,
+        accessType: Access.AUTHENTICATED,
+        companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+      },
+      {
+        id: 'company.booking',
+        href: '/company/booking',
+        label: 'Booking',
+        category: BrachCategory.COMPANY,
+        placement: RoutePlaceMent.SIDEBAR,
+        accessType: Access.PRODUCT,
+        companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+        children: [
+          {
+            id: 'company.booking.admin',
+            href: '/company/booking/admin',
+            label: 'Administrasjon',
+            category: BrachCategory.COMPANY,
+            accessType: Access.PRODUCT,
+            companyRoles: [Roles.ADMIN],
+            children: [
+              {
+                id: 'company.booking.admin.settings',
+                href: '/company/booking/admin/settings',
+                label: 'Instillinger',
+                category: BrachCategory.COMPANY,
+                accessType: Access.PRODUCT,
+                companyRoles: [Roles.ADMIN],
+              },
+              {
+                id: 'company.booking.admin.service-groups',
+                href: '/company/booking/admin/service-groups',
+                label: 'Tjeneste grupper',
+                category: BrachCategory.COMPANY,
+                accessType: Access.PRODUCT,
+                companyRoles: [Roles.ADMIN],
+              },
+              {
+                id: 'company.booking.admin.services',
+                href: '/company/booking/admin/services',
+                label: 'Tjenester',
+                category: BrachCategory.COMPANY,
+                accessType: Access.PRODUCT,
+                companyRoles: [Roles.ADMIN],
+              },
+              {
+                id: 'company.booking.admin.appointments',
+                href: '/company/booking/admin/appointments',
+                label: 'Time bestillinger',
+                category: BrachCategory.COMPANY,
+                accessType: Access.PRODUCT,
+                companyRoles: [Roles.ADMIN],
+                children: [
+                  {
+                    id: 'company.booking.admin.appointments.create',
+                    href: '/company/booking/admin/appointments/create',
+                    label: 'Bestill ny time',
+                    category: BrachCategory.COMPANY,
+                    accessType: Access.PRODUCT,
+                    companyRoles: [Roles.ADMIN],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'company.booking.profile',
+            href: '/company/booking/profile',
+            label: 'Min profil',
+            category: BrachCategory.COMPANY,
+            accessType: Access.PRODUCT,
+            companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+            children: [
+              {
+                id: 'company.booking.profile.daily-schedule',
+                href: '/company/booking/profile/daily-schedule',
+                label: 'Timeplan',
+                category: BrachCategory.COMPANY,
+                accessType: Access.PRODUCT,
+                companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+              },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
     id: 'booking',
     href: '/booking',
     label: 'BiT Booking',
-    category: BrachCategory.COMPANY,
+    category: BrachCategory.PUBLIC,
     accessType: Access.PUBLIC,
     children: [
       {
@@ -190,13 +271,13 @@ export const ROUTE_TREE: RouteBranch[] = [
             id: 'booking.public.appointment',
             href: '/booking/public/appointment',
             category: BrachCategory.PUBLIC,
-            accessType: Access.NOT_AUTHENTICATED,
+            accessType: Access.PUBLIC,
             children: [
               {
                 id: 'booking.public.appointment.session',
                 href: '/booking/public/appointment/session',
                 category: BrachCategory.PUBLIC,
-                accessType: Access.NOT_AUTHENTICATED,
+                accessType: Access.PUBLIC,
                 children: [
                   {
                     id: 'booking.public.appointment.session.contact',
@@ -246,88 +327,6 @@ export const ROUTE_TREE: RouteBranch[] = [
                 category: BrachCategory.NONE,
                 accessType: Access.PUBLIC,
                 hidden: true,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'booking.admin',
-        href: '/booking/admin',
-        label: 'Booking administrasjon',
-        category: BrachCategory.COMPANY,
-        placement: RoutePlaceMent.SIDEBAR,
-        accessType: Access.PRODUCT,
-        companyRoles: [Roles.ADMIN],
-        children: [
-          {
-            id: 'booking.admin.settings',
-            href: '/booking/admin/settings',
-            label: 'Instillinger',
-            category: BrachCategory.COMPANY,
-            accessType: Access.AUTHENTICATED,
-            companyRoles: [Roles.ADMIN],
-          },
-          {
-            id: 'booking.admin.service-groups',
-            href: '/booking/admin/service-groups',
-            label: 'Tjeneste grupper',
-            category: BrachCategory.COMPANY,
-            accessType: Access.AUTHENTICATED,
-            companyRoles: [Roles.ADMIN],
-          },
-          {
-            id: 'booking.admin.services',
-            href: '/booking/admin/services',
-            label: 'Tjenester',
-            category: BrachCategory.COMPANY,
-            accessType: Access.AUTHENTICATED,
-            companyRoles: [Roles.ADMIN],
-          },
-          {
-            id: 'booking.admin.appointments',
-            href: '/booking/admin/appointments',
-            label: 'Time bestilling',
-            category: BrachCategory.COMPANY,
-            accessType: Access.AUTHENTICATED,
-            companyRoles: [Roles.ADMIN],
-            children: [
-              {
-                id: 'booking.admin.appointments.create',
-                href: '/booking/admin/appointments/create',
-                label: 'Bestill ny time',
-                category: BrachCategory.COMPANY,
-                accessType: Access.AUTHENTICATED,
-                companyRoles: [Roles.ADMIN],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'booking.company-user',
-        href: '/booking/company-user',
-        label: 'Min profil',
-        category: BrachCategory.COMPANY,
-        placement: RoutePlaceMent.SIDEBAR,
-        accessType: Access.PRODUCT,
-        companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
-        children: [
-          {
-            id: 'booking.company-user.profile',
-            href: '/booking/company-user/profile',
-            label: 'Profil',
-            category: BrachCategory.COMPANY,
-            accessType: Access.AUTHENTICATED,
-            companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
-            children: [
-              {
-                id: 'booking.company-user.profile.daily-schedule',
-                href: '/booking/company-user/profile/daily-schedule',
-                label: 'Timeplan',
-                category: BrachCategory.COMPANY,
-                accessType: Access.AUTHENTICATED,
-                companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
               },
             ],
           },
@@ -411,11 +410,34 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
       if (!user.company) {
         return false;
       }
-      // Assuming route id prefix matches product name (e.g., 'booking.*' needs BOOKING product)
-      const productPrefix = branch.id.split('.')[0].toUpperCase();
-      const hasProduct = user.company.companyProducts.some((product) => product === productPrefix);
+
+      // Extract product name from route id
+      // For routes like 'company-user.booking.admin.*', extract 'booking'
+      const routeParts = branch.id.split('.');
+      let productName = '';
+
+      if (routeParts.includes('booking')) {
+        productName = 'BOOKING';
+      } else if (routeParts.includes('event')) {
+        productName = 'EVENT';
+      } else if (routeParts.includes('timesheet')) {
+        productName = 'TIMESHEET';
+      }
+
+      if (!productName) {
+        return false;
+      }
+
+      const hasProduct = user.company.companyProducts.some((product) => product === productName);
       if (!hasProduct) {
         return false;
+      }
+
+      // Check company roles for product access
+      if (branch.companyRoles && branch.companyRoles.length > 0) {
+        if (!branch.companyRoles.some((role) => user.company?.companyRoles.includes(role))) {
+          return false;
+        }
       }
     }
 

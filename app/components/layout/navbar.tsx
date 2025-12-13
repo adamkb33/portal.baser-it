@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { NavLink } from './nav-link';
-import type { BrachCategory, BranchGroup } from '~/lib/route-tree';
+import type { UserNavigation } from '~/lib/route-tree';
+import { RoutePlaceMent, BrachCategory } from '~/lib/route-tree';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 import CompanyHeader from './company-header';
 import { User } from 'lucide-react';
@@ -9,11 +10,18 @@ import { Button } from '../ui/button';
 import BiTLogo from '../logos/BiT.logo';
 
 export type NavbarProps = {
-  navRoutes: Record<BrachCategory, BranchGroup> | undefined;
+  navRoutes: UserNavigation | undefined;
   companyContext: CompanySummaryDto | null | undefined;
 };
 
 export function Navbar({ navRoutes, companyContext }: NavbarProps) {
+  // Get navigation branches by placement
+  const navigationBranches = navRoutes?.[RoutePlaceMent.NAVIGATION] || [];
+
+  // Filter branches by category
+  const userBranches = navigationBranches.filter(branch => branch.category === BrachCategory.USER);
+  const authBranches = navigationBranches.filter(branch => branch.category === BrachCategory.AUTH);
+
   return (
     <nav className="flex flex-1 items-center justify-between gap-4">
       <div className="flex items-center gap-6">
@@ -25,7 +33,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
       </div>
 
       <nav className="hidden md:flex items-center gap-4">
-        {navRoutes?.USER?.branches?.length && (
+        {userBranches.length > 0 && (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon" aria-label="User menu">
@@ -34,7 +42,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent>
-              {navRoutes.USER.branches.map((link) => (
+              {userBranches.map((link) => (
                 <DropdownMenuItem key={link.id} asChild>
                   <Link to={link.href}>{link.label}</Link>
                 </DropdownMenuItem>
@@ -43,7 +51,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
           </DropdownMenu>
         )}
 
-        {navRoutes?.AUTH?.branches?.map((link) => (
+        {authBranches.map((link) => (
           <NavLink key={link.id} link={link} />
         ))}
       </nav>
