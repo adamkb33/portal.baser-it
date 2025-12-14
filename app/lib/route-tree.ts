@@ -138,6 +138,8 @@ export const ROUTE_TREE: RouteBranch[] = [
           {
             id: 'company.admin.settings',
             href: '/company/admin/settings',
+            // TODO: unhide
+            hidden: true,
             label: 'Instillinger',
             category: BrachCategory.COMPANY,
             accessType: Access.AUTHENTICATED,
