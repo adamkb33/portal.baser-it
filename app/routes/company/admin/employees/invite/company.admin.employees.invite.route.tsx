@@ -7,7 +7,7 @@ import { inviteEmployee } from './_features/invite-employee.action';
 
 export const action = inviteEmployee;
 
-export default function CompanyEmployeesInvite() {
+export default function CompanyAdminEmployeesInviteRoute() {
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state !== 'idle';
   const actionData = fetcher.data;

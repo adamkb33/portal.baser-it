@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router';
 
-export default function InviteEmployeeLayout() {
+export default function CompanyAdminEmployeesInviteLayout() {
   return <Outlet />;
 }

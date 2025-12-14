@@ -1,11 +1,10 @@
 import React from 'react';
 import { useFetcher, useLoaderData, useLocation } from 'react-router';
 
-import { EditCompanyUserForm } from '~/routes/company/employees/edit/_forms/edit-company-user.form';
-import type { EditCompanyUserSchema } from '~/routes/company/employees/edit/_schemas/edit-company-user.form.schema';
-
 import { editEmployeeLoader, type CompanyEmployeesEditLoaderData } from './_features/edit-employee.loader';
 import { editEmployeeAction } from './_features/edit-employee.action';
+import { EditCompanyUserForm } from './_forms/edit-company-user.form';
+import type { EditCompanyUserSchema } from './_schemas/edit-company-user.form.schema';
 
 export const loader = editEmployeeLoader;
 export const action = editEmployeeAction;

@@ -45,7 +45,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
-export default function CompanyEmployees() {
+export default function CompanyAdminEmployees() {
   const { users } = useLoaderData<EmployeesOverviewLoaderData>();
   const [filter, setFilter] = useState('');
 
@@ -71,7 +71,7 @@ export default function CompanyEmployees() {
           <p className="text-sm text-muted-foreground">Oversikt over alle brukere tilknyttet selskapet.</p>
         </div>
         <Button asChild>
-          <Link to={ROUTES_MAP['company.employees.invite'].href}>Inviter ansatt</Link>
+          <Link to={ROUTES_MAP['company.admin.employees.invite'].href}>Inviter ansatt</Link>
         </Button>
       </div>
 
@@ -98,7 +98,7 @@ export default function CompanyEmployees() {
             <TableCell>{formatRoles(user.roles)}</TableCell>
             <TableCell className="text-right">
               <Button variant="outline" size="sm" asChild>
-                <Link to={`${ROUTES_MAP['company.employees.edit'].href}?userId=${user.userId}`}>
+                <Link to={`${ROUTES_MAP['company.admin.employees.edit'].href}?userId=${user.userId}`}>
                   <Pen className="h-4 w-4" />
                   <span className="sr-only">Rediger</span>
                 </Link>

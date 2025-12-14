@@ -15,7 +15,7 @@ export async function editEmployeeLoader({ request }: LoaderFunctionArgs) {
   const userId = url.searchParams.get('userId');
 
   if (!userId) {
-    return redirect(ROUTES_MAP['company.employees.overview'].href);
+    return redirect(ROUTES_MAP['company.admin.employees.overview'].href);
   }
 
   try {
@@ -32,7 +32,7 @@ export async function editEmployeeLoader({ request }: LoaderFunctionArgs) {
     });
 
     if (!response.data) {
-      return redirect(ROUTES_MAP['company.employees.overview'].href);
+      return redirect(ROUTES_MAP['company.admin.employees.overview'].href);
     }
 
     return data<CompanyEmployeesEditLoaderData>({
@@ -41,7 +41,7 @@ export async function editEmployeeLoader({ request }: LoaderFunctionArgs) {
   } catch (error: any) {
     console.error(error);
     if (error as ApiClientError) {
-      return redirect(ROUTES_MAP['company.employees.overview'].href);
+      return redirect(ROUTES_MAP['company.admin.employees.overview'].href);
     }
 
     throw error;

@@ -4,10 +4,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  editCompanyUserSchema,
-  type EditCompanyUserSchema,
-} from '~/routes/company/employees/edit/_schemas/edit-company-user.form.schema';
+import { type EditCompanyUserSchema, editCompanyUserSchema } from '../_schemas/edit-company-user.form.schema';
 
 export interface EditCompanyUserFormProps {
   email: string;
