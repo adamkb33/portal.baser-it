@@ -4,5 +4,9 @@ import type { RootOutletContext } from '~/root';
 export default function CompanyLayout() {
   const context = useOutletContext<RootOutletContext>();
 
-  return <Outlet context={context} />;
+  return (
+    <div className="bg-white rounded-lg border p-6">
+      <Outlet context={context} />
+    </div>
+  );
 }
