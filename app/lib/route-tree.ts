@@ -172,15 +172,15 @@ export const ROUTE_TREE: RouteBranch[] = [
               },
             ],
           },
+          {
+            id: 'company.admin.contacts',
+            href: '/company/admin/contacts',
+            label: 'Kontakter',
+            category: BrachCategory.COMPANY,
+            accessType: Access.AUTHENTICATED,
+            companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+          },
         ],
-      },
-      {
-        id: 'company.contacts',
-        href: '/company/contacts',
-        label: 'Kontakter',
-        category: BrachCategory.COMPANY,
-        accessType: Access.AUTHENTICATED,
-        companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
       },
       {
         id: 'company.booking',
