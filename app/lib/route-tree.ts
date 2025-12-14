@@ -202,14 +202,16 @@ export const ROUTE_TREE: RouteBranch[] = [
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
                 companyRoles: [Roles.ADMIN],
-              },
-              {
-                id: 'company.booking.admin.services',
-                href: '/company/booking/admin/services',
-                label: 'Tjenester',
-                category: BrachCategory.COMPANY,
-                accessType: Access.PRODUCT,
-                companyRoles: [Roles.ADMIN],
+                children: [
+                  {
+                    id: 'company.booking.admin.service-groups.services',
+                    href: '/company/booking/admin/service-groups/services',
+                    label: 'Tjenester',
+                    category: BrachCategory.COMPANY,
+                    accessType: Access.PRODUCT,
+                    companyRoles: [Roles.ADMIN],
+                  },
+                ],
               },
               {
                 id: 'company.booking.admin.appointments',
@@ -357,21 +359,6 @@ export const ROUTES_MAP: Record<string, { id: string; href: string }> = (() => {
 export type UserNavigation = Record<RoutePlaceMent, RouteBranch[]>;
 
 export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNavigation => {
-  const flattenBranches = (branches: RouteBranch[]): RouteBranch[] => {
-    const result: RouteBranch[] = [];
-
-    const flatten = (branch: RouteBranch): void => {
-      result.push(branch);
-
-      if (branch.children) {
-        branch.children.forEach((child) => flatten(child));
-      }
-    };
-
-    branches.forEach((branch) => flatten(branch));
-    return result;
-  };
-
   const hasAccess = (branch: RouteBranch): boolean => {
     // Public routes are always accessible
     if (branch.accessType === Access.PUBLIC) {
@@ -411,8 +398,6 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
         return false;
       }
 
-      // Extract product name from route id
-      // For routes like 'company-user.booking.admin.*', extract 'booking'
       const routeParts = branch.id.split('.');
       let productName = '';
 
@@ -433,7 +418,6 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
         return false;
       }
 
-      // Check company roles for product access
       if (branch.companyRoles && branch.companyRoles.length > 0) {
         if (!branch.companyRoles.some((role) => user.company?.companyRoles.includes(role))) {
           return false;
@@ -444,11 +428,38 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
     return true;
   };
 
-  const flattenedBranches = flattenBranches(ROUTE_TREE);
-  const filteredBranches = flattenedBranches.filter(hasAccess);
+  const filterBranch = (branch: RouteBranch): RouteBranch | null => {
+    if (branch.hidden) {
+      return null;
+    }
 
-  return filteredBranches.reduce((acc, branch) => {
-    if (branch.placement && !branch.hidden) {
+    if (!hasAccess(branch)) {
+      return null;
+    }
+
+    const filteredChildren = branch.children
+      ?.map((child) => filterBranch(child))
+      .filter((child): child is RouteBranch => child !== null);
+
+    return {
+      ...branch,
+      children: filteredChildren && filteredChildren.length > 0 ? filteredChildren : undefined,
+    };
+  };
+
+  const filteredTree = ROUTE_TREE.map((branch) => filterBranch(branch)).filter(
+    (branch): branch is RouteBranch => branch !== null,
+  );
+
+  // Only collect TOP-LEVEL branches with placement, don't recurse into children
+  const collectByPlacement = (branches: RouteBranch[]): RouteBranch[] => {
+    return branches.filter((branch) => branch.placement !== undefined);
+  };
+
+  const placementBranches = collectByPlacement(filteredTree);
+
+  return placementBranches.reduce((acc, branch) => {
+    if (branch.placement) {
       if (!acc[branch.placement]) {
         acc[branch.placement] = [];
       }
@@ -456,17 +467,4 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
     }
     return acc;
   }, {} as UserNavigation);
-};
-
-const getCategoryLabel = (category: BrachCategory): string => {
-  switch (category) {
-    case BrachCategory.AUTH:
-      return 'Autentisering';
-    case BrachCategory.COMPANY:
-      return 'Selskap';
-    case BrachCategory.USER:
-      return 'Bruker';
-    default:
-      return category;
-  }
 };

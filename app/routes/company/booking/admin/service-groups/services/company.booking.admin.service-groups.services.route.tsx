@@ -12,7 +12,6 @@ import { TableCell, TableRow } from '~/components/ui/table';
 import { Badge } from '~/components/ui/badge';
 import { X } from 'lucide-react';
 import { fileToBase64 } from '~/lib/file.utils';
-
 import { getServicesLoader, servicesActions, type BookingServicesLoaderData } from './_features/services.feature';
 
 export const loader = getServicesLoader;
@@ -283,7 +282,7 @@ export default function BookingAdminServices() {
   };
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-semibold">Tjenester</h1>
         <Button onClick={handleAdd}>Ny tjeneste</Button>
