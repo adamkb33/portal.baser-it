@@ -1,3 +1,9 @@
+import { PageHeader } from '../_components/page-header';
+
 export default function CompanyAdminRoute() {
-  return <div>CompanyAdminRoute</div>;
+  return (
+    <>
+      <PageHeader title={'Lorem'} />
+    </>
+  );
 }

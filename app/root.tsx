@@ -68,89 +68,72 @@ export default function App() {
   return (
     <div className="grid min-h-screen grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-cols-12">
       {/* Header - Full Width with Navbar (8/12 on desktop, full on mobile) */}
-      <header className="col-span-1 border-b border-border bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
+      <header className="border-b border-border bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
         <div className="hidden lg:col-span-2 lg:block"></div>
 
-        <nav className="border-b border-border p-4 sm:p-5 lg:col-span-8 lg:border-b-0">
-          <h2 className="text-sm font-semibold text-foreground">Navbar</h2>
-          <ul className="mt-3 flex flex-wrap gap-3">
-            <li>
-              <a href="#" className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline">
-                Link 1
-              </a>
-            </li>
-            <li>
-              <a href="#" className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline">
-                Link 2
-              </a>
-            </li>
-            <li>
-              <a href="#" className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline">
-                Link 3
-              </a>
-            </li>
-          </ul>
+        <nav className="border-b p-2 border-border lg:col-span-8 lg:border-b-0">
+          <div className="flex items-center gap-3">
+            {/* Mobile menu button - only show when sidebar exists */}
+            {hasSidebar && (
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="lg:hidden p-2 hover:bg-muted rounded transition-colors"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            )}
+
+            <div className="flex-1">
+              <Navbar navRoutes={userNav} companyContext={companyContext} />
+            </div>
+          </div>
         </nav>
 
         <div className="hidden lg:col-span-2 lg:block"></div>
       </header>
 
       {/* Main - Full Width with Section (8/12 on desktop, full on mobile) */}
-      <main className="col-span-1 bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
+      <main className="bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
         {/* Sidebar - Hidden on mobile, visible on desktop */}
-        <aside className="hidden border-r border-border bg-muted p-4 lg:col-span-2 lg:block">
-          <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Menu</span>
-          <ul className="mt-3 space-y-2">
-            <li>
-              <a href="#" className="text-xs font-medium text-foreground underline-offset-2 hover:underline">
-                Link 1
-              </a>
-            </li>
-            <li>
-              <a href="#" className="text-xs font-medium text-foreground underline-offset-2 hover:underline">
-                Link 2
-              </a>
-            </li>
-            <li>
-              <a href="#" className="text-xs font-medium text-foreground underline-offset-2 hover:underline">
-                Link 3
-              </a>
-            </li>
-          </ul>
-        </aside>
+        {userNav?.SIDEBAR && (
+          <aside className="hidden border-r border-border bg-muted p-4 lg:col-span-2 lg:block">
+            <Sidebar branches={userNav?.SIDEBAR} />
+          </aside>
+        )}
 
-        <section className="max-h-full overflow-auto p-4 sm:p-5 lg:col-span-8">
-          <div className="space-y-5">
-            <div>
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                Main Section
-              </span>
-              <h2 className="mt-2 text-sm font-semibold text-foreground">Section Content</h2>
-            </div>
+        {/* Mobile Sidebar - Only visible on mobile when open */}
+        {hasSidebar && (
+          <MobileSidebar branches={sidebarBranches} isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+        )}
 
-            <div className="border border-border bg-background p-4 sm:p-5">
-              <p className="text-sm text-foreground">
-                Main content goes here. This follows brutalist design principles with sharp corners, black borders, and
-                minimal styling.
-              </p>
-            </div>
-          </div>
+        <section className="overflow-auto p-4 sm:p-5 lg:col-span-8 bg-primary/5 border-r-2">
+          <Outlet
+            context={{
+              userNav,
+              setUserNav,
+              companyContext,
+              setCompanyContext,
+            }}
+          />
         </section>
 
         <div className="hidden lg:col-span-2 lg:block"></div>
       </main>
 
       {/* Footer - Full Width with Section (8/12 on desktop, full on mobile) */}
-      <footer className="col-span-1 border-t border-border bg-muted lg:col-span-12 lg:grid lg:grid-cols-12">
+      <footer className="border-t border-border bg-muted lg:col-span-12 lg:grid lg:grid-cols-12">
         <div className="hidden lg:col-span-2 lg:block"></div>
 
-        <section className="p-4 sm:p-5 lg:col-span-8">
+        <section className="p-2 lg:col-span-8">
           <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Footer</span>
           <p className="mt-2 text-[0.7rem] text-muted-foreground">Footer content goes here</p>
         </section>
 
         <div className="hidden lg:col-span-2 lg:block"></div>
       </footer>
+
+      <Toaster />
     </div>
   );
 }

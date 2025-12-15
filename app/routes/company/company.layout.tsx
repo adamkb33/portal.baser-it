@@ -9,7 +9,7 @@ export default function CompanyLayout() {
     <div className="space-y-4">
       <NavBreadcrumbs items={context.userNav?.SIDEBAR} />
 
-      <div className="border border-border bg-background p-4 sm:p-5 rounded-none">
+      <div className="border border-border bg-background p-2 sm:p-6 space-y-4">
         <Outlet context={context} />
       </div>
     </div>

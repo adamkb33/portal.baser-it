@@ -13,19 +13,13 @@ export function Sidebar({ branches }: SidebarProps) {
   }
 
   return (
-    <aside
-      className="hidden md:block w-64 border-r border-border bg-background flex-shrink-0"
-      role="navigation"
-      aria-label="Sidebar navigation"
-    >
-      <nav className="">
-        <ul className="space-y-0" role="list">
-          {branches.map((item) => (
-            <SidebarItem key={item.id} item={item} currentPath={location.pathname} level={0} />
-          ))}
-        </ul>
-      </nav>
-    </aside>
+    <div className="flex justify-end">
+      <ul className="space-y-2 w-max" role="list">
+        {branches.map((item) => (
+          <SidebarItem key={item.id} item={item} currentPath={location.pathname} level={0} />
+        ))}
+      </ul>
+    </div>
   );
 }
 
