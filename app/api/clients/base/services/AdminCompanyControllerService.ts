@@ -41,18 +41,13 @@ export class AdminCompanyControllerService {
      * @throws ApiError
      */
     public static inviteEmployee({
-        companyId,
         requestBody,
     }: {
-        companyId: number,
         requestBody: InviteCompanyUserDto,
     }): CancelablePromise<ApiResponseInvitedUserTokenDto> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/admin/companies',
-            query: {
-                'companyId': companyId,
-            },
             body: requestBody,
             mediaType: 'application/json',
         });

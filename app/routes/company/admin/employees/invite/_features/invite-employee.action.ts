@@ -1,36 +1,34 @@
 // ~/features/company/api/invite-employee.server.ts
-import { redirect, type ActionFunctionArgs } from 'react-router';
-import { createBaseClient, type InviteCompanyUserDto } from '~/api/clients/base';
+import { data, redirect, type ActionFunctionArgs } from 'react-router';
+import { createBaseClient } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
 import type { ApiClientError } from '~/api/clients/http';
 import { getUserSession } from '~/lib/auth.utils';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 export async function inviteEmployee({ request }: ActionFunctionArgs) {
   const { accessToken, user } = await getUserSession(request);
 
   if (!accessToken || !user?.company) {
-    return { error: 'Unauthorized', status: 401 };
+    return data({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const formData = await request.formData();
-  const payload = Object.fromEntries(formData) as Record<string, string>;
+  const email = String(formData.get('email'));
+  const rolesJson = String(formData.get('roles'));
 
   let roles;
   try {
-    roles = JSON.parse(payload.roles);
+    roles = JSON.parse(rolesJson);
   } catch {
-    return {
-      error: 'Ugyldig rolledata',
-      values: {
-        email: payload.email,
+    return data(
+      {
+        error: 'Ugyldig rolledata',
+        values: { email, roles: [] },
       },
-    };
+      { status: 400 },
+    );
   }
-
-  const inviteData: InviteCompanyUserDto = {
-    email: payload.email,
-    roles,
-  };
 
   try {
     const baseApi = createBaseClient({
@@ -38,28 +36,24 @@ export async function inviteEmployee({ request }: ActionFunctionArgs) {
       token: accessToken,
     });
 
-    const response = await baseApi.AdminCompanyControllerService.AdminCompanyControllerService.inviteEmployee({
-      companyId: user.company.companyId,
-      requestBody: inviteData,
+    await baseApi.AdminCompanyControllerService.AdminCompanyControllerService.inviteEmployee({
+      requestBody: { email, roles },
     });
 
-    if (!response.success || !response.data) {
-      throw new Error('Failed to invite employee');
-    }
-
-    return redirect('/company/employees');
+    return redirect(ROUTES_MAP['company.admin.employees'].href);
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {
-      return {
-        error: error.body?.message || 'Kunne ikke sende invitasjon. Vennligst prøv igjen.',
-        values: inviteData,
-      };
+      console.log(error);
+      return data(
+        {
+          error: error.body?.message || 'Kunne ikke sende invitasjon. Vennligst prøv igjen.',
+          values: { email, roles },
+        },
+        { status: 400 },
+      );
     }
 
-    return {
-      error: 'En uventet feil oppstod. Vennligst prøv igjen.',
-      values: inviteData,
-    };
+    // Unexpected errors - throw to ErrorBoundary
+    throw error;
   }
 }

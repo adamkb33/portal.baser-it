@@ -11,6 +11,7 @@ import { PaginatedTable } from '~/components/table/paginated-data-table';
 import { TableCell, TableRow } from '~/components/ui/table';
 import { Input } from '~/components/ui/input';
 import { Pen } from 'lucide-react';
+import { COMPANY_ROLE_LABELS } from '~/lib/constants';
 
 export type EmployeesOverviewLoaderData = {
   users: CompanyUserDto[];
@@ -50,7 +51,7 @@ export default function CompanyAdminEmployees() {
   const [filter, setFilter] = useState('');
 
   const formatRoles = (roles: Array<'ADMIN' | 'EMPLOYEE'>) => {
-    return roles.map((role) => (role === 'ADMIN' ? 'Admin' : 'Ansatt')).join(', ');
+    return roles.map((role) => COMPANY_ROLE_LABELS[role]).join(', ');
   };
 
   const filteredUsers = useMemo(() => {
@@ -86,7 +87,7 @@ export default function CompanyAdminEmployees() {
 
       <PaginatedTable<CompanyUserDto>
         items={filteredUsers}
-        getRowKey={(user) => user.userId}
+        getRowKey={(user) => user.userId?.toString() ?? user.email}
         columns={[
           { header: 'E-post', className: 'font-medium' },
           { header: 'Roller' },
@@ -94,15 +95,28 @@ export default function CompanyAdminEmployees() {
         ]}
         renderRow={(user) => (
           <TableRow>
-            <TableCell className="font-medium">{user.email}</TableCell>
+            <TableCell className="font-medium">
+              <div className="flex items-center gap-2">
+                <span>{user.email}</span>
+                {!user.userId && (
+                  <span className="border border-border bg-muted px-2.5 py-0.5 text-[0.7rem] font-medium rounded-none">
+                    Invitert
+                  </span>
+                )}
+              </div>
+            </TableCell>
             <TableCell>{formatRoles(user.roles)}</TableCell>
             <TableCell className="text-right">
-              <Button variant="outline" size="sm" asChild>
-                <Link to={`${ROUTES_MAP['company.admin.employees.edit'].href}?userId=${user.userId}`}>
-                  <Pen className="h-4 w-4" />
-                  <span className="sr-only">Rediger</span>
-                </Link>
-              </Button>
+              {user.userId ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link to={`${ROUTES_MAP['company.admin.employees.edit'].href}?userId=${user.userId}`}>
+                    <Pen className="h-4 w-4" />
+                    <span className="sr-only">Rediger</span>
+                  </Link>
+                </Button>
+              ) : (
+                <span className="text-xs text-muted-foreground">Venter på aksept</span>
+              )}
             </TableCell>
           </TableRow>
         )}

@@ -8,7 +8,6 @@ import type { ApiResponseJwtClaims } from '@types';
 import type { ApiResponseListCompanySummaryDto } from '@types';
 import type { ApiResponseUnit } from '@types';
 import type { CompanySignInDto } from '@types';
-import type { ExistingUserAcceptInviteDto } from '@types';
 import type { ForgotPasswordDto } from '@types';
 import type { RefreshTokenRequestDto } from '@types';
 import type { ResetPasswordDto } from '@types';
@@ -143,27 +142,6 @@ export class AuthControllerService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/auth/accept-invite/{inviteToken}',
-            path: {
-                'inviteToken': inviteToken,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-        });
-    }
-    /**
-     * @returns ApiResponseAuthenticationTokenDto OK
-     * @throws ApiError
-     */
-    public static acceptInviteExisting({
-        inviteToken,
-        requestBody,
-    }: {
-        inviteToken: string,
-        requestBody: ExistingUserAcceptInviteDto,
-    }): CancelablePromise<ApiResponseAuthenticationTokenDto> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/auth/accept-invite/existing/{inviteToken}',
             path: {
                 'inviteToken': inviteToken,
             },

@@ -192,6 +192,24 @@ export const ROUTE_TREE: RouteBranch[] = [
         companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
         children: [
           {
+            id: 'company.booking.profile',
+            href: '/company/booking/profile',
+            label: 'Min profil',
+            category: BrachCategory.COMPANY,
+            accessType: Access.PRODUCT,
+            companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+            children: [
+              {
+                id: 'company.booking.profile.daily-schedule',
+                href: '/company/booking/profile/daily-schedule',
+                label: 'Timeplan',
+                category: BrachCategory.COMPANY,
+                accessType: Access.PRODUCT,
+                companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+              },
+            ],
+          },
+          {
             id: 'company.booking.admin',
             href: '/company/booking/admin',
             label: 'Administrasjon',
@@ -203,6 +221,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                 id: 'company.booking.admin.settings',
                 href: '/company/booking/admin/settings',
                 label: 'Instillinger',
+                hidden: true,
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
                 companyRoles: [Roles.ADMIN],
@@ -242,24 +261,6 @@ export const ROUTE_TREE: RouteBranch[] = [
                     companyRoles: [Roles.ADMIN],
                   },
                 ],
-              },
-            ],
-          },
-          {
-            id: 'company.booking.profile',
-            href: '/company/booking/profile',
-            label: 'Min profil',
-            category: BrachCategory.COMPANY,
-            accessType: Access.PRODUCT,
-            companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
-            children: [
-              {
-                id: 'company.booking.profile.daily-schedule',
-                href: '/company/booking/profile/daily-schedule',
-                label: 'Timeplan',
-                category: BrachCategory.COMPANY,
-                accessType: Access.PRODUCT,
-                companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
               },
             ],
           },
@@ -463,7 +464,6 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
     (branch): branch is RouteBranch => branch !== null,
   );
 
-  // Only collect TOP-LEVEL branches with placement, don't recurse into children
   const collectByPlacement = (branches: RouteBranch[]): RouteBranch[] => {
     return branches.filter((branch) => branch.placement !== undefined);
   };
