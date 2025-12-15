@@ -26,9 +26,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const baseApi = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accesstoken });
 
-    const response = await baseApi.AdminCompanyControllerService.AdminCompanyControllerService.getCompanyUsers({
-      companyId: user.company.companyId,
-    });
+    const response = await baseApi.AdminCompanyControllerService.AdminCompanyControllerService.getCompanyUsers({});
     if (!response.data) {
       return { error: 'Kunne ikke hente brukere for selskapet' };
     }
@@ -65,7 +63,7 @@ export default function CompanyAdminEmployees() {
   }, [users, filter]);
 
   return (
-    <div className="container mx-auto py-6 space-y-4">
+    <>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold">Ansatte</h1>
@@ -121,6 +119,6 @@ export default function CompanyAdminEmployees() {
           </TableRow>
         )}
       />
-    </div>
+    </>
   );
 }

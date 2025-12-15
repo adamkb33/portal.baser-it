@@ -39,7 +39,6 @@ export async function rootLoader({ request }: LoaderFunctionArgs) {
 
   try {
     const body = await buildResponseData(request, accessToken);
-    console.log(JSON.stringify(body.userNavigation));
     return data(body);
   } catch (err) {
     console.error('[rootLoader] Failed to use access token:', err);

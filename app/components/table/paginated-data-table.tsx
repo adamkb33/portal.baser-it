@@ -1,6 +1,6 @@
 // components/ui/paginated-table.tsx
 import * as React from 'react';
-import { cn } from '@/lib/utils'; // If you don't have this, replace cn(...) with template strings or remove it.
+import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -72,62 +72,41 @@ export function PaginatedTable<T>({
   const canNext = page < totalPages;
 
   return (
-    <div className={cn('overflow-hidden rounded-md border', className)}>
+    <div className={cn('border border-border bg-background rounded-none overflow-hidden', className)}>
       {/* Top controls */}
-      <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-muted-foreground">
-          Viser {items.length ? startIndex + 1 : 0}–{endIndex} av {items.length}
-        </div>
-
-        <div className="flex items-center gap-3">
-          {headerSlot}
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Per side</span>
-            <Select
-              value={String(pageSize)}
-              onValueChange={(v) => {
-                const next = Number(v);
-                if (next === pageSize) return;
-                setPageSize(next);
-                setPage(1);
-                onPageSizeChange?.(next);
-              }}
-            >
-              <SelectTrigger className="h-8 w-[92px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {pageSizeOptions.map((opt) => (
-                  <SelectItem key={opt} value={String(opt)}>
-                    {opt}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      <div className="border-b border-border bg-background p-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-xs text-muted-foreground">
+            Viser {items.length ? startIndex + 1 : 0}–{endIndex} av {items.length}
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPage(1)} disabled={!canPrev}>
-              « Første
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={!canPrev}>
-              ← Forrige
-            </Button>
-            <div className="px-2 text-sm tabular-nums">
-              Side {page} / {totalPages}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {headerSlot && <div className="flex items-center gap-2">{headerSlot}</div>}
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Per side</span>
+              <Select
+                value={String(pageSize)}
+                onValueChange={(v) => {
+                  const next = Number(v);
+                  if (next === pageSize) return;
+                  setPageSize(next);
+                  setPage(1);
+                  onPageSizeChange?.(next);
+                }}
+              >
+                <SelectTrigger className="h-8 w-[92px] rounded-none">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {pageSizeOptions.map((opt) => (
+                    <SelectItem key={opt} value={String(opt)}>
+                      {opt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={!canNext}
-            >
-              Neste →
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setPage(totalPages)} disabled={!canNext}>
-              Siste »
-            </Button>
           </div>
         </div>
       </div>
@@ -150,13 +129,42 @@ export function PaginatedTable<T>({
             )
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell colSpan={columns.length} className="h-24 text-center text-sm text-muted-foreground">
                 {emptyMessage}
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+
+      {/* Bottom pagination */}
+      <div className="border-t border-border bg-background p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+            Side {page} / {totalPages}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPage(1)} disabled={!canPrev}>
+              « Første
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={!canPrev}>
+              ← Forrige
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={!canNext}
+            >
+              Neste →
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(totalPages)} disabled={!canNext}>
+              Siste »
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

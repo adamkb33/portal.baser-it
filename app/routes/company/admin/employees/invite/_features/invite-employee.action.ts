@@ -43,7 +43,7 @@ export async function inviteEmployee({ request }: ActionFunctionArgs) {
     return redirect(ROUTES_MAP['company.admin.employees'].href);
   } catch (error: any) {
     if (error as ApiClientError) {
-      console.log(error);
+      console.error(error);
       return data(
         {
           error: error.body?.message || 'Kunne ikke sende invitasjon. Vennligst prøv igjen.',

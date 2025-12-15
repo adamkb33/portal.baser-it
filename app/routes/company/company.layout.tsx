@@ -6,9 +6,12 @@ export default function CompanyLayout() {
   const context = useOutletContext<RootOutletContext>();
 
   return (
-    <div className="bg-white rounded-lg border p-6 space-y-4">
+    <div className="space-y-4">
       <NavBreadcrumbs items={context.userNav?.SIDEBAR} />
-      <Outlet context={context} />
+
+      <div className="border border-border bg-background p-4 sm:p-5 rounded-none">
+        <Outlet context={context} />
+      </div>
     </div>
   );
 }

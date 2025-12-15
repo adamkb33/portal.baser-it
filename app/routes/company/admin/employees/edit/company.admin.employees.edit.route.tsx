@@ -17,7 +17,7 @@ export default function CompanyEmployeesEdit() {
   const handleSubmit = React.useCallback(
     (values: EditCompanyUserSchema) => {
       const payload = new FormData();
-      payload.set('userId', user.userId.toString());
+      payload.set('userId', user.userId?.toString() || '');
       payload.set('roles', values.roles.toString());
 
       fetcher.submit(payload, {

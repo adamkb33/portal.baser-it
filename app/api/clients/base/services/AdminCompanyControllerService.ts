@@ -78,12 +78,10 @@ export class AdminCompanyControllerService {
      * @throws ApiError
      */
     public static getCompanyUsers({
-        companyId,
         page,
         size,
         sort,
     }: {
-        companyId: number,
         page?: number,
         size?: number,
         sort?: string,
@@ -92,7 +90,6 @@ export class AdminCompanyControllerService {
             method: 'GET',
             url: '/admin/companies/users',
             query: {
-                'companyId': companyId,
                 'page': page,
                 'size': size,
                 'sort': sort,

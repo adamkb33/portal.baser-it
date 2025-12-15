@@ -15,12 +15,10 @@ export type NavbarProps = {
 };
 
 export function Navbar({ navRoutes, companyContext }: NavbarProps) {
-  // Get navigation branches by placement
   const navigationBranches = navRoutes?.[RoutePlaceMent.NAVIGATION] || [];
 
-  // Filter branches by category
-  const userBranches = navigationBranches.filter(branch => branch.category === BrachCategory.USER);
-  const authBranches = navigationBranches.filter(branch => branch.category === BrachCategory.AUTH);
+  const userBranches = navigationBranches.filter((branch) => branch.category === BrachCategory.USER);
+  const authBranches = navigationBranches.filter((branch) => branch.category === BrachCategory.AUTH);
 
   return (
     <nav className="flex flex-1 items-center justify-between gap-4">
@@ -28,7 +26,6 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
         <Link to="/" className="text-xl font-semibold">
           <BiTLogo size={'xl'} />
         </Link>
-
         <CompanyHeader company={companyContext} />
       </div>
 
