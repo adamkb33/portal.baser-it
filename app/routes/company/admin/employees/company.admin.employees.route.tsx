@@ -12,6 +12,7 @@ import { TableCell, TableRow } from '~/components/ui/table';
 import { Input } from '~/components/ui/input';
 import { Pen } from 'lucide-react';
 import { COMPANY_ROLE_LABELS } from '~/lib/constants';
+import { PageHeader } from '../../_components/page-header';
 
 export type EmployeesOverviewLoaderData = {
   users: CompanyUserDto[];
@@ -64,15 +65,15 @@ export default function CompanyAdminEmployees() {
 
   return (
     <>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Ansatte</h1>
-          <p className="text-sm text-muted-foreground">Oversikt over alle brukere tilknyttet selskapet.</p>
-        </div>
-        <Button asChild>
-          <Link to={ROUTES_MAP['company.admin.employees.invite'].href}>Inviter ansatt</Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="Ansatte"
+        description="Oversikt over alle brukere tilknyttet selskapet. Administrer roller, tilganger og inviter nye medlemmer."
+        actions={
+          <Button asChild>
+            <Link to={ROUTES_MAP['company.admin.employees.invite'].href}>Inviter ansatt</Link>
+          </Button>
+        }
+      />
 
       <div className="flex items-center py-2">
         <Input

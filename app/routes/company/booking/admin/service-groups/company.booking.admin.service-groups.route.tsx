@@ -10,6 +10,7 @@ import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
 import { serviceGroupsAction } from './_features/service-groups.action';
 import { serviceGroupsLoader, type BookingServiceGroupsLoaderData } from './_features/service-groups.loader';
+import { PageHeader } from '../../../_components/page-header';
 
 export const loader = serviceGroupsLoader;
 export const action = serviceGroupsAction;
@@ -103,10 +104,11 @@ export default function BookingServiceGroups() {
 
   return (
     <div className="container mx-auto py-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-        <h1 className="text-xl font-semibold">Tjenestegrupper</h1>
-        <Button onClick={handleAdd}>Ny tjenestegruppe</Button>
-      </div>
+      <PageHeader
+        title="Tjenestegrupper"
+        description="Organiser og administrer tjenester i logiske grupper. Gjør det enkelt for kunder å finne riktige tjenester."
+        actions={<Button onClick={handleAdd}>Ny tjenestegruppe</Button>}
+      />
 
       <div className="flex items-center py-4">
         <Input

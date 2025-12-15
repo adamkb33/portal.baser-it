@@ -13,6 +13,7 @@ import { TableCell, TableRow } from '~/components/ui/table';
 import { contactsLoader, type CompanyContactsLoaderData } from './_features/company.contacts.loader';
 import { contactsAction } from './_features/company.contacts.action';
 import { ContactFormSchema, type ContactFormData, type FieldErrors } from './_schemas/contact.form.schema';
+import { PageHeader } from '../../_components/page-header';
 
 export const loader = contactsLoader;
 export const action = contactsAction;
@@ -144,13 +145,11 @@ export default function CompanyContactsRoute() {
 
   return (
     <div className="container mx-auto py-6 space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Kontakter</h1>
-          <p className="text-sm text-muted-foreground">Administrer kontaktpersoner og detaljer.</p>
-        </div>
-        <Button onClick={openCreate}>Ny kontakt</Button>
-      </div>
+      <PageHeader
+        title="Kontakter"
+        description="Administrer kontaktpersoner og detaljer. Hold oversikt over viktige kontakter for ditt selskap."
+        actions={<Button onClick={openCreate}>Ny kontakt</Button>}
+      />
 
       <div className="flex items-center py-2">
         <Input

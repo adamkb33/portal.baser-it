@@ -9,6 +9,7 @@ import { RegistrationsSection } from '~/components/company/brreg/registration-se
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import type { RootOutletContext } from '~/root';
+import { PageHeader } from './_components/page-header';
 
 export type CompanyIndexLoaderResponse = {
   brregResponse?: BrregEnhetResponse;
@@ -35,6 +36,10 @@ export default function CompanyIndex() {
 
   return (
     <div className="flex flex-col gap-2">
+      <PageHeader
+        title="Selskapsøversikt"
+        description="Her finner du en komplett oversikt over selskapets registrerte informasjon og status hos Brønnøysundregistrene."
+      />
       <CompanyStatusSection brregData={loaderData.brregResponse} />
 
       <div className="flex justify-between gap-2">

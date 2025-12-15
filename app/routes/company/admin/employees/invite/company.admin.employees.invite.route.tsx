@@ -13,6 +13,7 @@ import { inviteEmployeeSchema, type InviteEmployeeSchema } from './_schemas/invi
 import { inviteEmployee } from './_features/invite-employee.action';
 import type { Route } from './+types/company.admin.employees.invite.route';
 import { getCompanyRoleLabel } from '~/lib/constants';
+import { PageHeader } from '~/routes/company/_components/page-header';
 
 export const action = inviteEmployee;
 
@@ -42,12 +43,10 @@ export default function CompanyEmployeesInviteRoute({ actionData }: Route.Compon
 
   return (
     <div className="w-full">
-      <header className="mb-12 pb-8 border-b border-border">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-3">Inviter medarbeider</h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Send en invitasjon til en ny medarbeider for å gi dem tilgang til systemet.
-        </p>
-      </header>
+      <PageHeader
+        title="Inviter Medarbeider"
+        description="Send en invitasjon til en ny medarbeider for å gi dem tilgang til systemet. Velg passende roller og tilganger."
+      />
 
       {actionData?.error && (
         <div role="alert" className="mb-8 border-2 border-foreground bg-background p-4">

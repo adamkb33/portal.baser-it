@@ -1,8 +1,12 @@
+import { PageHeader } from '../../_components/page-header';
+
 export default function CompanyBookingAdminPage() {
   return (
     <div className="">
-      <h3 className="text-lg font-semibold mb-4">Booking Administrasjon</h3>
-      <p className="text-muted-foreground">Administrer booking-innstillinger, tjenester og avtaler.</p>
+      <PageHeader
+        title="Booking Administrasjon"
+        description="Administrer booking-innstillinger, tjenester og avtaler. Styr alle aspekter av bookingsystemet ditt."
+      />
     </div>
   );
 }
