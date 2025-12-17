@@ -3,7 +3,7 @@ import { createBookingClient } from '~/api/clients/booking';
 import type { ApiClientError } from '~/api/clients/http';
 import type { ServiceGroupDto } from '~/api/clients/types';
 import { ENV } from '~/api/config/env';
-import { getAccessToken } from '~/lib/auth.utils';
+import { getAccessTokenFromRequest } from '~/lib/auth.utils';
 
 export type BookingServiceGroupsLoaderData = {
   serviceGroups: ServiceGroupDto[];
@@ -11,7 +11,7 @@ export type BookingServiceGroupsLoaderData = {
 
 export async function serviceGroupsLoader({ request }: LoaderFunctionArgs) {
   try {
-    const accessToken = await getAccessToken(request);
+    const accessToken = await getAccessTokenFromRequest(request);
     if (!accessToken) {
       return redirect('/');
     }

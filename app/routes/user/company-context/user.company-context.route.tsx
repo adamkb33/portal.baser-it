@@ -4,7 +4,7 @@ import { type ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { CompanyContextSummaryCard } from '~/routes/user/company-context/_components/company-context-summary-card';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
-import { getAccessToken } from '~/lib/auth.utils';
+import { getAccessTokenFromRequest } from '~/lib/auth.utils';
 
 export type LoaderResponse = {
   companyContexts?: CompanySummaryDto[];
@@ -44,7 +44,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return { error: 'Ikke valgt' };
   }
 
-  const accessToken = await getAccessToken(request);
+  const accessToken = await getAccessTokenFromRequest(request);
 
   const baseClient = createBaseClient({
     baseUrl: ENV.BASE_SERVICE_BASE_URL,

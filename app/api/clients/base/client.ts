@@ -2,6 +2,7 @@
 import { setAuth, setBaseUrl } from '@http';
 import * as ActuatorService from './services/ActuatorService';
 import * as AdminCompanyControllerService from './services/AdminCompanyControllerService';
+import * as AdminCompanyUserControllerService from './services/AdminCompanyUserControllerService';
 import * as AuthControllerService from './services/AuthControllerService';
 import * as CompanyUserContactControllerService from './services/CompanyUserContactControllerService';
 import * as CompanyUserControllerService from './services/CompanyUserControllerService';
@@ -17,6 +18,7 @@ import * as UserControllerService from './services/UserControllerService';
 export type BaseClient = {
   ActuatorService: typeof ActuatorService;
   AdminCompanyControllerService: typeof AdminCompanyControllerService;
+  AdminCompanyUserControllerService: typeof AdminCompanyUserControllerService;
   AuthControllerService: typeof AuthControllerService;
   CompanyUserContactControllerService: typeof CompanyUserContactControllerService;
   CompanyUserControllerService: typeof CompanyUserControllerService;
@@ -36,6 +38,7 @@ export function createBaseClient(opts: { baseUrl: string; token?: string }): Bas
   return {
     ActuatorService,
     AdminCompanyControllerService,
+    AdminCompanyUserControllerService,
     AuthControllerService,
     CompanyUserContactControllerService,
     CompanyUserControllerService,

@@ -17,6 +17,7 @@ export type CompanyIndexLoaderResponse = {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const auth = await getAuthPayloadFromRequest(request);
+
   if (!auth || !auth.company) {
     return redirect(ROUTES_MAP['user.company-context'].href);
   }

@@ -3,7 +3,7 @@ import { data, redirect, type ActionFunctionArgs } from 'react-router';
 import { createBaseClient } from '~/api/clients/base';
 import type { CreateContactDto, UpdateContactDto } from 'tmp/openapi/gen/base';
 import { ENV } from '~/api/config/env';
-import { getAccessToken } from '~/lib/auth.utils';
+import { getAccessTokenFromRequest } from '~/lib/auth.utils';
 
 export type ContactsActionData = {
   success: boolean;
@@ -12,7 +12,7 @@ export type ContactsActionData = {
 };
 
 export async function contactsAction({ request }: ActionFunctionArgs) {
-  const accessToken = await getAccessToken(request);
+  const accessToken = await getAccessTokenFromRequest(request);
   if (!accessToken) return redirect('/');
 
   const baseClient = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accessToken });

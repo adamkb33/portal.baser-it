@@ -1,14 +1,9 @@
-import {
-  data,
-  redirect,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-} from 'react-router';
+import { data, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import type { DailyScheduleDto } from 'tmp/openapi/gen/booking';
 import { createBookingClient, DayOfWeek } from '~/api/clients/booking';
 import type { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
-import { getAccessToken } from '~/lib/auth.utils';
+import { getAccessTokenFromRequest } from '~/lib/auth.utils';
 
 export type BookingDailyScheduleLoaderArgs = {
   dailySchedules: DailyScheduleDto[];
@@ -16,7 +11,7 @@ export type BookingDailyScheduleLoaderArgs = {
 
 export async function dailyScheduleLoader({ request }: LoaderFunctionArgs) {
   try {
-    const accessToken = await getAccessToken(request);
+    const accessToken = await getAccessTokenFromRequest(request);
     if (!accessToken) {
       return redirect('/');
     }
@@ -41,7 +36,7 @@ export async function dailyScheduleLoader({ request }: LoaderFunctionArgs) {
 }
 
 export async function dailyScheduleAction({ request }: ActionFunctionArgs) {
-  const accessToken = await getAccessToken(request);
+  const accessToken = await getAccessTokenFromRequest(request);
   if (!accessToken) {
     return redirect('/');
   }

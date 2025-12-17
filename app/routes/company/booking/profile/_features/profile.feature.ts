@@ -1,6 +1,6 @@
 import { data, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import type { ApiClientError } from '~/api/clients/http';
-import { getAccessToken } from '~/lib/auth.utils';
+import { getAccessTokenFromRequest } from '~/lib/auth.utils';
 import { baseApi, bookingApi } from '~/lib/utils';
 import type { BookingProfileDto } from 'tmp/openapi/gen/booking';
 import type { UserDto } from '~/api/clients/types';
@@ -14,7 +14,7 @@ export type BookingProfileLoaderData = {
 
 export async function profileLoader({ request }: LoaderFunctionArgs) {
   try {
-    const accesToken = await getAccessToken(request);
+    const accesToken = await getAccessTokenFromRequest(request);
     if (!accesToken) {
       return redirect('/');
     }
@@ -54,7 +54,7 @@ const actions = {
 
 export async function profileAction({ request }: ActionFunctionArgs) {
   try {
-    const accesToken = await getAccessToken(request);
+    const accesToken = await getAccessTokenFromRequest(request);
     if (!accesToken) {
       return redirect('/');
     }

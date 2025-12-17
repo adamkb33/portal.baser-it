@@ -3,7 +3,7 @@ import type { ServiceDto, ServiceGroupDto } from 'tmp/openapi/gen/booking';
 import { createBookingClient, type ImageUpload } from '~/api/clients/booking';
 import type { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
-import { getAccessToken } from '~/lib/auth.utils';
+import { getAccessTokenFromRequest } from '~/lib/auth.utils';
 
 export type BookingServicesLoaderData = {
   serviceGroups: ServiceGroupDto[];
@@ -57,7 +57,7 @@ const extractImagesFromFormData = (fd: FormData): ImageUpload[] => {
 
 export async function getServicesLoader({ request }: LoaderFunctionArgs) {
   try {
-    const accessToken = await getAccessToken(request);
+    const accessToken = await getAccessTokenFromRequest(request);
     if (!accessToken) {
       return redirect('/');
     }
@@ -82,7 +82,7 @@ export async function getServicesLoader({ request }: LoaderFunctionArgs) {
 }
 
 export async function servicesActions({ request }: ActionFunctionArgs) {
-  const accessToken = await getAccessToken(request);
+  const accessToken = await getAccessTokenFromRequest(request);
   if (!accessToken) {
     return redirect('/');
   }

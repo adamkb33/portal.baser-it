@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ApiResponseInvitedUserTokenDto } from '@types';
-import type { ApiResponsePaginatedResponseCompanyUserDto } from '@types';
 import type { ApiResponseUnit } from '@types';
 import type { EditCompanyUserDto } from '@types';
 import type { InviteCompanyUserDto } from '@types';
@@ -71,29 +70,6 @@ export class AdminCompanyControllerService {
             },
             body: requestBody,
             mediaType: 'application/json',
-        });
-    }
-    /**
-     * @returns ApiResponsePaginatedResponseCompanyUserDto OK
-     * @throws ApiError
-     */
-    public static getCompanyUsers({
-        page,
-        size,
-        sort,
-    }: {
-        page?: number,
-        size?: number,
-        sort?: string,
-    }): CancelablePromise<ApiResponsePaginatedResponseCompanyUserDto> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/admin/companies/users',
-            query: {
-                'page': page,
-                'size': size,
-                'sort': sort,
-            },
         });
     }
 }

@@ -4,7 +4,7 @@ import { createBaseClient } from '~/api/clients/base';
 import type { ApiClientError } from '~/api/clients/http';
 import type { ContactDto } from 'tmp/openapi/gen/base';
 import { ENV } from '~/api/config/env';
-import { getAccessToken } from '~/lib/auth.utils';
+import { getAccessTokenFromRequest } from '~/lib/auth.utils';
 
 export type CompanyContactsLoaderData = {
   contacts: ContactDto[];
@@ -12,7 +12,7 @@ export type CompanyContactsLoaderData = {
 
 export async function contactsLoader({ request }: LoaderFunctionArgs) {
   try {
-    const accessToken = await getAccessToken(request);
+    const accessToken = await getAccessTokenFromRequest(request);
     if (!accessToken) return redirect('/');
 
     const baseClient = createBaseClient({

@@ -21,7 +21,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
   const authBranches = navigationBranches.filter((branch) => branch.category === BrachCategory.AUTH);
 
   return (
-    <div>
+    <div className="flex justify-between">
       <div className="flex items-center gap-6">
         <Link to="/" className="text-xl font-semibold">
           <BiTLogo size={'xl'} />

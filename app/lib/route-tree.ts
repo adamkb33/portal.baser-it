@@ -42,6 +42,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     href: '/auth',
     label: 'Autentisering',
     category: BrachCategory.AUTH,
+    accessType: Access.PUBLIC,
     hidden: true,
     children: [
       {
@@ -88,6 +89,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     href: '/user',
     label: 'Bruker',
     category: BrachCategory.USER,
+    accessType: Access.PUBLIC,
     hidden: true,
     children: [
       {
@@ -152,25 +154,6 @@ export const ROUTE_TREE: RouteBranch[] = [
             category: BrachCategory.COMPANY,
             accessType: Access.AUTHENTICATED,
             companyRoles: [Roles.ADMIN],
-            children: [
-              {
-                id: 'company.admin.employees.invite',
-                href: '/company/admin/employees/invite',
-                label: 'Inviter',
-                category: BrachCategory.COMPANY,
-                accessType: Access.AUTHENTICATED,
-                companyRoles: [Roles.ADMIN],
-              },
-              {
-                id: 'company.admin.employees.edit',
-                href: '/company/admin/employees/edit',
-                label: 'Endre',
-                category: BrachCategory.COMPANY,
-                hidden: true,
-                accessType: Access.AUTHENTICATED,
-                companyRoles: [Roles.ADMIN],
-              },
-            ],
           },
           {
             id: 'company.admin.contacts',
@@ -441,42 +424,72 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
     return true;
   };
 
-  const filterBranch = (branch: RouteBranch): RouteBranch | null => {
-    if (branch.hidden) {
-      return null;
-    }
-
+  const filterBranch = (branch: RouteBranch): RouteBranch[] => {
+    // If branch doesn't have access, return empty array
     if (!hasAccess(branch)) {
-      return null;
+      return [];
     }
 
-    const filteredChildren = branch.children
-      ?.map((child) => filterBranch(child))
-      .filter((child): child is RouteBranch => child !== null);
+    // Process children first
+    const childBranches: RouteBranch[] = [];
+    if (branch.children) {
+      branch.children.forEach((child) => {
+        childBranches.push(...filterBranch(child));
+      });
+    }
 
-    return {
-      ...branch,
-      children: filteredChildren && filteredChildren.length > 0 ? filteredChildren : undefined,
-    };
+    // If this branch is hidden, only return its children
+    if (branch.hidden) {
+      return childBranches;
+    }
+
+    // Otherwise, return this branch with its filtered children
+    return [
+      {
+        ...branch,
+        children: childBranches.length > 0 ? childBranches : undefined,
+      },
+    ];
   };
 
-  const filteredTree = ROUTE_TREE.map((branch) => filterBranch(branch)).filter(
-    (branch): branch is RouteBranch => branch !== null,
-  );
+  const filteredTree = ROUTE_TREE.flatMap((branch) => filterBranch(branch));
 
   const collectByPlacement = (branches: RouteBranch[]): RouteBranch[] => {
-    return branches.filter((branch) => branch.placement !== undefined);
+    const result: RouteBranch[] = [];
+
+    const traverse = (branch: RouteBranch, parentHasPlacement = false) => {
+      const hasPlacement = branch.placement !== undefined;
+
+      // Only add this branch if it has a placement AND its parent doesn't have the same placement
+      if (hasPlacement && !parentHasPlacement) {
+        result.push(branch);
+      }
+
+      // Traverse children, passing down whether this branch has a placement
+      if (branch.children) {
+        branch.children.forEach((child) => traverse(child, hasPlacement));
+      }
+    };
+
+    branches.forEach((branch) => traverse(branch, false));
+    return result;
   };
 
   const placementBranches = collectByPlacement(filteredTree);
 
-  return placementBranches.reduce((acc, branch) => {
+  // Initialize all placements
+  const result: UserNavigation = {
+    [RoutePlaceMent.NAVIGATION]: [],
+    [RoutePlaceMent.SIDEBAR]: [],
+    [RoutePlaceMent.FOOTER]: [],
+  };
+
+  // Populate with branches
+  placementBranches.forEach((branch) => {
     if (branch.placement) {
-      if (!acc[branch.placement]) {
-        acc[branch.placement] = [];
-      }
-      acc[branch.placement].push(branch);
+      result[branch.placement].push(branch);
     }
-    return acc;
-  }, {} as UserNavigation);
+  });
+
+  return result;
 };

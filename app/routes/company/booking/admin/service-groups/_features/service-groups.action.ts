@@ -1,10 +1,10 @@
 import { data, redirect, type ActionFunctionArgs } from 'react-router';
 import { createBookingClient } from '~/api/clients/booking';
 import { ENV } from '~/api/config/env';
-import { getAccessToken } from '~/lib/auth.utils';
+import { getAccessTokenFromRequest } from '~/lib/auth.utils';
 
 export async function serviceGroupsAction({ request }: ActionFunctionArgs) {
-  const accessToken = await getAccessToken(request);
+  const accessToken = await getAccessTokenFromRequest(request);
   if (!accessToken) {
     return redirect('/');
   }
