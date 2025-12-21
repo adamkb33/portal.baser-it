@@ -36,22 +36,6 @@ export class AdminCompanyControllerService {
         });
     }
     /**
-     * @returns ApiResponseInvitedUserTokenDto OK
-     * @throws ApiError
-     */
-    public static inviteEmployee({
-        requestBody,
-    }: {
-        requestBody: InviteCompanyUserDto,
-    }): CancelablePromise<ApiResponseInvitedUserTokenDto> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/admin/companies',
-            body: requestBody,
-            mediaType: 'application/json',
-        });
-    }
-    /**
      * @returns ApiResponseUnit OK
      * @throws ApiError
      */
@@ -70,6 +54,39 @@ export class AdminCompanyControllerService {
             },
             body: requestBody,
             mediaType: 'application/json',
+        });
+    }
+    /**
+     * @returns ApiResponseInvitedUserTokenDto OK
+     * @throws ApiError
+     */
+    public static inviteCompanyUser({
+        requestBody,
+    }: {
+        requestBody: InviteCompanyUserDto,
+    }): CancelablePromise<ApiResponseInvitedUserTokenDto> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/admin/companies/invite',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * @returns ApiResponseUnit OK
+     * @throws ApiError
+     */
+    public static cancelCompanyUserInvite({
+        inviteTokenId,
+    }: {
+        inviteTokenId: number,
+    }): CancelablePromise<ApiResponseUnit> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/admin/companies/cancel-invite/{inviteTokenId}',
+            path: {
+                'inviteTokenId': inviteTokenId,
+            },
         });
     }
 }

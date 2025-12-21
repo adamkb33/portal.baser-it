@@ -1,6 +1,6 @@
 // Common Responses
 import type { ApiResponse } from './generic-wrapper';
-import type { AppointmentDto, AppointmentSessionDto, AppointmentSessionOverviewDto, AuthenticatedUserPayload, AuthenticationTokenDto, BookingProfileDto, CompanySummaryDto, CompanyUserDto, ContactDto, DailyScheduleDto, GroupedServiceGroupsDto, ImageDto, InvitedUserTokenDto, JwtClaims, PaginatedResponseAppointmentDto, PaginatedResponseCompanyUserDto, PaginatedResponseContactDto, PaginatedResponseServiceDto, PaginatedResponseServiceGroupDto, PublicCompanyUserDto, ScheduleDto, ServiceDto, ServiceGroupDto, UserDto } from './models';
+import type { AppointmentDto, AppointmentSessionDto, AppointmentSessionOverviewDto, AuthenticatedUserPayload, AuthenticationTokenDto, BookingProfileDto, CompanySummaryDto, CompanyUserDto, ContactDto, DailyScheduleDto, GroupedServiceGroupsDto, ImageDto, InvitedUserTokenDto, InviteTokenDto, JwtClaims, PaginatedResponseAppointmentDto, PaginatedResponseCompanyUserDto, PaginatedResponseContactDto, PaginatedResponseServiceDto, PaginatedResponseServiceGroupDto, PublicCompanyUserDto, ScheduleDto, ServiceDto, ServiceGroupDto, UserDto } from './models';
 
 export type ApiResponseAppointmentDto = ApiResponse<AppointmentDto>;
 export type ApiResponseAppointmentSessionDto = ApiResponse<AppointmentSessionDto>;
@@ -21,6 +21,7 @@ export type ApiResponseListContactDto = ApiResponse<ContactDto[]>;
 export type ApiResponseListDailyScheduleDto = ApiResponse<DailyScheduleDto[]>;
 export type ApiResponseListGroupedServiceGroupsDto = ApiResponse<GroupedServiceGroupsDto[]>;
 export type ApiResponseListImageDto = ApiResponse<ImageDto[]>;
+export type ApiResponseListInviteTokenDto = ApiResponse<InviteTokenDto[]>;
 export type ApiResponseListPublicCompanyUserDto = ApiResponse<PublicCompanyUserDto[]>;
 export type ApiResponseListScheduleDto = ApiResponse<ScheduleDto[]>;
 export type ApiResponseListUserDto = ApiResponse<UserDto[]>;

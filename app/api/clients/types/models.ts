@@ -126,9 +126,10 @@ export interface CompanySummaryDto {
 }
 
 export interface CompanyUserDto {
-    userId?: number;
+    userId: number;
     email: string;
     roles: Roles[];
+    deletedAt?: string;
 }
 
 export interface ContactDto {
@@ -258,6 +259,18 @@ export interface InvitedUserTokenDto {
     inviteToken: string;
 }
 
+export interface InviteTokenDto {
+    id: number;
+    email: string;
+    companyId?: number;
+    payload: InviteTokenPayload;
+}
+
+export interface InviteTokenPayload {
+    roles: UserRole[];
+    companyRoles: Roles[];
+}
+
 export interface InviteUserDto {
     email: string;
     userRoles: UserRole[];
@@ -290,6 +303,12 @@ export interface OrganizationTypeDto {
     code?: string;
     description?: string;
     retiredAt?: string;
+}
+
+export interface Pageable {
+    page?: number;
+    size?: number;
+    sort?: string[];
 }
 
 export interface PaginatedResponseAppointmentDto {

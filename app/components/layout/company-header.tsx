@@ -8,7 +8,21 @@ type CompanyHeaderProps = {
 };
 
 export default function CompanyHeader({ company }: CompanyHeaderProps) {
-  if (!company) return null;
+  if (company === null) {
+    return null;
+  }
+
+  if (company === undefined)
+    return (
+      <Link to={ROUTES_MAP['user.company-context'].href}>
+        <div className="flex gap-2">
+          <div className="hidden md:flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-slate-600 shrink-0">
+            <Building2 className="h-4 w-4 text-[#702963]" />
+          </div>
+          <div className="flex items-center gap-2 pl-4 md:pl-6 border-l">Logg inn i ditt selskap</div>
+        </div>
+      </Link>
+    );
 
   return (
     <Link to={ROUTES_MAP['company'].href}>

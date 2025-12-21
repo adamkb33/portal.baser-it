@@ -1,10 +1,7 @@
-import axios from 'axios';
-import { data, Outlet, redirect, useOutletContext, type LoaderFunctionArgs } from 'react-router';
+import { Outlet, redirect, useOutletContext, type LoaderFunctionArgs } from 'react-router';
 import { NavBreadcrumbs } from '~/components/layout/nav-breadcrums';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
-import { ROUTES_MAP } from '~/lib/route-tree';
 import type { RootOutletContext } from '~/root';
-import type { CompanyIndexLoaderResponse } from './company.route';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const auth = await getAuthPayloadFromRequest(request);
@@ -21,9 +18,7 @@ export default function CompanyLayout() {
     <div className="space-y-4">
       <NavBreadcrumbs items={context.userNav?.SIDEBAR} />
 
-      <div className="border border-border bg-background p-2 sm:p-6 space-y-4">
-        <Outlet context={context} />
-      </div>
+      <Outlet context={context} />
     </div>
   );
 }

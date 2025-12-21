@@ -92,7 +92,7 @@ const buildResponseData = async (request: Request, accessToken: string): Promise
     }
   }
 
-  let companySummary = null;
+  let companySummary = undefined;
   if (authPayload?.company) {
     const baseClient = createBaseClient({
       baseUrl: ENV.BASE_SERVICE_BASE_URL,

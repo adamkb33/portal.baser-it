@@ -13,7 +13,6 @@ import * as PublicCompanyContactControllerService from './services/PublicCompany
 import * as PublicCompanyControllerService from './services/PublicCompanyControllerService';
 import * as SystemAdminCompanyControllerService from './services/SystemAdminCompanyControllerService';
 import * as SystemAdminUserControllerService from './services/SystemAdminUserControllerService';
-import * as UserControllerService from './services/UserControllerService';
 
 export type BaseClient = {
   ActuatorService: typeof ActuatorService;
@@ -28,8 +27,7 @@ export type BaseClient = {
   PublicCompanyContactControllerService: typeof PublicCompanyContactControllerService;
   PublicCompanyControllerService: typeof PublicCompanyControllerService;
   SystemAdminCompanyControllerService: typeof SystemAdminCompanyControllerService;
-  SystemAdminUserControllerService: typeof SystemAdminUserControllerService;
-  UserControllerService: typeof UserControllerService
+  SystemAdminUserControllerService: typeof SystemAdminUserControllerService
 };
 
 export function createBaseClient(opts: { baseUrl: string; token?: string }): BaseClient {
@@ -48,7 +46,6 @@ export function createBaseClient(opts: { baseUrl: string; token?: string }): Bas
     PublicCompanyContactControllerService,
     PublicCompanyControllerService,
     SystemAdminCompanyControllerService,
-    SystemAdminUserControllerService,
-    UserControllerService
+    SystemAdminUserControllerService
   };
 }

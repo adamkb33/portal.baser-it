@@ -107,7 +107,6 @@ export const ROUTE_TREE: RouteBranch[] = [
         category: BrachCategory.USER,
         placement: RoutePlaceMent.NAVIGATION,
         accessType: Access.AUTHENTICATED,
-        companyRoles: [Roles.EMPLOYEE, Roles.ADMIN],
       },
     ],
   },
@@ -333,6 +332,67 @@ export const ROUTE_TREE: RouteBranch[] = [
     ],
   },
 ];
+
+export type ApiRoute = {
+  id: string;
+  url: string;
+  children?: ApiRoute[];
+};
+
+export const API_ROUTES_TREE = [
+  {
+    id: 'company',
+    url: '/company',
+    children: [
+      {
+        id: 'company.admin',
+        url: '/company/admin',
+        children: [
+          {
+            id: 'company.admin.employees',
+            url: '/company/admin/employees',
+            children: [
+              {
+                id: 'company.admin.employees.edit',
+                url: '/company/admin/employees/edit',
+              },
+              {
+                id: 'company.admin.employees.delete',
+                url: '/company/admin/employees/delete',
+              },
+              {
+                id: 'company.admin.employees.invite',
+                url: '/company/admin/employees/invite',
+              },
+              {
+                id: 'company.admin.employees.cancel-invite',
+                url: '/company/admin/employees/cancel-invite',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const API_ROUTES_MAP: Record<string, { id: string; url: string }> = (() => {
+  const map: Record<string, { id: string; url: string }> = {};
+
+  const flattenBranch = (branch: ApiRoute): void => {
+    map[branch.id] = {
+      id: branch.id,
+      url: branch.url,
+    };
+
+    if (branch.children) {
+      branch.children.forEach((child) => flattenBranch(child));
+    }
+  };
+
+  API_ROUTES_TREE.forEach((branch) => flattenBranch(branch));
+  return map;
+})();
 
 export const ROUTES_MAP: Record<string, { id: string; href: string }> = (() => {
   const map: Record<string, { id: string; href: string }> = {};

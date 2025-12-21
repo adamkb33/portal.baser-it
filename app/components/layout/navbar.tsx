@@ -16,7 +16,6 @@ export type NavbarProps = {
 
 export function Navbar({ navRoutes, companyContext }: NavbarProps) {
   const navigationBranches = navRoutes?.[RoutePlaceMent.NAVIGATION] || [];
-
   const userBranches = navigationBranches.filter((branch) => branch.category === BrachCategory.USER);
   const authBranches = navigationBranches.filter((branch) => branch.category === BrachCategory.AUTH);
 
