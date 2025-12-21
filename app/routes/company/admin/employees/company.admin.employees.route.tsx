@@ -1,7 +1,7 @@
-// routes/company/admin/employees/company.admin.employees.route.tsx (cleaned up)
-import { data, redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router';
-import { useState } from 'react';
-import type { CompanyUserDto, InviteTokenDto } from 'tmp/openapi/gen/base';
+// routes/company/admin/employees/company.admin.employees.route.tsx
+import { redirect } from 'react-router';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import type { ApiClientError } from '~/api/clients/http';
 import { createBaseClient } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
@@ -13,35 +13,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { InviteEmployeeForm } from './forms/invite-employee.form-dialog';
 import { EmployeesTable } from './tables/employees.table';
 import { InvitesTable } from './tables/invites.table';
+import type { Route } from './+types/company.admin.employees.route';
+import { getFlashMessage } from '../../_lib/flash-message.server';
 
-export type EmployeesOverviewLoaderData = {
-  users: CompanyUserDto[];
-  invites: InviteTokenDto[];
-};
-
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
     const { user, accessToken } = await getUserSession(request);
     if (!user?.company) return redirect('/');
 
     const baseApi = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accessToken });
 
-    const [userResponse, inviteResponse] = await Promise.all([
+    const [userResponse, inviteResponse, { message, headers }] = await Promise.all([
       baseApi.AdminCompanyUserControllerService.AdminCompanyUserControllerService.getCompanyUsers({
         pageable: {},
         includeDeleted: false,
       }),
       baseApi.AdminCompanyUserControllerService.AdminCompanyUserControllerService.getInvitations(),
+      getFlashMessage(request),
     ]);
 
     if (!userResponse.data) {
       return { error: 'Kunne ikke hente brukere for selskapet' };
     }
 
-    return data<EmployeesOverviewLoaderData>({
+    return {
       users: userResponse.data.content,
       invites: inviteResponse.data || [],
-    });
+      flashMessage: message,
+    };
   } catch (error: any) {
     console.error(error);
     if (error as ApiClientError) {
@@ -51,9 +50,39 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
-export default function CompanyAdminEmployees() {
-  const { users, invites } = useLoaderData<EmployeesOverviewLoaderData>();
+export default function CompanyAdminEmployees({ loaderData }: Route.ComponentProps) {
   const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    if ('flashMessage' in loaderData && loaderData.flashMessage) {
+      const { type, text } = loaderData.flashMessage;
+
+      switch (type) {
+        case 'success':
+          toast.success(text);
+          break;
+        case 'error':
+          toast.error(text);
+          break;
+        case 'info':
+          toast.info(text);
+          break;
+        case 'warning':
+          toast.warning(text);
+          break;
+      }
+    }
+  }, [loaderData]);
+
+  if ('error' in loaderData) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-red-500">{loaderData.error}</p>
+      </div>
+    );
+  }
+
+  const { users, invites } = loaderData;
 
   return (
     <>

@@ -1,5 +1,5 @@
-import { Checkbox } from '@radix-ui/react-checkbox';
 import type { CompanyRoles } from '~/api/clients/types';
+import { Checkbox } from '~/components/ui/checkbox';
 
 export const ROLE_OPTIONS = [
   { value: 'ADMIN' as const, label: 'Admin' },

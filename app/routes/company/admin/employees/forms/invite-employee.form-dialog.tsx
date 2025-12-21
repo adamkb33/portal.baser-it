@@ -1,7 +1,6 @@
 // routes/company/admin/employees/forms/invite-employee.form-dialog.tsx
 import { useState } from 'react';
 import { useSubmit } from 'react-router';
-import { toast } from 'sonner';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { RoleCheckboxes } from '~/routes/company/_components/role-checkboxes';
@@ -34,7 +33,6 @@ export function InviteEmployeeForm({ trigger }: InviteEmployeeFormProps) {
 
     setIsOpen(false);
     setFormData({ email: '', roles: [] });
-    toast.success('Invitasjon sendt');
   };
 
   const handleCancel = () => {

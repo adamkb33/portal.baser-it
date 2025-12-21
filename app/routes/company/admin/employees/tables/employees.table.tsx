@@ -42,7 +42,6 @@ export function EmployeesTable({ users }: EmployeesTableProps) {
 
     setIsDeleteDialogOpen(false);
     setDeletingEmployeeId(null);
-    toast.success('Ansatt fjernet');
   };
 
   return (

@@ -1,7 +1,6 @@
 // routes/company/admin/employees/forms/edit-employee.form-dialog.tsx
 import { useEffect, useState } from 'react';
 import { useSubmit } from 'react-router';
-import { toast } from 'sonner';
 import type { CompanyUserDto } from 'tmp/openapi/gen/base';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
@@ -49,7 +48,6 @@ export function EditEmployeeForm({ user }: EditEmployeeFormProps) {
 
     setIsOpen(false);
     setFormData(null);
-    toast.success('Ansattinformasjon oppdatert');
   };
 
   const handleCancel = () => {
