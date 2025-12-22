@@ -21,11 +21,15 @@ export async function loader({ request }: Route.LoaderArgs) {
     const { user, accessToken } = await getUserSession(request);
     if (!user?.company) return redirect('/');
 
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '0');
+    const size = parseInt(url.searchParams.get('size') || '10');
+
     const baseApi = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accessToken });
 
-    const [userResponse, inviteResponse, { message, headers }] = await Promise.all([
+    const [userResponse, inviteResponse, { message }] = await Promise.all([
       baseApi.AdminCompanyUserControllerService.AdminCompanyUserControllerService.getCompanyUsers({
-        pageable: {},
+        pageable: { page, size },
         includeDeleted: false,
       }),
       baseApi.AdminCompanyUserControllerService.AdminCompanyUserControllerService.getInvitations(),
@@ -38,6 +42,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     return {
       users: userResponse.data.content,
+      pagination: {
+        page: userResponse.data.page,
+        size: userResponse.data.size,
+        totalElements: userResponse.data.totalElements,
+        totalPages: userResponse.data.totalPages,
+      },
       invites: inviteResponse.data || [],
       flashMessage: message,
     };
@@ -82,7 +92,7 @@ export default function CompanyAdminEmployees({ loaderData }: Route.ComponentPro
     );
   }
 
-  const { users, invites } = loaderData;
+  const { users, pagination, invites } = loaderData;
 
   return (
     <>
@@ -108,7 +118,7 @@ export default function CompanyAdminEmployees({ loaderData }: Route.ComponentPro
         </TabsList>
 
         <TabsContent value="employees">
-          <EmployeesTable users={users} />
+          <EmployeesTable users={users} pagination={pagination} />
         </TabsContent>
 
         <TabsContent value="invited">

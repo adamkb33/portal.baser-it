@@ -1,22 +1,29 @@
-// routes/company/admin/employees/components/employees-table.tsx
+// routes/company/admin/employees/tables/employees.table.tsx
 import { useState } from 'react';
-import { useSubmit } from 'react-router';
-import { toast } from 'sonner';
+import { useSubmit, useNavigate, useSearchParams } from 'react-router';
 import type { CompanyUserDto } from 'tmp/openapi/gen/base';
 import { Button } from '~/components/ui/button';
-import { PaginatedTable } from '~/components/table/paginated-data-table';
 import { TableCell, TableRow } from '~/components/ui/table';
 import { Pen } from 'lucide-react';
 import { COMPANY_ROLE_LABELS } from '~/lib/constants';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { EditEmployeeForm } from '../forms/edit-employee.form-dialog';
+import { ServerPaginatedTable } from '~/components/table/server-side-paginated.data-table';
 
 type EmployeesTableProps = {
   users: CompanyUserDto[];
+  pagination: {
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+  };
 };
 
-export function EmployeesTable({ users }: EmployeesTableProps) {
+export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const submit = useSubmit();
   const [editingUser, setEditingUser] = useState<CompanyUserDto | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -44,10 +51,26 @@ export function EmployeesTable({ users }: EmployeesTableProps) {
     setDeletingEmployeeId(null);
   };
 
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', newPage.toString());
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('size', newSize.toString());
+    params.set('page', '0');
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
   return (
     <>
-      <PaginatedTable<CompanyUserDto>
+      <ServerPaginatedTable<CompanyUserDto>
         items={users}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
         getRowKey={(user) => user.userId?.toString() ?? user.email}
         columns={[
           { header: 'E-post', className: 'font-medium' },
