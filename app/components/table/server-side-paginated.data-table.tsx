@@ -52,8 +52,9 @@ export function ServerPaginatedTable<T>({
   const canNext = page < totalPages - 1;
 
   return (
-    <div className={cn('border border-border bg-background rounded-none overflow-hidden', className)}>
-      <div className="border-b border-border bg-background p-4">
+    <div className={cn('border border-border bg-background', className)}>
+      {/* Header bar */}
+      <div className="border-b border-border p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-xs text-muted-foreground">
             Viser {totalElements ? startIndex : 0}–{endIndex} av {totalElements}
@@ -63,9 +64,9 @@ export function ServerPaginatedTable<T>({
             {headerSlot && <div className="flex items-center gap-2">{headerSlot}</div>}
 
             <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Per side</span>
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Per side</span>
               <Select value={String(size)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-                <SelectTrigger className="h-8 w-[92px] rounded-none">
+                <SelectTrigger className="h-8 w-[92px] rounded-none border-border">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -81,32 +82,36 @@ export function ServerPaginatedTable<T>({
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {columns.map((c, i) => (
-              <TableHead key={i} className={c.className}>
-                {c.header}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.length ? (
-            items.map((item, index) => React.cloneElement(renderRow(item, index), { key: getRowKey(item, index) }))
-          ) : (
+      {/* Table */}
+      <div className="[&_>div]:border-0">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center text-sm text-muted-foreground">
-                {emptyMessage}
-              </TableCell>
+              {columns.map((c, i) => (
+                <TableHead key={i} className={c.className}>
+                  {c.header}
+                </TableHead>
+              ))}
             </TableRow>
-          )}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {items.length ? (
+              items.map((item, index) => React.cloneElement(renderRow(item, index), { key: getRowKey(item, index) }))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center text-muted-foreground">
+                  {emptyMessage}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-      <div className="border-t border-border bg-background p-4">
+      {/* Footer bar */}
+      <div className="border-t border-border p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+          <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
             Side {page + 1} / {totalPages || 1}
           </div>
 

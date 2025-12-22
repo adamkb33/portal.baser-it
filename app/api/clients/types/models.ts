@@ -126,6 +126,8 @@ export interface CompanySummaryDto {
 }
 
 export interface CompanyUserDto {
+    givenName: string;
+    familyName: string;
     userId: number;
     email: string;
     roles: Roles[];
@@ -303,12 +305,6 @@ export interface OrganizationTypeDto {
     code?: string;
     description?: string;
     retiredAt?: string;
-}
-
-export interface Pageable {
-    page?: number;
-    size?: number;
-    sort?: string[];
 }
 
 export interface PaginatedResponseAppointmentDto {

@@ -31,6 +31,11 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
 
   const formatRoles = (roles: Array<'ADMIN' | 'EMPLOYEE'>) => roles.map((role) => COMPANY_ROLE_LABELS[role]).join(', ');
 
+  const formatName = (user: CompanyUserDto) => {
+    const parts = [user.givenName, user.familyName].filter(Boolean);
+    return parts.length > 0 ? parts.join(' ') : '—';
+  };
+
   const openDeleteDialog = (userId: number) => {
     setDeletingEmployeeId(userId);
     setIsDeleteDialogOpen(true);
@@ -73,13 +78,15 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
         onPageSizeChange={handlePageSizeChange}
         getRowKey={(user) => user.userId?.toString() ?? user.email}
         columns={[
-          { header: 'E-post', className: 'font-medium' },
+          { header: 'Navn' },
+          { header: 'E-post' },
           { header: 'Roller' },
           { header: 'Handlinger', className: 'text-right' },
         ]}
         renderRow={(user) => (
           <TableRow>
-            <TableCell className="font-medium">{user.email}</TableCell>
+            <TableCell className="font-medium">{formatName(user)}</TableCell>
+            <TableCell>{user.email}</TableCell>
             <TableCell>{formatRoles(user.roles)}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">

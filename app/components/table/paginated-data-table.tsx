@@ -129,9 +129,7 @@ export function PaginatedTable<T>({
             )
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center text-sm text-muted-foreground">
-                {emptyMessage}
-              </TableCell>
+              <TableCell colSpan={columns.length}>{emptyMessage}</TableCell>
             </TableRow>
           )}
         </TableBody>

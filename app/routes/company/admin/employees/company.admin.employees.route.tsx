@@ -29,7 +29,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     const [userResponse, inviteResponse, { message }] = await Promise.all([
       baseApi.AdminCompanyUserControllerService.AdminCompanyUserControllerService.getCompanyUsers({
-        pageable: { page, size },
+        page,
+        size,
         includeDeleted: false,
       }),
       baseApi.AdminCompanyUserControllerService.AdminCompanyUserControllerService.getInvitations(),
@@ -39,6 +40,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     if (!userResponse.data) {
       return { error: 'Kunne ikke hente brukere for selskapet' };
     }
+
+    console.log(userResponse.data.content);
 
     return {
       users: userResponse.data.content,
