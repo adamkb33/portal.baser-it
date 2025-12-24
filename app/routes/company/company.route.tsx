@@ -57,15 +57,6 @@ export default function CompanyIndex() {
         />
         <AccountingSection brregData={loaderData.brregResponse} className="max-w-1/2 flex-1" />
       </div>
-      <div className="border border-red-500">
-        <div>Hvordan skal det se ut her?</div>
-        <div>Oppsummering på selskapet</div>
-        <div>bregg informasjon</div>
-        <div>ting som mangler for regnskap</div>
-        <div>Hvor mange ansatte selskapet har</div>
-        <div>Hvilke produkter de har tilgang til: BOOKING?</div>
-      </div>
-      <div></div>
     </div>
   );
 }

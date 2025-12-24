@@ -1,16 +1,11 @@
 import type { AuthenticatedUserPayload } from 'tmp/openapi/gen/base';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { toAuthPayload } from '~/routes/auth/_utils/token-payload';
-import jwt from 'jsonwebtoken';
-import { ENV } from '~/api/config/env';
 
 export type CompanyContextSession = {
   companyId: number;
   orgNumber: string;
 };
-
-const getAccessToken = async (cookieHeader: string | null) =>
-  jwt.verify(await accessTokenCookie.parse(cookieHeader), ENV.JWT_SECRET);
 
 export const getAuthPayloadFromRequest = async (request: Request): Promise<AuthenticatedUserPayload | null> => {
   const cookieHeader = request.headers.get('Cookie');

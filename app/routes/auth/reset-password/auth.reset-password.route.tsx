@@ -12,7 +12,7 @@ import { resetPasswordFormSchema, type ResetPasswordFormSchema } from './_schema
 import { decodeResetPasswordToken } from './_utils/auth.reset-password.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { AuthControllerService } from '~/api/clients/base';
-import type { ApiClientError } from '~/api/clients/http';
+
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { toAuthTokens } from '../_utils/token.utils';
 

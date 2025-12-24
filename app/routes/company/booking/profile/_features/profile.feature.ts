@@ -1,12 +1,10 @@
 import { data, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
 import type { ApiClientError } from '~/api/clients/http';
 import { getAccessTokenFromRequest } from '~/lib/auth.utils';
-import { baseApi, bookingApi } from '~/lib/utils';
+import { bookingApi } from '~/lib/utils';
 import type { BookingProfileDto } from 'tmp/openapi/gen/booking';
-import type { UserDto } from '~/api/clients/types';
 
 export type BookingProfileLoaderData = {
-  user?: UserDto;
   bookingProfile?: BookingProfileDto;
   services?: Array<{ id: number; name: string }>;
   error?: string;
@@ -19,8 +17,6 @@ export async function profileLoader({ request }: LoaderFunctionArgs) {
       return redirect('/');
     }
 
-    const userResponse = await baseApi(accesToken).UserControllerService.UserControllerService.getAuthenticatedUser();
-
     const bookingProfileResponse =
       await bookingApi(accesToken).BookingProfileControllerService.BookingProfileControllerService.getBookingProfile();
 
@@ -29,7 +25,6 @@ export async function profileLoader({ request }: LoaderFunctionArgs) {
     );
 
     return data<BookingProfileLoaderData>({
-      user: userResponse.data as UserDto,
       bookingProfile: bookingProfileResponse,
       services: servicesResponse.data?.content.map((s: any) => ({ id: s.id, name: s.name })) ?? [],
     });

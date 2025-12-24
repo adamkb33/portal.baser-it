@@ -3,6 +3,7 @@ import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/a
 import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { ENV } from '~/api/config/env';
 import { UserRole, type Roles, type CompanyProducts, type AuthenticationTokenDto } from '~/api/clients/types';
+import { redirect } from 'react-router';
 
 export type UserSession = {
   user: AuthenticatedUserPayload;
@@ -126,6 +127,17 @@ export class AuthService {
     const user = this.verifyAndDecodeToken(accessToken);
 
     return { user, accessToken };
+  }
+
+  async requireAuth(request: Request, redirectTo: string = '/'): Promise<void> {
+    try {
+      await this.getUserSession(request);
+    } catch (error) {
+      if (error instanceof AuthenticationError) {
+        throw redirect(redirectTo);
+      }
+      throw error;
+    }
   }
 
   async getTokensFromRequest(request: Request) {

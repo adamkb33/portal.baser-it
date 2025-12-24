@@ -1,23 +1,15 @@
-import { data, redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router';
-import type { AuthenticatedUserPayload } from '~/api/clients/types';
-import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
+import { data } from 'react-router';
+import { authService } from '~/lib/auth-service';
+import type { Route } from './+types/user.profile.route';
 
-export type ProfileLoaderData = {
-  user: AuthenticatedUserPayload;
-};
+export async function loader({ request }: Route.LoaderArgs) {
+  await authService.requireAuth(request);
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const authPayload = await getAuthPayloadFromRequest(request);
-  if (!authPayload) {
-    return redirect('/');
-  }
-  return data<ProfileLoaderData>({
-    user: authPayload,
+  return data({
+    user: null,
   });
 }
 
-export default function Profile() {
-  const data = useLoaderData<ProfileLoaderData>();
-
-  return <div>{JSON.stringify(data.user, null, 2)}</div>;
+export default function Profile({ loaderData }: Route.ComponentProps) {
+  return <div></div>;
 }

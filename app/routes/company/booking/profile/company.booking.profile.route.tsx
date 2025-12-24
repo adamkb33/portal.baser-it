@@ -23,15 +23,13 @@ export const action = profileAction;
 export default function BookingCompanyUserProfile() {
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
 
-  const { user, bookingProfile, services = [], error } = useLoaderData() as BookingProfileLoaderData;
+  const { bookingProfile, services = [], error } = useLoaderData() as BookingProfileLoaderData;
   const [createOrUpdateDialogOpen, setCreateOrUpdateBookingProfileDialogOpen] = useState(false);
   const [createOrUpdateDialogForm, setCreateOrUpdateDialogForm] = useState({
     description: '',
     services: [] as number[],
     image: null as { file: File; previewUrl: string } | null,
   });
-
-  const initials = (user?.givenName?.[0] ?? '').toUpperCase() + (user?.familyName?.[0] ?? '').toUpperCase();
 
   useEffect(() => {
     if (createOrUpdateDialogOpen && bookingProfile) {
@@ -101,22 +99,7 @@ export default function BookingCompanyUserProfile() {
           title="Dine detaljer"
           subtitle="Bookingprofil"
           description="Dette vil vi bruke til bekreftelser og kvitteringer."
-          userInitials={user ? initials : undefined}
-          userId={user?.id}
         />
-
-        {error && <ErrorMessage message="Vi kunne ikke laste profilen din akkurat nå." details={error} />}
-
-        {user && (
-          <UserProfileCard
-            givenName={user.givenName}
-            familyName={user.familyName}
-            email={user.email}
-            userId={user.id}
-            onEditDetails={handleEditUserDetails}
-            onSwitchAccount={handleSwitchAccount}
-          />
-        )}
 
         {!bookingProfile && !error && (
           <EmptyBookingProfile onCreateProfile={() => setCreateOrUpdateBookingProfileDialogOpen(true)} />
