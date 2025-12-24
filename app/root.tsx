@@ -5,13 +5,58 @@ import { Toaster } from 'sonner';
 
 import './app.css';
 import { Navbar } from './components/layout/navbar';
-import { rootLoader, type RootLoaderLoaderData } from './routes/_features/root.loader';
 import { type UserNavigation, RoutePlaceMent } from './lib/route-tree';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 import { Sidebar } from './routes/_components/sidebar';
 import { MobileSidebar } from './routes/_components/mobile-sidebar';
+import type { Route } from './+types/root';
+import { OpenAPI } from './api/clients/http';
+import { ENV } from './api/config/env';
+import { authService, AuthenticationError } from './lib/auth-service';
+import { logger } from './lib/logger';
+import { defaultResponse, refreshAndBuildResponse, buildResponseData } from './routes/_features/root.loader';
+import { getFlashMessage } from './routes/company/_lib/flash-message.server';
+import { FlashMessageBanner } from './routes/company/_components/flash-message-banner';
 
-export const loader = rootLoader;
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    const { message: flashMessage } = await getFlashMessage(request);
+
+    OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
+    const { accessToken, refreshToken } = await authService.getTokensFromRequest(request);
+
+    if (!accessToken && !refreshToken) {
+      return await defaultResponse(flashMessage);
+    }
+
+    if (!accessToken && refreshToken) {
+      return await refreshAndBuildResponse(request, refreshToken, flashMessage);
+    }
+
+    if (accessToken) {
+      if (authService.isTokenExpired(accessToken)) {
+        if (refreshToken) {
+          return await refreshAndBuildResponse(request, refreshToken, flashMessage);
+        }
+        return await defaultResponse(flashMessage);
+      }
+      return await buildResponseData(request, accessToken, flashMessage);
+    }
+
+    return await defaultResponse(flashMessage);
+  } catch (error) {
+    if (error instanceof Response) {
+      throw error;
+    }
+
+    logger.error('Root loader failed', { error: error instanceof Error ? error.message : String(error) });
+    if (error instanceof AuthenticationError) {
+      return await defaultResponse(null);
+    }
+
+    throw error;
+  }
+}
 
 export const links: LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -51,11 +96,12 @@ export type RootOutletContext = {
   setCompanyContext: React.Dispatch<React.SetStateAction<CompanySummaryDto | null | undefined>>;
 };
 
-export default function App() {
+export default function App({ loaderData }: Route.ComponentProps) {
   const [userNav, setUserNav] = React.useState<UserNavigation | undefined>(undefined);
   const [companyContext, setCompanyContext] = React.useState<CompanySummaryDto | null | undefined>(undefined);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const data = useLoaderData<RootLoaderLoaderData>();
+  const data = loaderData;
+  console.log(data.flashMessage);
 
   React.useEffect(() => {
     setUserNav(data.userNavigation || undefined);
@@ -69,6 +115,8 @@ export default function App() {
     <div className="grid min-h-screen grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-cols-12">
       <header className="border-b border-border bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
         <div className="hidden lg:col-span-2 lg:block"></div>
+
+        <FlashMessageBanner message={data.flashMessage} />
 
         <nav className="border-b p-2 border-border lg:col-span-8 lg:border-b-0">
           <div className="flex items-center gap-3">

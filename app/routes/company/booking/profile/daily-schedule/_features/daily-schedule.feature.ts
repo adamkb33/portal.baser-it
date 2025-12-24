@@ -4,36 +4,12 @@ import { createBookingClient, DayOfWeek } from '~/api/clients/booking';
 import type { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { getAccessTokenFromRequest } from '~/lib/auth.utils';
+import { ROUTES_MAP } from '~/lib/route-tree';
+import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 
 export type BookingDailyScheduleLoaderArgs = {
   dailySchedules: DailyScheduleDto[];
 };
-
-export async function dailyScheduleLoader({ request }: LoaderFunctionArgs) {
-  try {
-    const accessToken = await getAccessTokenFromRequest(request);
-    if (!accessToken) {
-      return redirect('/');
-    }
-
-    const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const response =
-      await bookingClient.DailyScheduleControllerService.DailyScheduleControllerService.getDailySchedules();
-
-    if (!response.data) {
-      return data({ dailySchedules: [] });
-    }
-
-    return data({ dailySchedules: response.data });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
-  }
-}
 
 export async function dailyScheduleAction({ request }: ActionFunctionArgs) {
   const accessToken = await getAccessTokenFromRequest(request);

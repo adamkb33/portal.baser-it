@@ -1,4 +1,4 @@
-import { useLoaderData, useSubmit } from 'react-router';
+import { data, redirect, useLoaderData, useSubmit, type LoaderFunctionArgs } from 'react-router';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import type { DailyScheduleDto } from 'tmp/openapi/gen/booking';
@@ -8,12 +8,51 @@ import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 
 import {
-  dailyScheduleLoader,
   dailyScheduleAction,
   type BookingDailyScheduleLoaderArgs,
 } from '../../../../company/booking/profile/daily-schedule/_features/daily-schedule.feature';
+import { createBookingClient } from '~/api/clients/booking';
+import type { ApiClientError } from '~/api/clients/http';
+import { ENV } from '~/api/config/env';
+import { getAccessTokenFromRequest } from '~/lib/auth.utils';
+import { ROUTES_MAP } from '~/lib/route-tree';
+import { getFlashMessage, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import type { Route } from './+types/company.booking.profile.daily-schedule.route';
 
-export const loader = dailyScheduleLoader;
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    const accessToken = await getAccessTokenFromRequest(request);
+    if (!accessToken) {
+      return redirect('/');
+    }
+
+    const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
+    const response =
+      await bookingClient.DailyScheduleControllerService.DailyScheduleControllerService.getDailySchedules();
+
+    if (!response.data) {
+      return data({ dailySchedules: [] });
+    }
+
+    return data({ dailySchedules: response.data });
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+    if (error as ApiClientError) {
+      if (error.body?.message == 'Profil ikke funnet') {
+        return redirectWithInfo(
+          request,
+          ROUTES_MAP['company.booking.profile'].href,
+          'Vennligst opprett en bookingprofil før du administrerer arbeidstider.',
+        );
+      }
+
+      return { error: error.body.message };
+    }
+
+    throw error;
+  }
+}
+
 export const action = dailyScheduleAction;
 
 const DAY_LABELS: Record<DailyScheduleDto['dayOfWeek'], string> = {

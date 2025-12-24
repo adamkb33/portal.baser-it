@@ -26,12 +26,10 @@ export async function setFlashMessage(request: Request, message: FlashMessage) {
 
 export async function getFlashMessage(request: Request) {
   const session = await getSession(request.headers.get('Cookie'));
-  const message = session.get('message') as FlashMessage | undefined;
+  const message = session.get('message') as FlashMessage | null;
   return {
     message,
-    headers: {
-      'Set-Cookie': await commitSession(session),
-    },
+    headers: await commitSession(session),
   };
 }
 

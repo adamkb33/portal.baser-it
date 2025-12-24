@@ -1,58 +1,16 @@
-import { redirect, type LoaderFunctionArgs } from 'react-router';
-import { createNavigation, ROUTES_MAP, type UserNavigation } from '~/lib/route-tree';
-import { AuthControllerService, createBaseClient, UserRole, type AuthenticatedUserPayload } from '~/api/clients/base';
-import { ENV } from '~/api/config/env';
-import { OpenAPI } from '~/api/clients/http';
 import { data } from 'react-router';
-import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
-import { AuthenticationError, authService } from '~/lib/auth-service';
+import { createNavigation, ROUTES_MAP, type UserNavigation } from '~/lib/route-tree';
+import { AuthControllerService, createBaseClient, UserRole } from '~/api/clients/base';
+import { ENV } from '~/api/config/env';
+import { authService } from '~/lib/auth-service';
 import { logger } from '~/lib/logger';
+import type { FlashMessage } from '~/routes/company/_lib/flash-message.server';
 
-export type RootLoaderLoaderData = {
-  user?: AuthenticatedUserPayload | null;
-  userNavigation?: UserNavigation;
-  companyContext?: CompanySummaryDto | null;
-};
-
-export async function rootLoader({ request }: LoaderFunctionArgs) {
-  try {
-    OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
-    const { accessToken, refreshToken } = await authService.getTokensFromRequest(request);
-
-    if (!accessToken && !refreshToken) {
-      return await defaultResponse();
-    }
-
-    if (!accessToken && refreshToken) {
-      return await refreshAndBuildResponse(request, refreshToken);
-    }
-
-    if (accessToken) {
-      if (authService.isTokenExpired(accessToken)) {
-        if (refreshToken) {
-          return refreshAndBuildResponse(request, refreshToken);
-        }
-        return await defaultResponse();
-      }
-      return await buildResponseData(request, accessToken);
-    }
-
-    return await defaultResponse();
-  } catch (error) {
-    if (error instanceof Response) {
-      throw error;
-    }
-
-    logger.error('Root loader failed', { error: error instanceof Error ? error.message : String(error) });
-    if (error instanceof AuthenticationError) {
-      return await defaultResponse();
-    }
-
-    throw error;
-  }
-}
-
-const refreshAndBuildResponse = async (request: Request, refreshToken: string) => {
+export const refreshAndBuildResponse = async (
+  request: Request,
+  refreshToken: string,
+  flashMessage: FlashMessage | null,
+) => {
   try {
     const { accessToken } = await authService.getTokensFromRequest(request);
     const companyId = authService.getCompanyIdFromToken(accessToken ?? '');
@@ -67,16 +25,16 @@ const refreshAndBuildResponse = async (request: Request, refreshToken: string) =
     }
 
     const { headers } = await authService.processTokenRefresh(response.data);
+    const body = await buildResponseData(request, response.data.accessToken, flashMessage);
 
-    const body = await buildResponseData(request, response.data.accessToken);
     return data(body, { headers });
   } catch (err) {
     logger.error('Token refresh failed', { error: err instanceof Error ? err.message : String(err) });
-    return await defaultResponse();
+    return await defaultResponse(flashMessage);
   }
 };
 
-const buildResponseData = async (request: Request, accessToken: string): Promise<RootLoaderLoaderData> => {
+export const buildResponseData = async (request: Request, accessToken: string, flashMessage: FlashMessage | null) => {
   const authPayload = authService.verifyAndDecodeToken(accessToken);
   const navigation = createNavigation(authPayload);
   const url = new URL(request.url);
@@ -88,6 +46,7 @@ const buildResponseData = async (request: Request, accessToken: string): Promise
         user: authPayload,
         userNavigation: navigation,
         companyContext: null,
+        flashMessage,
       };
     }
   }
@@ -116,16 +75,18 @@ const buildResponseData = async (request: Request, accessToken: string): Promise
     user: authPayload,
     userNavigation: navigation,
     companyContext: companySummary,
+    flashMessage,
   };
 };
 
-const defaultResponse = async () => {
+export const defaultResponse = async (flashMessage: FlashMessage | null = null) => {
   const headers = await authService.clearAuthCookies();
   return data(
     {
       user: null,
       companyContext: null,
       userNavigation: createNavigation(),
+      flashMessage,
     },
     { status: 200, headers },
   );

@@ -41,8 +41,6 @@ export async function loader({ request }: Route.LoaderArgs) {
       return { error: 'Kunne ikke hente brukere for selskapet' };
     }
 
-    console.log(userResponse.data.content);
-
     return {
       users: userResponse.data.content,
       pagination: {
