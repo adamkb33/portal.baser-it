@@ -17,6 +17,7 @@ import { logger } from './lib/logger';
 import { defaultResponse, refreshAndBuildResponse, buildResponseData } from './routes/_features/root.loader';
 import { getFlashMessage } from './routes/company/_lib/flash-message.server';
 import { FlashMessageBanner } from './routes/company/_components/flash-message-banner';
+import { BottomNav } from './routes/_components/bottom-nav';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -142,20 +143,65 @@ export default function App({ loaderData }: Route.ComponentProps) {
         <div className="hidden lg:col-span-2 lg:block"></div>
       </header>
 
-      <main className="bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
+      <main className="relative bg-primary/5 lg:col-span-12 lg:grid lg:grid-cols-12 overflow-hidden">
+        {/* Confident minimalist geometric background - inspired by Suprematism */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          {/* STRONG VERTICAL ANCHORS - Stability & Confidence */}
+          <div className="absolute left-[15%] top-0 h-full w-px bg-border/8" />
+          <div className="absolute left-[35%] top-0 h-full w-px bg-border/6" />
+          <div className="absolute right-[25%] top-0 h-full w-px bg-border/8" />
+
+          {/* HORIZONTAL FOUNDATION LINES - Grounding */}
+          <div className="absolute left-0 top-[30%] h-px w-full bg-border/8" />
+          <div className="absolute left-0 bottom-[35%] h-px w-full bg-border/6" />
+
+          {/* BOLD ASCENDING WEDGE - Progress & Forward Motion (top right) */}
+          <div className="absolute -right-24 top-[15%] h-[400px] w-[400px]" style={{ transform: 'rotate(45deg)' }}>
+            <div
+              className="h-full w-full border-2 border-primary/12"
+              style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}
+            />
+          </div>
+
+          {/* SOLID SQUARE - Foundation & Strength (left side) */}
+          <div className="absolute left-[8%] top-[40%] h-48 w-48 border border-border/10 bg-foreground/4" />
+
+          {/* CLEAN CIRCLE - Wholeness & Clarity (bottom right) */}
+          <div className="absolute right-[12%] bottom-[20%] h-56 w-56 rounded-full border border-border/10" />
+
+          {/* PRECISION GRID ACCENT - Order & Control (top left) */}
+          <div
+            className="absolute left-[5%] top-[12%] h-32 w-32 border border-border/8"
+            style={{
+              backgroundImage: `linear-gradient(to right, oklch(0.16 0 0 / 0.06) 1px, transparent 1px),
+                                linear-gradient(to bottom, oklch(0.16 0 0 / 0.06) 1px, transparent 1px)`,
+              backgroundSize: '16px 16px',
+            }}
+          />
+
+          {/* SHARP ACCENT WEDGE - Direction & Purpose (bottom left) */}
+          <div
+            className="absolute left-[20%] bottom-[15%] h-24 w-40 border border-primary/15"
+            style={{ clipPath: 'polygon(0 50%, 100% 0, 100% 100%)' }}
+          />
+
+          {/* ELEVATED RECTANGLE - Achievement (center right) */}
+          <div className="absolute right-[18%] top-[50%] h-16 w-64 rotate-[8deg] border border-border/8 bg-primary/5" />
+        </div>
+
         {userNav?.SIDEBAR && userNav.SIDEBAR.length > 0 ? (
-          <aside className="hidden border-r border-border bg-muted p-4 lg:col-span-2 lg:block">
+          <aside className="relative z-10 hidden border-r border-border bg-muted p-4 lg:col-span-2 lg:block">
             <Sidebar branches={userNav.SIDEBAR} />
           </aside>
         ) : (
-          <aside className="hidden border-r p-4 lg:col-span-2 lg:block" />
+          <aside className="relative z-10 hidden border-r p-4 lg:col-span-2 lg:block" />
         )}
 
         {hasSidebar && (
           <MobileSidebar branches={sidebarBranches} isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         )}
 
-        <section className="overflow-auto p-4 sm:p-5 lg:col-span-8 bg-primary/3 border-r">
+        <section className="relative z-10 overflow-auto p-4 sm:p-5 lg:col-span-8 border-r">
           <Outlet
             context={{
               userNav,
@@ -166,7 +212,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
           />
         </section>
 
-        <div className="hidden lg:col-span-2 lg:block"></div>
+        <div className="relative z-10 hidden lg:col-span-2 lg:block"></div>
       </main>
 
       <footer className="border-t border-border bg-muted lg:col-span-12 lg:grid lg:grid-cols-12">

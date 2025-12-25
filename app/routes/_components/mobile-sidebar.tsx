@@ -16,16 +16,20 @@ export function MobileSidebar({ branches, isOpen, onClose }: MobileSidebarProps)
 
   return (
     <>
-      <div className="fixed inset-0 bg-foreground/20 z-40 md:hidden" onClick={onClose} />
+      <div className="fixed inset-0 bg-foreground/20 z-40 md:hidden" onClick={onClose} aria-hidden="true" />
       <aside className="fixed inset-y-0 left-0 w-64 border-r border-border bg-background z-50 md:hidden">
-        <div className="flex items-center justify-between border-b border-border p-4">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Meny</span>
-          <button onClick={onClose} className="text-foreground hover:text-muted-foreground" aria-label="Close menu">
-            <span className="text-sm font-medium">✕</span>
+          <button
+            onClick={onClose}
+            className="border border-border bg-background text-foreground px-2 py-1 text-xs font-medium rounded-none hover:bg-foreground hover:text-background transition-colors"
+            aria-label="Lukk meny"
+          >
+            ✕
           </button>
         </div>
-        <nav className="py-2">
-          <ul className="space-y-0" role="list">
+        <nav className="overflow-y-auto h-[calc(100vh-3.5rem)]">
+          <ul className="py-2" role="list">
             {branches.map((item) => (
               <MobileSidebarItem
                 key={item.id}
@@ -58,9 +62,9 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
 
   const hasChildren = item.children && item.children.length > 0;
 
-  // Consistent indentation: 16px per level
+  // Consistent indentation: 12px per level (tighter for mobile)
   const indentStyle = {
-    paddingLeft: `${level * 16}px`,
+    paddingLeft: `${12 + level * 12}px`,
   };
 
   return (
@@ -71,15 +75,15 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
         aria-current={isActive ? 'page' : undefined}
         style={indentStyle}
         className={`
-          group flex items-center gap-2 px-4 py-2 text-xs font-medium
+          group flex items-center gap-2 pr-4 py-2.5 text-xs font-medium uppercase tracking-[0.06em]
           border-l-2 transition-colors duration-150
           focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
           ${
             isActive
               ? 'bg-foreground text-background border-l-foreground'
               : isInActiveTrail
-                ? 'bg-muted text-foreground border-l-foreground'
-                : 'text-foreground border-l-transparent hover:bg-muted hover:border-l-border'
+                ? 'text-foreground border-l-muted-foreground'
+                : 'text-muted-foreground border-l-transparent hover:bg-muted hover:text-foreground hover:border-l-border'
           }
         `}
       >
@@ -91,14 +95,14 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
               ${isActive ? 'text-background' : 'text-muted-foreground'}
             `}
           >
-            <span className="text-[0.65rem] font-bold">−</span>
+            <span className="text-[0.5rem] font-bold">▼</span>
           </span>
         )}
         <span className={hasChildren ? '' : 'ml-5'}>{item.label}</span>
       </Link>
 
       {hasChildren && (
-        <ul className="space-y-0" role="list">
+        <ul role="list">
           {item.children!.map((child) => (
             <MobileSidebarItem
               key={child.id}

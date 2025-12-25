@@ -14,7 +14,7 @@ export function Sidebar({ branches }: SidebarProps) {
 
   return (
     <div className="flex justify-end">
-      <ul className="space-y-2 w-max" role="list">
+      <ul className="space-y-0.5" role="list">
         {branches.map((item) => (
           <SidebarItem key={item.id} item={item} currentPath={location.pathname} level={0} />
         ))}
@@ -50,15 +50,15 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
         aria-current={isActive ? 'page' : undefined}
         style={indentStyle}
         className={`
-          group flex items-center gap-2 px-4 py-2 text-md font-medium
+          group flex items-center gap-2 px-4 py-2 text-xs font-medium uppercase tracking-[0.06em]
           border-l-2 transition-colors duration-150
           focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
           ${
             isActive
               ? 'bg-foreground text-background border-l-foreground'
               : isInActiveTrail
-                ? 'bg-muted text-foreground border-l-foreground'
-                : 'text-foreground border-l-transparent hover:bg-muted hover:border-l-border'
+                ? 'text-foreground border-l-muted-foreground'
+                : 'text-muted-foreground border-l-transparent hover:bg-muted hover:text-foreground hover:border-l-border'
           }
         `}
       >
@@ -70,7 +70,7 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
               ${isActive ? 'text-background' : 'text-muted-foreground'}
             `}
           >
-            <span className="text-[0.65rem] font-bold">−</span>
+            <span className="text-[0.5rem] font-bold">▼</span>
           </span>
         )}
         <span className={hasChildren ? '' : 'ml-5'}>{item.label}</span>
