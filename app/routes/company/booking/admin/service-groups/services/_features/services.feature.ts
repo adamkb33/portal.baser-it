@@ -4,6 +4,8 @@ import { createBookingClient, type ImageUpload } from '~/api/clients/booking';
 import type { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { getAccessTokenFromRequest } from '~/lib/auth.utils';
+import { ROUTES_MAP } from '~/lib/route-tree';
+import { redirectWithFlash, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 
 export type BookingServicesLoaderData = {
   serviceGroups: ServiceGroupDto[];
@@ -64,6 +66,15 @@ export async function getServicesLoader({ request }: LoaderFunctionArgs) {
     const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
     const serviceGroupsResponse =
       await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups({});
+
+    if (serviceGroupsResponse?.data?.content.length === 0) {
+      return redirectWithInfo(
+        request,
+        ROUTES_MAP['company.booking.admin.service-groups'].href,
+        'Du må opprette en tjenestegruppe før du kan legge til tjenester.',
+      );
+    }
+
     const bookingClient2 = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
     const servicesResponse = await bookingClient2.ServiceControllerService.ServiceControllerService.getServices({});
 

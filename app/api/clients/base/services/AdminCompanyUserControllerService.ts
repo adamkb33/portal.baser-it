@@ -5,6 +5,7 @@
 import type { ApiResponseListInviteTokenDto } from '@types';
 import type { ApiResponsePaginatedResponseCompanyUserDto } from '@types';
 import type { ApiResponseUnit } from '@types';
+import type { Pageable } from '@types';
 import type { CancelablePromise } from '@http';
 import { OpenAPI } from '@http';
 import { request as __request } from '@http';
@@ -14,23 +15,17 @@ export class AdminCompanyUserControllerService {
      * @throws ApiError
      */
     public static getCompanyUsers({
-        page,
-        size = 20,
-        sort = 'id',
+        pageable,
         includeDeleted = false,
     }: {
-        page?: number,
-        size?: number,
-        sort?: string,
+        pageable: Pageable,
         includeDeleted?: boolean,
     }): CancelablePromise<ApiResponsePaginatedResponseCompanyUserDto> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/admin/company-user/users',
             query: {
-                'page': page,
-                'size': size,
-                'sort': sort,
+                'pageable': pageable,
                 'includeDeleted': includeDeleted,
             },
         });

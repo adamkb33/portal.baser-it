@@ -3,6 +3,7 @@ import { twMerge } from 'tailwind-merge';
 import { createBaseClient } from '~/api/clients/base';
 import { createBookingClient } from '~/api/clients/booking';
 import { ENV } from '~/api/config/env';
+import { getAccessTokenFromRequest } from './auth.utils';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -19,3 +20,12 @@ export const bookingApi = (accessToken?: string) =>
     baseUrl: ENV.BOOKING_BASE_URL,
     token: accessToken,
   });
+
+export const bookingServiceApi = async (request: Request) => {
+  const accessToken = await getAccessTokenFromRequest(request);
+
+  return createBookingClient({
+    baseUrl: ENV.BOOKING_BASE_URL,
+    token: accessToken,
+  });
+};

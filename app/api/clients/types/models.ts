@@ -103,8 +103,12 @@ export interface BookingProfileDto {
     services: ServiceDto[];
 }
 
-export interface BulkImageUploadRequest {
-    images: ImageUpload[];
+export interface CompanyBookingInfoDto {
+    bookingProfilesAmount: number;
+    bookingProfileServicesAmount: number;
+    bookingProfileDailySchedulesAmount: number;
+    serviceGroupsAmount: number;
+    servicesAmount: number;
 }
 
 export interface CompanyRoleAssignmentDto {
@@ -126,8 +130,6 @@ export interface CompanySummaryDto {
 }
 
 export interface CompanyUserDto {
-    givenName: string;
-    familyName: string;
     userId: number;
     email: string;
     roles: Roles[];
@@ -307,6 +309,12 @@ export interface OrganizationTypeDto {
     retiredAt?: string;
 }
 
+export interface Pageable {
+    page?: number;
+    size?: number;
+    sort?: string[];
+}
+
 export interface PaginatedResponseAppointmentDto {
     content: AppointmentDto[];
     page: number;
@@ -411,10 +419,6 @@ export interface SignInDto {
 
 export interface SignOutDto {
     userId: number;
-}
-
-export interface SingleImageUploadRequest {
-    image: ImageUpload;
 }
 
 export interface UpdateCompanyUserProfileDto {
