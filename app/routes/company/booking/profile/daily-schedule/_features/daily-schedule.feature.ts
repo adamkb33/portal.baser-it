@@ -42,6 +42,28 @@ export async function dailyScheduleAction({ request }: ActionFunctionArgs) {
       return data({ success: true, message: id ? 'Arbeidstid oppdatert' : 'Arbeidstid lagret' });
     }
 
+    if (intent === 'create-bulk') {
+      const startTime = formData.get('startTime') as string;
+      const endTime = formData.get('endTime') as string;
+      const days = (formData.get('days') as string).split(',');
+
+      const startTimeWithSeconds =
+        startTime.includes(':') && startTime.split(':').length === 2 ? `${startTime}:00` : startTime;
+      const endTimeWithSeconds = endTime.includes(':') && endTime.split(':').length === 2 ? `${endTime}:00` : endTime;
+
+      const bulkSchedules = days.map((day) => ({
+        dayOfWeek: day as DailyScheduleDto['dayOfWeek'],
+        startTime: startTimeWithSeconds,
+        endTime: endTimeWithSeconds,
+      }));
+
+      await bookingClient.DailyScheduleControllerService.DailyScheduleControllerService.createOrUpdateDailySchedules({
+        requestBody: bulkSchedules,
+      });
+
+      return data({ success: true, message: 'Standard arbeidstider lagret' });
+    }
+
     if (intent === 'create-default') {
       const defaultSchedules = [
         { dayOfWeek: DayOfWeek.MONDAY, startTime: '09:00:00', endTime: '15:00:00' },

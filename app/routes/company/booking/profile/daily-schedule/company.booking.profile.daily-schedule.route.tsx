@@ -1,4 +1,4 @@
-import { data, redirect, useLoaderData, useSubmit, type LoaderFunctionArgs } from 'react-router';
+import { data, redirect, useLoaderData, useSubmit } from 'react-router';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import type { DailyScheduleDto } from 'tmp/openapi/gen/booking';
@@ -16,7 +16,7 @@ import type { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { getAccessTokenFromRequest } from '~/lib/auth.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { getFlashMessage, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 import type { Route } from './+types/company.booking.profile.daily-schedule.route';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -38,11 +38,11 @@ export async function loader({ request }: Route.LoaderArgs) {
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {
-      if (error.body?.message == 'Profil ikke funnet') {
+      if (error.body?.message === 'Profil ikke funnet') {
         return redirectWithInfo(
           request,
           ROUTES_MAP['company.booking.profile'].href,
-          'Vennligst opprett en bookingprofil før du administrerer arbeidstider.',
+          `Vennligst opprett en bookingprofil før du administrerer arbeidstider.`,
         );
       }
 
@@ -79,8 +79,14 @@ export default function BookingCompanyUserDailySchedule() {
   const submit = useSubmit();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDefaultDialogOpen, setIsDefaultDialogOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<FormData | null>(null);
   const [deletingScheduleId, setDeletingScheduleId] = useState<number | null>(null);
+  const [defaultSchedule, setDefaultSchedule] = useState({
+    startTime: '09:00',
+    endTime: '17:00',
+    selectedDays: [] as string[],
+  });
 
   const sortedSchedules = [...dailySchedules].sort(
     (a, b) => DAY_ORDER.indexOf(a.dayOfWeek) - DAY_ORDER.indexOf(b.dayOfWeek),
@@ -90,10 +96,40 @@ export default function BookingCompanyUserDailySchedule() {
   const missingDays = DAY_ORDER.filter((day) => !existingDays.has(day as DailyScheduleDto['dayOfWeek']));
 
   const handleCreateDefaultSchedule = () => {
+    setDefaultSchedule({
+      startTime: '09:00',
+      endTime: '17:00',
+      selectedDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
+    });
+    setIsDefaultDialogOpen(true);
+  };
+
+  const handleDefaultScheduleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (defaultSchedule.selectedDays.length === 0) {
+      toast.error('Velg minst én dag');
+      return;
+    }
+
     const formData = new FormData();
-    formData.append('intent', 'create-default');
+    formData.append('intent', 'create-bulk');
+    formData.append('startTime', defaultSchedule.startTime);
+    formData.append('endTime', defaultSchedule.endTime);
+    formData.append('days', defaultSchedule.selectedDays.join(','));
+
     submit(formData, { method: 'post' });
     toast.success('Standard arbeidstider lagret');
+
+    setIsDefaultDialogOpen(false);
+  };
+
+  const toggleDay = (day: string) => {
+    setDefaultSchedule((prev) => ({
+      ...prev,
+      selectedDays: prev.selectedDays.includes(day)
+        ? prev.selectedDays.filter((d) => d !== day)
+        : [...prev.selectedDays, day],
+    }));
   };
 
   const handleEdit = (schedule: DailyScheduleDto) => {
@@ -159,69 +195,111 @@ export default function BookingCompanyUserDailySchedule() {
   };
 
   return (
-    <div className="space-y-6 py-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Arbeidstider</h1>
-          <p className="mt-1 text-sm text-slate-500">
+    <div className="space-y-5">
+      <div className="border border-border bg-background p-4 sm:p-5">
+        <div className="space-y-3">
+          <div>
+            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Planlegging</span>
+            <h1 className="mt-1 text-base font-semibold text-foreground">Arbeidstider</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">
             Velg hvilke dager og klokkeslett du er tilgjengelig for avtaler.
           </p>
-        </div>
 
-        {sortedSchedules.length === 0 && (
-          <Button onClick={handleCreateDefaultSchedule} className="rounded-md px-5">
-            Sett standard arbeidstider
-          </Button>
-        )}
+          {sortedSchedules.length === 0 && (
+            <button
+              onClick={handleCreateDefaultSchedule}
+              className="border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"
+            >
+              Sett standard arbeidstider
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="rounded-md border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
+      <div className="border border-border bg-background p-4 sm:p-5">
         {sortedSchedules.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted-foreground">
             Du har ikke lagt inn noen arbeidstider ennå. Du kan starte med standard arbeidstider eller legge inn dagene
             manuelt.
           </p>
         ) : (
-          <>
-            <DataTable<DailyScheduleDto>
-              data={sortedSchedules}
-              getRowKey={(schedule) => schedule.id}
-              columns={[
-                {
-                  header: 'Ukedag',
-                  accessor: (schedule) => DAY_LABELS[schedule.dayOfWeek],
-                  className: 'font-medium',
-                },
-                { header: 'Start', accessor: (s) => s.startTime.substring(0, 5) },
-                { header: 'Slutt', accessor: (s) => s.endTime.substring(0, 5) },
-              ]}
-              actions={[
-                { label: 'Rediger', onClick: (schedule) => handleEdit(schedule), variant: 'outline' },
-                { label: 'Slett', onClick: (schedule) => handleDeleteClick(schedule.id), variant: 'destructive' },
-              ]}
-            />
+          <div className="space-y-4">
+            {/* Mobile: Stacked cards */}
+            <div className="space-y-2 sm:hidden">
+              {sortedSchedules.map((schedule) => (
+                <div key={schedule.id} className="border border-border bg-background p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-foreground">{DAY_LABELS[schedule.dayOfWeek]}</span>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(schedule)}
+                        className="border border-border bg-background text-foreground px-2 py-1 text-[0.7rem] font-medium rounded-none"
+                      >
+                        Rediger
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(schedule.id)}
+                        className="border border-border bg-background text-foreground px-2 py-1 text-[0.7rem] font-medium rounded-none"
+                      >
+                        Slett
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex gap-4 text-xs text-muted-foreground">
+                    <span>Start: {schedule.startTime.substring(0, 5)}</span>
+                    <span>Slutt: {schedule.endTime.substring(0, 5)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: Table */}
+            <div className="hidden sm:block">
+              <DataTable<DailyScheduleDto>
+                data={sortedSchedules}
+                getRowKey={(schedule) => schedule.id}
+                columns={[
+                  {
+                    header: 'Ukedag',
+                    accessor: (schedule) => DAY_LABELS[schedule.dayOfWeek],
+                    className: 'font-medium',
+                  },
+                  { header: 'Start', accessor: (s) => s.startTime.substring(0, 5) },
+                  { header: 'Slutt', accessor: (s) => s.endTime.substring(0, 5) },
+                ]}
+                actions={[
+                  { label: 'Rediger', onClick: (schedule) => handleEdit(schedule), variant: 'outline' },
+                  { label: 'Slett', onClick: (schedule) => handleDeleteClick(schedule.id), variant: 'destructive' },
+                ]}
+              />
+            </div>
 
             {missingDays.length > 0 && (
-              <div className="mt-6 rounded-md bg-slate-50 px-3 py-3">
-                <p className="mb-2 text-sm font-medium text-slate-900">Dager uten arbeidstid</p>
-                <p className="mb-3 text-xs text-slate-500">Klikk på en dag for å legge til arbeidstid.</p>
+              <div className="border-t border-border pt-4 space-y-3">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                    Dager uten arbeidstid
+                  </p>
+                  <p className="mt-1 text-[0.7rem] text-muted-foreground">
+                    Klikk på en dag for å legge til arbeidstid.
+                  </p>
+                </div>
 
                 <div className="flex flex-wrap gap-2">
                   {missingDays.map((day) => (
-                    <Button
+                    <button
                       key={day}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-md border-slate-200"
                       onClick={() => handleAddDay(day)}
+                      className="border border-border bg-background text-foreground px-2.5 py-1.5 text-xs font-medium rounded-none"
                     >
                       + {DAY_LABELS[day as DailyScheduleDto['dayOfWeek']]}
-                    </Button>
+                    </button>
                   ))}
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 
@@ -259,6 +337,86 @@ export default function BookingCompanyUserDailySchedule() {
             { label: 'Lagre', type: 'submit', variant: 'default' },
           ]}
         />
+      )}
+
+      {/* Default Schedule Dialog */}
+      {isDefaultDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80">
+          <div className="w-full max-w-md border border-border bg-background p-4 sm:p-5 space-y-4">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Sett standard arbeidstider</h2>
+              <p className="mt-1 text-xs text-muted-foreground">Velg tidspunkt og hvilke dager du vil jobbe.</p>
+            </div>
+
+            <form onSubmit={handleDefaultScheduleSubmit} className="space-y-4">
+              {/* Time inputs */}
+              <div className="border-t border-border pt-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Fra</label>
+                    <input
+                      type="time"
+                      value={defaultSchedule.startTime}
+                      onChange={(e) => setDefaultSchedule((prev) => ({ ...prev, startTime: e.target.value }))}
+                      className="w-full border border-border bg-background text-foreground px-3 py-2 text-sm rounded-none focus:outline-none focus:ring-2 focus:ring-ring"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Til</label>
+                    <input
+                      type="time"
+                      value={defaultSchedule.endTime}
+                      onChange={(e) => setDefaultSchedule((prev) => ({ ...prev, endTime: e.target.value }))}
+                      className="w-full border border-border bg-background text-foreground px-3 py-2 text-sm rounded-none focus:outline-none focus:ring-2 focus:ring-ring"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Day selection */}
+              <div className="border-t border-border pt-4 space-y-3">
+                <label className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  Velg dager
+                </label>
+                <div className="space-y-2">
+                  {DAY_ORDER.map((day) => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => toggleDay(day)}
+                      className={`w-full border border-border px-3 py-2 text-sm font-medium rounded-none text-left ${
+                        defaultSchedule.selectedDays.includes(day)
+                          ? 'bg-primary text-background'
+                          : 'bg-background text-foreground'
+                      }`}
+                    >
+                      {DAY_LABELS[day as DailyScheduleDto['dayOfWeek']]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="border-t border-border pt-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsDefaultDialogOpen(false)}
+                  className="flex-1 border border-border bg-background text-foreground px-3 py-2 text-xs font-medium rounded-none"
+                >
+                  Avbryt
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"
+                >
+                  Lagre
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       <DeleteConfirmDialog

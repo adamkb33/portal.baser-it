@@ -1,3 +1,4 @@
+// routes/company/booking/profile/route.tsx
 import { useFetcher, useLoaderData } from 'react-router';
 import { useState, useEffect } from 'react';
 import { FormDialog } from '~/components/dialog/form-dialog';
@@ -36,7 +37,7 @@ export default function BookingCompanyUserProfile() {
       setCreateOrUpdateDialogForm({
         description: bookingProfile.description || '',
         services: bookingProfile.services?.map((s: any) => s.id) || [],
-        image: null,
+        image: null, // New upload starts as null
       });
     } else if (createOrUpdateDialogOpen && !bookingProfile) {
       setCreateOrUpdateDialogForm({
@@ -63,6 +64,7 @@ export default function BookingCompanyUserProfile() {
         formData.append('services[]', String(serviceId));
       }
 
+      // Only append image if user uploaded a new one
       if (createOrUpdateDialogForm.image?.file) {
         const base64Data = await fileToBase64(createOrUpdateDialogForm.image.file);
         formData.append('image[fileName]', createOrUpdateDialogForm.image.file.name);
@@ -79,40 +81,36 @@ export default function BookingCompanyUserProfile() {
     }
   };
 
-  const handleEditUserDetails = () => {};
-  const handleSwitchAccount = () => {};
-
   const handleEditBookingProfile = () => {
     setCreateOrUpdateBookingProfileDialogOpen(true);
   };
 
-  const renderImageUpload = createImageUploadRenderer();
+  // Pass existing image URL to the renderer
+  const renderImageUpload = createImageUploadRenderer({
+    existingImageUrl: bookingProfile?.image?.url || null,
+    helperText: bookingProfile?.image?.url
+      ? 'Last opp et nytt bilde for å erstatte det eksisterende.'
+      : 'Last opp et profilbilde som vises til kunder.',
+  });
+
   const renderServicesSelection = createServicesSelectionRenderer({ services });
 
   const dialogTitle = bookingProfile ? 'Rediger bookingprofil' : 'Lag bookingprofil';
   const dialogSubmitLabel = bookingProfile ? 'Lagre endringer' : 'Opprett';
 
   return (
-    <main className={['min-h-[60vh] w-full', 'px-4 py-6 sm:px-6 lg:px-8'].join(' ')}>
-      <div className={['mx-auto w-full max-w-xl', 'space-y-5'].join(' ')}>
-        <PageHeader
-          title="Dine detaljer"
-          subtitle="Bookingprofil"
-          description="Dette vil vi bruke til bekreftelser og kvitteringer."
-        />
+    <>
+      <PageHeader
+        title="Dine detaljer"
+        subtitle="Bookingprofil"
+        description="Hvordan du fremstår for kunder når de booker time med deg."
+      />
 
-        {!bookingProfile && !error && (
-          <EmptyBookingProfile onCreateProfile={() => setCreateOrUpdateBookingProfileDialogOpen(true)} />
-        )}
-
-        {bookingProfile && (
-          <BookingProfileCard
-            description={bookingProfile.description}
-            image={bookingProfile.image}
-            onEditProfile={handleEditBookingProfile}
-          />
-        )}
-      </div>
+      {bookingProfile ? (
+        <BookingProfileCard bookingProfile={bookingProfile} onEditProfile={handleEditBookingProfile} />
+      ) : (
+        <EmptyBookingProfile onCreateProfile={() => setCreateOrUpdateBookingProfileDialogOpen(true)} />
+      )}
 
       <FormDialog
         open={createOrUpdateDialogOpen}
@@ -123,22 +121,20 @@ export default function BookingCompanyUserProfile() {
             name: 'image',
             label: 'Profilbilde',
             render: renderImageUpload,
-            description: bookingProfile?.image?.url
-              ? 'Last opp et nytt bilde for å erstatte det eksisterende.'
-              : undefined,
           },
           {
             name: 'description',
             label: 'Beskrivelse',
             type: 'textarea',
-            placeholder: 'Fortell bedriften om dine preferanser, tilgangsbehov eller andre relevante detaljer...',
-            description: 'Denne beskrivelsen vil være synlig for bedriftens ansatte.',
+            placeholder: 'Fortell kunder om dine spesialiteter, arbeidsområder eller andre relevante detaljer...',
+            description: 'Denne beskrivelsen vil være synlig for kunder.',
             className: 'min-h-[120px]',
           },
           {
             name: 'services',
-            label: 'Foretrukne tjenester',
+            label: 'Tjenester',
             render: renderServicesSelection,
+            description: 'Velg hvilke tjenester du tilbyr.',
           },
         ]}
         formData={createOrUpdateDialogForm}
@@ -157,6 +153,6 @@ export default function BookingCompanyUserProfile() {
           },
         ]}
       />
-    </main>
+    </>
   );
 }

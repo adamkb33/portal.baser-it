@@ -21,7 +21,6 @@ import { FlashMessageBanner } from './routes/company/_components/flash-message-b
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const { message: flashMessage } = await getFlashMessage(request);
-
     OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
     const { accessToken, refreshToken } = await authService.getTokensFromRequest(request);
 
@@ -100,13 +99,17 @@ export default function App({ loaderData }: Route.ComponentProps) {
   const [userNav, setUserNav] = React.useState<UserNavigation | undefined>(undefined);
   const [companyContext, setCompanyContext] = React.useState<CompanySummaryDto | null | undefined>(undefined);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [flashMessage, setFlashMessage] = React.useState(loaderData.flashMessage);
   const data = loaderData;
-  console.log(data.flashMessage);
 
   React.useEffect(() => {
     setUserNav(data.userNavigation || undefined);
     setCompanyContext(data.companyContext);
   }, [data]);
+
+  React.useEffect(() => {
+    setFlashMessage(data.flashMessage);
+  }, [loaderData.flashMessage]);
 
   const sidebarBranches = userNav?.[RoutePlaceMent.SIDEBAR] || [];
   const hasSidebar = sidebarBranches.length > 0 && companyContext;
@@ -116,7 +119,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
       <header className="border-b border-border bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
         <div className="hidden lg:col-span-2 lg:block"></div>
 
-        <FlashMessageBanner message={data.flashMessage} />
+        <FlashMessageBanner message={flashMessage} />
 
         <nav className="border-b p-2 border-border lg:col-span-8 lg:border-b-0">
           <div className="flex items-center gap-3">
