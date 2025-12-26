@@ -117,10 +117,9 @@ export default function App({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="grid min-h-screen grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-cols-12">
+      <FlashMessageBanner message={flashMessage} />
       <header className="border-b border-border bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
         <div className="hidden lg:col-span-2 lg:block"></div>
-
-        <FlashMessageBanner message={flashMessage} />
 
         <nav className="border-b p-2 border-border lg:col-span-8 lg:border-b-0">
           <div className="flex items-center gap-3">
@@ -144,57 +143,48 @@ export default function App({ loaderData }: Route.ComponentProps) {
       </header>
 
       <main className="relative bg-primary/5 lg:col-span-12 lg:grid lg:grid-cols-12 overflow-hidden">
-        {/* Confident minimalist geometric background - inspired by Suprematism */}
+        {/* Wave background */}
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          {/* STRONG VERTICAL ANCHORS - Stability & Confidence */}
-          <div className="absolute left-[15%] top-0 h-full w-px bg-border/8" />
-          <div className="absolute left-[35%] top-0 h-full w-px bg-border/6" />
-          <div className="absolute right-[25%] top-0 h-full w-px bg-border/8" />
-
-          {/* HORIZONTAL FOUNDATION LINES - Grounding */}
-          <div className="absolute left-0 top-[30%] h-px w-full bg-border/8" />
-          <div className="absolute left-0 bottom-[35%] h-px w-full bg-border/6" />
-
-          {/* BOLD ASCENDING WEDGE - Progress & Forward Motion (top right) */}
-          <div className="absolute -right-24 top-[15%] h-[400px] w-[400px]" style={{ transform: 'rotate(45deg)' }}>
-            <div
-              className="h-full w-full border-2 border-primary/12"
-              style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}
-            />
-          </div>
-
-          {/* SOLID SQUARE - Foundation & Strength (left side) */}
-          <div className="absolute left-[8%] top-[40%] h-48 w-48 border border-border/10 bg-foreground/4" />
-
-          {/* CLEAN CIRCLE - Wholeness & Clarity (bottom right) */}
-          <div className="absolute right-[12%] bottom-[20%] h-56 w-56 rounded-full border border-border/10" />
-
-          {/* PRECISION GRID ACCENT - Order & Control (top left) */}
-          <div
-            className="absolute left-[5%] top-[12%] h-32 w-32 border border-border/8"
-            style={{
-              backgroundImage: `linear-gradient(to right, oklch(0.16 0 0 / 0.06) 1px, transparent 1px),
-                                linear-gradient(to bottom, oklch(0.16 0 0 / 0.06) 1px, transparent 1px)`,
-              backgroundSize: '16px 16px',
-            }}
-          />
-
-          {/* SHARP ACCENT WEDGE - Direction & Purpose (bottom left) */}
-          <div
-            className="absolute left-[20%] bottom-[15%] h-24 w-40 border border-primary/15"
-            style={{ clipPath: 'polygon(0 50%, 100% 0, 100% 100%)' }}
-          />
-
-          {/* ELEVATED RECTANGLE - Achievement (center right) */}
-          <div className="absolute right-[18%] top-[50%] h-16 w-64 rotate-[8deg] border border-border/8 bg-primary/5" />
+          <svg
+            className="absolute inset-0 h-full w-full"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1440 560"
+            preserveAspectRatio="none"
+          >
+            <g mask="url(#wave-mask)" fill="none">
+              <path
+                d="M 0,138 C 96,125.6 288,72.8 480,76 C 672,79.2 768,155.2 960,154 C 1152,152.8 1344,86.8 1440,70L1440 560L0 560z"
+                fill="oklch(0.16 0 0 / 0.04)"
+              />
+              <path
+                d="M 0,220 C 57.6,246.4 172.8,345.6 288,352 C 403.2,358.4 460.8,248.6 576,252 C 691.2,255.4 748.8,367.8 864,369 C 979.2,370.2 1036.8,272.8 1152,258 C 1267.2,243.2 1382.4,287.6 1440,295L1440 560L0 560z"
+                fill="oklch(0.16 0 0 / 0.06)"
+              />
+              <path
+                d="M 0,497 C 96,484.2 288,435 480,433 C 672,431 768,495.4 960,487 C 1152,478.6 1344,410.2 1440,391L1440 560L0 560z"
+                fill="oklch(0.55 0.2 285 / 0.08)"
+              />
+            </g>
+            <defs>
+              <mask id="wave-mask">
+                <rect width="1440" height="560" fill="#ffffff" />
+              </mask>
+            </defs>
+          </svg>
         </div>
 
         {userNav?.SIDEBAR && userNav.SIDEBAR.length > 0 ? (
-          <aside className="relative z-10 hidden border-r border-border bg-muted p-4 lg:col-span-2 lg:block">
+          <aside className="relative z-10 hidden border-r border-border bg-background p-4 lg:col-span-2 lg:block">
+            <div className="mb-5 border-b border-border pb-3">
+              <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Navigasjon</span>
+            </div>
             <Sidebar branches={userNav.SIDEBAR} />
+            <div className="absolute bottom-4 left-4 right-4">
+              <div className="h-px w-full bg-border/20" />
+            </div>
           </aside>
         ) : (
-          <aside className="relative z-10 hidden border-r p-4 lg:col-span-2 lg:block" />
+          <aside className="relative z-10 hidden border-r border-border lg:col-span-2 lg:block bg-transparent" />
         )}
 
         {hasSidebar && (
