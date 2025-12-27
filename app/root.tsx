@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, type LinksFunction } from 'react-router';
 import { Menu } from 'lucide-react';
-import { Toaster } from 'sonner';
+import { toast, Toaster } from 'sonner';
 
 import './app.css';
 import { Navbar } from './components/layout/navbar';
@@ -115,9 +115,29 @@ export default function App({ loaderData }: Route.ComponentProps) {
   const sidebarBranches = userNav?.[RoutePlaceMent.SIDEBAR] || [];
   const hasSidebar = sidebarBranches.length > 0 && companyContext;
 
+  React.useEffect(() => {
+    if ('flashMessage' in loaderData && loaderData.flashMessage) {
+      const { type, text } = loaderData.flashMessage;
+
+      switch (type) {
+        case 'success':
+          toast.success(text);
+          break;
+        case 'error':
+          toast.error(text);
+          break;
+        case 'info':
+          toast.info(text);
+          break;
+        case 'warning':
+          toast.warning(text);
+          break;
+      }
+    }
+  }, [loaderData]);
+
   return (
     <div className="grid min-h-screen grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-cols-12">
-      <FlashMessageBanner message={flashMessage} />
       <header className="border-b border-border bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
         <div className="hidden lg:col-span-2 lg:block"></div>
 

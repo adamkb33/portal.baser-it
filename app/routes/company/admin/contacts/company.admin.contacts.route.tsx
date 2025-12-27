@@ -1,34 +1,70 @@
-import { useLoaderData, useSubmit } from 'react-router';
-import { useMemo, useState } from 'react';
+// routes/company/contacts/company.contacts.route.tsx
+import { useSubmit, useNavigate, useSearchParams, data, redirect } from 'react-router';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import type { ContactDto } from 'tmp/openapi/gen/base';
 
 import { Button } from '~/components/ui/button';
-import { PaginatedTable } from '~/components/table/paginated-data-table';
+import { ServerPaginatedTable } from '~/components/table/server-side-paginated.data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
+import { Pen } from 'lucide-react';
 
-import { contactsLoader, type CompanyContactsLoaderData } from './_features/company.contacts.loader';
 import { contactsAction } from './_features/company.contacts.action';
 import { ContactFormSchema, type ContactFormData, type FieldErrors } from './_schemas/contact.form.schema';
 import { PageHeader } from '../../_components/page-header';
+import type { Route } from './+types/company.admin.contacts.route';
+import { createBaseClient } from '~/api/clients/base';
+import type { ApiClientError } from '~/api/clients/http';
+import { ENV } from '~/api/config/env';
+import { getAccessTokenFromRequest } from '~/lib/auth.utils';
+import { API_ROUTES_MAP } from '~/lib/route-tree';
 
-export const loader = contactsLoader;
-export const action = contactsAction;
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    const accessToken = await getAccessTokenFromRequest(request);
+    if (!accessToken) return redirect('/');
 
-type ContactRow = {
-  id?: number;
-  givenName: string;
-  familyName: string;
-  contactEmail?: string;
-  contactMobileNumber?: string;
-  original: ContactDto;
-};
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '0');
+    const size = parseInt(url.searchParams.get('size') || '5');
+    const sort = url.searchParams.get('sort') || 'id';
 
-export default function CompanyContactsRoute() {
-  const { contacts } = useLoaderData<CompanyContactsLoaderData>();
+    const baseClient = createBaseClient({
+      baseUrl: ENV.BASE_SERVICE_BASE_URL,
+      token: accessToken,
+    });
+
+    const response =
+      await baseClient.CompanyUserContactControllerService.CompanyUserContactControllerService.getContacts({
+        page,
+        size,
+        sort,
+      });
+
+    return data({
+      contacts: response?.data?.content || [],
+      pagination: {
+        page: response?.data?.page || 0,
+        size: response?.data?.size || 20,
+        totalElements: response?.data?.totalElements || 0,
+        totalPages: response?.data?.totalPages || 0,
+      },
+    });
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+    if (error as ApiClientError) {
+      return { error: error.body?.message } as any;
+    }
+    throw error;
+  }
+}
+
+export default function CompanyContactsRoute({ loaderData }: Route.ComponentProps) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const submit = useSubmit();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -37,6 +73,16 @@ export default function CompanyContactsRoute() {
   const [deletingContactId, setDeletingContactId] = useState<number | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [filter, setFilter] = useState('');
+
+  if ('error' in loaderData) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-red-500">{loaderData.error}</p>
+      </div>
+    );
+  }
+
+  const { contacts, pagination } = loaderData;
 
   const openCreate = () => {
     setEditingContact({ givenName: '', familyName: '', email: '', mobileNumber: '' });
@@ -68,8 +114,7 @@ export default function CompanyContactsRoute() {
     fd.append('intent', 'delete');
     fd.append('id', String(deletingContactId));
 
-    submit(fd, { method: 'post' });
-    toast.success('Kontakten ble slettet');
+    submit(fd, { method: 'post', action: API_ROUTES_MAP['company.admin.contacts.delete'].url });
 
     setIsDeleteDialogOpen(false);
     setDeletingContactId(null);
@@ -103,48 +148,43 @@ export default function CompanyContactsRoute() {
     }
 
     const fd = new FormData();
-    fd.append('intent', editingContact.id ? 'update' : 'create');
+
     if (editingContact.id) fd.append('id', String(editingContact.id));
     fd.append('givenName', (editingContact.givenName || '').trim());
     fd.append('familyName', (editingContact.familyName || '').trim());
     if (editingContact.email) fd.append('email', editingContact.email.trim());
     if (editingContact.mobileNumber) fd.append('mobileNumber', editingContact.mobileNumber.trim());
 
-    submit(fd, { method: 'post' });
+    if (editingContact.id) {
+      submit(fd, { method: 'post', action: API_ROUTES_MAP['company.admin.contacts.update'].url });
+    } else {
+      submit(fd, { method: 'post', action: API_ROUTES_MAP['company.admin.contacts.create'].url });
+    }
 
     setIsDialogOpen(false);
     setEditingContact(null);
-
-    toast.success(editingContact.id ? 'Kontakt oppdatert' : 'Kontakt opprettet');
   };
 
-  const contactRows = useMemo<ContactRow[]>(
-    () =>
-      contacts.map((contact) => ({
-        id: contact.id,
-        givenName: contact.givenName ?? '',
-        familyName: contact.familyName ?? '',
-        contactEmail: contact.email?.value ?? '',
-        contactMobileNumber: contact.mobileNumber?.value ?? '',
-        original: contact,
-      })),
-    [contacts],
-  );
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', newPage.toString());
+    navigate(`?${params.toString()}`, { replace: true });
+  };
 
-  const filteredContacts = useMemo(() => {
-    if (!filter) return contactRows;
-    const query = filter.toLowerCase();
+  const handlePageSizeChange = (newSize: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('size', newSize.toString());
+    params.set('page', '0');
+    navigate(`?${params.toString()}`, { replace: true });
+  };
 
-    return contactRows.filter((contact) => {
-      const name = `${contact.givenName} ${contact.familyName}`.toLowerCase();
-      const email = contact.contactEmail?.toLowerCase() ?? '';
-      const mobile = contact.contactMobileNumber?.toLowerCase() ?? '';
-      return name.includes(query) || email.includes(query) || mobile.includes(query);
-    });
-  }, [contactRows, filter]);
+  const formatName = (contact: ContactDto) => {
+    const parts = [contact.givenName, contact.familyName].filter(Boolean);
+    return parts.length > 0 ? parts.join(' ') : '—';
+  };
 
   return (
-    <div className="container mx-auto py-6 space-y-4">
+    <>
       <PageHeader
         title="Kontakter"
         description="Administrer kontaktpersoner og detaljer. Hold oversikt over viktige kontakter for ditt selskap."
@@ -160,33 +200,35 @@ export default function CompanyContactsRoute() {
         />
       </div>
 
-      <PaginatedTable<ContactRow>
-        items={filteredContacts}
-        getRowKey={(row, index) => row.id ?? `contact-${index}`}
+      <ServerPaginatedTable<ContactDto>
+        items={contacts}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        getRowKey={(contact) => contact.id?.toString() ?? contact.email?.value ?? ''}
         columns={[
-          { header: 'Navn', className: 'font-medium' },
+          { header: 'Navn' },
           { header: 'E-post' },
           { header: 'Mobil' },
           { header: 'Handlinger', className: 'text-right' },
         ]}
-        renderRow={(row) => (
+        renderRow={(contact) => (
           <TableRow>
-            <TableCell className="font-medium">
-              {row.givenName} {row.familyName}
-            </TableCell>
-            <TableCell>{row.contactEmail || '—'}</TableCell>
-            <TableCell>{row.contactMobileNumber || '—'}</TableCell>
+            <TableCell className="font-medium">{formatName(contact)}</TableCell>
+            <TableCell>{contact.email?.value || '—'}</TableCell>
+            <TableCell>{contact.mobileNumber?.value || '—'}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => openEdit(row.original)}>
-                  Rediger
+                <Button variant="outline" size="sm" onClick={() => openEdit(contact)}>
+                  <Pen className="h-4 w-4" />
+                  <span className="sr-only">Rediger</span>
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-red-500"
-                  disabled={row.id == null}
-                  onClick={() => row.id && requestDelete(row.id)}
+                  className="text-red-500 hover:text-red-700"
+                  disabled={contact.id == null}
+                  onClick={() => contact.id && requestDelete(contact.id)}
                 >
                   Slett
                 </Button>
@@ -258,6 +300,6 @@ export default function CompanyContactsRoute() {
         title="Slett kontakt?"
         description="Er du sikker på at du vil slette denne kontakten? Denne handlingen kan ikke angres."
       />
-    </div>
+    </>
   );
 }

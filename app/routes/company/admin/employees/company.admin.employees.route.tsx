@@ -23,7 +23,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '0');
-    const size = parseInt(url.searchParams.get('size') || '10');
+    const size = parseInt(url.searchParams.get('size') || '5');
 
     const baseApi = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accessToken });
 
@@ -63,27 +63,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function CompanyAdminEmployees({ loaderData }: Route.ComponentProps) {
   const [filter, setFilter] = useState('');
-
-  useEffect(() => {
-    if ('flashMessage' in loaderData && loaderData.flashMessage) {
-      const { type, text } = loaderData.flashMessage;
-
-      switch (type) {
-        case 'success':
-          toast.success(text);
-          break;
-        case 'error':
-          toast.error(text);
-          break;
-        case 'info':
-          toast.info(text);
-          break;
-        case 'warning':
-          toast.warning(text);
-          break;
-      }
-    }
-  }, [loaderData]);
 
   if ('error' in loaderData) {
     return (

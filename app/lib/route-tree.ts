@@ -418,6 +418,24 @@ export const API_ROUTES_TREE = [
               },
             ],
           },
+          {
+            id: 'company.admin.contacts',
+            url: '/company/admin/contacts',
+            children: [
+              {
+                id: 'company.admin.contacts.create',
+                url: '/company/admin/contacts/create',
+              },
+              {
+                id: 'company.admin.contacts.update',
+                url: '/company/admin/contacts/update',
+              },
+              {
+                id: 'company.admin.contacts.delete',
+                url: '/company/admin/contacts/delete',
+              },
+            ],
+          },
         ],
       },
     ],

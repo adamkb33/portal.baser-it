@@ -21,6 +21,15 @@ export const bookingApi = (accessToken?: string) =>
     token: accessToken,
   });
 
+export const baseServiceApi = async (request: Request) => {
+  const accessToken = await getAccessTokenFromRequest(request);
+
+  return createBaseClient({
+    baseUrl: ENV.BASE_SERVICE_BASE_URL,
+    token: accessToken,
+  });
+};
+
 export const bookingServiceApi = async (request: Request) => {
   const accessToken = await getAccessTokenFromRequest(request);
 

@@ -3,6 +3,7 @@ import { createBaseClient } from '~/api/clients/base';
 import { ENV } from '~/api/config/env';
 import { getUserSession } from '~/lib/auth.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -23,5 +24,5 @@ export async function action({ request }: ActionFunctionArgs) {
     inviteTokenId: Number(tokenId),
   });
 
-  return redirect(ROUTES_MAP['company.admin.employees'].href);
+  return redirectWithSuccess(request, ROUTES_MAP['company.admin.employees'].href, 'Invitasjon kansellert');
 }
