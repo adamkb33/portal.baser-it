@@ -1,117 +1,84 @@
-import * as React from 'react';
-import { Link, redirect, useSubmit, useNavigation } from 'react-router';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-
-import { forgotPasswordSchema, type ForgotPasswordSchema } from './_schemas/forgot-password-form.schema';
-import type { ApiClientError } from '~/api/clients/http';
-import { AuthControllerService } from '~/api/clients/base';
-import { ROUTES_MAP } from '~/lib/route-tree';
+// auth.forgot-password.route.tsx (refactored)
+import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.forgot-password.route';
 
+import { ROUTES_MAP } from '~/lib/route-tree';
+import { OpenAPI } from '~/api/clients/base/OpenAPI';
+import { ENV } from '~/api/config/env';
+import { baseApi } from '~/lib/utils';
+import type { ApiClientError } from '~/api/clients/http';
+import { AuthFormContainer } from '../_components/auth.form-container';
+import { AuthFormField } from '../_components/auth.form-field';
+import { AuthFormButton } from '../_components/auth.form-button';
+
 export async function action({ request }: Route.ActionArgs) {
+  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
+
   const formData = await request.formData();
   const email = String(formData.get('email'));
 
   try {
-    await AuthControllerService.forgotPassword({
+    await baseApi().AuthControllerService.AuthControllerService.forgotPassword({
       requestBody: { email },
     });
-
     return redirect('/');
   } catch (error: any) {
+    console.error('[forgot-password] Error:', error);
+
     if (error as ApiClientError) {
-      return { error: error.body.message };
+      return data(
+        {
+          error: error.body?.message || 'Noe gikk galt. Prøv igjen.',
+          values: { email },
+        },
+        { status: 400 },
+      );
     }
 
     throw error;
   }
 }
 
-export default function AuthForgotPasswordRoute({ actionData }: Route.ComponentProps) {
-  const submit = useSubmit();
+export default function AuthForgotPassword({ actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
-  const form = useForm<ForgotPasswordSchema>({
-    resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: {
-      email: '',
-    },
-  });
-
-  const handleSubmit = React.useCallback(
-    (values: ForgotPasswordSchema) => {
-      const formData = new FormData();
-      formData.set('email', values.email);
-
-      submit(formData, { method: 'post' });
-    },
-    [submit],
-  );
-
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-12">
-      <header className="space-y-2 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Glemt passord</h1>
-        <p className="text-muted-foreground text-sm">
-          Oppgi din e-post for å tilbakestille ditt passord. Følg lenken du får tilsendt på din e-post adresse.
-        </p>
-      </header>
+    <AuthFormContainer
+      title="Glemt passord"
+      description="Oppgi din e-post for å tilbakestille ditt passord. Følg lenken du får tilsendt på din e-post adresse."
+      error={actionData?.error}
+      secondaryAction={
+        <>
+          <Link
+            to={ROUTES_MAP['auth.sign-in'].href}
+            className="block text-center text-sm font-medium text-foreground hover:underline"
+          >
+            ← Tilbake til innlogging
+          </Link>
+          <Link to="/" className="mt-2 block text-center text-sm font-medium text-muted-foreground hover:underline">
+            Hovedsiden →
+          </Link>
+        </>
+      }
+    >
+      <Form method="post" className="space-y-6">
+        <AuthFormField
+          id="email"
+          name="email"
+          label="E-post adresse"
+          type="email"
+          autoComplete="email"
+          placeholder="din@e-post.no"
+          defaultValue={actionData?.values?.email}
+          required
+          disabled={isSubmitting}
+        />
 
-      {actionData?.error ? (
-        <div
-          role="alert"
-          className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-        >
-          {actionData.error}
-        </div>
-      ) : null}
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" noValidate>
-          <FormField
-            name="email"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>E-post</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="email"
-                    autoComplete="email"
-                    placeholder="din@e-post.no"
-                    disabled={isSubmitting}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Behandler…' : 'Send kode for tilbakestilling'}
-          </Button>
-        </form>
+        <AuthFormButton isLoading={isSubmitting} loadingText="Behandler…">
+          Send tilbakestillingskode
+        </AuthFormButton>
       </Form>
-
-      <p className="text-center text-sm text-muted-foreground">
-        Var det ikke denne siden du letet etter?{' '}
-        <Link to={ROUTES_MAP['auth.sign-in'].href} className="text-primary hover:underline">
-          Tilbake til innlogging
-        </Link>
-      </p>
-
-      <div className="text-center text-sm">
-        <Link to="/" className="text-primary hover:underline">
-          Tilbake til hovedsiden
-        </Link>
-      </div>
-    </div>
+    </AuthFormContainer>
   );
 }

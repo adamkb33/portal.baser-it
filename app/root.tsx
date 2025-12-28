@@ -162,36 +162,19 @@ export default function App({ loaderData }: Route.ComponentProps) {
         <div className="hidden lg:col-span-2 lg:block"></div>
       </header>
 
-      <main className="relative bg-primary/5 lg:col-span-12 lg:grid lg:grid-cols-12 overflow-hidden">
-        {/* Wave background */}
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <svg
-            className="absolute inset-0 h-full w-full"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 1440 560"
-            preserveAspectRatio="none"
-          >
-            <g mask="url(#wave-mask)" fill="none">
-              <path
-                d="M 0,138 C 96,125.6 288,72.8 480,76 C 672,79.2 768,155.2 960,154 C 1152,152.8 1344,86.8 1440,70L1440 560L0 560z"
-                fill="oklch(0.16 0 0 / 0.04)"
-              />
-              <path
-                d="M 0,220 C 57.6,246.4 172.8,345.6 288,352 C 403.2,358.4 460.8,248.6 576,252 C 691.2,255.4 748.8,367.8 864,369 C 979.2,370.2 1036.8,272.8 1152,258 C 1267.2,243.2 1382.4,287.6 1440,295L1440 560L0 560z"
-                fill="oklch(0.16 0 0 / 0.06)"
-              />
-              <path
-                d="M 0,497 C 96,484.2 288,435 480,433 C 672,431 768,495.4 960,487 C 1152,478.6 1344,410.2 1440,391L1440 560L0 560z"
-                fill="oklch(0.55 0.2 285 / 0.08)"
-              />
-            </g>
-            <defs>
-              <mask id="wave-mask">
-                <rect width="1440" height="560" fill="#ffffff" />
-              </mask>
-            </defs>
-          </svg>
-        </div>
+      <main className="relative overflow-hidden bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
+        {/* Grid overlay */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.05]"
+          aria-hidden="true"
+          style={{
+            backgroundImage: `
+        linear-gradient(to right, currentColor 1px, transparent 1px),
+        linear-gradient(to bottom, currentColor 1px, transparent 1px)
+      `,
+            backgroundSize: '20px 20px',
+          }}
+        />
 
         {userNav?.SIDEBAR && userNav.SIDEBAR.length > 0 ? (
           <aside className="relative z-10 hidden border-r border-border bg-background p-4 lg:col-span-2 lg:block">
@@ -204,14 +187,32 @@ export default function App({ loaderData }: Route.ComponentProps) {
             </div>
           </aside>
         ) : (
-          <aside className="relative z-10 hidden border-r border-border lg:col-span-2 lg:block bg-transparent" />
+          <aside className="relative z-10 hidden border-r border-border bg-transparent lg:col-span-2 lg:block" />
         )}
 
         {hasSidebar && (
           <MobileSidebar branches={sidebarBranches} isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         )}
 
-        <section className="relative z-10 overflow-auto p-4 sm:p-5 lg:col-span-8 border-r">
+        <section className="relative z-10 overflow-auto border-r border-border p-4 sm:p-5 lg:col-span-8 bg-background/70">
+          {/* Blurred shape background */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+            {/* Primary purple blob - top right */}
+            <div className="absolute -right-32 -top-32 h-128 w-128 rounded-full bg-primary/20 blur-3xl" />
+            <div className="absolute -left-32 -bottom-32 h-128 w-128 rounded-full bg-primary/20 blur-3xl" />
+
+            {/* Secondary accent blob - bottom left */}
+            <div
+              className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-primary/10 blur-3xl"
+              style={{
+                filter: 'blur(96px)',
+              }}
+            />
+
+            {/* Subtle tertiary blob - center */}
+            <div className="absolute left-1/2 top-1/2 h-128 w-128 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted/30 blur-3xl" />
+          </div>
+
           <Outlet
             context={{
               userNav,

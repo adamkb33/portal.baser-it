@@ -1,28 +1,18 @@
-import * as React from 'react';
-import {
-  Link,
-  redirect,
-  useSubmit,
-  useNavigation,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-} from 'react-router';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-
-import { acceptInviteSchema, type AcceptInviteSchema } from './_schemas/accept-invite.form.schema';
-import { OpenAPI, ApiClientError } from '~/api/clients/http';
-import { ENV } from '~/api/config/env';
-import { baseApi } from '~/lib/utils';
-import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
-import { toAuthTokens } from '../_utils/token.utils';
+// auth.accept-invite.route.tsx (refactored)
+import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.accept-invite.route';
 
-export async function loader({ request }: LoaderFunctionArgs) {
+import { OpenAPI } from '~/api/clients/base/OpenAPI';
+import { ENV } from '~/api/config/env';
+import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
+import { baseApi } from '~/lib/utils';
+import { toAuthTokens } from '../_utils/token.utils';
+import type { ApiClientError } from '~/api/clients/http';
+import { AuthFormContainer } from '../_components/auth.form-container';
+import { AuthFormField } from '../_components/auth.form-field';
+import { AuthFormButton } from '../_components/auth.form-button';
+
+export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const inviteToken = url.searchParams.get('token');
 
@@ -33,25 +23,35 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { inviteToken };
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
 
   const formData = await request.formData();
-  const payload = Object.fromEntries(formData) as unknown as AcceptInviteSchema;
+  const inviteToken = String(formData.get('inviteToken'));
+  const givenName = String(formData.get('givenName'));
+  const familyName = String(formData.get('familyName'));
+  const password = String(formData.get('password'));
+  const confirmPassword = String(formData.get('confirmPassword'));
 
   try {
     const response = await baseApi().AuthControllerService.AuthControllerService.acceptInvite({
-      inviteToken: payload.inviteToken,
+      inviteToken,
       requestBody: {
-        givenName: payload.givenName,
-        familyName: payload.familyName,
-        password: payload.password,
-        password2: payload.confirmPassword,
+        givenName,
+        familyName,
+        password,
+        password2: confirmPassword,
       },
     });
 
     if (!response.success || !response.data) {
-      throw new Error();
+      return data(
+        {
+          error: 'Kunne ikke opprette kontoen. Prøv igjen.',
+          values: { givenName, familyName },
+        },
+        { status: 400 },
+      );
     }
 
     const tokens = toAuthTokens(response.data);
@@ -70,134 +70,89 @@ export async function action({ request }: ActionFunctionArgs) {
       ],
     });
   } catch (error: any) {
+    console.error('[accept-invite] Error:', error);
+
     if (error as ApiClientError) {
-      return { error: error.body.message };
+      return data(
+        {
+          error: error.body?.message || 'Noe gikk galt. Prøv igjen.',
+          values: { givenName, familyName },
+        },
+        { status: 400 },
+      );
     }
 
     throw error;
   }
 }
 
-export default function AuthAcceptInviteRoute({ loaderData, actionData }: Route.ComponentProps) {
+export default function AuthAcceptInvite({ loaderData, actionData }: Route.ComponentProps) {
   const { inviteToken } = loaderData;
-  const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
-  const form = useForm<AcceptInviteSchema>({
-    resolver: zodResolver(acceptInviteSchema),
-    defaultValues: {
-      inviteToken,
-      givenName: '',
-      familyName: '',
-      password: '',
-      confirmPassword: '',
-    },
-  });
-
-  const handleSubmit = React.useCallback(
-    (values: AcceptInviteSchema) => {
-      const formData = new FormData();
-      formData.set('inviteToken', values.inviteToken);
-      formData.set('givenName', values.givenName);
-      formData.set('familyName', values.familyName);
-      formData.set('password', values.password);
-      formData.set('confirmPassword', values.confirmPassword);
-
-      submit(formData, { method: 'post' });
-    },
-    [submit],
-  );
-
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-8 py-12">
-      <header className="space-y-2 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Complete your account</h1>
-        <p className="text-muted-foreground text-sm">Set up your profile and password to activate your access.</p>
-      </header>
-
-      {actionData?.error ? (
-        <div
-          role="alert"
-          className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-        >
-          {actionData.error}
-        </div>
-      ) : null}
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" noValidate>
-          <input type="hidden" name="inviteToken" value={inviteToken} />
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="givenName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>First name</FormLabel>
-                  <FormControl>
-                    <Input {...field} autoComplete="given-name" disabled={isSubmitting} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="familyName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Last name</FormLabel>
-                  <FormControl>
-                    <Input {...field} autoComplete="family-name" disabled={isSubmitting} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input {...field} type="password" autoComplete="new-password" disabled={isSubmitting} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm password</FormLabel>
-                <FormControl>
-                  <Input {...field} type="password" autoComplete="new-password" disabled={isSubmitting} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating account…' : 'Create account'}
-          </Button>
-        </form>
-      </Form>
-
-      <div className="text-center text-sm">
-        <Link to="/" className="text-primary hover:underline">
-          Return to home
+    <AuthFormContainer
+      title="Fullfør din konto"
+      description="Opprett profilen din og sett passord for å aktivere tilgangen din."
+      error={actionData?.error}
+      secondaryAction={
+        <Link to="/" className="mt-2 block text-center text-sm font-medium text-foreground hover:underline">
+          Tilbake til forsiden →
         </Link>
-      </div>
-    </div>
+      }
+    >
+      <Form method="post" className="space-y-6">
+        <input type="hidden" name="inviteToken" value={inviteToken} />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <AuthFormField
+            id="givenName"
+            name="givenName"
+            label="Fornavn"
+            type="text"
+            autoComplete="given-name"
+            defaultValue={actionData?.values?.givenName}
+            required
+            disabled={isSubmitting}
+          />
+
+          <AuthFormField
+            id="familyName"
+            name="familyName"
+            label="Etternavn"
+            type="text"
+            autoComplete="family-name"
+            defaultValue={actionData?.values?.familyName}
+            required
+            disabled={isSubmitting}
+          />
+        </div>
+
+        <AuthFormField
+          id="password"
+          name="password"
+          label="Passord"
+          type="password"
+          autoComplete="new-password"
+          required
+          disabled={isSubmitting}
+        />
+
+        <AuthFormField
+          id="confirmPassword"
+          name="confirmPassword"
+          label="Bekreft passord"
+          type="password"
+          autoComplete="new-password"
+          required
+          disabled={isSubmitting}
+        />
+
+        <AuthFormButton isLoading={isSubmitting} loadingText="Oppretter konto…">
+          Opprett konto
+        </AuthFormButton>
+      </Form>
+    </AuthFormContainer>
   );
 }

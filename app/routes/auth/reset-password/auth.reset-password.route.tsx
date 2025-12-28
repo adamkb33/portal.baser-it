@@ -1,20 +1,18 @@
-import * as React from 'react';
-import { Link, redirect, useSubmit, useNavigation, data } from 'react-router';
+// auth.reset-password.route.tsx (refactored)
+import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.reset-password.route';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
 
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-
-import { resetPasswordFormSchema, type ResetPasswordFormSchema } from './_schemas/reset-password.form.schema';
-import { decodeResetPasswordToken } from './_utils/auth.reset-password.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { AuthControllerService } from '~/api/clients/base';
-
-import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
+import { OpenAPI } from '~/api/clients/base/OpenAPI';
+import { ENV } from '~/api/config/env';
+import { baseApi } from '~/lib/utils';
+import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
 import { toAuthTokens } from '../_utils/token.utils';
+import { decodeResetPasswordToken } from './_utils/auth.reset-password.utils';
+import type { ApiClientError } from '~/api/clients/http';
+import { AuthFormContainer } from '../_components/auth.form-container';
+import { AuthFormField } from '../_components/auth.form-field';
+import { AuthFormButton } from '../_components/auth.form-button';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -33,14 +31,19 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
+
   const formData = await request.formData();
+  const resetPasswordToken = String(formData.get('resetPasswordToken'));
+  const password = String(formData.get('password'));
+  const confirmPassword = String(formData.get('confirmPassword'));
 
   try {
-    const response = await AuthControllerService.resetPassword({
+    const response = await baseApi().AuthControllerService.AuthControllerService.resetPassword({
       requestBody: {
-        resetPasswordToken: String(formData.get('resetPasswordToken')),
-        password: String(formData.get('password')),
-        password2: String(formData.get('confirmPassword')),
+        resetPasswordToken,
+        password,
+        password2: confirmPassword,
       },
     });
 
@@ -70,9 +73,10 @@ export async function action({ request }: Route.ActionArgs) {
       ],
     });
   } catch (error: any) {
-    // Handle API client errors
-    if (error.body?.message) {
-      const errorMessage = error.body.message;
+    console.error('[reset-password] Error:', error);
+
+    if (error as ApiClientError) {
+      const errorMessage = error.body?.message || 'Noe gikk galt. Prøv igjen.';
       const isTokenError =
         errorMessage.toLowerCase().includes('token') ||
         errorMessage.toLowerCase().includes('expired') ||
@@ -88,38 +92,14 @@ export async function action({ request }: Route.ActionArgs) {
       );
     }
 
-    // Unexpected errors - let ErrorBoundary handle
-    console.error('[reset-password] Unexpected error:', error);
     throw error;
   }
 }
 
-export default function AuthResetPasswordRoute({ loaderData, actionData }: Route.ComponentProps) {
+export default function AuthResetPassword({ loaderData, actionData }: Route.ComponentProps) {
   const { resetPasswordToken, email } = loaderData;
-  const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-
-  const form = useForm<ResetPasswordFormSchema>({
-    resolver: zodResolver(resetPasswordFormSchema),
-    defaultValues: {
-      resetPasswordToken,
-      password: '',
-      confirmPassword: '',
-    },
-  });
-
-  const handleSubmit = React.useCallback(
-    (values: ResetPasswordFormSchema) => {
-      const formData = new FormData();
-      formData.set('resetPasswordToken', resetPasswordToken);
-      formData.set('password', values.password);
-      formData.set('confirmPassword', values.confirmPassword);
-
-      submit(formData, { method: 'post' });
-    },
-    [submit, resetPasswordToken],
-  );
 
   // Show token invalid state
   if (actionData?.tokenInvalid) {
@@ -131,7 +111,7 @@ export default function AuthResetPasswordRoute({ loaderData, actionData }: Route
             {actionData.error ||
               'Denne tilbakestillingslinken er ikke lenger gyldig. Vennligst be om en ny tilbakestilling av passord.'}
           </p>
-          <Link to={ROUTES_MAP['auth.forgot-password'].href} className="text-primary hover:underline inline-block mt-2">
+          <Link to={ROUTES_MAP['auth.forgot-password'].href} className="mt-2 inline-block text-primary hover:underline">
             Be om ny tilbakestillingslink
           </Link>
         </div>
@@ -146,77 +126,53 @@ export default function AuthResetPasswordRoute({ loaderData, actionData }: Route
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-12">
-      <header className="space-y-2 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Tilbakestill passord</h1>
-        <p className="text-muted-foreground text-sm">Opprett et nytt passord for din konto.</p>
-      </header>
-
-      {actionData?.error && !actionData.tokenInvalid ? (
-        <div
-          role="alert"
-          className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-        >
-          {actionData.error}
-        </div>
-      ) : null}
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" noValidate>
-          <input type="hidden" name="resetPasswordToken" value={resetPasswordToken} />
-
-          <FormField
-            name="email"
-            render={() => (
-              <FormItem>
-                <FormLabel>E-post</FormLabel>
-                <FormControl>
-                  <Input value={email} autoComplete="email" disabled />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Passord</FormLabel>
-                <FormControl>
-                  <Input {...field} type="password" autoComplete="new-password" disabled={isSubmitting} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Bekreft passord</FormLabel>
-                <FormControl>
-                  <Input {...field} type="password" autoComplete="new-password" disabled={isSubmitting} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Tilbakestiller…' : 'Tilbakestill passord'}
-          </Button>
-        </form>
-      </Form>
-
-      <div className="text-center text-sm">
-        <Link to="/" className="text-primary hover:underline">
-          Tilbake til forsiden
+    <AuthFormContainer
+      title="Tilbakestill passord"
+      description="Opprett et nytt passord for din konto."
+      error={actionData?.error && !actionData.tokenInvalid ? actionData.error : undefined}
+      secondaryAction={
+        <Link to="/" className="mt-2 block text-center text-sm font-medium text-foreground hover:underline">
+          Tilbake til forsiden →
         </Link>
-      </div>
-    </div>
+      }
+    >
+      <Form method="post" className="space-y-6">
+        <input type="hidden" name="resetPasswordToken" value={resetPasswordToken} />
+
+        <AuthFormField
+          id="email"
+          name="email"
+          label="E-post"
+          type="email"
+          autoComplete="email"
+          defaultValue={email}
+          disabled
+        />
+
+        <AuthFormField
+          id="password"
+          name="password"
+          label="Passord"
+          type="password"
+          autoComplete="new-password"
+          required
+          disabled={isSubmitting}
+        />
+
+        <AuthFormField
+          id="confirmPassword"
+          name="confirmPassword"
+          label="Bekreft passord"
+          type="password"
+          autoComplete="new-password"
+          required
+          disabled={isSubmitting}
+        />
+
+        <AuthFormButton isLoading={isSubmitting} loadingText="Tilbakestiller…">
+          Tilbakestill passord
+        </AuthFormButton>
+      </Form>
+    </AuthFormContainer>
   );
 }

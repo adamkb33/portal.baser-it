@@ -1,3 +1,4 @@
+// auth.sign-in.route.tsx (refactored)
 import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.sign-in.route';
 
@@ -8,10 +9,9 @@ import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies
 import { baseApi } from '~/lib/utils';
 import { toAuthTokens } from '../_utils/token.utils';
 import type { ApiClientError } from '~/api/clients/http';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { AuthFormContainer } from '../_components/auth.form-container';
+import { AuthFormField } from '../_components/auth.form-field';
+import { AuthFormButton } from '../_components/auth.form-button';
 
 export async function action({ request }: Route.ActionArgs) {
   OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
@@ -72,67 +72,49 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
   const isSubmitting = navigation.state === 'submitting';
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-12">
-      <header className="space-y-2 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Logg inn</h1>
-        <p className="text-muted-foreground text-sm">
-          Logg inn for å ta i bruk våre tjenester, administrer ditt selskap og ditt kundeforhold.
-        </p>
-      </header>
-
-      {actionData?.error && (
-        <div
-          role="alert"
-          className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-        >
-          {actionData.error}
-        </div>
-      )}
-
+    <AuthFormContainer
+      title="Logg inn"
+      description="Logg inn for å ta i bruk våre tjenester, administrer ditt selskap og ditt kundeforhold."
+      error={actionData?.error}
+      secondaryAction={
+        <>
+          <p className="text-center text-xs text-muted-foreground">Har du glemt ditt passord?</p>
+          <Link
+            to={ROUTES_MAP['auth.forgot-password'].href}
+            className="mt-2 block text-center text-sm font-medium text-foreground hover:underline"
+          >
+            Tilbakestill passordet ditt her →
+          </Link>
+        </>
+      }
+    >
       <Form method="post" className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="email">E-post</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            placeholder="din@e-post.no"
-            defaultValue={actionData?.values?.email}
-            required
-            disabled={isSubmitting}
-          />
-        </div>
+        <AuthFormField
+          id="email"
+          name="email"
+          label="E-post adresse"
+          type="email"
+          autoComplete="email"
+          placeholder="din@e-post.no"
+          defaultValue={actionData?.values?.email}
+          required
+          disabled={isSubmitting}
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="password">Passord</Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            disabled={isSubmitting}
-          />
-        </div>
+        <AuthFormField
+          id="password"
+          name="password"
+          label="Passord"
+          type="password"
+          autoComplete="current-password"
+          required
+          disabled={isSubmitting}
+        />
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? 'Logger inn…' : 'Logg inn'}
-        </Button>
+        <AuthFormButton isLoading={isSubmitting} loadingText="Logger inn…">
+          Logg inn
+        </AuthFormButton>
       </Form>
-
-      <p className="text-center text-sm text-muted-foreground">
-        Har du glemt ditt passord?{' '}
-        <Link to={ROUTES_MAP['auth.forgot-password'].href} className="text-primary hover:underline">
-          Tilbakestill passordet ditt her.
-        </Link>
-      </p>
-
-      <div className="text-center text-sm">
-        <Link to="/" className="text-primary hover:underline">
-          Tilbake til hovedsiden
-        </Link>
-      </div>
-    </div>
+    </AuthFormContainer>
   );
 }
