@@ -52,7 +52,7 @@ export const buildResponseData = async (request: Request, accessToken: string, f
   }
 
   let companySummary = undefined;
-  if (authPayload?.company) {
+  if (authPayload?.companyId) {
     const baseClient = createBaseClient({
       baseUrl: ENV.BASE_SERVICE_BASE_URL,
       token: accessToken,
@@ -60,12 +60,12 @@ export const buildResponseData = async (request: Request, accessToken: string, f
 
     try {
       const companyResponse = await baseClient.CompanyUserControllerService.CompanyUserControllerService.getCompany({
-        companyId: authPayload.company.companyId,
+        companyId: authPayload.companyId,
       });
       companySummary = companyResponse?.data;
     } catch (err) {
       logger.error('Failed to fetch company summary', {
-        companyId: authPayload.company.companyId,
+        companyId: authPayload.companyId,
         error: err instanceof Error ? err.message : String(err),
       });
     }

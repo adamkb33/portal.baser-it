@@ -9,14 +9,6 @@ export const AppointmentSessionStepId = {
 
 export type AppointmentSessionStepId = (typeof AppointmentSessionStepId)[keyof typeof AppointmentSessionStepId];
 
-export const CompanyProducts = {
-  BOOKING: 'BOOKING',
-  EVENT: 'EVENT',
-  TIMESHEET: 'TIMESHEET',
-} as const;
-
-export type CompanyProducts = (typeof CompanyProducts)[keyof typeof CompanyProducts];
-
 export const CompanyRoles = {
   ADMIN: 'ADMIN',
   EMPLOYEE: 'EMPLOYEE',

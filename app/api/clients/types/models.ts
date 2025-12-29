@@ -1,5 +1,5 @@
 // Models
-import type { AppointmentSessionStepId, CompanyProducts, DayOfWeek, Roles, UserRole } from './enums';
+import type { AppointmentSessionStepId, DayOfWeek, Products, Roles, UserRole } from './enums';
 
 export interface AcceptNewInviteDto {
     givenName: string;
@@ -18,7 +18,7 @@ export interface AddCompanyRoleDto {
  */
 export type AddProductToCompanyDto = {
     companyId: number;
-    products: CompanyProducts[];
+    products: Products[];
 }
 
 export interface AddressDto {
@@ -74,8 +74,7 @@ export interface AppointmentSessionStepDto {
 export interface AuthenticatedUserPayload {
     id: number;
     email: string;
-    roles: UserRole[];
-    company?: AuthUserCompany;
+    companyId?: number;
 }
 
 export interface AuthenticationTokenDto {
@@ -83,13 +82,6 @@ export interface AuthenticationTokenDto {
     accessTokenExpiresAt: number;
     refreshToken: string;
     refreshTokenExpiresAt: number;
-}
-
-export interface AuthUserCompany {
-    companyId: number;
-    companyOrgNum: string;
-    companyRoles: Roles[];
-    companyProducts: CompanyProducts[];
 }
 
 export interface BookingProfileDto {
@@ -287,17 +279,9 @@ export interface InviteUserDto {
 export interface JwtClaims {
     sub?: number;
     email?: string;
-    roles?: string[];
-    company?: JwtCompanyClaim;
+    companyId?: number;
     exp?: number;
     iat?: number;
-}
-
-export interface JwtCompanyClaim {
-    companyId?: number;
-    companyOrgNum: string;
-    companyRoles?: string[];
-    companyProducts?: string[];
 }
 
 export interface Link {
