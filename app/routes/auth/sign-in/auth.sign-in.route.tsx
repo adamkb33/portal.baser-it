@@ -1,31 +1,28 @@
-// auth.sign-in.route.tsx (refactored)
+// auth.sign-in.route.tsx
 import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.sign-in.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { OpenAPI } from '~/api/clients/base/OpenAPI';
-import { ENV } from '~/api/config/env';
 import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
-import { baseApi } from '~/lib/utils';
-import { toAuthTokens } from '../_utils/token.utils';
 import type { ApiClientError } from '~/api/clients/http';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
+import { AuthController } from '~/api/generated/identity';
 
 export async function action({ request }: Route.ActionArgs) {
-  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
-
   const formData = await request.formData();
   const email = String(formData.get('email'));
   const password = String(formData.get('password'));
 
   try {
-    const response = await baseApi().AuthControllerService.AuthControllerService.signIn({
-      requestBody: { email, password },
+    const response = await AuthController.signIn({
+      body: { email, password },
     });
 
-    if (!response.success || !response.data) {
+    const tokens = response.data?.data;
+
+    if (!tokens) {
       return data(
         {
           error: 'Ugyldig e-post eller passord',
@@ -34,8 +31,6 @@ export async function action({ request }: Route.ActionArgs) {
         { status: 400 },
       );
     }
-
-    const tokens = toAuthTokens(response.data);
 
     const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
       expires: new Date(tokens.accessTokenExpiresAt * 1000),

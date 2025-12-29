@@ -1,9 +1,14 @@
-import type { AuthenticatedUserPayload } from 'tmp/openapi/gen/base';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
 import { ENV } from '~/api/config/env';
-import { UserRole, type Roles, type CompanyProducts, type AuthenticationTokenDto } from '~/api/clients/types';
 import { redirect } from 'react-router';
+import type { JwtClaims, AuthenticationTokenDto } from '~/api/generated/identity';
+
+export interface AuthenticatedUserPayload {
+  id: number;
+  email: string;
+  companyId?: number;
+}
 
 export type UserSession = {
   user: AuthenticatedUserPayload;
@@ -22,13 +27,7 @@ export class AuthenticationError extends Error {
 
 interface JwtClaimsPayload extends JwtPayload {
   email?: string;
-  roles?: string[];
-  company?: {
-    companyId?: number;
-    companyOrgNum?: string;
-    companyRoles?: string[];
-    companyProducts?: string[];
-  };
+  companyId?: number;
 }
 
 export class AuthService {
@@ -73,47 +72,18 @@ export class AuthService {
   private mapToAuthPayload(claims: JwtClaimsPayload): AuthenticatedUserPayload {
     const id = this.parseIdentifier(claims.sub);
     const email = typeof claims.email === 'string' ? claims.email : '';
-    const roles = this.normalizeRoles(claims.roles);
+    const companyId = claims.companyId ? Number(claims.companyId) : undefined;
 
     return {
       id,
       email,
-      roles,
-      company: claims.company
-        ? {
-            companyId: claims.company.companyId ?? 0,
-            companyOrgNum: claims.company.companyOrgNum ?? '',
-            companyRoles: this.normalizeCompanyRoles(claims.company.companyRoles),
-            companyProducts: this.normalizeCompanyProducts(claims.company.companyProducts),
-          }
-        : undefined,
+      companyId,
     };
   }
 
   private parseIdentifier(sub?: string): number {
     const parsed = Number(sub ?? 0);
     return Number.isFinite(parsed) ? parsed : 0;
-  }
-
-  private normalizeRoles(roles?: string[]): UserRole[] {
-    if (!Array.isArray(roles)) {
-      return [];
-    }
-    return roles.filter((role): role is UserRole => typeof role === 'string') as UserRole[];
-  }
-
-  private normalizeCompanyRoles(roles?: string[]): Roles[] {
-    if (!Array.isArray(roles)) {
-      return [];
-    }
-    return roles.filter((role): role is Roles => typeof role === 'string') as Roles[];
-  }
-
-  private normalizeCompanyProducts(products?: string[]): CompanyProducts[] {
-    if (!Array.isArray(products)) {
-      return [];
-    }
-    return products.filter((product): product is CompanyProducts => typeof product === 'string') as CompanyProducts[];
   }
 
   async getUserSession(request: Request): Promise<UserSession> {
@@ -201,18 +171,18 @@ export class AuthService {
 
     try {
       const payload = this.verifyAndDecodeToken(accessToken);
-      return payload.company?.companyId;
+      return payload.companyId;
     } catch {
       return undefined;
     }
   }
 
-  isCompanyUser(user: AuthenticatedUserPayload): boolean {
-    return user?.roles.includes(UserRole.COMPANY_USER) ?? false;
+  hasCompanyContext(user: AuthenticatedUserPayload): boolean {
+    return user.companyId !== undefined;
   }
 
   needsCompanyContext(user: AuthenticatedUserPayload): boolean {
-    return this.isCompanyUser(user) && !user?.company;
+    return !this.hasCompanyContext(user);
   }
 }
 

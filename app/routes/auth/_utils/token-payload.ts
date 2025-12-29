@@ -1,5 +1,4 @@
-import type { JwtClaims } from 'tmp/openapi/gen/base';
-import type { AuthenticatedUserPayload, UserRole, Roles, CompanyProducts } from '~/api/clients/types';
+import type { AuthenticatedUserPayload, JwtClaims } from '~/api/generated/identity';
 
 export const toJwtClaims = (accessToken: string): JwtClaims => {
   const parts = accessToken.split('.');
@@ -9,11 +8,8 @@ export const toJwtClaims = (accessToken: string): JwtClaims => {
   }
 
   const payload = parts[1];
-
   const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-
   const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
-
   const claims = JSON.parse(jsonPayload) as JwtClaims;
 
   return claims;
@@ -29,22 +25,10 @@ export function toAuthPayload(accessToken?: string): AuthenticatedUserPayload | 
     return null;
   }
 
-  const id = parseIdentifier(claims);
-  const email = typeof claims.email === 'string' ? claims.email : '';
-  const roles = normalizeRoles(claims.roles);
-
   return {
-    id,
-    email,
-    roles,
-    company: claims.company
-      ? {
-          companyId: claims.company.companyId ?? 0,
-          companyOrgNum: claims.company.companyOrgNum,
-          companyRoles: normalizeCompanyRoles(claims.company.companyRoles),
-          companyProducts: normalizeCompanyProducts(claims.company.companyProducts),
-        }
-      : undefined,
+    id: Number(claims.sub) || 0,
+    email: claims.email || '',
+    companyId: claims.companyId ? Number(claims.companyId) : undefined,
   };
 }
 
@@ -99,30 +83,3 @@ const padBase64 = (value: string) => {
   const padding = 4 - remainder;
   return value + '='.repeat(padding);
 };
-
-function parseIdentifier(claims: JwtClaims): number {
-  const raw = claims.sub ?? 0;
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function normalizeRoles(roles: JwtClaims['roles']): UserRole[] {
-  if (!Array.isArray(roles)) {
-    return [];
-  }
-  return roles.filter((role): role is UserRole => typeof role === 'string') as UserRole[];
-}
-
-function normalizeCompanyRoles(roles?: string[]): Roles[] {
-  if (!Array.isArray(roles)) {
-    return [];
-  }
-  return roles.filter((role): role is Roles => typeof role === 'string') as Roles[];
-}
-
-function normalizeCompanyProducts(products?: string[]): CompanyProducts[] {
-  if (!Array.isArray(products)) {
-    return [];
-  }
-  return products.filter((product): product is CompanyProducts => typeof product === 'string') as CompanyProducts[];
-}

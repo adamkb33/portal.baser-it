@@ -10,6 +10,7 @@ import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import type { RootOutletContext } from '~/root';
 import { PageHeader } from './_components/page-header';
+import { PublicCompanyController } from '~/api/generated/identity';
 
 export type CompanyIndexLoaderResponse = {
   brregResponse?: BrregEnhetResponse;
@@ -18,12 +19,22 @@ export type CompanyIndexLoaderResponse = {
 export async function loader({ request }: LoaderFunctionArgs) {
   const auth = await getAuthPayloadFromRequest(request);
 
-  if (!auth || !auth.company) {
+  if (!auth || !auth.companyId) {
     return redirect(ROUTES_MAP['user.company-context'].href);
   }
 
+  const company = await PublicCompanyController.publicGetCompanyById({
+    path: {
+      companyId: auth?.companyId ?? 0,
+    },
+  });
+
+  if (!company.data?.data?.orgNumber) {
+    throw new Error('Company org number is missing');
+  }
+
   const brregResponse = await axios.get(
-    `https://data.brreg.no/enhetsregisteret/api/enheter/${auth.company.companyOrgNum}`,
+    `https://data.brreg.no/enhetsregisteret/api/enheter/${company.data?.data?.orgNumber}`,
   );
 
   return data<CompanyIndexLoaderResponse>({

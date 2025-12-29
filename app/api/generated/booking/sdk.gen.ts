@@ -298,6 +298,7 @@ export class Actuator {
      */
     public static links<ThrowOnError extends boolean = false>(options?: Options<LinksData, ThrowOnError>) {
         return (options?.client ?? client).get<LinksResponses, unknown, ThrowOnError>({
+            responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/actuator',
             ...options
@@ -309,6 +310,7 @@ export class Actuator {
      */
     public static info<ThrowOnError extends boolean = false>(options?: Options<InfoData, ThrowOnError>) {
         return (options?.client ?? client).get<InfoResponses, unknown, ThrowOnError>({
+            responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/actuator/info',
             ...options
@@ -320,6 +322,7 @@ export class Actuator {
      */
     public static health<ThrowOnError extends boolean = false>(options?: Options<HealthData, ThrowOnError>) {
         return (options?.client ?? client).get<HealthResponses, unknown, ThrowOnError>({
+            responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/actuator/health',
             ...options

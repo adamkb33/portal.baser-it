@@ -1,93 +1,72 @@
 import { data, Form, useLoaderData, type LoaderFunctionArgs, type ActionFunctionArgs, redirect } from 'react-router';
-import { createBaseClient, type CompanySummaryDto } from '~/api/clients/base';
-import { type ApiClientError } from '~/api/clients/http';
-import { ENV } from '~/api/config/env';
 import { CompanyContextSummaryCard } from '~/routes/user/company-context/_components/company-context-summary-card';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
-import { getAccessTokenFromRequest } from '~/lib/auth.utils';
+import { AuthController, type CompanySummaryDto } from '~/api/generated/identity';
+import { withAuth } from '~/api/utils/with-auth';
+import type { Route } from './+types/user.company-context.route';
 
-export type LoaderResponse = {
-  companyContexts?: CompanySummaryDto[];
-};
+export async function loader({ request }: Route.LoaderArgs) {
+  return withAuth(request, async () => {
+    try {
+      const response = await AuthController.getCompanyContexts();
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const cookieHeader = request.headers.get('Cookie');
-  const accessToken = await accessTokenCookie.parse(cookieHeader);
-
-  const baseApi = createBaseClient({
-    baseUrl: ENV.BASE_SERVICE_BASE_URL,
-    token: accessToken,
-  });
-
-  try {
-    const response = await baseApi.AuthControllerService.AuthControllerService.getCompanyContexts();
-
-    return data<LoaderResponse>({
-      companyContexts: response.data,
-    });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
+      return data({
+        companyContexts: response.data?.data,
+      });
+    } catch (error: any) {
+      console.error('[company-context] Loader error:', error);
+      return data({ companyContexts: [] });
     }
-
-    throw error;
-  }
+  });
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const companyId = formData.get('companyId');
   const orgNumber = formData.get('orgNumber');
 
   if (!orgNumber || !companyId) {
-    return { error: 'Ikke valgt' };
+    return data({ error: 'Ikke valgt' }, { status: 400 });
   }
 
-  const accessToken = await getAccessTokenFromRequest(request);
+  return withAuth(request, async () => {
+    try {
+      const response = await AuthController.companySignIn({
+        body: {
+          companyId: parseInt(companyId.toString()),
+        },
+      });
 
-  const baseClient = createBaseClient({
-    baseUrl: ENV.BASE_SERVICE_BASE_URL,
-    token: accessToken,
+      const payload = response.data?.data;
+
+      if (!payload) {
+        return data({ error: 'En feil har skjedd ved innlogging til selskap' }, { status: 400 });
+      }
+
+      const accessCookie = await accessTokenCookie.serialize(payload.accessToken, {
+        expires: new Date(payload.accessTokenExpiresAt * 1000),
+      });
+      const refreshCookie = await refreshTokenCookie.serialize(payload.refreshToken, {
+        expires: new Date(payload.refreshTokenExpiresAt * 1000),
+      });
+
+      return redirect('/', {
+        headers: [
+          ['Set-Cookie', accessCookie],
+          ['Set-Cookie', refreshCookie],
+        ],
+      });
+    } catch (error: any) {
+      console.error('[company-context] Action error:', error);
+      return data(
+        { error: error?.response?.data?.message || 'Noe gikk galt. Prøv igjen.' },
+        { status: error?.response?.status || 400 },
+      );
+    }
   });
-
-  try {
-    const response = await baseClient.AuthControllerService.AuthControllerService.companySignIn({
-      requestBody: {
-        companyId: parseInt(companyId.toString()),
-      },
-    });
-
-    const payload = response.data;
-    if (!payload) {
-      return { error: 'En feil har skjedd ved innlogging til selskap' };
-    }
-
-    const accessCookie = await accessTokenCookie.serialize(payload.accessToken, {
-      expires: new Date(payload.accessTokenExpiresAt * 1000),
-    });
-    const refreshCookie = await refreshTokenCookie.serialize(payload.refreshToken, {
-      expires: new Date(payload.refreshTokenExpiresAt * 1000),
-    });
-
-    return redirect('/', {
-      headers: [
-        ['Set-Cookie', accessCookie],
-        ['Set-Cookie', refreshCookie],
-      ],
-    });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
-  }
 }
 
-export default function CompanyContextPage() {
-  const loaderData = useLoaderData<LoaderResponse>();
+export default function CompanyContextPage({ loaderData }: Route.ComponentProps) {
   const companies = loaderData?.companyContexts || [];
 
   if (!companies.length) {

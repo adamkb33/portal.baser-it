@@ -10,28 +10,17 @@ import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 import { Sidebar } from './routes/_components/sidebar';
 import { MobileSidebar } from './routes/_components/mobile-sidebar';
 import type { Route } from './+types/root';
-import { OpenAPI } from './api/clients/http';
-import { ENV } from './api/config/env';
 import { authService, AuthenticationError } from './lib/auth-service';
 import { logger } from './lib/logger';
 import { defaultResponse, refreshAndBuildResponse, buildResponseData } from './routes/_features/root.loader';
 import { getFlashMessage } from './routes/company/_lib/flash-message.server';
-import { PublicCompanyContactController, PublicCompanyController } from './api/generated/identity';
+import { getAuthPayloadFromRequest } from './lib/auth.utils';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
+    const auth = await getAuthPayloadFromRequest(request);
     const { message: flashMessage } = await getFlashMessage(request);
-    OpenAPI.BASE = ENV.GATEWAY_URL;
     const { accessToken, refreshToken } = await authService.getTokensFromRequest(request);
-
-    const response = await PublicCompanyController.getCompanyUsersByIds({
-      body: {
-        companyId: 1,
-        userIds: [1, 2, 3],
-      },
-    });
-
-    console.log(response);
 
     if (!accessToken && !refreshToken) {
       return await defaultResponse(flashMessage);

@@ -1,0 +1,24 @@
+import { client as identityClient } from '~/api/generated/identity/client.gen';
+import { client as bookingClient } from '~/api/generated/booking/client.gen';
+import { accessTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
+
+export async function withAuth<T>(request: Request, callback: () => Promise<T>): Promise<T> {
+  const cookieHeader = request.headers.get('Cookie');
+  const accessToken = await accessTokenCookie.parse(cookieHeader);
+
+  if (accessToken) {
+    identityClient.setConfig({
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    bookingClient.setConfig({
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+  }
+
+  return callback();
+}
