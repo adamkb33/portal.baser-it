@@ -12,10 +12,14 @@ export const refreshAndBuildResponse = async (
   flashMessage: FlashMessage | null,
 ) => {
   try {
+    const baseClient = createBaseClient({
+      baseUrl: ENV.GATEWAY_URL,
+    });
+
     const { accessToken } = await authService.getTokensFromRequest(request);
     const companyId = authService.getCompanyIdFromToken(accessToken ?? '');
 
-    const response = await AuthControllerService.refresh({
+    const response = await baseClient.AuthControllerService.AuthControllerService.refresh({
       companyId,
       requestBody: { refreshToken },
     });
@@ -39,22 +43,10 @@ export const buildResponseData = async (request: Request, accessToken: string, f
   const navigation = createNavigation(authPayload);
   const url = new URL(request.url);
 
-  const isCompanyUser = authPayload?.roles.includes(UserRole.COMPANY_USER);
-  if (!authPayload?.company && isCompanyUser) {
-    if (url.pathname === ROUTES_MAP['user.company-context'].href) {
-      return {
-        user: authPayload,
-        userNavigation: navigation,
-        companyContext: null,
-        flashMessage,
-      };
-    }
-  }
-
   let companySummary = undefined;
   if (authPayload?.companyId) {
     const baseClient = createBaseClient({
-      baseUrl: ENV.BASE_SERVICE_BASE_URL,
+      baseUrl: ENV.GATEWAY_URL,
       token: accessToken,
     });
 

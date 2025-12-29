@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, type LinksFunction } from 'react-router';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, type LinksFunction } from 'react-router';
 import { Menu } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 
@@ -16,14 +16,22 @@ import { authService, AuthenticationError } from './lib/auth-service';
 import { logger } from './lib/logger';
 import { defaultResponse, refreshAndBuildResponse, buildResponseData } from './routes/_features/root.loader';
 import { getFlashMessage } from './routes/company/_lib/flash-message.server';
-import { FlashMessageBanner } from './routes/company/_components/flash-message-banner';
-import { BottomNav } from './routes/_components/bottom-nav';
+import { PublicCompanyContactController, PublicCompanyController } from './api/generated/identity';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const { message: flashMessage } = await getFlashMessage(request);
-    OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
+    OpenAPI.BASE = ENV.GATEWAY_URL;
     const { accessToken, refreshToken } = await authService.getTokensFromRequest(request);
+
+    const response = await PublicCompanyController.getCompanyUsersByIds({
+      body: {
+        companyId: 1,
+        userIds: [1, 2, 3],
+      },
+    });
+
+    console.log(response);
 
     if (!accessToken && !refreshToken) {
       return await defaultResponse(flashMessage);

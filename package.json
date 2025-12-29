@@ -8,7 +8,8 @@
     "dev": "npx kill-port 5173 && react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
-    "gen:api": "tsx scripts/openapi/generate.ts"
+    "gen:api": "tsx scripts/openapi/generate.ts",
+    "generate:api": "openapi-ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -46,6 +47,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.89.2",
     "@react-router/dev": "^7.9.2",
     "@tailwindcss/vite": "^4.1.13",
     "@types/jsonwebtoken": "^9.0.10",
