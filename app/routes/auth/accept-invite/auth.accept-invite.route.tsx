@@ -11,6 +11,7 @@ import type { ApiClientError } from '~/api/clients/http';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
+import { redirectWithInfo, redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -63,12 +64,10 @@ export async function action({ request }: Route.ActionArgs) {
       expires: new Date(tokens.refreshTokenExpiresAt * 1000),
     });
 
-    return redirect('/', {
-      headers: [
-        ['Set-Cookie', accessCookie],
-        ['Set-Cookie', refreshCookie],
-      ],
-    });
+    return redirectWithSuccess(request, '/', 'Kontoen din er opprettet', [
+      ['Set-Cookie', accessCookie],
+      ['Set-Cookie', refreshCookie],
+    ]);
   } catch (error: any) {
     console.error('[accept-invite] Error:', error);
 

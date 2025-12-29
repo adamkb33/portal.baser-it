@@ -33,26 +33,41 @@ export async function getFlashMessage(request: Request) {
   };
 }
 
-export async function redirectWithFlash(request: Request, url: string, message: FlashMessage) {
-  return redirect(url, {
-    headers: {
-      'Set-Cookie': await setFlashMessage(request, message),
-    },
-  });
+export async function redirectWithFlash(
+  request: Request,
+  url: string,
+  message: FlashMessage,
+  additionalHeaders?: HeadersInit,
+) {
+  const flashCookie = await setFlashMessage(request, message);
+  const headers = new Headers(additionalHeaders);
+  headers.append('Set-Cookie', flashCookie);
+
+  return redirect(url, { headers });
 }
 
-export async function redirectWithSuccess(request: Request, url: string, text: string) {
-  return redirectWithFlash(request, url, { type: 'success', text });
+export async function redirectWithSuccess(
+  request: Request,
+  url: string,
+  text: string,
+  additionalHeaders?: HeadersInit,
+) {
+  return redirectWithFlash(request, url, { type: 'success', text }, additionalHeaders);
 }
 
-export async function redirectWithError(request: Request, url: string, text: string) {
-  return redirectWithFlash(request, url, { type: 'error', text });
+export async function redirectWithError(request: Request, url: string, text: string, additionalHeaders?: HeadersInit) {
+  return redirectWithFlash(request, url, { type: 'error', text }, additionalHeaders);
 }
 
-export async function redirectWithInfo(request: Request, url: string, text: string) {
-  return redirectWithFlash(request, url, { type: 'info', text });
+export async function redirectWithInfo(request: Request, url: string, text: string, additionalHeaders?: HeadersInit) {
+  return redirectWithFlash(request, url, { type: 'info', text }, additionalHeaders);
 }
 
-export async function redirectWithWarning(request: Request, url: string, text: string) {
-  return redirectWithFlash(request, url, { type: 'warning', text });
+export async function redirectWithWarning(
+  request: Request,
+  url: string,
+  text: string,
+  additionalHeaders?: HeadersInit,
+) {
+  return redirectWithFlash(request, url, { type: 'warning', text }, additionalHeaders);
 }

@@ -44,13 +44,13 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
   };
 
   return (
-    <li role="listitem">
+    <li role="listitem " className="space-y-1">
       <Link
         to={item.href}
         aria-current={isActive ? 'page' : undefined}
         style={indentStyle}
         className={`
-          group flex items-center gap-2 px-4 py-2 text-xs font-medium uppercase tracking-[0.06em]
+          group flex items-center gap-2 px-4 py-2 text-sm font-medium uppercase tracking-[0.06em]
           border-l-2 transition-colors duration-150
           focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
           ${

@@ -74,7 +74,7 @@ export default function CompanyBookingLayout({ loaderData }: Route.ComponentProp
   return (
     <>
       {showWarning && (
-        <div className="border-2 border-foreground bg-primary/10 p-5 sm:p-6 mb-4 relative">
+        <div className="border border-foreground bg-primary/10 p-5 sm:p-6 mb-4 relative">
           {/* Progress indicator */}
           <div className="absolute top-0 left-0 h-1 bg-primary" style={{ width: `${completionPercentage}%` }} />
 

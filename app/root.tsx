@@ -195,24 +195,6 @@ export default function App({ loaderData }: Route.ComponentProps) {
         )}
 
         <section className="relative z-10 overflow-auto border-r border-border p-4 sm:p-5 lg:col-span-8 bg-background/70">
-          {/* Blurred shape background */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-            {/* Primary purple blob - top right */}
-            <div className="absolute -right-32 -top-32 h-128 w-128 rounded-full bg-primary/20 blur-3xl" />
-            <div className="absolute -left-32 -bottom-32 h-128 w-128 rounded-full bg-primary/20 blur-3xl" />
-
-            {/* Secondary accent blob - bottom left */}
-            <div
-              className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-primary/10 blur-3xl"
-              style={{
-                filter: 'blur(96px)',
-              }}
-            />
-
-            {/* Subtle tertiary blob - center */}
-            <div className="absolute left-1/2 top-1/2 h-128 w-128 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted/30 blur-3xl" />
-          </div>
-
           <Outlet
             context={{
               userNav,
