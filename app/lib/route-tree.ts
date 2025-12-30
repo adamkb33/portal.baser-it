@@ -459,6 +459,28 @@ export const API_ROUTES_TREE = [
                 id: 'company.booking.profile.create-or-update',
                 url: '/company/booking/profile/create-or-update',
               },
+              {
+                id: 'company.booking.profile.daily-schedule',
+                url: '/company/booking/profile/daily-schedule',
+                children: [
+                  {
+                    id: 'company.booking.profile.daily-schedule.create-or-update',
+                    url: '/company/booking/profile/daily-schedule/create-or-update',
+                  },
+                  {
+                    id: 'company.booking.profile.daily-schedule.create-bulk',
+                    url: '/company/booking/profile/daily-schedule/create-bulk',
+                  },
+                  {
+                    id: 'company.booking.profile.daily-schedule.create-default',
+                    url: '/company/booking/profile/daily-schedule/create-default',
+                  },
+                  {
+                    id: 'company.booking.profile.daily-schedule.delete',
+                    url: '/company/booking/profile/daily-schedule/delete',
+                  },
+                ],
+              },
             ],
           },
         ],

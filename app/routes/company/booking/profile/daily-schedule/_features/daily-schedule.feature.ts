@@ -1,11 +1,8 @@
-import { data, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
+import { data, redirect, type ActionFunctionArgs } from 'react-router';
 import type { DailyScheduleDto } from 'tmp/openapi/gen/booking';
 import { createBookingClient, DayOfWeek } from '~/api/clients/booking';
-import type { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { getAccessTokenFromRequest } from '~/lib/auth.utils';
-import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 
 export type BookingDailyScheduleLoaderArgs = {
   dailySchedules: DailyScheduleDto[];
