@@ -447,10 +447,25 @@ export const API_ROUTES_TREE = [
           },
         ],
       },
+      {
+        id: 'company.booking',
+        url: '/company/booking',
+        children: [
+          {
+            id: 'company.booking.profile',
+            url: '/company/booking/profile',
+            children: [
+              {
+                id: 'company.booking.profile.create-or-update',
+                url: '/company/booking/profile/create-or-update',
+              },
+            ],
+          },
+        ],
+      },
     ],
   },
 ];
-
 export const API_ROUTES_MAP: Record<string, { id: string; url: string }> = (() => {
   const map: Record<string, { id: string; url: string }> = {};
 

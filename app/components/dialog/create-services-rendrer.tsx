@@ -1,12 +1,8 @@
+import type { ServiceDto } from '~/api/generated/booking';
 import type { FormFieldRenderProps } from '~/components/dialog/form-dialog';
 
-interface Service {
-  id: number;
-  name: string;
-}
-
 interface ServicesSelectionRendererProps {
-  services: Service[];
+  services: ServiceDto[];
   helperText?: string;
   maxHeight?: string;
   emptyText?: string;

@@ -2,29 +2,44 @@
 import { useFetcher, useLoaderData } from 'react-router';
 import { useState, useEffect } from 'react';
 import { FormDialog } from '~/components/dialog/form-dialog';
-import { ErrorMessage } from '~/components/errors/error-messages';
-import { UserProfileCard } from '~/components/cards/user-card';
 import { fileToBase64 } from '~/lib/file.utils';
 import { createImageUploadRenderer } from '~/components/dialog/create-image-upload-renderer';
 import { createServicesSelectionRenderer } from '~/components/dialog/create-services-rendrer';
 
-import {
-  profileLoader,
-  profileAction,
-  actions,
-  type BookingProfileLoaderData,
-} from '../../../company/booking/profile/_features/profile.feature';
 import { EmptyBookingProfile } from '../../../company/booking/profile/_components/booking-profile-placeholder';
 import { BookingProfileCard } from '../../../company/booking/profile/_components/booking-profile-card';
 import { PageHeader } from '../../../company/booking/profile/_components/page-header';
+import type { Route } from './+types/company.booking.profile.route';
+import { BookingProfileController, ServiceController } from '~/api/generated/booking';
+import { API_ROUTES_MAP } from '~/lib/route-tree';
+import { withAuth } from '~/api/utils/with-auth';
 
-export const loader = profileLoader;
-export const action = profileAction;
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    const [bookingProfileResponse, servicesResponse] = await withAuth(request, async () => {
+      return Promise.all([BookingProfileController.getBookingProfile(), ServiceController.getServices()]);
+    });
 
-export default function BookingCompanyUserProfile() {
+    return {
+      bookingProfile: bookingProfileResponse.data,
+      services: servicesResponse.data?.data?.content ?? [],
+    };
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+
+    return {
+      bookingProfile: undefined,
+      services: [],
+      error: error?.message || 'Kunne ikke hente bookingprofil',
+    };
+  }
+}
+
+export default function BookingCompanyUserProfile({ loaderData }: Route.ComponentProps) {
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
 
-  const { bookingProfile, services = [], error } = useLoaderData() as BookingProfileLoaderData;
+  const { bookingProfile, services = [] } = loaderData;
+
   const [createOrUpdateDialogOpen, setCreateOrUpdateBookingProfileDialogOpen] = useState(false);
   const [createOrUpdateDialogForm, setCreateOrUpdateDialogForm] = useState({
     description: '',
@@ -37,7 +52,7 @@ export default function BookingCompanyUserProfile() {
       setCreateOrUpdateDialogForm({
         description: bookingProfile.description || '',
         services: bookingProfile.services?.map((s: any) => s.id) || [],
-        image: null, // New upload starts as null
+        image: null,
       });
     } else if (createOrUpdateDialogOpen && !bookingProfile) {
       setCreateOrUpdateDialogForm({
@@ -57,7 +72,6 @@ export default function BookingCompanyUserProfile() {
 
     try {
       const formData = new FormData();
-      formData.append('actionType', actions.GET_OR_CREATE_BOOKING_PROFILE);
       formData.append('description', createOrUpdateDialogForm.description);
 
       for (const serviceId of createOrUpdateDialogForm.services) {
@@ -74,6 +88,7 @@ export default function BookingCompanyUserProfile() {
 
       fetcher.submit(formData, {
         method: 'post',
+        action: API_ROUTES_MAP['company.booking.profile.update'].url,
       });
       setCreateOrUpdateBookingProfileDialogOpen(false);
     } catch (error) {
