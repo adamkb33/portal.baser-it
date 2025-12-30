@@ -1,11 +1,9 @@
 // routes/api/company/admin/employees/invite.api-route.ts
 import { redirect, type ActionFunctionArgs } from 'react-router';
-import { createBaseClient } from '~/api/clients/base';
-import { ENV } from '~/api/config/env';
-import { getUserSession } from '~/lib/auth.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import type { ApiClientError } from '~/api/clients/http';
 import { redirectWithError, redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
+import { AdminCompanyController } from '~/api/generated/identity';
+import { withAuth } from '~/api/utils/with-auth';
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
@@ -17,28 +15,26 @@ export async function action({ request }: ActionFunctionArgs) {
       return redirectWithError(request, ROUTES_MAP['company.admin.employees'].href, 'Manglende skjemadata');
     }
 
-    let roles;
+    let roles: Array<'ADMIN' | 'EMPLOYEE'>;
     try {
       roles = JSON.parse(rolesJson.toString());
     } catch {
       return redirectWithError(request, ROUTES_MAP['company.admin.employees'].href, 'Ugyldig rolledata');
     }
 
-    const { user, accessToken } = await getUserSession(request);
-    if (!user || !user.company) {
-      return redirect('/');
-    }
-
-    const baseClient = createBaseClient({ baseUrl: ENV.BASE_SERVICE_BASE_URL, token: accessToken });
-
-    await baseClient.AdminCompanyControllerService.AdminCompanyControllerService.inviteCompanyUser({
-      requestBody: { email: email.toString(), roles },
+    await withAuth(request, async () => {
+      await AdminCompanyController.inviteCompanyUser({
+        body: {
+          email: email.toString(),
+          roles,
+        },
+      });
     });
 
     return redirectWithSuccess(request, ROUTES_MAP['company.admin.employees'].href, 'Invitasjon sendt');
   } catch (error: any) {
     console.error(error);
-    const errorMessage = (error as ApiClientError)?.body?.message || 'Kunne ikke invitere bruker';
+    const errorMessage = error?.message || 'Kunne ikke invitere bruker';
     return redirectWithError(request, ROUTES_MAP['company.admin.employees'].href, errorMessage);
   }
 }

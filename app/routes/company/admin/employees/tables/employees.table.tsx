@@ -1,7 +1,6 @@
 // routes/company/admin/employees/tables/employees.table.tsx
 import { useState } from 'react';
 import { useSubmit, useNavigate, useSearchParams } from 'react-router';
-import type { CompanyUserDto } from 'tmp/openapi/gen/base';
 import { Button } from '~/components/ui/button';
 import { TableCell, TableRow } from '~/components/ui/table';
 import { Pen } from 'lucide-react';
@@ -10,6 +9,7 @@ import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { EditEmployeeForm } from '../forms/edit-employee.form-dialog';
 import { ServerPaginatedTable } from '~/components/table/server-side-paginated.data-table';
+import type { CompanyUserDto } from '~/api/generated/identity';
 
 type EmployeesTableProps = {
   users: CompanyUserDto[];
@@ -87,7 +87,7 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
           <TableRow>
             <TableCell className="font-medium">{formatName(user)}</TableCell>
             <TableCell>{user.email}</TableCell>
-            <TableCell>{formatRoles(user.roles)}</TableCell>
+            <TableCell>{formatRoles(user.companyRoles)}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
                 <Button variant="outline" size="sm" onClick={() => setEditingUser(user)}>

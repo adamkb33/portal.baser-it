@@ -1,6 +1,3 @@
-import type { AuthenticatedUserPayload } from '@/api/clients/base';
-import { Roles, UserRole } from '../api/clients/types';
-
 export enum Access {
   PUBLIC = 'PUBLIC',
   NOT_AUTHENTICATED = 'NOT_AUTHENTICATED',
@@ -23,6 +20,17 @@ export enum RoutePlaceMent {
   FOOTER = 'FOOTER',
 }
 
+export enum UserRole {
+  SYSTEM_ADMIN = 'SYSTEM_ADMIN',
+  USER = 'USER',
+  COMPANY_USER = 'COMPANY_USER',
+}
+
+export enum CompanyRole {
+  ADMIN = 'ADMIN',
+  EMPLOYEE = 'EMPLOYEE',
+}
+
 import {
   Calendar,
   Users,
@@ -40,6 +48,7 @@ import {
   UserPlus,
   type LucideIcon,
 } from 'lucide-react';
+import type { CompanyDto, CompanyUserDto } from '~/api/generated/identity';
 
 export type RouteBranch = {
   id: string;
@@ -50,7 +59,7 @@ export type RouteBranch = {
   hidden?: boolean;
   category: BrachCategory;
   userRoles?: UserRole[];
-  companyRoles?: Roles[];
+  companyRoles?: CompanyRole[];
   icon?: LucideIcon;
   children?: RouteBranch[];
 };
@@ -145,7 +154,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     category: BrachCategory.COMPANY,
     placement: RoutePlaceMent.SIDEBAR,
     accessType: Access.ROLE,
-    companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+    companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
     icon: Building2,
     children: [
       {
@@ -155,7 +164,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         category: BrachCategory.NONE,
         hidden: true,
         accessType: Access.AUTHENTICATED,
-        companyRoles: [Roles.ADMIN],
+        companyRoles: [CompanyRole.ADMIN],
       },
       {
         id: 'company.admin',
@@ -163,7 +172,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         label: 'Selskap administrasjon',
         category: BrachCategory.NONE,
         accessType: Access.AUTHENTICATED,
-        companyRoles: [Roles.ADMIN],
+        companyRoles: [CompanyRole.ADMIN],
         icon: Settings,
         children: [
           {
@@ -173,7 +182,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             label: 'Instillinger',
             category: BrachCategory.COMPANY,
             accessType: Access.AUTHENTICATED,
-            companyRoles: [Roles.ADMIN],
+            companyRoles: [CompanyRole.ADMIN],
             icon: Settings,
           },
           {
@@ -182,7 +191,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             label: 'Ansatte',
             category: BrachCategory.COMPANY,
             accessType: Access.AUTHENTICATED,
-            companyRoles: [Roles.ADMIN],
+            companyRoles: [CompanyRole.ADMIN],
             icon: Users,
           },
           {
@@ -191,7 +200,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             label: 'Kontakter',
             category: BrachCategory.COMPANY,
             accessType: Access.AUTHENTICATED,
-            companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+            companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
             icon: Users,
           },
         ],
@@ -203,7 +212,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         category: BrachCategory.COMPANY,
         placement: RoutePlaceMent.SIDEBAR,
         accessType: Access.PRODUCT,
-        companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+        companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
         icon: Calendar,
         children: [
           {
@@ -212,7 +221,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             label: 'Min profil',
             category: BrachCategory.COMPANY,
             accessType: Access.PRODUCT,
-            companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+            companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
             icon: UserCircle,
             children: [
               {
@@ -221,7 +230,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                 label: 'Timeplan',
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
-                companyRoles: [Roles.ADMIN, Roles.EMPLOYEE],
+                companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
                 icon: Clock,
               },
             ],
@@ -232,7 +241,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             label: 'Administrasjon',
             category: BrachCategory.COMPANY,
             accessType: Access.PRODUCT,
-            companyRoles: [Roles.ADMIN],
+            companyRoles: [CompanyRole.ADMIN],
             icon: Settings,
             children: [
               {
@@ -242,7 +251,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                 hidden: true,
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
-                companyRoles: [Roles.ADMIN],
+                companyRoles: [CompanyRole.ADMIN],
                 icon: Settings,
               },
               {
@@ -251,7 +260,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                 label: 'Tjeneste grupper',
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
-                companyRoles: [Roles.ADMIN],
+                companyRoles: [CompanyRole.ADMIN],
                 icon: FolderKanban,
                 children: [
                   {
@@ -260,7 +269,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                     label: 'Tjenester',
                     category: BrachCategory.COMPANY,
                     accessType: Access.PRODUCT,
-                    companyRoles: [Roles.ADMIN],
+                    companyRoles: [CompanyRole.ADMIN],
                     icon: Briefcase,
                   },
                 ],
@@ -271,7 +280,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                 label: 'Time bestillinger',
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
-                companyRoles: [Roles.ADMIN],
+                companyRoles: [CompanyRole.ADMIN],
                 icon: ClipboardList,
                 children: [
                   {
@@ -280,7 +289,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                     label: 'Bestill ny time',
                     category: BrachCategory.COMPANY,
                     accessType: Access.PRODUCT,
-                    companyRoles: [Roles.ADMIN],
+                    companyRoles: [CompanyRole.ADMIN],
                     icon: Calendar,
                   },
                 ],
@@ -480,48 +489,43 @@ export const ROUTES_MAP: Record<string, { id: string; href: string }> = (() => {
 
 export type UserNavigation = Record<RoutePlaceMent, RouteBranch[]>;
 
-export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNavigation => {
+export const createNavigation = (user?: CompanyUserDto | null, company?: CompanyDto | null): UserNavigation => {
   const hasAccess = (branch: RouteBranch): boolean => {
-    // Public routes are always accessible
     if (branch.accessType === Access.PUBLIC) {
       return true;
     }
 
-    // Not authenticated routes only for logged out users
     if (branch.accessType === Access.NOT_AUTHENTICATED) {
       return !user;
     }
 
-    // All other access types require authentication
     if (!user) {
       return false;
     }
 
-    // Check user roles if specified
     if (branch.userRoles && branch.userRoles.length > 0) {
-      if (!branch.userRoles.some((role) => user.roles.includes(role))) {
+      if (!branch.userRoles.some((role) => user.userRoles.includes(role))) {
         return false;
       }
     }
 
-    // Check company roles if specified
     if (branch.companyRoles && branch.companyRoles.length > 0) {
-      if (!user.company) {
+      if (!company) {
         return false;
       }
-      if (!branch.companyRoles.some((role) => user.company?.companyRoles.includes(role))) {
+      if (!branch.companyRoles.some((role) => user.companyRoles.includes(role))) {
         return false;
       }
     }
 
     // Check product access
     if (branch.accessType === Access.PRODUCT) {
-      if (!user.company) {
+      if (!company) {
         return false;
       }
 
       const routeParts = branch.id.split('.');
-      let productName = '';
+      let productName: 'BOOKING' | 'EVENT' | 'TIMESHEET' | '' = '';
 
       if (routeParts.includes('booking')) {
         productName = 'BOOKING';
@@ -535,13 +539,13 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
         return false;
       }
 
-      const hasProduct = user.company.companyProducts.some((product) => product === productName);
+      const hasProduct = company.products.includes(productName);
       if (!hasProduct) {
         return false;
       }
 
       if (branch.companyRoles && branch.companyRoles.length > 0) {
-        if (!branch.companyRoles.some((role) => user.company?.companyRoles.includes(role))) {
+        if (!branch.companyRoles.some((role) => user.companyRoles.includes(role))) {
           return false;
         }
       }
@@ -551,12 +555,10 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
   };
 
   const filterBranch = (branch: RouteBranch): RouteBranch[] => {
-    // If branch doesn't have access, return empty array
     if (!hasAccess(branch)) {
       return [];
     }
 
-    // Process children first
     const childBranches: RouteBranch[] = [];
     if (branch.children) {
       branch.children.forEach((child) => {
@@ -564,12 +566,10 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
       });
     }
 
-    // If this branch is hidden, only return its children
     if (branch.hidden) {
       return childBranches;
     }
 
-    // Otherwise, return this branch with its filtered children
     return [
       {
         ...branch,
@@ -586,12 +586,10 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
     const traverse = (branch: RouteBranch, parentHasPlacement = false) => {
       const hasPlacement = branch.placement !== undefined;
 
-      // Only add this branch if it has a placement AND its parent doesn't have the same placement
       if (hasPlacement && !parentHasPlacement) {
         result.push(branch);
       }
 
-      // Traverse children, passing down whether this branch has a placement
       if (branch.children) {
         branch.children.forEach((child) => traverse(child, hasPlacement));
       }
@@ -603,14 +601,12 @@ export const createNavigation = (user?: AuthenticatedUserPayload | null): UserNa
 
   const placementBranches = collectByPlacement(filteredTree);
 
-  // Initialize all placements
   const result: UserNavigation = {
     [RoutePlaceMent.NAVIGATION]: [],
     [RoutePlaceMent.SIDEBAR]: [],
     [RoutePlaceMent.FOOTER]: [],
   };
 
-  // Populate with branches
   placementBranches.forEach((branch) => {
     if (branch.placement) {
       result[branch.placement].push(branch);

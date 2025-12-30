@@ -1,7 +1,7 @@
 // routes/company/admin/employees/forms/edit-employee.form-dialog.tsx
 import { useEffect, useState } from 'react';
 import { useSubmit } from 'react-router';
-import type { CompanyUserDto } from 'tmp/openapi/gen/base';
+import type { CompanyUserDto } from '~/api/generated/identity';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { RoleCheckboxes } from '~/routes/company/_components/role-checkboxes';
@@ -26,7 +26,7 @@ export function EditEmployeeForm({ user }: EditEmployeeFormProps) {
       setFormData({
         userId: user.userId,
         email: user.email,
-        roles: user.roles,
+        roles: user.companyRoles,
       });
       setIsOpen(true);
     }

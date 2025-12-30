@@ -5,6 +5,7 @@ import type { RootOutletContext } from '~/root';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const auth = await getAuthPayloadFromRequest(request);
+  console.log(auth);
 
   if (!auth) {
     return redirect('/');

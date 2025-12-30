@@ -1,10 +1,10 @@
 import { data } from 'react-router';
-import { createNavigation, ROUTES_MAP, type UserNavigation } from '~/lib/route-tree';
-import { AuthControllerService, createBaseClient, UserRole } from '~/api/clients/base';
-import { ENV } from '~/api/config/env';
+import { createNavigation } from '~/lib/route-tree';
 import { authService } from '~/lib/auth-service';
 import { logger } from '~/lib/logger';
 import type { FlashMessage } from '~/routes/company/_lib/flash-message.server';
+import { AuthController, CompanyUserController } from '~/api/generated/identity';
+import { client } from '~/api/generated/identity/client.gen';
 
 export const refreshAndBuildResponse = async (
   request: Request,
@@ -12,24 +12,22 @@ export const refreshAndBuildResponse = async (
   flashMessage: FlashMessage | null,
 ) => {
   try {
-    const baseClient = createBaseClient({
-      baseUrl: ENV.GATEWAY_URL,
-    });
-
     const { accessToken } = await authService.getTokensFromRequest(request);
     const companyId = authService.getCompanyIdFromToken(accessToken ?? '');
 
-    const response = await baseClient.AuthControllerService.AuthControllerService.refresh({
-      companyId,
-      requestBody: { refreshToken },
+    const response = await AuthController.refresh({
+      query: { companyId },
+      body: { refreshToken },
     });
 
-    if (!response.success || !response.data) {
+    const tokens = response.data?.data;
+
+    if (!tokens) {
       throw new Error('Failed to refresh auth tokens');
     }
 
-    const { headers } = await authService.processTokenRefresh(response.data);
-    const body = await buildResponseData(request, response.data.accessToken, flashMessage);
+    const { headers } = await authService.processTokenRefresh(tokens);
+    const body = await buildResponseData(request, tokens.accessToken, flashMessage);
 
     return data(body, { headers });
   } catch (err) {
@@ -40,21 +38,34 @@ export const refreshAndBuildResponse = async (
 
 export const buildResponseData = async (request: Request, accessToken: string, flashMessage: FlashMessage | null) => {
   const authPayload = authService.verifyAndDecodeToken(accessToken);
-  const navigation = createNavigation(authPayload);
-  const url = new URL(request.url);
 
+  let userCompany = undefined;
   let companySummary = undefined;
+  let company = undefined;
+
+  if (authPayload) {
+    const userCompanyResponse = await CompanyUserController.getUser1({
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    userCompany = userCompanyResponse.data?.data;
+  }
+
   if (authPayload?.companyId) {
-    const baseClient = createBaseClient({
-      baseUrl: ENV.GATEWAY_URL,
-      token: accessToken,
+    client.setConfig({
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     });
 
     try {
-      const companyResponse = await baseClient.CompanyUserControllerService.CompanyUserControllerService.getCompany({
-        companyId: authPayload.companyId,
-      });
-      companySummary = companyResponse?.data;
+      const companySummaryResponse = await CompanyUserController.getCompanySummary();
+      companySummary = companySummaryResponse.data?.data;
+
+      const companyResponse = await CompanyUserController.getCompany();
+      company = companyResponse.data?.data;
     } catch (err) {
       logger.error('Failed to fetch company summary', {
         companyId: authPayload.companyId,
@@ -62,6 +73,8 @@ export const buildResponseData = async (request: Request, accessToken: string, f
       });
     }
   }
+
+  const navigation = createNavigation(userCompany, company);
 
   return {
     user: authPayload,
