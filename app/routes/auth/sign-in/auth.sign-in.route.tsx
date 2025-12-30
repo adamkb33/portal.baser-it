@@ -20,6 +20,8 @@ export async function action({ request }: Route.ActionArgs) {
       body: { email, password },
     });
 
+    console.log(response);
+
     const tokens = response.data?.data;
 
     if (!tokens) {

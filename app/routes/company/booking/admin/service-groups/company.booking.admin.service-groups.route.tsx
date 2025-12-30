@@ -1,9 +1,8 @@
-import { useFetcher } from 'react-router';
-import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import { useFetcher, useNavigate, useSearchParams } from 'react-router';
+import { useState } from 'react';
 import type { ServiceGroupDto } from '~/api/clients/types';
 import { Button } from '~/components/ui/button';
-import { PaginatedTable } from '~/components/table/paginated-data-table';
+import { ServerPaginatedTable } from '~/components/table/server-side-paginated.data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';
@@ -16,18 +15,44 @@ import { API_ROUTES_MAP } from '~/lib/route-tree';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '10', 10);
+    const search = url.searchParams.get('search') || '';
+
     const response = await withAuth(request, async () => {
-      return ServiceGroupController.getServiceGroups();
+      return ServiceGroupController.getServiceGroups({
+        query: {
+          page,
+          size,
+          ...(search && { search }),
+        },
+      });
     });
 
+    const apiResponse = response.data;
+    const pageData = apiResponse?.data;
+
     return {
-      serviceGroups: response.data?.data?.content || [],
+      serviceGroups: pageData?.content || [],
+      pagination: {
+        page: pageData?.page ?? 0,
+        size: pageData?.size ?? size,
+        totalElements: pageData?.totalElements ?? 0,
+        totalPages: pageData?.totalPages ?? 1,
+      },
     };
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
 
     return {
       serviceGroups: [],
+      pagination: {
+        page: 0,
+        size: 10,
+        totalElements: 0,
+        totalPages: 1,
+      },
       error: error?.message || 'Kunne ikke hente tjenestegrupper',
     };
   }
@@ -39,24 +64,15 @@ type FormData = {
 };
 
 export default function BookingServiceGroups({ loaderData }: Route.ComponentProps) {
-  const { serviceGroups } = loaderData;
+  const { serviceGroups, pagination } = loaderData;
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingServiceGroup, setEditingServiceGroup] = useState<FormData | null>(null);
   const [deletingServiceGroupId, setDeletingServiceGroupId] = useState<number | null>(null);
-  const [filter, setFilter] = useState('');
-
-  const filteredGroups = useMemo(() => {
-    if (!filter) return serviceGroups;
-    const query = filter.toLowerCase();
-
-    return serviceGroups.filter((group) => {
-      const name = group.name?.toLowerCase() ?? '';
-      const id = String(group.id ?? '');
-      return name.includes(query) || id.includes(query);
-    });
-  }, [serviceGroups, filter]);
+  const [filter, setFilter] = useState(searchParams.get('search') || '');
 
   const handleAdd = () => {
     setEditingServiceGroup({ name: '' });
@@ -120,6 +136,31 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
     setEditingServiceGroup(null);
   };
 
+  const handleFilterChange = (value: string) => {
+    setFilter(value);
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set('search', value);
+    } else {
+      params.delete('search');
+    }
+    params.set('page', '0');
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', newPage.toString());
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('size', newSize.toString());
+    params.set('page', '0');
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
   return (
     <div className="container mx-auto py-6">
       <PageHeader
@@ -128,23 +169,25 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
         actions={<Button onClick={handleAdd}>Ny tjenestegruppe</Button>}
       />
 
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filtrer på navn eller ID…"
-          value={filter}
-          onChange={(event) => setFilter(event.target.value)}
-          className="max-w-sm"
-        />
-      </div>
-
-      <PaginatedTable<ServiceGroupDto>
-        items={filteredGroups}
+      <ServerPaginatedTable<ServiceGroupDto>
+        items={serviceGroups}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
         getRowKey={(serviceGroup, index) => serviceGroup.id ?? `group-${index}`}
         columns={[
           { header: 'ID' },
           { header: 'Navn', className: 'font-medium' },
           { header: 'Handlinger', className: 'text-right' },
         ]}
+        headerSlot={
+          <Input
+            placeholder="Søk på navn..."
+            value={filter}
+            onChange={(event) => handleFilterChange(event.target.value)}
+            className="max-w-sm"
+          />
+        }
         renderRow={(serviceGroup) => (
           <TableRow>
             <TableCell>{serviceGroup.id}</TableCell>

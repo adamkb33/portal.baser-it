@@ -1,28 +1,46 @@
-import { useFetcher, useLoaderData } from 'react-router';
+import { useFetcher, useNavigate, useSearchParams } from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { ServiceDto, ServiceGroupDto } from 'tmp/openapi/gen/booking';
 import { Button } from '~/components/ui/button';
-import { PaginatedTable } from '~/components/table/paginated-data-table';
+import { ServerPaginatedTable } from '~/components/table/server-side-paginated.data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
-import type { FormFieldRenderProps } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
 import { Badge } from '~/components/ui/badge';
-import { X } from 'lucide-react';
 import { fileToBase64 } from '~/lib/file.utils';
-import { servicesActions, type BookingServicesLoaderData } from './_features/services.feature';
-import type { Route } from './+types/company.booking.admin.service-groups.services.route';
 import { withAuth } from '~/api/utils/with-auth';
 import { ServiceController, ServiceGroupController } from '~/api/generated/booking';
 import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import type { Route } from './+types/company.booking.admin.service-groups.services.route';
+import { servicesActions } from './_features/services.feature';
+import { ImagesField, type ImageField } from '~/routes/company/_components/images-field';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '0', 10);
+    const size = parseInt(url.searchParams.get('size') || '10', 10);
+    const search = url.searchParams.get('search') || '';
+
     const [serviceGroupsResponse, servicesResponse] = await withAuth(request, async () => {
-      return Promise.all([ServiceGroupController.getServiceGroups(), ServiceController.getServices()]);
+      return Promise.all([
+        ServiceGroupController.getServiceGroups({
+          query: {
+            page: 0,
+            size: 1000,
+          },
+        }),
+        ServiceController.getServices({
+          query: {
+            page,
+            size,
+            ...(search && { search }),
+          },
+        }),
+      ]);
     });
 
     const serviceGroups = serviceGroupsResponse.data?.data?.content || [];
@@ -35,9 +53,18 @@ export async function loader({ request }: Route.LoaderArgs) {
       );
     }
 
+    const apiResponse = servicesResponse.data;
+    const pageData = apiResponse?.data;
+
     return {
       serviceGroups,
-      services: servicesResponse.data?.data?.content || [],
+      services: pageData?.content || [],
+      pagination: {
+        page: pageData?.page ?? 0,
+        size: pageData?.size ?? size,
+        totalElements: pageData?.totalElements ?? 0,
+        totalPages: pageData?.totalPages ?? 1,
+      },
     };
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
@@ -45,21 +72,18 @@ export async function loader({ request }: Route.LoaderArgs) {
     return {
       serviceGroups: [],
       services: [],
+      pagination: {
+        page: 0,
+        size: 10,
+        totalElements: 0,
+        totalPages: 1,
+      },
       error: error?.message || 'Kunne ikke hente tjenester',
     };
   }
 }
 
-// Rest of the component stays the same...
-
 export const action = servicesActions;
-
-type ServiceImage = {
-  id?: number;
-  file: File | null;
-  label: string;
-  previewUrl?: string;
-};
 
 type ServiceFormData = {
   id?: number;
@@ -67,19 +91,19 @@ type ServiceFormData = {
   serviceGroupId: number;
   price: number;
   duration: number;
-  images: ServiceImage[];
-  deleteImageIds: number[];
+  images: ImageField[];
 };
 
 export default function BookingAdminServices({ loaderData }: Route.ComponentProps) {
-  const { serviceGroups, services } = loaderData;
-
+  const { serviceGroups, services, pagination } = loaderData;
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<ServiceFormData | null>(null);
   const [deletingServiceId, setDeletingServiceId] = useState<number | null>(null);
-  const [filter, setFilter] = useState('');
+  const [filter, setFilter] = useState(searchParams.get('search') || '');
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return;
@@ -105,19 +129,6 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
     [serviceGroups],
   );
 
-  const filteredItems = useMemo(() => {
-    if (!filter) return services;
-    const query = filter.toLowerCase();
-
-    return services.filter((service) => {
-      const name = service.name?.toLowerCase() ?? '';
-      const groupName = groupNameById.get(service.serviceGroupId)?.toLowerCase() ?? '';
-      const price = String(service.price ?? '');
-      const duration = String(service.duration ?? '');
-      return name.includes(query) || groupName.includes(query) || price.includes(query) || duration.includes(query);
-    });
-  }, [services, filter, groupNameById]);
-
   const handleAdd = () => {
     setEditingService({
       name: '',
@@ -125,7 +136,6 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
       price: 0,
       duration: 30,
       images: [],
-      deleteImageIds: [],
     });
     setIsDialogOpen(true);
   };
@@ -144,7 +154,6 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
           label: img.label ?? '',
           previewUrl: img.url,
         })) ?? [],
-      deleteImageIds: [],
     });
     setIsDialogOpen(true);
   };
@@ -189,27 +198,58 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
     fd.append('price', String(editingService.price));
     fd.append('duration', String(editingService.duration));
 
-    if (editingService.deleteImageIds && editingService.deleteImageIds.length > 0) {
-      for (const imgId of editingService.deleteImageIds) {
+    // Append delete image IDs (from images marked as pendingDeletion)
+    const imagesToDelete = editingService.images.filter((img) => img.pendingDeletion && img.id).map((img) => img.id!);
+
+    if (imagesToDelete.length > 0) {
+      for (const imgId of imagesToDelete) {
         fd.append('deleteImageIds', String(imgId));
       }
     }
 
-    if (editingService.images && editingService.images.length > 0) {
-      for (let index = 0; index < editingService.images.length; index++) {
-        const img = editingService.images[index];
-        if (!img.file) continue;
+    // Only append new images (those with a file selected and not pending deletion)
+    const imagesToUpload = editingService.images.filter((img) => img.file && !img.pendingDeletion);
 
-        const base64 = await fileToBase64(img.file);
+    if (imagesToUpload.length > 0) {
+      let uploadIndex = 0;
+      for (const img of imagesToUpload) {
+        const base64 = await fileToBase64(img.file!);
 
-        fd.append(`images[${index}][fileName]`, img.file.name);
-        fd.append(`images[${index}][contentType]`, img.file.type || 'application/octet-stream');
-        fd.append(`images[${index}][label]`, img.label ?? '');
-        fd.append(`images[${index}][data]`, base64);
+        fd.append(`images[${uploadIndex}][fileName]`, img.file!.name);
+        fd.append(`images[${uploadIndex}][contentType]`, img.file!.type || 'application/octet-stream');
+        fd.append(`images[${uploadIndex}][label]`, img.label ?? '');
+        fd.append(`images[${uploadIndex}][data]`, base64);
+
+        uploadIndex++;
       }
     }
 
     fetcher.submit(fd, { method: 'post' });
+  };
+
+  const handleFilterChange = (value: string) => {
+    setFilter(value);
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set('search', value);
+    } else {
+      params.delete('search');
+    }
+    params.set('page', '0');
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', newPage.toString());
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('size', newSize.toString());
+    params.set('page', '0');
+    navigate(`?${params.toString()}`, { replace: true });
   };
 
   const getServiceGroupName = (serviceGroupId: number) => groupNameById.get(serviceGroupId) || 'Ukjent';
@@ -219,104 +259,10 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
     return amount.toLocaleString('nb-NO', { style: 'currency', currency: 'NOK' });
   };
 
-  const renderImagesField = ({ value, onChange }: FormFieldRenderProps<ServiceFormData>) => {
-    const images = (value as ServiceImage[] | undefined) ?? [];
-
-    const updateImageAt = (index: number, patch: Partial<ServiceImage>) => {
-      const next = images.map((img, i) => (i === index ? { ...img, ...patch } : img));
-      onChange(next);
-    };
-
-    const addImage = () => {
-      onChange([
-        ...images,
-        {
-          id: undefined,
-          file: null,
-          label: '',
-          previewUrl: undefined,
-        },
-      ]);
-    };
-
-    const removeImage = (index: number) => {
-      const imageToRemove = images[index];
-      const next = images.filter((_, i) => i !== index);
-      onChange(next);
-
-      if (editingService && imageToRemove?.id) {
-        setEditingService({
-          ...editingService,
-          deleteImageIds: [...(editingService.deleteImageIds ?? []), imageToRemove.id],
-        });
-      }
-    };
-
-    const handleFileChange = (index: number, file: File | null) => {
-      if (!file) {
-        updateImageAt(index, { file: null, previewUrl: undefined });
-        return;
-      }
-
-      const previewUrl = URL.createObjectURL(file);
-      updateImageAt(index, { file, previewUrl });
-    };
-
-    return (
-      <div className="space-y-4">
-        {images.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {images.map((img, index) => (
-              <div
-                key={img.id ?? index}
-                className="group relative overflow-hidden rounded-md border border-slate-200 bg-slate-50"
-              >
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-100 hover:text-slate-700"
-                >
-                  <X className="h-3 w-3" aria-hidden="true" />
-                  <span className="sr-only">Fjern bilde</span>
-                </button>
-
-                {img.previewUrl ? (
-                  <img
-                    src={img.previewUrl}
-                    alt={img.label || 'Forhåndsvisning av bilde'}
-                    className="h-32 w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-32 w-full items-center justify-center text-xs text-slate-400">
-                    Ingen bilde valgt
-                  </div>
-                )}
-
-                <div className="space-y-2 border-t border-slate-200 bg-white p-2.5">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    className="h-8 cursor-pointer text-xs"
-                    onChange={(e) => handleFileChange(index, e.target.files?.[0] ?? null)}
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Bildetekst / label"
-                    value={img.label}
-                    onChange={(e) => updateImageAt(index, { label: e.target.value })}
-                    className="h-8 text-xs"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <Button type="button" variant="outline" onClick={addImage} className="h-9 border-dashed text-xs font-medium">
-          + Legg til bilde
-        </Button>
-      </div>
-    );
+  const handleImagesChange = (images: ImageField[]) => {
+    if (editingService) {
+      setEditingService({ ...editingService, images });
+    }
   };
 
   return (
@@ -326,17 +272,11 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
         <Button onClick={handleAdd}>Ny tjeneste</Button>
       </div>
 
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filtrer på navn, gruppe, pris eller varighet…"
-          value={filter}
-          onChange={(event) => setFilter(event.target.value)}
-          className="max-w-sm"
-        />
-      </div>
-
-      <PaginatedTable<ServiceDto>
-        items={filteredItems}
+      <ServerPaginatedTable<ServiceDto>
+        items={services}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
         getRowKey={(service, index) => service.id ?? `${service.name}-${index}`}
         columns={[
           { header: 'Navn', className: 'font-medium' },
@@ -346,6 +286,14 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
           { header: 'Antall bilder' },
           { header: 'Handlinger', className: 'text-right' },
         ]}
+        headerSlot={
+          <Input
+            placeholder="Søk på navn eller tjenestegruppe…"
+            value={filter}
+            onChange={(event) => handleFilterChange(event.target.value)}
+            className="max-w-sm"
+          />
+        }
         renderRow={(service) => (
           <TableRow>
             <TableCell className="font-medium">{service.name}</TableCell>
@@ -426,7 +374,7 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
             {
               name: 'images',
               label: 'Bilder',
-              render: renderImagesField,
+              render: () => <ImagesField images={editingService.images} onChange={handleImagesChange} />,
             },
           ]}
           actions={[

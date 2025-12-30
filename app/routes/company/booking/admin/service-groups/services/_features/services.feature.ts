@@ -1,60 +1,10 @@
-import { data, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from 'react-router';
-import type { ServiceDto, ServiceGroupDto } from 'tmp/openapi/gen/booking';
-import { createBookingClient, type ImageUpload } from '~/api/clients/booking';
-import type { ApiClientError } from '~/api/clients/http';
-import { ENV } from '~/api/config/env';
-import { getAccessTokenFromRequest } from '~/lib/auth.utils';
+import { type ActionFunctionArgs } from 'react-router';
+import { ServiceController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
+import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 
-export type BookingServicesLoaderData = {
-  serviceGroups: ServiceGroupDto[];
-  services: ServiceDto[];
-};
-
-const extractImagesFromFormData = (fd: FormData): ImageUpload[] => {
-  const byIndex: Record<
-    string,
-    {
-      fileName?: string;
-      label?: string;
-      contentType?: string;
-      data?: string;
-    }
-  > = {};
-
-  for (const [key, value] of fd.entries()) {
-    const match = key.match(/^images\[(\d+)]\[(fileName|label|contentType|data)]$/);
-    if (!match) continue;
-
-    const index = match[1];
-    const field = match[2] as 'fileName' | 'label' | 'contentType' | 'data';
-
-    if (!byIndex[index]) byIndex[index] = {};
-
-    byIndex[index][field] = String(value);
-  }
-
-  return Object.keys(byIndex)
-    .sort((a, b) => Number(a) - Number(b))
-    .map((index) => {
-      const img = byIndex[index];
-      return {
-        fileName: img.fileName ?? 'image',
-        label: img.label ?? '',
-        contentType: img.contentType ?? 'application/octet-stream',
-        data: img.data ?? '',
-      } satisfies ImageUpload;
-    })
-    .filter((img) => img.data); // only keep images that actually have data
-};
-
 export async function servicesActions({ request }: ActionFunctionArgs) {
-  const accessToken = await getAccessTokenFromRequest(request);
-  if (!accessToken) {
-    return redirect('/');
-  }
-
-  const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
   const formData = await request.formData();
   const intent = formData.get('intent') as string;
 
@@ -65,25 +15,25 @@ export async function servicesActions({ request }: ActionFunctionArgs) {
       const price = Number(formData.get('price'));
       const duration = Number(formData.get('duration'));
 
-      const images = extractImagesFromFormData(formData); // ImageUpload[]
+      const imageActions = extractImageActionsFromFormData(formData);
 
-      // Enforce the same rule as the UI: if an image is sent, it must have a label
-      const invalid = images.filter((img) => !img.label || img.label.trim().length === 0);
-      if (invalid.length > 0) {
-        return data({ success: false, message: 'Alle nye bilder må ha både fil og label.' }, { status: 400 });
-      }
-
-      await bookingClient.ServiceControllerService.ServiceControllerService.createService({
-        requestBody: {
-          name,
-          serviceGroupId,
-          price,
-          duration,
-          images,
-        },
+      await withAuth(request, async () => {
+        await ServiceController.createService({
+          body: {
+            name,
+            serviceGroupId,
+            price,
+            duration,
+            imageActions,
+          },
+        });
       });
 
-      return data({ success: true, message: 'Tjeneste opprettet' });
+      return redirectWithSuccess(
+        request,
+        ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+        'Tjeneste opprettet',
+      );
     }
 
     if (intent === 'update') {
@@ -93,38 +43,95 @@ export async function servicesActions({ request }: ActionFunctionArgs) {
       const price = Number(formData.get('price'));
       const duration = Number(formData.get('duration'));
 
-      const newImages = extractImagesFromFormData(formData);
+      const imageActions = extractImageActionsFromFormData(formData);
 
-      const deleteImageIds = formData
-        .getAll('deleteImageIds')
-        .map((v) => Number(v))
-        .filter((v) => !Number.isNaN(v));
-
-      await bookingClient.ServiceControllerService.ServiceControllerService.updateService({
-        id,
-        requestBody: {
-          id,
-          name,
-          serviceGroupId,
-          price,
-          duration,
-          newImages, // <-- goes straight into UpdateServiceDto.newImages
-          deleteImageIds,
-        },
+      await withAuth(request, async () => {
+        await ServiceController.updateService({
+          path: { id },
+          body: {
+            id,
+            name,
+            serviceGroupId,
+            price,
+            duration,
+            imageActions,
+          },
+        });
       });
 
-      return data({ success: true, message: 'Tjeneste oppdatert' });
+      return redirectWithSuccess(
+        request,
+        ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+        'Tjeneste oppdatert',
+      );
     }
 
     if (intent === 'delete') {
       const id = Number(formData.get('id'));
-      await bookingClient.ServiceControllerService.ServiceControllerService.deleteService({ id });
-      return data({ success: true, message: 'Tjeneste slettet' });
+
+      await withAuth(request, async () => {
+        await ServiceController.deleteService({ path: { id } });
+      });
+
+      return redirectWithSuccess(
+        request,
+        ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+        'Tjeneste slettet',
+      );
     }
 
-    return data({ success: false, message: 'Ugyldig handling' });
+    return redirectWithError(
+      request,
+      ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+      'Ugyldig handling',
+    );
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    return data({ success: false, message: error.body?.message || 'En feil oppstod' }, { status: 400 });
+    console.error('Service action error:', JSON.stringify(error, null, 2));
+
+    return redirectWithError(
+      request,
+      ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+      error?.body?.message || error?.message || 'Kunne ikke utføre handling',
+    );
   }
+}
+
+function extractImageActionsFromFormData(formData: FormData): any[] {
+  const imageActions: any[] = [];
+
+  const deleteImageIds = formData
+    .getAll('deleteImageIds')
+    .map((v) => Number(v))
+    .filter((v) => !Number.isNaN(v));
+
+  deleteImageIds.forEach((imageId) => {
+    imageActions.push({
+      type: 'DELETE',
+      imageId,
+    });
+  });
+
+  let index = 0;
+  while (formData.has(`images[${index}][fileName]`)) {
+    const fileName = formData.get(`images[${index}][fileName]`) as string;
+    const contentType = formData.get(`images[${index}][contentType]`) as string;
+    const data = formData.get(`images[${index}][data]`) as string;
+    const label = formData.get(`images[${index}][label]`) as string;
+
+    if (fileName && contentType && data) {
+      imageActions.push({
+        type: 'UPLOAD',
+        data: {
+          fileName,
+          contentType,
+          data,
+          label: label || undefined,
+        },
+      });
+    }
+
+    index++;
+  }
+
+  return imageActions;
 }

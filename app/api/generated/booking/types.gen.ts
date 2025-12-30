@@ -4,6 +4,15 @@ export type ClientOptions = {
     baseURL: 'http://localhost:8020' | (string & {});
 };
 
+export type Delete = Omit<ImageAction, 'type'> & {
+    imageId: number;
+    type: 'Delete';
+};
+
+export type ImageAction = {
+    type: string;
+};
+
 export type ImageUpload = {
     fileName: string;
     label: string;
@@ -14,11 +23,15 @@ export type ImageUpload = {
 export type UpdateServiceDto = {
     id: number;
     serviceGroupId: number;
-    price: number;
     name: string;
+    price: number;
     duration: number;
-    newImages: Array<ImageUpload>;
-    deleteImageIds: Array<number>;
+    imageActions: Array<Delete | Upload>;
+};
+
+export type Upload = Omit<ImageAction, 'type'> & {
+    data: ImageUpload;
+    type: 'Upload';
 };
 
 export type ApiError = {
@@ -190,7 +203,7 @@ export type CreateServiceDto = {
     name: string;
     price: number;
     duration: number;
-    images: Array<ImageUpload>;
+    imageActions: Array<Delete | Upload>;
 };
 
 export type CreateServiceGroupDto = {
@@ -203,19 +216,6 @@ export type CreateOrUpdateCompanyUserProfile = {
     imageAction?: Delete | Upload;
     description?: string;
     serviceIds: Array<number>;
-};
-
-export type Delete = Omit<ImageAction, 'type'> & {
-    type: 'Delete';
-};
-
-export type ImageAction = {
-    type: string;
-};
-
-export type Upload = Omit<ImageAction, 'type'> & {
-    data: ImageUpload;
-    type: 'Upload';
 };
 
 export type ApiResponseBookingProfileDto = {
@@ -624,6 +624,7 @@ export type GetServicesData = {
         page?: number;
         size?: number;
         sort?: string;
+        search?: string;
     };
     url: '/company-user/services';
 };
@@ -660,6 +661,7 @@ export type GetServiceGroupsData = {
         page?: number;
         size?: number;
         sort?: string;
+        search?: string;
     };
     url: '/company-user/service-groups';
 };
