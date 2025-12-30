@@ -472,10 +472,6 @@ export const API_ROUTES_TREE = [
                     url: '/company/booking/profile/daily-schedule/create-bulk',
                   },
                   {
-                    id: 'company.booking.profile.daily-schedule.create-default',
-                    url: '/company/booking/profile/daily-schedule/create-default',
-                  },
-                  {
                     id: 'company.booking.profile.daily-schedule.delete',
                     url: '/company/booking/profile/daily-schedule/delete',
                   },

@@ -1,59 +1,39 @@
-import { data, redirect, useLoaderData, useSubmit } from 'react-router';
+import { redirect, useLoaderData, useSubmit } from 'react-router';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import type { DailyScheduleDto } from 'tmp/openapi/gen/booking';
-import { Button } from '~/components/ui/button';
+import type { DailyScheduleDto } from '~/api/generated/booking';
 import { DataTable } from '~/components/table/data-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
-
-import {
-  dailyScheduleAction,
-  type BookingDailyScheduleLoaderArgs,
-} from '../../../../company/booking/profile/daily-schedule/_features/daily-schedule.feature';
-import { createBookingClient } from '~/api/clients/booking';
-import type { ApiClientError } from '~/api/clients/http';
-import { ENV } from '~/api/config/env';
-import { getAccessTokenFromRequest } from '~/lib/auth.utils';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { DailyScheduleController } from '~/api/generated/booking';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 import type { Route } from './+types/company.booking.profile.daily-schedule.route';
+import { withAuth } from '~/api/utils/with-auth';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const accessToken = await getAccessTokenFromRequest(request);
-    if (!accessToken) {
-      return redirect('/');
-    }
+    const response = await withAuth(request, async () => {
+      return await DailyScheduleController.getDailySchedules();
+    });
 
-    const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const response =
-      await bookingClient.DailyScheduleControllerService.DailyScheduleControllerService.getDailySchedules();
-
-    if (!response.data) {
-      return data({ dailySchedules: [] });
-    }
-
-    return data({ dailySchedules: response.data });
+    return {
+      dailySchedules: response.data?.data ?? [],
+    };
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      if (error.body?.message === 'Profil ikke funnet') {
-        return redirectWithInfo(
-          request,
-          ROUTES_MAP['company.booking.profile'].href,
-          `Vennligst opprett en bookingprofil før du administrerer arbeidstider.`,
-        );
-      }
 
-      return { error: error.body.message };
+    if (error?.message === 'Profil ikke funnet') {
+      return redirectWithInfo(
+        request,
+        ROUTES_MAP['company.booking.profile'].href,
+        'Vennligst opprett en bookingprofil før du administrerer arbeidstider.',
+      );
     }
 
-    throw error;
+    return { dailySchedules: [], error: error?.message };
   }
 }
-
-export const action = dailyScheduleAction;
 
 const DAY_LABELS: Record<DailyScheduleDto['dayOfWeek'], string> = {
   MONDAY: 'Mandag',
@@ -74,8 +54,8 @@ type FormData = {
   endTime: string;
 };
 
-export default function BookingCompanyUserDailySchedule() {
-  const { dailySchedules } = useLoaderData<BookingDailyScheduleLoaderArgs>();
+export default function BookingCompanyUserDailySchedule({ loaderData }: Route.ComponentProps) {
+  const { dailySchedules } = loaderData;
   const submit = useSubmit();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -112,13 +92,14 @@ export default function BookingCompanyUserDailySchedule() {
     }
 
     const formData = new FormData();
-    formData.append('intent', 'create-bulk');
     formData.append('startTime', defaultSchedule.startTime);
     formData.append('endTime', defaultSchedule.endTime);
     formData.append('days', defaultSchedule.selectedDays.join(','));
 
-    submit(formData, { method: 'post' });
-    toast.success('Standard arbeidstider lagret');
+    submit(formData, {
+      method: 'post',
+      action: API_ROUTES_MAP['company.booking.profile.daily-schedule.create-bulk'].url,
+    });
 
     setIsDefaultDialogOpen(false);
   };
@@ -161,11 +142,12 @@ export default function BookingCompanyUserDailySchedule() {
     if (!deletingScheduleId) return;
 
     const formData = new FormData();
-    formData.append('intent', 'delete');
     formData.append('id', String(deletingScheduleId));
 
-    submit(formData, { method: 'post' });
-    toast.success('Arbeidstid fjernet');
+    submit(formData, {
+      method: 'post',
+      action: API_ROUTES_MAP['company.booking.profile.daily-schedule.delete'].url,
+    });
 
     setIsDeleteDialogOpen(false);
     setDeletingScheduleId(null);
@@ -180,18 +162,18 @@ export default function BookingCompanyUserDailySchedule() {
     if (!editingSchedule) return;
 
     const fd = new FormData();
-    fd.append('intent', editingSchedule.id ? 'update' : 'create');
     if (editingSchedule.id) fd.append('id', String(editingSchedule.id));
     fd.append('dayOfWeek', editingSchedule.dayOfWeek);
     fd.append('startTime', editingSchedule.startTime);
     fd.append('endTime', editingSchedule.endTime);
 
-    submit(fd, { method: 'post' });
+    submit(fd, {
+      method: 'post',
+      action: API_ROUTES_MAP['company.booking.profile.daily-schedule.create-or-update'].url,
+    });
 
     setIsDialogOpen(false);
     setEditingSchedule(null);
-
-    toast.success(editingSchedule.id ? 'Arbeidstid oppdatert' : 'Arbeidstid lagret');
   };
 
   return (

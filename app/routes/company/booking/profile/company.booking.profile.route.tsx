@@ -88,7 +88,7 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
 
       fetcher.submit(formData, {
         method: 'post',
-        action: API_ROUTES_MAP['company.booking.profile.update'].url,
+        action: API_ROUTES_MAP['company.booking.profile.create-or-update'].url,
       });
       setCreateOrUpdateBookingProfileDialogOpen(false);
     } catch (error) {
