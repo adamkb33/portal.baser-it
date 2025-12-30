@@ -1,5 +1,5 @@
 // routes/company/booking/profile/route.tsx
-import { useFetcher, useLoaderData } from 'react-router';
+import { useFetcher } from 'react-router';
 import { useState, useEffect } from 'react';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { fileToBase64 } from '~/lib/file.utils';
@@ -78,13 +78,21 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
         formData.append('services[]', String(serviceId));
       }
 
-      // Only append image if user uploaded a new one
+      // Handle image action
       if (createOrUpdateDialogForm.image?.file) {
+        // Upload new image
+        formData.append('imageAction', 'UPLOAD');
         const base64Data = await fileToBase64(createOrUpdateDialogForm.image.file);
-        formData.append('image[fileName]', createOrUpdateDialogForm.image.file.name);
-        formData.append('image[contentType]', createOrUpdateDialogForm.image.file.type || 'application/octet-stream');
-        formData.append('image[data]', base64Data);
+        formData.append('imageData[fileName]', createOrUpdateDialogForm.image.file.name);
+        formData.append(
+          'imageData[contentType]',
+          createOrUpdateDialogForm.image.file.type || 'application/octet-stream',
+        );
+        formData.append('imageData[data]', base64Data);
+        formData.append('imageData[label]', createOrUpdateDialogForm.image.file.name);
       }
+      // If image is null and there's an existing image, we keep it (no imageAction sent)
+      // If you want to add a "delete image" button, you'd set: formData.append('imageAction', 'DELETE');
 
       fetcher.submit(formData, {
         method: 'post',
@@ -100,7 +108,6 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
     setCreateOrUpdateBookingProfileDialogOpen(true);
   };
 
-  // Pass existing image URL to the renderer
   const renderImageUpload = createImageUploadRenderer({
     existingImageUrl: bookingProfile?.image?.url || null,
     helperText: bookingProfile?.image?.url
@@ -112,6 +119,8 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
 
   const dialogTitle = bookingProfile ? 'Rediger bookingprofil' : 'Lag bookingprofil';
   const dialogSubmitLabel = bookingProfile ? 'Lagre endringer' : 'Opprett';
+
+  console.log(bookingProfile?.image?.url);
 
   return (
     <>

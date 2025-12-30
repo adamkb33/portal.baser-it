@@ -1,4 +1,4 @@
-import { useFetcher, useLoaderData } from 'react-router';
+import { useFetcher } from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { ServiceGroupDto } from '~/api/clients/types';
@@ -8,40 +8,44 @@ import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
-import { serviceGroupsAction } from './_features/service-groups.action';
-import { serviceGroupsLoader, type BookingServiceGroupsLoaderData } from './_features/service-groups.loader';
 import { PageHeader } from '../../../_components/page-header';
+import type { Route } from './+types/company.booking.admin.service-groups.route';
+import { ServiceGroupController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
+import { API_ROUTES_MAP } from '~/lib/route-tree';
 
-export const loader = serviceGroupsLoader;
-export const action = serviceGroupsAction;
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    const response = await withAuth(request, async () => {
+      return ServiceGroupController.getServiceGroups();
+    });
+
+    return {
+      serviceGroups: response.data?.data?.content || [],
+    };
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+
+    return {
+      serviceGroups: [],
+      error: error?.message || 'Kunne ikke hente tjenestegrupper',
+    };
+  }
+}
 
 type FormData = {
   id?: number;
   name: string;
 };
 
-export default function BookingServiceGroups() {
-  const { serviceGroups } = useLoaderData<BookingServiceGroupsLoaderData>();
+export default function BookingServiceGroups({ loaderData }: Route.ComponentProps) {
+  const { serviceGroups } = loaderData;
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingServiceGroup, setEditingServiceGroup] = useState<FormData | null>(null);
   const [deletingServiceGroupId, setDeletingServiceGroupId] = useState<number | null>(null);
   const [filter, setFilter] = useState('');
-
-  useEffect(() => {
-    if (fetcher.state !== 'idle' || !fetcher.data) return;
-
-    if (fetcher.data.success) {
-      toast.success(fetcher.data.message ?? 'Handling fullført');
-      setIsDialogOpen(false);
-      setEditingServiceGroup(null);
-      setIsDeleteDialogOpen(false);
-      setDeletingServiceGroupId(null);
-    } else if (fetcher.data.message) {
-      toast.error(fetcher.data.message);
-    }
-  }, [fetcher.state, fetcher.data]);
 
   const filteredGroups = useMemo(() => {
     if (!filter) return serviceGroups;
@@ -76,10 +80,15 @@ export default function BookingServiceGroups() {
     if (!deletingServiceGroupId) return;
 
     const formData = new FormData();
-    formData.append('intent', 'delete');
     formData.append('id', String(deletingServiceGroupId));
 
-    fetcher.submit(formData, { method: 'post' });
+    fetcher.submit(formData, {
+      method: 'post',
+      action: API_ROUTES_MAP['company.booking.admin.service-groups.delete'].url,
+    });
+
+    setIsDeleteDialogOpen(false);
+    setDeletingServiceGroupId(null);
   };
 
   const handleFieldChange = (name: keyof FormData, value: any) => {
@@ -93,13 +102,22 @@ export default function BookingServiceGroups() {
     if (!editingServiceGroup) return;
 
     const formData = new FormData();
-    formData.append('intent', editingServiceGroup.id ? 'update' : 'create');
     if (editingServiceGroup.id) {
       formData.append('id', String(editingServiceGroup.id));
     }
     formData.append('name', editingServiceGroup.name);
 
-    fetcher.submit(formData, { method: 'post' });
+    const action = editingServiceGroup.id
+      ? API_ROUTES_MAP['company.booking.admin.service-groups.update'].url
+      : API_ROUTES_MAP['company.booking.admin.service-groups.create'].url;
+
+    fetcher.submit(formData, {
+      method: 'post',
+      action,
+    });
+
+    setIsDialogOpen(false);
+    setEditingServiceGroup(null);
   };
 
   return (

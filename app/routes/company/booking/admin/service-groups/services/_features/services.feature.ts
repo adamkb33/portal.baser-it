@@ -5,19 +5,10 @@ import type { ApiClientError } from '~/api/clients/http';
 import { ENV } from '~/api/config/env';
 import { getAccessTokenFromRequest } from '~/lib/auth.utils';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithFlash, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 
 export type BookingServicesLoaderData = {
   serviceGroups: ServiceGroupDto[];
   services: ServiceDto[];
-};
-
-const extractList = <T>(payload: unknown): T[] => {
-  if (!payload) return [];
-  if (Array.isArray(payload)) return payload as T[];
-  if (Array.isArray((payload as any).content)) return (payload as any).content as T[];
-  if (Array.isArray((payload as any).items)) return (payload as any).items as T[];
-  return [];
 };
 
 const extractImagesFromFormData = (fd: FormData): ImageUpload[] => {
@@ -56,41 +47,6 @@ const extractImagesFromFormData = (fd: FormData): ImageUpload[] => {
     })
     .filter((img) => img.data); // only keep images that actually have data
 };
-
-export async function getServicesLoader({ request }: LoaderFunctionArgs) {
-  try {
-    const accessToken = await getAccessTokenFromRequest(request);
-    if (!accessToken) {
-      return redirect('/');
-    }
-    const bookingClient = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const serviceGroupsResponse =
-      await bookingClient.ServiceGroupControllerService.ServiceGroupControllerService.getServiceGroups({});
-
-    if (serviceGroupsResponse?.data?.content.length === 0) {
-      return redirectWithInfo(
-        request,
-        ROUTES_MAP['company.booking.admin.service-groups'].href,
-        'Du må opprette en tjenestegruppe før du kan legge til tjenester.',
-      );
-    }
-
-    const bookingClient2 = createBookingClient({ baseUrl: ENV.BOOKING_BASE_URL, token: accessToken });
-    const servicesResponse = await bookingClient2.ServiceControllerService.ServiceControllerService.getServices({});
-
-    return data<BookingServicesLoaderData>({
-      serviceGroups: extractList<ServiceGroupDto>(serviceGroupsResponse?.data),
-      services: extractList<ServiceDto>(servicesResponse?.data),
-    });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
-  }
-}
 
 export async function servicesActions({ request }: ActionFunctionArgs) {
   const accessToken = await getAccessTokenFromRequest(request);

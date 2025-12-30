@@ -12,9 +12,46 @@ import { TableCell, TableRow } from '~/components/ui/table';
 import { Badge } from '~/components/ui/badge';
 import { X } from 'lucide-react';
 import { fileToBase64 } from '~/lib/file.utils';
-import { getServicesLoader, servicesActions, type BookingServicesLoaderData } from './_features/services.feature';
+import { servicesActions, type BookingServicesLoaderData } from './_features/services.feature';
+import type { Route } from './+types/company.booking.admin.service-groups.services.route';
+import { withAuth } from '~/api/utils/with-auth';
+import { ServiceController, ServiceGroupController } from '~/api/generated/booking';
+import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
-export const loader = getServicesLoader;
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    const [serviceGroupsResponse, servicesResponse] = await withAuth(request, async () => {
+      return Promise.all([ServiceGroupController.getServiceGroups(), ServiceController.getServices()]);
+    });
+
+    const serviceGroups = serviceGroupsResponse.data?.data?.content || [];
+
+    if (serviceGroups.length === 0) {
+      return redirectWithInfo(
+        request,
+        ROUTES_MAP['company.booking.admin.service-groups'].href,
+        'Du må opprette en tjenestegruppe før du kan legge til tjenester.',
+      );
+    }
+
+    return {
+      serviceGroups,
+      services: servicesResponse.data?.data?.content || [],
+    };
+  } catch (error: any) {
+    console.error(JSON.stringify(error, null, 2));
+
+    return {
+      serviceGroups: [],
+      services: [],
+      error: error?.message || 'Kunne ikke hente tjenester',
+    };
+  }
+}
+
+// Rest of the component stays the same...
+
 export const action = servicesActions;
 
 type ServiceImage = {
@@ -34,8 +71,9 @@ type ServiceFormData = {
   deleteImageIds: number[];
 };
 
-export default function BookingAdminServices() {
-  const { serviceGroups, services } = useLoaderData<BookingServicesLoaderData>();
+export default function BookingAdminServices({ loaderData }: Route.ComponentProps) {
+  const { serviceGroups, services } = loaderData;
+
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);

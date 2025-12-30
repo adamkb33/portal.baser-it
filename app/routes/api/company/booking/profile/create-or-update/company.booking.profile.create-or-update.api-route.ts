@@ -1,4 +1,3 @@
-// app/routes/api/company/booking/profile/update.api-route.ts
 import { type ActionFunctionArgs } from 'react-router';
 import { BookingProfileController } from '~/api/generated/booking';
 import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
@@ -10,24 +9,35 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
     const description = formData.get('description') as string;
     const services = formData.getAll('services[]').map(Number);
-
-    const imageFileName = formData.get('image[fileName]') as string | null;
-    const imageContentType = formData.get('image[contentType]') as string | null;
-    const imageData = formData.get('image[data]') as string | null;
+    const imageAction = formData.get('imageAction') as string | null;
 
     const payload: any = {
       description: description || undefined,
-      services,
+      serviceIds: services,
     };
 
-    if (imageFileName && imageContentType && imageData) {
-      payload.image = {
-        fileName: imageFileName,
-        label: imageFileName,
-        contentType: imageContentType,
-        data: imageData,
+    if (imageAction === 'UPLOAD') {
+      const fileName = formData.get('imageData[fileName]') as string;
+      const contentType = formData.get('imageData[contentType]') as string;
+      const data = formData.get('imageData[data]') as string;
+      const label = formData.get('imageData[label]') as string;
+
+      payload.imageAction = {
+        type: 'UPLOAD',
+        data: {
+          fileName,
+          contentType,
+          data,
+          label,
+        },
+      };
+    } else if (imageAction === 'DELETE') {
+      payload.imageAction = {
+        type: 'DELETE',
       };
     }
+
+    console.log('Payload being sent:', JSON.stringify(payload, null, 2));
 
     await withAuth(request, async () => {
       await BookingProfileController.createOrUpdateProfile({
@@ -37,7 +47,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirectWithSuccess(request, ROUTES_MAP['company.booking.profile'].href, 'Bookingprofil lagret');
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
+    console.error('Profile update error:', JSON.stringify(error, null, 2));
 
     return redirectWithError(
       request,

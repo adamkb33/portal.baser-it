@@ -197,10 +197,25 @@ export type CreateServiceGroupDto = {
     name: string;
 };
 
-export type UpdateCompanyUserProfileDto = {
-    image?: ImageUpload;
+export type CreateOrUpdateCompanyUserProfile = {
+    userId: number;
+    companyId: number;
+    imageAction?: Delete | Upload;
     description?: string;
-    services: Array<number>;
+    serviceIds: Array<number>;
+};
+
+export type Delete = Omit<ImageAction, 'type'> & {
+    type: 'Delete';
+};
+
+export type ImageAction = {
+    type: string;
+};
+
+export type Upload = Omit<ImageAction, 'type'> & {
+    data: ImageUpload;
+    type: 'Upload';
 };
 
 export type ApiResponseBookingProfileDto = {
@@ -691,7 +706,7 @@ export type GetBookingProfileResponses = {
 export type GetBookingProfileResponse = GetBookingProfileResponses[keyof GetBookingProfileResponses];
 
 export type CreateOrUpdateProfileData = {
-    body: UpdateCompanyUserProfileDto;
+    body: CreateOrUpdateCompanyUserProfile;
     path?: never;
     query?: never;
     url: '/company-user/profile';

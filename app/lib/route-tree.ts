@@ -479,6 +479,30 @@ export const API_ROUTES_TREE = [
               },
             ],
           },
+          {
+            id: 'company.booking.admin',
+            url: '/company/booking/admin',
+            children: [
+              {
+                id: 'company.booking.admin.service-groups',
+                url: '/company/booking/admin/service-groups',
+                children: [
+                  {
+                    id: 'company.booking.admin.service-groups.create',
+                    url: '/company/booking/admin/service-groups/create',
+                  },
+                  {
+                    id: 'company.booking.admin.service-groups.update',
+                    url: '/company/booking/admin/service-groups/update',
+                  },
+                  {
+                    id: 'company.booking.admin.service-groups.delete',
+                    url: '/company/booking/admin/service-groups/delete',
+                  },
+                ],
+              },
+            ],
+          },
         ],
       },
     ],

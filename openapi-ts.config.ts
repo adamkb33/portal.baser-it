@@ -9,7 +9,7 @@ export default defineConfig([
     plugins: [
       {
         name: '@hey-api/client-axios',
-        runtimeConfigPath: './app/api/config/identity-client.ts',
+        runtimeConfigPath: '~/api/config/identity-client',
       },
       {
         name: '@hey-api/sdk',
@@ -24,7 +24,7 @@ export default defineConfig([
     plugins: [
       {
         name: '@hey-api/client-axios',
-        runtimeConfigPath: './app/api/config/booking-client.ts',
+        runtimeConfigPath: '~/api/config/booking-client',
       },
       {
         name: '@hey-api/sdk',
