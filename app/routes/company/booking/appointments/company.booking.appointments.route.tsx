@@ -1,4 +1,4 @@
-import { PageHeader } from '../../../_components/page-header';
+import { PageHeader } from '../../_components/page-header';
 
 export default function CompanyBookingAdminAppointmentsPage() {
   return (
