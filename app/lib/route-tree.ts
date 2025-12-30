@@ -163,7 +163,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         label: 'Etterspørsel om å slette rolle',
         category: BrachCategory.NONE,
         hidden: true,
-        accessType: Access.AUTHENTICATED,
+        accessType: Access.ROLE,
         companyRoles: [CompanyRole.ADMIN],
       },
       {
@@ -171,7 +171,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         href: '/company/admin',
         label: 'Selskap administrasjon',
         category: BrachCategory.NONE,
-        accessType: Access.AUTHENTICATED,
+        accessType: Access.ROLE,
         companyRoles: [CompanyRole.ADMIN],
         icon: Settings,
         children: [
@@ -181,7 +181,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             hidden: true,
             label: 'Instillinger',
             category: BrachCategory.COMPANY,
-            accessType: Access.AUTHENTICATED,
+            accessType: Access.ROLE,
             companyRoles: [CompanyRole.ADMIN],
             icon: Settings,
           },
@@ -190,7 +190,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             href: '/company/admin/employees',
             label: 'Ansatte',
             category: BrachCategory.COMPANY,
-            accessType: Access.AUTHENTICATED,
+            accessType: Access.ROLE,
             companyRoles: [CompanyRole.ADMIN],
             icon: Users,
           },
@@ -199,7 +199,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             href: '/company/admin/contacts',
             label: 'Kontakter',
             category: BrachCategory.COMPANY,
-            accessType: Access.AUTHENTICATED,
+            accessType: Access.ROLE,
             companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
             icon: Users,
           },
@@ -489,76 +489,82 @@ export const ROUTES_MAP: Record<string, { id: string; href: string }> = (() => {
 
 export type UserNavigation = Record<RoutePlaceMent, RouteBranch[]>;
 
+const extractProductFromRoute = (routeId: string): 'BOOKING' | 'EVENT' | 'TIMESHEET' | null => {
+  const routeParts = routeId.split('.');
+  if (routeParts.includes('booking')) return 'BOOKING';
+  if (routeParts.includes('event')) return 'EVENT';
+  if (routeParts.includes('timesheet')) return 'TIMESHEET';
+  return null;
+};
+
+const hasUserRole = (user: CompanyUserDto, requiredRoles: UserRole[]): boolean => {
+  return requiredRoles.some((role) => user.userRoles.includes(role));
+};
+
+const hasCompanyRole = (user: CompanyUserDto, requiredRoles: CompanyRole[]): boolean => {
+  return requiredRoles.some((role) => user.companyRoles.includes(role));
+};
+
 export const createNavigation = (
-  authPayload?: AuthenticatedUserPayload,
+  authPayload?: AuthenticatedUserPayload | null,
   user?: CompanyUserDto | null,
   company?: CompanyDto | null,
 ): UserNavigation => {
   const hasAccess = (branch: RouteBranch): boolean => {
+    // Level 0: PUBLIC - always allow
     if (branch.accessType === Access.PUBLIC) {
       return true;
     }
 
+    // Level 1: NOT_AUTHENTICATED - only if no auth
     if (branch.accessType === Access.NOT_AUTHENTICATED) {
-      return !user;
+      return !authPayload;
     }
 
-    if (!user) {
+    // Level 2: AUTHENTICATED - requires valid JWT
+    if (!authPayload) {
       return false;
     }
 
-    if (branch.userRoles && branch.userRoles.length > 0) {
-      if (!branch.userRoles.some((role) => user.userRoles.includes(role))) {
-        return false;
-      }
-    }
-
-    if (branch.companyRoles && branch.companyRoles.length > 0) {
-      if (!company) {
-        return false;
-      }
-      if (!branch.companyRoles.some((role) => user.companyRoles.includes(role))) {
-        return false;
-      }
-    }
-
     if (branch.accessType === Access.AUTHENTICATED) {
-      return !!authPayload;
+      return true;
     }
 
-    // Check product access
+    // Level 3: ROLE - requires company membership + role checks
+    if (!user || !company) {
+      return false;
+    }
+
+    // Check user roles (system-level)
+    if (branch.userRoles?.length && !hasUserRole(user, branch.userRoles)) {
+      return false;
+    }
+
+    // Check company roles
+    if (branch.companyRoles?.length && !hasCompanyRole(user, branch.companyRoles)) {
+      return false;
+    }
+
+    if (branch.accessType === Access.ROLE) {
+      return true;
+    }
+
+    // Level 4: PRODUCT - requires company + product + role checks
     if (branch.accessType === Access.PRODUCT) {
-      if (!company) {
+      const product = extractProductFromRoute(branch.id);
+      if (!product || !company.products.includes(product)) {
         return false;
       }
 
-      const routeParts = branch.id.split('.');
-      let productName: 'BOOKING' | 'EVENT' | 'TIMESHEET' | '' = '';
-
-      if (routeParts.includes('booking')) {
-        productName = 'BOOKING';
-      } else if (routeParts.includes('event')) {
-        productName = 'EVENT';
-      } else if (routeParts.includes('timesheet')) {
-        productName = 'TIMESHEET';
-      }
-
-      if (!productName) {
+      // Product routes may also have role requirements
+      if (branch.companyRoles?.length && !hasCompanyRole(user, branch.companyRoles)) {
         return false;
       }
 
-      const hasProduct = company.products.includes(productName);
-      if (!hasProduct) {
-        return false;
-      }
-
-      if (branch.companyRoles && branch.companyRoles.length > 0) {
-        if (!branch.companyRoles.some((role) => user.companyRoles.includes(role))) {
-          return false;
-        }
-      }
+      return true;
     }
 
+    // Default allow if no specific access type
     return true;
   };
 
