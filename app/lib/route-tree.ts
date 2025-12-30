@@ -48,7 +48,7 @@ import {
   UserPlus,
   type LucideIcon,
 } from 'lucide-react';
-import type { CompanyDto, CompanyUserDto } from '~/api/generated/identity';
+import type { AuthenticatedUserPayload, CompanyDto, CompanyUserDto } from '~/api/generated/identity';
 
 export type RouteBranch = {
   id: string;
@@ -489,7 +489,11 @@ export const ROUTES_MAP: Record<string, { id: string; href: string }> = (() => {
 
 export type UserNavigation = Record<RoutePlaceMent, RouteBranch[]>;
 
-export const createNavigation = (user?: CompanyUserDto | null, company?: CompanyDto | null): UserNavigation => {
+export const createNavigation = (
+  authPayload?: AuthenticatedUserPayload,
+  user?: CompanyUserDto | null,
+  company?: CompanyDto | null,
+): UserNavigation => {
   const hasAccess = (branch: RouteBranch): boolean => {
     if (branch.accessType === Access.PUBLIC) {
       return true;
@@ -516,6 +520,10 @@ export const createNavigation = (user?: CompanyUserDto | null, company?: Company
       if (!branch.companyRoles.some((role) => user.companyRoles.includes(role))) {
         return false;
       }
+    }
+
+    if (branch.accessType === Access.AUTHENTICATED) {
+      return !!authPayload;
     }
 
     // Check product access

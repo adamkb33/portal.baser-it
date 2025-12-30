@@ -2,16 +2,13 @@
 import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.accept-invite.route';
 
-import { OpenAPI } from '~/api/clients/base/OpenAPI';
-import { ENV } from '~/api/config/env';
 import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
-import { baseApi } from '~/lib/utils';
 import { toAuthTokens } from '../_utils/token.utils';
-import type { ApiClientError } from '~/api/clients/http';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
-import { redirectWithInfo, redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
+import { AuthController } from '~/api/generated/identity';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -25,8 +22,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
-
   const formData = await request.formData();
   const inviteToken = String(formData.get('inviteToken'));
   const givenName = String(formData.get('givenName'));
@@ -35,9 +30,11 @@ export async function action({ request }: Route.ActionArgs) {
   const confirmPassword = String(formData.get('confirmPassword'));
 
   try {
-    const response = await baseApi().AuthControllerService.AuthControllerService.acceptInvite({
-      inviteToken,
-      requestBody: {
+    const response = await AuthController.acceptInvite({
+      path: {
+        inviteToken,
+      },
+      body: {
         givenName,
         familyName,
         password,
@@ -45,7 +42,7 @@ export async function action({ request }: Route.ActionArgs) {
       },
     });
 
-    if (!response.success || !response.data) {
+    if (!response.data?.data) {
       return data(
         {
           error: 'Kunne ikke opprette kontoen. Prøv igjen.',
@@ -55,7 +52,7 @@ export async function action({ request }: Route.ActionArgs) {
       );
     }
 
-    const tokens = toAuthTokens(response.data);
+    const tokens = toAuthTokens(response.data.data);
 
     const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
       expires: new Date(tokens.accessTokenExpiresAt * 1000),
@@ -71,17 +68,13 @@ export async function action({ request }: Route.ActionArgs) {
   } catch (error: any) {
     console.error('[accept-invite] Error:', error);
 
-    if (error as ApiClientError) {
-      return data(
-        {
-          error: error.body?.message || 'Noe gikk galt. Prøv igjen.',
-          values: { givenName, familyName },
-        },
-        { status: 400 },
-      );
-    }
-
-    throw error;
+    return data(
+      {
+        error: error?.message || 'Noe gikk galt. Prøv igjen.',
+        values: { givenName, familyName },
+      },
+      { status: 400 },
+    );
   }
 }
 

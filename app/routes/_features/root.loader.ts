@@ -74,7 +74,7 @@ export const buildResponseData = async (request: Request, accessToken: string, f
     }
   }
 
-  const navigation = createNavigation(userCompany, company);
+  const navigation = createNavigation(authPayload, userCompany, company);
 
   return {
     user: authPayload,
