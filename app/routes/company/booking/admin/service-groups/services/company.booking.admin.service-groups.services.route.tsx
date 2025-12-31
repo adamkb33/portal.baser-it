@@ -224,7 +224,16 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
       }
     }
 
-    fetcher.submit(fd, { method: 'post' });
+    fetcher
+      .submit(fd, { method: 'post' })
+      .catch((error) => {
+        toast.error('Noe gikk galt ved innsending av skjemaet.');
+        console.error(error);
+      })
+      .finally(() => {
+        setIsDialogOpen(false);
+        setEditingService(null);
+      });
   };
 
   const handleFilterChange = (value: string) => {

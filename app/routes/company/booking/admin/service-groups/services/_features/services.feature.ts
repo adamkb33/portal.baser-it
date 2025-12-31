@@ -18,7 +18,7 @@ export async function servicesActions({ request }: ActionFunctionArgs) {
       const imageActions = extractImageActionsFromFormData(formData);
 
       await withAuth(request, async () => {
-        await ServiceController.createService({
+        const response = await ServiceController.createService({
           body: {
             name,
             serviceGroupId,
@@ -27,6 +27,10 @@ export async function servicesActions({ request }: ActionFunctionArgs) {
             imageActions,
           },
         });
+
+        if (!response.data?.data) {
+          throw new Error('Failed to create service');
+        }
       });
 
       return redirectWithSuccess(
