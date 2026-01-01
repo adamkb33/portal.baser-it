@@ -192,6 +192,20 @@ export class PublicAppointmentSessionController {
     }
 }
 
+export class CompanyUserScheduleController {
+    public static getSchedule<ThrowOnError extends boolean = false>(options: Options<GetScheduleData, ThrowOnError>) {
+        return (options.client ?? client).post<GetScheduleResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/company-user/schedules',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+}
+
 export class CompanyUserBookingProfileController {
     public static getBookingProfile<ThrowOnError extends boolean = false>(options?: Options<GetBookingProfileData, ThrowOnError>) {
         return (options?.client ?? client).get<GetBookingProfileResponses, unknown, ThrowOnError>({
@@ -239,16 +253,6 @@ export class DailyScheduleController {
         return (options.client ?? client).delete<DeleteDailyScheduleResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/company-user/daily-schedules/{id}',
-            ...options
-        });
-    }
-}
-
-export class CompanyUserScheduleController {
-    public static getSchedule<ThrowOnError extends boolean = false>(options: Options<GetScheduleData, ThrowOnError>) {
-        return (options.client ?? client).get<GetScheduleResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/schedules',
             ...options
         });
     }

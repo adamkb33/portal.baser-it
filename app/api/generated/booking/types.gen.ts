@@ -135,7 +135,7 @@ export type AppointmentDto = {
     contact: ContactDto;
     startTime: string;
     endTime: string;
-    groupedServiceGroups: Array<GroupedServiceGroupsDto>;
+    groupedServiceGroups: Array<GroupedServiceGroupDto>;
 };
 
 export type ContactDto = {
@@ -165,7 +165,7 @@ export type GroupedServiceDto = {
     images?: Array<ImageDto>;
 };
 
-export type GroupedServiceGroupsDto = {
+export type GroupedServiceGroupDto = {
     id: number;
     companyId: number;
     name: string;
@@ -210,6 +210,32 @@ export type CreateServiceGroupDto = {
     name: string;
 };
 
+export type GetCompanyUserScheduleDto = {
+    selectedServiceIds: Array<number>;
+    fromDate?: string;
+    toDate?: string;
+};
+
+export type ApiResponseListScheduleDto = {
+    success: boolean;
+    message: string;
+    data?: Array<ScheduleDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ScheduleDto = {
+    profileId: number;
+    date: string;
+    timeSlots: Array<ScheduleTimeSlot>;
+};
+
+export type ScheduleTimeSlot = {
+    startTime: string;
+    endTime: string;
+};
+
 export type CreateOrUpdateCompanyUserProfile = {
     userId: number;
     companyId: number;
@@ -235,7 +261,15 @@ export type BookingProfileDto = {
     familyName: string;
     image?: ImageDto;
     description?: string;
-    services: Array<ServiceDto>;
+    dailySchedule: Array<DailyScheduleDto>;
+    services: Array<GroupedServiceGroupDto>;
+};
+
+export type DailyScheduleDto = {
+    id: number;
+    dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+    startTime: string;
+    endTime: string;
 };
 
 export type CreateOrUpdateDailySchedulesDto = {
@@ -254,33 +288,6 @@ export type ApiResponseListDailyScheduleDto = {
     timestamp: string;
 };
 
-export type DailyScheduleDto = {
-    id: number;
-    dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
-    startTime: string;
-    endTime: string;
-};
-
-export type ApiResponseListScheduleDto = {
-    success: boolean;
-    message: string;
-    data?: Array<ScheduleDto>;
-    errors?: Array<ApiError>;
-    meta?: ApiMeta;
-    timestamp: string;
-};
-
-export type ScheduleDto = {
-    profileId: number;
-    date: string;
-    timeSlots: Array<ScheduleTimeSlot>;
-};
-
-export type ScheduleTimeSlot = {
-    startTime: string;
-    endTime: string;
-};
-
 export type ApiResponseListBookingProfileDto = {
     success: boolean;
     message: string;
@@ -290,10 +297,10 @@ export type ApiResponseListBookingProfileDto = {
     timestamp: string;
 };
 
-export type ApiResponseListGroupedServiceGroupsDto = {
+export type ApiResponseListGroupedServiceGroupDto = {
     success: boolean;
     message: string;
-    data?: Array<GroupedServiceGroupsDto>;
+    data?: Array<GroupedServiceGroupDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
@@ -358,21 +365,6 @@ export type PaginatedResponseServiceGroupDto = {
     totalPages: number;
     hasNext: boolean;
     hasPrevious: boolean;
-};
-
-export type GetCompanyUserScheduleDto = {
-    profileId: number;
-    date: string;
-    serviceIds: Array<number>;
-};
-
-export type ApiResponseScheduleDto = {
-    success: boolean;
-    message: string;
-    data?: ScheduleDto;
-    errors?: Array<ApiError>;
-    meta?: ApiMeta;
-    timestamp: string;
 };
 
 export type ApiResponseCompanyBookingInfoDto = {
@@ -691,6 +683,22 @@ export type CreateServiceGroupResponses = {
 
 export type CreateServiceGroupResponse = CreateServiceGroupResponses[keyof CreateServiceGroupResponses];
 
+export type GetScheduleData = {
+    body: GetCompanyUserScheduleDto;
+    path?: never;
+    query?: never;
+    url: '/company-user/schedules';
+};
+
+export type GetScheduleResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListScheduleDto;
+};
+
+export type GetScheduleResponse = GetScheduleResponses[keyof GetScheduleResponses];
+
 export type GetBookingProfileData = {
     body?: never;
     path?: never;
@@ -806,7 +814,7 @@ export type GetAppointmentSessionProfileServicesResponses = {
     /**
      * OK
      */
-    200: ApiResponseListGroupedServiceGroupsDto;
+    200: ApiResponseListGroupedServiceGroupDto;
 };
 
 export type GetAppointmentSessionProfileServicesResponse = GetAppointmentSessionProfileServicesResponses[keyof GetAppointmentSessionProfileServicesResponses];
@@ -828,24 +836,6 @@ export type GetAppointmentSessionOverviewResponses = {
 };
 
 export type GetAppointmentSessionOverviewResponse = GetAppointmentSessionOverviewResponses[keyof GetAppointmentSessionOverviewResponses];
-
-export type GetScheduleData = {
-    body?: never;
-    path?: never;
-    query: {
-        dto: GetCompanyUserScheduleDto;
-    };
-    url: '/company-user/schedules';
-};
-
-export type GetScheduleResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponseScheduleDto;
-};
-
-export type GetScheduleResponse = GetScheduleResponses[keyof GetScheduleResponses];
 
 export type GetDailySchedulesData = {
     body?: never;
