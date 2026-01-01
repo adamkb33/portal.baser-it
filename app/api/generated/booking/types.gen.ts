@@ -885,10 +885,10 @@ export type GetAppointmentsData = {
     query?: {
         page?: number;
         size?: number;
-        sortBy?: string;
-        sortDirection?: string;
+        sort?: string;
         fromDateTime?: string;
         toDateTime?: string;
+        search?: string;
     };
     url: '/company-user/appointments';
 };

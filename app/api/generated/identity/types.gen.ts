@@ -690,6 +690,7 @@ export type GetContactsData = {
         page?: number;
         size?: number;
         sort?: string;
+        search?: string;
     };
     url: '/company-user/contacts';
 };

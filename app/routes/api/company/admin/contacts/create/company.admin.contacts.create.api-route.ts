@@ -24,12 +24,14 @@ export async function action({ request }: Route.ActionArgs) {
       });
     });
 
-    return redirectWithSuccess(request, ROUTES_MAP['company.admin.contacts'].href, 'Kontakt opprettet');
+    const referer = request.headers.get('Referer');
+    const redirectTo = referer || ROUTES_MAP['company.admin.contacts'].href;
+
+    return redirectWithSuccess(request, redirectTo, 'Kontakt opprettet');
   } catch (error) {
-    return redirectWithError(
-      request,
-      ROUTES_MAP['company.admin.contacts'].href,
-      'Noe gikk galt ved opprettelse av kontakt',
-    );
+    const referer = request.headers.get('Referer');
+    const redirectTo = referer || ROUTES_MAP['company.admin.contacts'].href;
+
+    return redirectWithError(request, redirectTo, 'Noe gikk galt ved opprettelse av kontakt');
   }
 }
