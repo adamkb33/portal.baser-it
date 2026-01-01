@@ -6,16 +6,18 @@ import { CompanyUserContactController } from '~/api/generated/identity';
 import { withAuth } from '~/api/utils/with-auth';
 import type { Route } from './+types/company.booking.appointments.create.route';
 import { ContactSelector } from '../../_components/contact-selector';
+import { CompanyUserBookingProfileController, CompanyUserBookingController } from '~/api/generated/booking/sdk.gen';
+import { Label } from '~/components/ui/label';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const url = new URL(request.url);
     const contactPage = parseInt(url.searchParams.get('contact-page') || '0', 10);
-    const contactSize = parseInt(url.searchParams.get('contact-size') || '10', 10);
+    const contactSize = parseInt(url.searchParams.get('contact-size') || '5', 10);
     const contactSearch = url.searchParams.get('contact-search') || '';
 
-    const contactsResponse = await withAuth(request, async () => {
-      return CompanyUserContactController.getContacts({
+    const apiResponses = await withAuth(request, async () => {
+      const contactsResponse = await CompanyUserContactController.getContacts({
         query: {
           page: contactPage,
           size: contactSize,
@@ -23,18 +25,27 @@ export async function loader({ request }: Route.LoaderArgs) {
           ...(contactSearch && { search: contactSearch }),
         },
       });
+
+      const bookingProfileResponse = await CompanyUserBookingProfileController.getBookingProfile();
+
+      return {
+        contactsResponse,
+        bookingProfileResponse,
+      };
     });
 
-    const apiResponse = contactsResponse?.data?.data;
+    const contactsResponse = apiResponses.contactsResponse.data?.data;
+    const bookingProfileResponse = apiResponses.bookingProfileResponse.data;
 
     return {
-      contacts: apiResponse?.content || [],
+      contacts: contactsResponse?.content || [],
       contactPagination: {
-        page: apiResponse?.page ?? 0,
-        size: apiResponse?.size ?? contactSize,
-        totalElements: apiResponse?.totalElements ?? 0,
-        totalPages: apiResponse?.totalPages ?? 1,
+        page: contactsResponse?.page ?? 0,
+        size: contactsResponse?.size ?? contactSize,
+        totalElements: contactsResponse?.totalElements ?? 0,
+        totalPages: contactsResponse?.totalPages ?? 1,
       },
+      bookingProfile: bookingProfileResponse,
       contactSearch,
     };
   } catch (error: any) {
@@ -47,6 +58,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         totalElements: 0,
         totalPages: 1,
       },
+      bookingProfile: null,
       contactSearch: '',
       error: error?.message || 'Kunne ikke hente kontakter',
     };
@@ -59,7 +71,6 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
   const { contacts, contactPagination, contactSearch } = loaderData;
   const [selectedContact, setSelectedContact] = useState<ContactDto | null>(null);
 
-  // Parse appointment session from URL
   useEffect(() => {
     const sessionParam = searchParams.get('appointment-session');
     if (sessionParam && contacts.length > 0) {
@@ -105,15 +116,15 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
   };
 
   return (
-    <div className="">
+    <div className="flex flex-col space-y-4">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold mb-2">Bestill Ny Time</h1>
         <p className="text-sm text-muted-foreground">Opprett en ny timebestilling for en kunde.</p>
       </div>
 
-      <div className="md:col-span-1">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">1. Velg kontakt</label>
+      <div className="flex gap-4">
+        <div className="flex-1 space-y-2">
+          <Label className="text-sm font-medium">1. Velg kontakt</Label>
           <ContactSelector
             contacts={contacts}
             selectedContactId={selectedContact?.id || null}
@@ -124,24 +135,23 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
             initialSearch={contactSearch}
           />
         </div>
-      </div>
 
-      <div className="md:col-span-2">
-        {selectedContact ? (
-          <div className="space-y-4">
-            <div className="text-sm font-medium">2. Velg tjenester</div>
+        <div className="flex-1 space-y-2">
+          <Label className="text-sm font-medium">2. Velg tjenester</Label>
+          {selectedContact ? (
             <div className="border rounded-md p-8 text-center text-muted-foreground">Tjeneste-valg kommer her...</div>
-          </div>
-        ) : (
-          <div className="border rounded-md p-8 text-center text-muted-foreground">Velg en kontakt for å fortsette</div>
-        )}
+          ) : (
+            <div className="border rounded-md p-8 text-center text-muted-foreground">
+              Velg en kontakt for å fortsette
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex justify-between gap-4 pt-6 mt-6 border-t">
         <Button variant="outline" onClick={handleCancel}>
           Avbryt
         </Button>
-        <Button disabled={!selectedContact}>Neste</Button>
       </div>
     </div>
   );

@@ -72,16 +72,9 @@ export function ContactSelector({
           }}
           className="h-8 text-sm"
         />
-        <ContactFormDialog
-          trigger={
-            <Button variant="outline" size="sm" className="h-8 px-2">
-              <Plus className="h-4 w-4" />
-            </Button>
-          }
-        />
       </div>
 
-      <div className="space-y-1.5 max-h-[350px] overflow-y-auto pr-1">
+      <div className="space-y-1.5 h-[350px] overflow-y-auto p-4 border">
         {contacts.length === 0 ? (
           <div className="py-8 text-center">
             <User className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
@@ -152,34 +145,32 @@ export function ContactSelector({
         )}
       </div>
 
-      {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1.5 border-t">
-          <div className="font-medium">
-            Side {pagination.page + 1} av {pagination.totalPages}
-            <span className="text-muted-foreground/70 ml-1">({pagination.totalElements} totalt)</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => onPageChange(pagination.page - 1)}
-              disabled={!canPreviousPage}
-            >
-              <ChevronLeft className="h-3 w-3" />
+      <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1.5 border-t">
+        <ContactFormDialog
+          trigger={
+            <Button variant="outline" size="sm" className="h-8 px-2">
+              Legg til kontakt
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => onPageChange(pagination.page + 1)}
-              disabled={!canNextPage}
-            >
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          </div>
+          }
+        />
+        <div className="font-medium">
+          Side {pagination.page + 1} av {pagination.totalPages}
+          <span className="text-muted-foreground/70 ml-1">({pagination.totalElements} totalt)</span>
         </div>
-      )}
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(pagination.page - 1)}
+            disabled={!canPreviousPage}
+          >
+            Forrige side
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onPageChange(pagination.page + 1)} disabled={!canNextPage}>
+            Neste side
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

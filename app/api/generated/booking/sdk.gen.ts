@@ -192,7 +192,7 @@ export class PublicAppointmentSessionController {
     }
 }
 
-export class BookingProfileController {
+export class CompanyUserBookingProfileController {
     public static getBookingProfile<ThrowOnError extends boolean = false>(options?: Options<GetBookingProfileData, ThrowOnError>) {
         return (options?.client ?? client).get<GetBookingProfileResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],

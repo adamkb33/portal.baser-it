@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs } from 'react-router';
-import { BookingProfileController } from '~/api/generated/booking';
+import { CompanyUserBookingProfileController } from '~/api/generated/booking';
 import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
@@ -40,7 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
     console.log('Payload being sent:', JSON.stringify(payload, null, 2));
 
     await withAuth(request, async () => {
-      await BookingProfileController.createOrUpdateProfile({
+      await CompanyUserBookingProfileController.createOrUpdateProfile({
         body: payload,
       });
     });

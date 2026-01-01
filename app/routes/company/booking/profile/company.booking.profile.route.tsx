@@ -10,14 +10,14 @@ import { EmptyBookingProfile } from '../../../company/booking/profile/_component
 import { BookingProfileCard } from '../../../company/booking/profile/_components/booking-profile-card';
 import { PageHeader } from '../../../company/booking/profile/_components/page-header';
 import type { Route } from './+types/company.booking.profile.route';
-import { BookingProfileController, ServiceController } from '~/api/generated/booking';
+import { CompanyUserBookingProfileController, ServiceController } from '~/api/generated/booking';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const [bookingProfileResponse, servicesResponse] = await withAuth(request, async () => {
-      return Promise.all([BookingProfileController.getBookingProfile(), ServiceController.getServices()]);
+      return Promise.all([CompanyUserBookingProfileController.getBookingProfile(), ServiceController.getServices()]);
     });
 
     return {
