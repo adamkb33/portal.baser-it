@@ -8,7 +8,7 @@ import { COMPANY_ROLE_LABELS } from '~/lib/constants';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { EditEmployeeForm } from '../forms/edit-employee.form-dialog';
-import { ServerPaginatedTable } from '~/components/table/server-side-paginated.data-table';
+import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import type { CompanyUserDto } from '~/api/generated/identity';
 
 type EmployeesTableProps = {

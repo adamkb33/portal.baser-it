@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { ServiceDto, ServiceGroupDto } from 'tmp/openapi/gen/booking';
 import { Button } from '~/components/ui/button';
-import { ServerPaginatedTable } from '~/components/table/server-side-paginated.data-table';
+import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';

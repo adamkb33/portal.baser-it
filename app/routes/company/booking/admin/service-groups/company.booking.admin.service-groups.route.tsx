@@ -2,7 +2,7 @@ import { useFetcher, useNavigate, useSearchParams } from 'react-router';
 import { useState } from 'react';
 import type { ServiceGroupDto } from '~/api/clients/types';
 import { Button } from '~/components/ui/button';
-import { ServerPaginatedTable } from '~/components/table/server-side-paginated.data-table';
+import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';

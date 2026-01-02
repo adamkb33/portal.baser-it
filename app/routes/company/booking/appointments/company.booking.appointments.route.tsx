@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import type { AppointmentDto } from 'tmp/openapi/gen/booking';
 import { Button } from '~/components/ui/button';
-import { ServerPaginatedTable } from '~/components/table/server-side-paginated.data-table';
+import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
@@ -14,6 +14,7 @@ import { withAuth } from '~/api/utils/with-auth';
 import { CompanyUserAppointmentController } from '~/api/generated/booking';
 import { PageHeader } from '../../_components/page-header';
 import type { Route } from './+types/company.booking.appointments.route';
+import { Card, CardContent } from '~/components/ui/card';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -319,157 +320,354 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
 
   return (
     <div className="container mx-auto">
-      <ServerPaginatedTable<AppointmentDto>
-        items={appointments}
-        pagination={pagination}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-        getRowKey={(appointment, index) => appointment.id ?? `appointment-${index}`}
-        columns={[
-          { header: 'Tidspunkt', className: 'font-medium' },
-          { header: 'Fornavn' },
-          { header: 'Etternavn' },
-          { header: 'E-post' },
-          { header: 'Telefon' },
-          { header: 'Tjenester' },
-          { header: 'Varighet' },
-          { header: 'Pris' },
-          { header: 'Handlinger', className: 'text-right' },
-        ]}
-        headerSlot={
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-end gap-4">
-              <div className="flex-1 min-w-[200px]">
-                <Input
-                  placeholder="Søk på tjenestenavn eller gruppe…"
-                  value={searchFilter}
-                  onChange={(event) => handleSearchChange(event.target.value)}
-                />
+      {/* Desktop View */}
+      <div className="hidden md:block">
+        <ServerPaginatedTable<AppointmentDto>
+          items={appointments}
+          pagination={pagination}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          emptyMessage="Ingen avtaler ennå"
+          getRowKey={(appointment, index) => appointment.id ?? `appointment-${index}`}
+          columns={[
+            { header: 'Tidspunkt', className: 'font-medium' },
+            { header: 'Kunde' },
+            { header: 'Tjenester' },
+            { header: 'Varighet' },
+            { header: 'Pris' },
+            { header: 'Handlinger' },
+          ]}
+          headerSlot={
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-end gap-4">
+                <div className="flex-1 min-w-[200px]">
+                  <Input
+                    placeholder="Søk på tjenestenavn eller gruppe…"
+                    value={searchFilter}
+                    onChange={(event) => handleSearchChange(event.target.value)}
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-end gap-2">
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="fromDate" className="text-xs">
+                      Fra dato
+                    </Label>
+                    <Input
+                      id="fromDate"
+                      type="date"
+                      value={fromDate}
+                      onChange={(e) => setFromDate(e.target.value)}
+                      className="w-[140px]"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="toDate" className="text-xs">
+                      Til dato
+                    </Label>
+                    <Input
+                      id="toDate"
+                      type="date"
+                      value={toDate}
+                      onChange={(e) => setToDate(e.target.value)}
+                      className="w-[140px]"
+                    />
+                  </div>
+
+                  <Button onClick={applyDateFilters} size="sm">
+                    Filtrer
+                  </Button>
+                </div>
               </div>
-
-              <div className="flex flex-wrap items-end gap-2">
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="fromDate" className="text-xs">
-                    Fra dato
-                  </Label>
-                  <Input
-                    id="fromDate"
-                    type="date"
-                    value={fromDate}
-                    onChange={(e) => setFromDate(e.target.value)}
-                    className="w-[140px]"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="toDate" className="text-xs">
-                    Til dato
-                  </Label>
-                  <Input
-                    id="toDate"
-                    type="date"
-                    value={toDate}
-                    onChange={(e) => setToDate(e.target.value)}
-                    className="w-[140px]"
-                  />
-                </div>
-
-                <Button onClick={applyDateFilters} size="sm">
-                  Filtrer
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={handleUpcomingFilter}>
+                  Kommende
+                </Button>
+                <Button variant="outline" size="sm" onClick={handlePastFilter}>
+                  Tidligere
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleTodayFilter}>
+                  I dag
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleThisWeekFilter}>
+                  Denne uken
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleThisMonthFilter}>
+                  Denne måneden
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                  Nullstill filtre
                 </Button>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={handleUpcomingFilter}>
-                Kommende
-              </Button>
-              <Button variant="outline" size="sm" onClick={handlePastFilter}>
-                Tidligere
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleTodayFilter}>
-                I dag
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleThisWeekFilter}>
-                Denne uken
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleThisMonthFilter}>
-                Denne måneden
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-                Nullstill filtre
-              </Button>
-            </div>
-          </div>
-        }
-        renderRow={(appointment) => (
-          <TableRow>
-            <TableCell className="font-medium">
-              <div className="flex flex-col">
-                <span>{formatDateTime(appointment.startTime)}</span>
-              </div>
-            </TableCell>
-            <TableCell>{appointment.contact?.givenName}</TableCell>
-            <TableCell>{appointment.contact?.familyName}</TableCell>
-            <TableCell>
-              {appointment.contact?.email?.value && <span className="text-sm">{appointment.contact.email.value}</span>}
-            </TableCell>
-            <TableCell>
-              {appointment.contact?.mobileNumber?.value && (
-                <span className="text-sm">{appointment.contact.mobileNumber.value}</span>
-              )}
-            </TableCell>
-            <TableCell>
-              {getTotalServiceCount(appointment) > 0 ? (
+          }
+          renderRow={(appointment) => (
+            <TableRow>
+              <TableCell className="font-medium">
+                <div className="flex flex-col">
+                  <span>{formatDateTime(appointment.startTime)}</span>
+                </div>
+              </TableCell>
+              <TableCell>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-7">
-                      Se tjenester ({getTotalServiceCount(appointment)})
+                    <Button variant="link" size="sm" className="h-7">
+                      {appointment.contact.givenName + ' ' + appointment.contact.familyName}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-80" align="start">
                     <div className="space-y-3">
-                      <h4 className="font-semibold text-sm">Tjenester</h4>
-                      {appointment.groupedServiceGroups?.map((group) => (
-                        <div key={group.id} className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="font-semibold">
-                              {group.name}
-                            </Badge>
+                      <h4 className="font-semibold text-sm">Kundeinformasjon</h4>
+                      <div className="space-y-2 text-sm">
+                        {appointment.contact.givenName && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Fornavn:</span>
+                            <span className="font-medium">{appointment.contact.givenName}</span>
                           </div>
-                          <div className="flex flex-wrap gap-1.5 pl-2">
-                            {group.services?.map((service) => (
-                              <Badge key={service.id} variant="secondary" className="font-normal text-xs">
-                                {service.name}
-                              </Badge>
-                            ))}
+                        )}
+                        {appointment.contact.familyName && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Etternavn:</span>
+                            <span className="font-medium">{appointment.contact.familyName}</span>
                           </div>
-                        </div>
-                      ))}
+                        )}
+                        {appointment.contact.email?.value && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">E-post:</span>
+                            <span className="font-medium">{appointment.contact.email.value}</span>
+                          </div>
+                        )}
+                        {appointment.contact.mobileNumber?.value && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Telefon:</span>
+                            <span className="font-medium">{appointment.contact.mobileNumber.value}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </PopoverContent>
                 </Popover>
-              ) : (
-                '-'
-              )}
-            </TableCell>
-            <TableCell>{getTotalDuration(appointment)}</TableCell>
-            <TableCell>{getTotalPrice(appointment)}</TableCell>
-            <TableCell className="text-right">
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-500"
-                  onClick={() => handleDeleteClick(appointment.id!)}
-                  disabled={fetcher.state !== 'idle' && deletingAppointmentId === appointment.id}
-                >
-                  Slett
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
+              </TableCell>
+              <TableCell>
+                {getTotalServiceCount(appointment) > 1 ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="link" size="sm" className="h-7">
+                        Se tjenester ({getTotalServiceCount(appointment)})
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-sm">Tjenester</h4>
+                        {appointment.groupedServiceGroups?.map((group) => (
+                          <div key={group.id} className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="font-semibold">
+                                {group.name}
+                              </Badge>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5 pl-2">
+                              {group.services?.map((service) => (
+                                <Badge key={service.id} variant="secondary" className="font-normal text-xs">
+                                  {service.name}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">{appointment.groupedServiceGroups?.[0]?.name}</span>
+                    <span className="text-sm font-medium">
+                      {appointment.groupedServiceGroups?.[0]?.services?.[0]?.name}
+                    </span>
+                  </div>
+                )}
+              </TableCell>
+              <TableCell>{getTotalDuration(appointment)}</TableCell>
+              <TableCell>{getTotalPrice(appointment)}</TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500"
+                    onClick={() => handleDeleteClick(appointment.id!)}
+                    disabled={fetcher.state !== 'idle' && deletingAppointmentId === appointment.id}
+                  >
+                    Slett
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
+        />
+      </div>
+
+      {/* Mobile View */}
+      <div className="md:hidden space-y-4">
+        {/* Filters */}
+        <div className="space-y-3 border border-border bg-background p-4">
+          <Input
+            placeholder="Søk..."
+            value={searchFilter}
+            onChange={(event) => handleSearchChange(event.target.value)}
+          />
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            <Button variant="outline" size="sm" onClick={handleUpcomingFilter} className="whitespace-nowrap">
+              Kommende
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleTodayFilter} className="whitespace-nowrap">
+              I dag
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleThisWeekFilter} className="whitespace-nowrap">
+              Uken
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleClearFilters} className="whitespace-nowrap">
+              Nullstill
+            </Button>
+          </div>
+        </div>
+
+        {/* Cards */}
+        <div className="space-y-3">
+          {appointments.length > 0 ? (
+            appointments.map((appointment) => (
+              <Card key={appointment.id} className="border-border">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">{formatDateTime(appointment.startTime)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {appointment.contact.givenName} {appointment.contact.familyName}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 h-8"
+                      onClick={() => handleDeleteClick(appointment.id!)}
+                      disabled={fetcher.state !== 'idle' && deletingAppointmentId === appointment.id}
+                    >
+                      Slett
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    {getTotalServiceCount(appointment) > 1 ? (
+                      <div>
+                        <span className="text-muted-foreground">Tjenester: </span>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="link" size="sm" className="h-auto p-0">
+                              {getTotalServiceCount(appointment)} tjenester
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-80">
+                            <div className="space-y-3">
+                              {appointment.groupedServiceGroups?.map((group) => (
+                                <div key={group.id} className="space-y-2">
+                                  <Badge variant="outline" className="font-semibold">
+                                    {group.name}
+                                  </Badge>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {group.services?.map((service) => (
+                                      <Badge key={service.id} variant="secondary" className="text-xs">
+                                        {service.name}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    ) : (
+                      <div>
+                        <span className="text-xs text-muted-foreground">
+                          {appointment.groupedServiceGroups?.[0]?.name}
+                        </span>
+                        <p className="font-medium">{appointment.groupedServiceGroups?.[0]?.services?.[0]?.name}</p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-4">
+                      <div>
+                        <span className="text-muted-foreground">Varighet: </span>
+                        <span className="font-medium">{getTotalDuration(appointment)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Pris: </span>
+                        <span className="font-medium">{getTotalPrice(appointment)}</span>
+                      </div>
+                    </div>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="link" size="sm" className="h-auto p-0">
+                          Se kontaktinfo
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80">
+                        <div className="space-y-2 text-sm">
+                          {appointment.contact.email?.value && (
+                            <div>
+                              <span className="text-muted-foreground">E-post: </span>
+                              <span className="font-medium">{appointment.contact.email.value}</span>
+                            </div>
+                          )}
+                          {appointment.contact.mobileNumber?.value && (
+                            <div>
+                              <span className="text-muted-foreground">Telefon: </span>
+                              <span className="font-medium">{appointment.contact.mobileNumber.value}</span>
+                            </div>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <Card className="border-border">
+              <CardContent className="p-8 text-center text-muted-foreground">Ingen avtaler ennå</CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {appointments.length > 0 && (
+          <div className="border border-border bg-background p-4 space-y-3">
+            <div className="text-xs text-muted-foreground text-center">
+              Side {pagination.page + 1} / {pagination.totalPages || 1}
+            </div>
+            <div className="flex justify-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page === 0}
+              >
+                ←
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page >= pagination.totalPages - 1}
+              >
+                →
+              </Button>
+            </div>
+          </div>
         )}
-      />
+      </div>
 
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}
