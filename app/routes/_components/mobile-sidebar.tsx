@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router';
 import { type RouteBranch } from '~/lib/route-tree';
 import { useState, useEffect } from 'react';
+import { getIcon } from '~/lib/route-icon-map';
 
 type MobileSidebarProps = {
   branches: RouteBranch[];
@@ -41,18 +42,21 @@ export function MobileSidebar({ branches, isOpen, onClose }: MobileSidebarProps)
       />
 
       <aside
-        className="fixed inset-y-0 left-0 w-80 max-w-[85vw] border-r border-border bg-background z-50 md:hidden shadow-2xl"
+        className="fixed inset-y-0 left-0 w-[85vw] max-w-sm border-r border-border bg-background z-50 md:hidden shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
       >
-        <div className="flex items-center justify-between border-b border-border px-6 py-4 bg-muted/30">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3 bg-muted/30">
+          <span className="text-sm font-semibold text-muted-foreground">Meny</span>
+
           <button
             onClick={onClose}
             className="
-              w-10 h-10 flex items-center justify-center
+              w-11 h-11 flex items-center justify-center
               rounded border border-border
               text-foreground hover:bg-accent hover:text-accent-foreground
+              active:scale-95
               focus:outline-none focus:ring-2 focus:ring-ring
               transition-all duration-200
             "
@@ -64,8 +68,8 @@ export function MobileSidebar({ branches, isOpen, onClose }: MobileSidebarProps)
           </button>
         </div>
 
-        <nav className="overflow-y-auto h-[calc(100vh-4rem)] overscroll-contain">
-          <ul className="py-2 px-2" role="list">
+        <nav className="overflow-y-auto h-[calc(100vh-3.75rem)] overscroll-contain">
+          <ul className="py-2 px-2 space-y-0.5" role="list">
             {branches.map((item) => (
               <MobileSidebarItem
                 key={item.id}
@@ -90,19 +94,14 @@ type MobileSidebarItemProps = {
 };
 
 function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSidebarItemProps) {
+  const Icon = item.iconName ? getIcon(item.iconName) : undefined;
   const hasChildren = item.children && item.children.length > 0;
-
   const isInActiveTrail = currentPath.startsWith(item.href);
   const [isExpanded, setIsExpanded] = useState(isInActiveTrail);
-
   const isActive = currentPath === item.href;
 
-  // Mobile spacing: 20px per level (Emma's 8px grid: 2.5 units, rounded up)
-  const indentStyle = {
-    paddingLeft: `${level === 0 ? 12 : 12 + level * 20}px`,
-  };
+  const indentPadding = level * 16;
 
-  // Inverse highlighting - MORE important on mobile (less screen space)
   const getHighlightOpacity = () => {
     if (level === 0) return 'bg-accent/10';
     if (level === 1) return 'bg-accent/25';
@@ -118,25 +117,22 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
   };
 
   const getBorderWidth = () => {
-    if (level === 0) return 'w-1'; // 4px
-    if (level === 1) return 'w-1.5'; // 6px
-    if (level === 2) return 'w-2'; // 8px
-    return 'w-2.5'; // 10px
+    if (level === 0) return 'w-1';
+    if (level === 1) return 'w-1.5';
+    if (level === 2) return 'w-2';
+    return 'w-2.5';
   };
 
   const getTextWeight = () => {
     if (!isActive) {
       return level === 0 ? 'font-semibold' : 'font-medium';
     }
-    if (level === 0) return 'font-semibold';
-    if (level === 1) return 'font-bold';
-    return 'font-extrabold';
+    return level === 0 ? 'font-semibold' : 'font-bold';
   };
 
   return (
-    <li role="listitem" className="mb-1">
+    <li role="listitem">
       <div className="relative">
-        {/* Left border - thicker as you go deeper */}
         <div
           className={`
             absolute left-0 top-0 bottom-0 transition-all duration-200 rounded-r
@@ -146,8 +142,7 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
           aria-hidden="true"
         />
 
-        <div className="flex items-center gap-1">
-          {/* Expand/collapse - MOBILE-SIZED touch target (48px) */}
+        <div className="flex items-center">
           {hasChildren && (
             <button
               onClick={(e) => {
@@ -157,13 +152,13 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
               }}
               aria-expanded={isExpanded}
               aria-label={`${isExpanded ? 'Skjul' : 'Vis'} ${item.label}`}
-              className={`
-                flex-shrink-0 w-12 h-12 flex items-center justify-center
+              style={{ marginLeft: level === 0 ? '4px' : `${indentPadding}px` }}
+              className="
+                flex-shrink-0 w-11 h-11 flex items-center justify-center
                 transition-all duration-200 rounded
                 hover:bg-muted active:bg-muted/80
                 focus:outline-none focus:ring-2 focus:ring-ring
-                ${level === 0 ? 'ml-1' : 'ml-0'}
-              `}
+              "
             >
               <svg
                 className={`
@@ -182,18 +177,18 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
             </button>
           )}
 
-          {/* Navigation link - 48px min height for mobile */}
           <Link
             to={item.href}
             onClick={onNavigate}
             aria-current={isActive ? 'page' : undefined}
-            style={indentStyle}
+            style={{
+              paddingLeft: hasChildren ? '8px' : `${(level === 0 ? 48 : 12) + indentPadding}px`,
+            }}
             className={`
-              flex-1 flex items-center min-h-[48px] gap-3 py-3 pr-4
-              text-sm transition-all duration-200
+              flex-1 flex items-center gap-3 min-h-[48px] py-3 pr-3
+              text-sm leading-tight transition-all duration-200
               rounded-r active:scale-[0.98]
               focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
-              ${hasChildren ? '' : level === 0 ? 'pl-14' : 'pl-4'}
               ${getTextWeight()}
               ${
                 isActive
@@ -204,14 +199,20 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
               }
             `}
           >
-            <span className="leading-tight">{item.label}</span>
+            {Icon && level === 0 && (
+              <Icon
+                className={`h-5 w-5 shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+                aria-hidden="true"
+              />
+            )}
+
+            <span className="truncate">{item.label}</span>
           </Link>
         </div>
       </div>
 
-      {/* Progressive disclosure - CRITICAL on mobile */}
       {hasChildren && isExpanded && (
-        <ul className="mt-1 space-y-1" role="list" aria-label={`${item.label} undermeny`}>
+        <ul className="mt-0.5 space-y-0.5" role="list" aria-label={`${item.label} undermeny`}>
           {item.children!.map((child) => (
             <MobileSidebarItem
               key={child.id}

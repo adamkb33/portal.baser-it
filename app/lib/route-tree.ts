@@ -31,23 +31,6 @@ export enum CompanyRole {
   EMPLOYEE = 'EMPLOYEE',
 }
 
-import {
-  Calendar,
-  Users,
-  Settings,
-  Home,
-  UserCircle,
-  Building2,
-  ClipboardList,
-  Clock,
-  FolderKanban,
-  Briefcase,
-  LogIn,
-  LogOut,
-  Key,
-  UserPlus,
-  type LucideIcon,
-} from 'lucide-react';
 import type { AuthenticatedUserPayload, CompanyDto, CompanyUserDto } from '~/api/generated/identity';
 import type { IconName } from './route-icon-map';
 
@@ -64,6 +47,7 @@ export type RouteBranch = {
   iconName?: IconName;
   children?: RouteBranch[];
 };
+
 export const ROUTE_TREE: RouteBranch[] = [
   {
     id: 'auth',
@@ -641,7 +625,6 @@ export const createNavigation = (
       return childBranches;
     }
 
-    // ✅ BEST FIX: Create new object but preserve icon reference
     const filteredBranch: RouteBranch = {
       id: branch.id,
       href: branch.href,
@@ -652,7 +635,7 @@ export const createNavigation = (
       category: branch.category,
       userRoles: branch.userRoles,
       companyRoles: branch.companyRoles,
-      iconName: branch.iconName, // ✅ Direct assignment preserves component
+      iconName: branch.iconName,
       children: childBranches.length > 0 ? childBranches : undefined,
     };
 

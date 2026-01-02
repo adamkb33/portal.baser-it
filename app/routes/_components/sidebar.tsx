@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router';
 import { type RouteBranch } from '~/lib/route-tree';
 import { useState } from 'react';
+import { getIcon } from '~/lib/route-icon-map';
 
 type SidebarProps = {
   branches: RouteBranch[];
@@ -15,7 +16,7 @@ export function Sidebar({ branches }: SidebarProps) {
 
   return (
     <nav className="w-full" aria-label="Main navigation">
-      <ul className="space-y-1" role="list">
+      <ul className="space-y-0.5 md:space-y-1" role="list">
         {branches.map((item) => (
           <SidebarItem key={item.id} item={item} currentPath={location.pathname} level={0} />
         ))}
@@ -31,12 +32,14 @@ type SidebarItemProps = {
 };
 
 function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
+  const Icon = item.iconName ? getIcon(item.iconName) : undefined;
   const hasChildren = item.children && item.children.length > 0;
   const isInActiveTrail = currentPath.startsWith(item.href);
   const [isExpanded, setIsExpanded] = useState(isInActiveTrail);
   const isActive = currentPath === item.href;
 
-  const indentPadding = level * 16;
+  // Mobile: 12px per level
+  const indentPadding = level * 12;
   const baseLeftPadding = hasChildren ? 0 : 40;
   const totalLeftPadding = baseLeftPadding + indentPadding;
 
@@ -55,9 +58,9 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
   };
 
   const getBorderWidth = () => {
-    if (level === 0) return 'w-0.5';
-    if (level === 1) return 'w-1';
-    if (level === 2) return 'w-1.5';
+    if (level === 0) return 'w-0.5 md:w-0.5';
+    if (level === 1) return 'w-1 md:w-1';
+    if (level === 2) return 'w-1.5 md:w-1.5';
     return 'w-2';
   };
 
@@ -65,14 +68,13 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
     if (!isActive) {
       return level === 0 ? 'font-semibold' : 'font-medium';
     }
-    if (level === 0) return 'font-semibold';
-    if (level === 1) return 'font-semibold';
     return 'font-semibold';
   };
 
   return (
     <li role="listitem">
       <div className="relative">
+        {/* Left border indicator */}
         <div
           className={`
             absolute left-0 top-0 bottom-0 transition-all duration-200 rounded-r
@@ -82,7 +84,9 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
           aria-hidden="true"
         />
 
-        <div className="flex items-stretch min-h-[44px]">
+        {/* Interactive row - 48px minimum on mobile, 44px on desktop */}
+        <div className="flex items-stretch min-h-[48px] md:min-h-[44px]">
+          {/* Expand/collapse button - 48px touch target mobile, 40px desktop */}
           {hasChildren && (
             <button
               onClick={(e) => {
@@ -93,15 +97,15 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
               aria-label={`${isExpanded ? 'Skjul' : 'Vis'} ${item.label}`}
               style={{ marginLeft: `${indentPadding}px` }}
               className="
-                flex-shrink-0 w-10 flex items-center justify-center
+                flex-shrink-0 w-12 md:w-10 flex items-center justify-center
                 transition-all duration-200 rounded
-                hover:bg-muted 
+                hover:bg-muted active:bg-muted/80
                 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
               "
             >
               <svg
                 className={`
-                  w-4 h-4 transition-transform duration-200
+                  w-4 h-4 md:w-4 md:h-4 transition-transform duration-200
                   ${isExpanded ? 'rotate-90' : 'rotate-0'}
                   ${isActive ? 'text-primary' : 'text-muted-foreground'}
                 `}
@@ -116,15 +120,18 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
             </button>
           )}
 
+          {/* Navigation link - responsive padding and text, icon only for level 0 */}
           <Link
             to={item.href}
             aria-current={isActive ? 'page' : undefined}
             style={{ paddingLeft: hasChildren ? '8px' : `${totalLeftPadding}px` }}
             className={`
-              flex-1 flex items-center
-              py-2.5 pr-3
-              text-[0.9375rem] leading-snug transition-all duration-200
+              flex-1 flex items-center gap-3
+              py-3 md:py-2.5 pr-3
+              text-sm md:text-[0.9375rem] leading-tight md:leading-snug 
+              transition-all duration-200
               rounded-r 
+              active:scale-[0.98]
               focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
               ${getTextWeight()}
               ${
@@ -132,17 +139,26 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
                   ? `text-primary ${getHighlightOpacity()}`
                   : isInActiveTrail
                     ? `text-foreground ${getTrailOpacity()}`
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted/80'
               }
             `}
           >
+            {/* Icon - only for top-level items (level 0) */}
+            {Icon && level === 0 && (
+              <Icon
+                className={`h-5 w-5 shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+                aria-hidden="true"
+              />
+            )}
+
             <span className="truncate">{item.label}</span>
           </Link>
         </div>
       </div>
 
+      {/* Child items - progressive disclosure */}
       {hasChildren && isExpanded && (
-        <ul className="mt-1 space-y-1" role="list" aria-label={`${item.label} undermeny`}>
+        <ul className="mt-0.5 md:mt-1 space-y-0.5 md:space-y-1" role="list" aria-label={`${item.label} undermeny`}>
           {item.children!.map((child) => (
             <SidebarItem key={child.id} item={child} currentPath={currentPath} level={level + 1} />
           ))}

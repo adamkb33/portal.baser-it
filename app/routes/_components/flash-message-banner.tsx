@@ -81,7 +81,7 @@ export function FlashMessageBanner({ message }: FlashMessageProps) {
   const { icon: Icon, gradient, iconBg, iconColor, accent, labelColor, textColor } = config[message.type];
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center p-4 md:p-6">
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center p-3 md:p-6">
       <div
         className={`
           pointer-events-auto w-full max-w-md
@@ -96,43 +96,47 @@ export function FlashMessageBanner({ message }: FlashMessageProps) {
         aria-live="polite"
         aria-atomic="true"
       >
-        <div className="flex items-start gap-4 p-4">
+        <div className="flex items-start gap-3 p-3 md:gap-4 md:p-4">
           <div
             className={`
               flex h-10 w-10 shrink-0 items-center justify-center 
+              md:h-12 md:w-12
               rounded ${iconBg}
               shadow-sm
               transition-transform duration-200
               hover:scale-110
             `}
           >
-            <Icon className={`h-5 w-5 ${iconColor}`} />
+            <Icon className="h-5 w-5 md:h-6 md:w-6 ${iconColor}" />
           </div>
 
           <div className="flex-1 min-w-0 pt-0.5">
-            <p className={`text-xs font-medium uppercase tracking-wider ${labelColor} mb-2`}>
+            <p className={`text-xs font-medium uppercase tracking-wider ${labelColor} mb-1 md:mb-1.5`}>
               {message.type === 'success' && 'Suksess'}
               {message.type === 'error' && 'Feil'}
               {message.type === 'info' && 'Informasjon'}
               {message.type === 'warning' && 'Advarsel'}
             </p>
-            <p className={`text-base font-semibold ${textColor} leading-relaxed`}>{message.text}</p>
+            <p className={`text-sm md:text-base font-semibold ${textColor} leading-snug md:leading-relaxed`}>
+              {message.text}
+            </p>
           </div>
 
           <button
             onClick={handleClose}
             className="
-              flex h-8 w-8 shrink-0 items-center justify-center
+              flex h-11 w-11 shrink-0 items-center justify-center
+              md:h-10 md:w-10
               rounded
               text-muted-foreground hover:text-foreground
               hover:bg-background/50
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1
               active:scale-95
             "
             aria-label="Lukk melding"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5 md:h-4 md:w-4" />
           </button>
         </div>
 
