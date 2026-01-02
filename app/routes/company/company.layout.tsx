@@ -22,7 +22,7 @@ export default function CompanyLayout() {
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 py-4 md:px-6 md:py-6 lg:py-8">
+      <main className="flex-1 container mx-auto p-2 md:px-6 md:py-6 lg:py-8">
         <Outlet context={context} />
       </main>
     </div>

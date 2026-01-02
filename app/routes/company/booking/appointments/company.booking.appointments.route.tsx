@@ -127,7 +127,6 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
   const [toDate, setToDate] = useState('');
   const [toTime, setToTime] = useState('');
 
-  // Parse initial filters from URL
   useEffect(() => {
     if (filters?.fromDateTime) {
       const fromDt = new Date(filters.fromDateTime);
@@ -302,18 +301,6 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
     });
   };
 
-  const getServiceNames = (appointment: AppointmentDto) => {
-    if (!appointment.groupedServiceGroups || appointment.groupedServiceGroups.length === 0) {
-      return '-';
-    }
-
-    const allServices = appointment.groupedServiceGroups.flatMap((group) =>
-      (group.services ?? []).map((service) => service.name),
-    );
-
-    return allServices.join(', ');
-  };
-
   const getTotalPrice = (appointment: AppointmentDto) => {
     const allServices = appointment.groupedServiceGroups?.flatMap((group) => group.services ?? []) ?? [];
     const total = allServices.reduce((sum, service) => sum + (service.price ?? 0), 0);
@@ -332,11 +319,6 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
 
   return (
     <div className="container mx-auto">
-      <PageHeader
-        title="Timebestillinger"
-        description="Administrer og overvåk alle timebestillinger. Hold oversikt over kommende og tidligere avtaler."
-      />
-
       <ServerPaginatedTable<AppointmentDto>
         items={appointments}
         pagination={pagination}
@@ -356,27 +338,6 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
         ]}
         headerSlot={
           <div className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={handleUpcomingFilter}>
-                Kommende
-              </Button>
-              <Button variant="outline" size="sm" onClick={handlePastFilter}>
-                Tidligere
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleTodayFilter}>
-                I dag
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleThisWeekFilter}>
-                Denne uken
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleThisMonthFilter}>
-                Denne måneden
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-                Nullstill filtre
-              </Button>
-            </div>
-
             <div className="flex flex-wrap items-end gap-4">
               <div className="flex-1 min-w-[200px]">
                 <Input
@@ -417,6 +378,26 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
                   Filtrer
                 </Button>
               </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={handleUpcomingFilter}>
+                Kommende
+              </Button>
+              <Button variant="outline" size="sm" onClick={handlePastFilter}>
+                Tidligere
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleTodayFilter}>
+                I dag
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleThisWeekFilter}>
+                Denne uken
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleThisMonthFilter}>
+                Denne måneden
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                Nullstill filtre
+              </Button>
             </div>
           </div>
         }

@@ -82,7 +82,6 @@ export function ServerPaginatedTable<T>({
         </div>
       </div>
 
-      {/* Table */}
       <div className="[&_>div]:border-0">
         <Table>
           <TableHeader>
@@ -108,7 +107,6 @@ export function ServerPaginatedTable<T>({
         </Table>
       </div>
 
-      {/* Footer bar */}
       <div className="border-t border-border p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">

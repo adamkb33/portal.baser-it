@@ -162,7 +162,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
           <MobileSidebar branches={sidebarBranches} isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         )}
 
-        <section className="relative z-10 overflow-auto border-r border-border p-4 sm:p-5 lg:col-span-8 bg-background/70">
+        <section className="relative z-10 overflow-auto border-r border-border p-2 sm:p-5 lg:col-span-8 bg-background/70">
           <Outlet
             context={{
               userNav,

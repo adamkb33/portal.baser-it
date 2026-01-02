@@ -68,6 +68,12 @@ export default function CompanyAdminEmployees({ loaderData }: Route.ComponentPro
 
   return (
     <>
+      <PageHeader
+        title="Ansatte"
+        description="Oversikt over alle brukere tilknyttet selskapet. Administrer roller, tilganger og inviter nye medlemmer."
+        actions={<InviteEmployeeForm trigger={<Button>Inviter ansatt</Button>} />}
+      />
+
       <div className="flex items-center py-2">
         <Input
           placeholder="Filtrer på e-post eller rolle…"
