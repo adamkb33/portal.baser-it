@@ -20,20 +20,19 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
   const authBranches = navigationBranches.filter((branch) => branch.category === BrachCategory.AUTH);
 
   return (
-    <div className="flex justify-between">
-      <div className="flex items-center gap-6">
-        <Link to="/" className="text-xl font-semibold">
+    <div className="flex h-full items-center justify-between w-full">
+      <div className="flex h-full items-center gap-6">
+        <Link to="/" className="flex items-center h-full text-xl font-semibold">
           <BiTLogo size={'xl'} />
         </Link>
         <CompanyHeader company={companyContext} />
       </div>
-
-      <div className="hidden md:flex items-center gap-4">
+      <div className="hidden md:flex items-center gap-4 h-full">
         {userBranches.length > 0 && (
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="User menu">
-                <User className="h-5 w-5" />
+              <Button variant="outline" size="icon" aria-label="User menu" className="h-10 w-10 rounded">
+                <User className="h-8 w-8" />
               </Button>
             </DropdownMenuTrigger>
 
@@ -46,7 +45,6 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-
         {authBranches.map((link) => (
           <NavLink key={link.id} link={link} />
         ))}

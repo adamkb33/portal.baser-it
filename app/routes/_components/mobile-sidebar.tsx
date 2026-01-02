@@ -11,14 +11,12 @@ type MobileSidebarProps = {
 export function MobileSidebar({ branches, isOpen, onClose }: MobileSidebarProps) {
   const location = useLocation();
 
-  // Close sidebar when route changes (auto-close after navigation)
   useEffect(() => {
     if (isOpen) {
       onClose();
     }
   }, [location.pathname]);
 
-  // Prevent body scroll when sidebar is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -36,23 +34,19 @@ export function MobileSidebar({ branches, isOpen, onClose }: MobileSidebarProps)
 
   return (
     <>
-      {/* Backdrop - close on tap */}
       <div
         className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Sidebar panel */}
       <aside
         className="fixed inset-y-0 left-0 w-80 max-w-[85vw] border-r border-border bg-background z-50 md:hidden shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
       >
-        {/* Header - bigger touch target for close */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4 bg-muted/30">
-          <span className="text-sm font-semibold text-foreground">Navigasjon</span>
           <button
             onClick={onClose}
             className="
@@ -70,7 +64,6 @@ export function MobileSidebar({ branches, isOpen, onClose }: MobileSidebarProps)
           </button>
         </div>
 
-        {/* Navigation content */}
         <nav className="overflow-y-auto h-[calc(100vh-4rem)] overscroll-contain">
           <ul className="py-2 px-2" role="list">
             {branches.map((item) => (

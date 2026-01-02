@@ -26,13 +26,11 @@ export function NavBreadcrumbs({ items, className }: BreadcrumbsProps) {
       for (const item of navItems) {
         const currentTrail = [...path, item];
 
-        // Check if this item matches the current location
         if (item.href === currentPath) {
           trail.push(...currentTrail);
           return true;
         }
 
-        // Recursively search children
         if (item.children && item.children.length > 0) {
           if (findPath(item.children, currentTrail)) {
             return true;
@@ -53,20 +51,24 @@ export function NavBreadcrumbs({ items, className }: BreadcrumbsProps) {
   return (
     <Breadcrumb className={className}>
       <BreadcrumbList>
-        {breadcrumbTrail.map((item, index) => (
-          <React.Fragment key={item.id}>
-            <BreadcrumbItem>
-              {index === breadcrumbTrail.length - 1 ? (
-                <BreadcrumbPage>{item.label}</BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink asChild>
-                  <NavLink to={item.href}>{item.label}</NavLink>
-                </BreadcrumbLink>
-              )}
-            </BreadcrumbItem>
-            {index < breadcrumbTrail.length - 1 && <BreadcrumbSeparator />}
-          </React.Fragment>
-        ))}
+        {breadcrumbTrail.map((item, index) => {
+          const isLast = index === breadcrumbTrail.length - 1;
+
+          return (
+            <React.Fragment key={item.id}>
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <NavLink to={item.href}>{item.label}</NavLink>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+              {!isLast && <BreadcrumbSeparator />}
+            </React.Fragment>
+          );
+        })}
       </BreadcrumbList>
     </Breadcrumb>
   );

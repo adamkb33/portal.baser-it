@@ -49,6 +49,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { AuthenticatedUserPayload, CompanyDto, CompanyUserDto } from '~/api/generated/identity';
+import type { IconName } from './route-icon-map';
 
 export type RouteBranch = {
   id: string;
@@ -60,10 +61,9 @@ export type RouteBranch = {
   category: BrachCategory;
   userRoles?: UserRole[];
   companyRoles?: CompanyRole[];
-  icon?: LucideIcon;
+  iconName?: IconName;
   children?: RouteBranch[];
 };
-
 export const ROUTE_TREE: RouteBranch[] = [
   {
     id: 'auth',
@@ -72,7 +72,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     category: BrachCategory.AUTH,
     accessType: Access.PUBLIC,
     hidden: true,
-    icon: Key,
+    iconName: 'Key',
     children: [
       {
         id: 'auth.sign-in',
@@ -81,7 +81,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         category: BrachCategory.AUTH,
         placement: RoutePlaceMent.NAVIGATION,
         accessType: Access.NOT_AUTHENTICATED,
-        icon: LogIn,
+        iconName: 'LogIn',
       },
       {
         id: 'auth.forgot-password',
@@ -89,7 +89,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         label: 'Glemt passord',
         category: BrachCategory.AUTH,
         accessType: Access.NOT_AUTHENTICATED,
-        icon: Key,
+        iconName: 'Key',
       },
       {
         id: 'auth.reset-password',
@@ -97,7 +97,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         label: 'Tilbakestill passord',
         category: BrachCategory.AUTH,
         accessType: Access.NOT_AUTHENTICATED,
-        icon: Key,
+        iconName: 'Key',
       },
       {
         id: 'auth.accept-invite',
@@ -105,7 +105,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         label: 'Aksepter invitasjon',
         category: BrachCategory.NONE,
         accessType: Access.NOT_AUTHENTICATED,
-        icon: UserPlus,
+        iconName: 'UserPlus',
       },
       {
         id: 'auth.sign-out',
@@ -114,7 +114,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         category: BrachCategory.AUTH,
         placement: RoutePlaceMent.NAVIGATION,
         accessType: Access.AUTHENTICATED,
-        icon: LogOut,
+        iconName: 'LogOut',
       },
     ],
   },
@@ -125,7 +125,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     category: BrachCategory.USER,
     accessType: Access.PUBLIC,
     hidden: true,
-    icon: UserCircle,
+    iconName: 'UserCircle',
     children: [
       {
         id: 'user.profile',
@@ -134,7 +134,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         category: BrachCategory.USER,
         placement: RoutePlaceMent.NAVIGATION,
         accessType: Access.AUTHENTICATED,
-        icon: UserCircle,
+        iconName: 'UserCircle',
       },
       {
         id: 'user.company-context',
@@ -143,7 +143,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         category: BrachCategory.USER,
         placement: RoutePlaceMent.NAVIGATION,
         accessType: Access.AUTHENTICATED,
-        icon: Building2,
+        iconName: 'Building2',
       },
     ],
   },
@@ -155,7 +155,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     placement: RoutePlaceMent.SIDEBAR,
     accessType: Access.ROLE,
     companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
-    icon: Building2,
+    iconName: 'Building2',
     children: [
       {
         id: 'company.request-role-delete',
@@ -173,7 +173,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         category: BrachCategory.NONE,
         accessType: Access.ROLE,
         companyRoles: [CompanyRole.ADMIN],
-        icon: Settings,
+        iconName: 'Settings',
         children: [
           {
             id: 'company.admin.settings',
@@ -183,7 +183,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             category: BrachCategory.COMPANY,
             accessType: Access.ROLE,
             companyRoles: [CompanyRole.ADMIN],
-            icon: Settings,
+            iconName: 'Settings',
           },
           {
             id: 'company.admin.employees',
@@ -192,7 +192,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             category: BrachCategory.COMPANY,
             accessType: Access.ROLE,
             companyRoles: [CompanyRole.ADMIN],
-            icon: Users,
+            iconName: 'Users',
           },
           {
             id: 'company.admin.contacts',
@@ -201,7 +201,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             category: BrachCategory.COMPANY,
             accessType: Access.ROLE,
             companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
-            icon: Users,
+            iconName: 'Users',
           },
         ],
       },
@@ -213,7 +213,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         placement: RoutePlaceMent.SIDEBAR,
         accessType: Access.PRODUCT,
         companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
-        icon: Calendar,
+        iconName: 'Calendar',
         children: [
           {
             id: 'company.booking.profile',
@@ -222,7 +222,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             category: BrachCategory.COMPANY,
             accessType: Access.PRODUCT,
             companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
-            icon: UserCircle,
+            iconName: 'UserCircle',
             children: [
               {
                 id: 'company.booking.profile.daily-schedule',
@@ -231,7 +231,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
                 companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
-                icon: Clock,
+                iconName: 'Clock',
               },
             ],
           },
@@ -242,7 +242,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             category: BrachCategory.COMPANY,
             accessType: Access.PRODUCT,
             companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
-            icon: ClipboardList,
+            iconName: 'ClipboardList',
             children: [
               {
                 id: 'company.booking.appointments.create',
@@ -251,7 +251,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
                 companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
-                icon: Calendar,
+                iconName: 'Calendar',
               },
             ],
           },
@@ -262,7 +262,7 @@ export const ROUTE_TREE: RouteBranch[] = [
             category: BrachCategory.COMPANY,
             accessType: Access.PRODUCT,
             companyRoles: [CompanyRole.ADMIN],
-            icon: Settings,
+            iconName: 'Settings',
             children: [
               {
                 id: 'company.booking.admin.settings',
@@ -272,7 +272,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
                 companyRoles: [CompanyRole.ADMIN],
-                icon: Settings,
+                iconName: 'Settings',
               },
               {
                 id: 'company.booking.admin.service-groups',
@@ -281,7 +281,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
                 companyRoles: [CompanyRole.ADMIN],
-                icon: FolderKanban,
+                iconName: 'FolderKanban',
                 children: [
                   {
                     id: 'company.booking.admin.service-groups.services',
@@ -290,7 +290,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                     category: BrachCategory.COMPANY,
                     accessType: Access.PRODUCT,
                     companyRoles: [CompanyRole.ADMIN],
-                    icon: Briefcase,
+                    iconName: 'Briefcase',
                   },
                 ],
               },
@@ -306,7 +306,7 @@ export const ROUTE_TREE: RouteBranch[] = [
     label: 'BiT Booking',
     category: BrachCategory.PUBLIC,
     accessType: Access.PUBLIC,
-    icon: Calendar,
+    iconName: 'Calendar',
     children: [
       {
         id: 'booking.public',
@@ -314,7 +314,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         label: 'Bestill time',
         category: BrachCategory.PUBLIC,
         accessType: Access.PUBLIC,
-        icon: Calendar,
+        iconName: 'Calendar',
         children: [
           {
             id: 'booking.public.appointment',
@@ -335,7 +335,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                     category: BrachCategory.NONE,
                     accessType: Access.PUBLIC,
                     hidden: true,
-                    icon: Users,
+                    iconName: 'Users',
                   },
                   {
                     id: 'booking.public.appointment.session.employee',
@@ -344,7 +344,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                     category: BrachCategory.NONE,
                     accessType: Access.PUBLIC,
                     hidden: true,
-                    icon: UserCircle,
+                    iconName: 'UserCircle',
                   },
                   {
                     id: 'booking.public.appointment.session.select-services',
@@ -353,7 +353,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                     category: BrachCategory.NONE,
                     accessType: Access.PUBLIC,
                     hidden: true,
-                    icon: Briefcase,
+                    iconName: 'Briefcase',
                   },
                   {
                     id: 'booking.public.appointment.session.select-time',
@@ -362,7 +362,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                     category: BrachCategory.NONE,
                     accessType: Access.PUBLIC,
                     hidden: true,
-                    icon: Clock,
+                    iconName: 'Clock',
                   },
                   {
                     id: 'booking.public.appointment.session.overview',
@@ -371,7 +371,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                     category: BrachCategory.NONE,
                     accessType: Access.PUBLIC,
                     hidden: true,
-                    icon: ClipboardList,
+                    iconName: 'ClipboardList',
                   },
                 ],
               },
@@ -641,12 +641,22 @@ export const createNavigation = (
       return childBranches;
     }
 
-    return [
-      {
-        ...branch,
-        children: childBranches.length > 0 ? childBranches : undefined,
-      },
-    ];
+    // ✅ BEST FIX: Create new object but preserve icon reference
+    const filteredBranch: RouteBranch = {
+      id: branch.id,
+      href: branch.href,
+      label: branch.label,
+      accessType: branch.accessType,
+      placement: branch.placement,
+      hidden: branch.hidden,
+      category: branch.category,
+      userRoles: branch.userRoles,
+      companyRoles: branch.companyRoles,
+      iconName: branch.iconName, // ✅ Direct assignment preserves component
+      children: childBranches.length > 0 ? childBranches : undefined,
+    };
+
+    return [filteredBranch];
   };
 
   const filteredTree = ROUTE_TREE.flatMap((branch) => filterBranch(branch));

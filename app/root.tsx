@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, type LinksFunction } from 'react-router';
 import { Menu } from 'lucide-react';
-import { toast, Toaster } from 'sonner';
 
 import './app.css';
 import { Navbar } from './components/layout/navbar';
@@ -15,6 +14,7 @@ import { logger } from './lib/logger';
 import { defaultResponse, refreshAndBuildResponse, buildResponseData } from './routes/_features/root.loader';
 import { getFlashMessage } from './routes/company/_lib/flash-message.server';
 import { getAuthPayloadFromRequest } from './lib/auth.utils';
+import { FlashMessageBanner } from './routes/_components/flash-message-banner';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -97,7 +97,6 @@ export default function App({ loaderData }: Route.ComponentProps) {
   const [userNav, setUserNav] = React.useState<UserNavigation | undefined>(undefined);
   const [companyContext, setCompanyContext] = React.useState<CompanySummaryDto | null | undefined>(undefined);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const [flashMessage, setFlashMessage] = React.useState(loaderData.flashMessage);
   const data = loaderData;
 
   React.useEffect(() => {
@@ -105,52 +104,28 @@ export default function App({ loaderData }: Route.ComponentProps) {
     setCompanyContext(data.companyContext);
   }, [data]);
 
-  React.useEffect(() => {
-    setFlashMessage(data.flashMessage);
-  }, [loaderData.flashMessage]);
-
   const sidebarBranches = userNav?.[RoutePlaceMent.SIDEBAR] || [];
   const hasSidebar = sidebarBranches.length > 0 && companyContext;
 
-  React.useEffect(() => {
-    if ('flashMessage' in loaderData && loaderData.flashMessage) {
-      const { type, text } = loaderData.flashMessage;
-
-      switch (type) {
-        case 'success':
-          toast.success(text);
-          break;
-        case 'error':
-          toast.error(text);
-          break;
-        case 'info':
-          toast.info(text);
-          break;
-        case 'warning':
-          toast.warning(text);
-          break;
-      }
-    }
-  }, [loaderData]);
-
   return (
     <div className="grid min-h-screen grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-cols-12">
+      <FlashMessageBanner message={loaderData.flashMessage} />
+
       <header className="border-b border-border bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
         <div className="hidden lg:col-span-2 lg:block"></div>
 
-        <nav className="border-b p-2 border-border lg:col-span-8 lg:border-b-0">
-          <div className="flex items-center gap-3">
+        <nav className="border-b border-border lg:col-span-8 lg:border-b-0 h-20">
+          <div className="flex h-full items-center gap-3 px-2">
             {hasSidebar && (
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 hover:bg-muted rounded transition-colors"
+                className="lg:hidden h-10 w-10 flex items-center justify-center hover:bg-muted rounded transition-colors"
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />
               </button>
             )}
-
-            <div className="flex-1">
+            <div className="flex-1 flex items-center h-full">
               <Navbar navRoutes={userNav} companyContext={companyContext} />
             </div>
           </div>
@@ -160,7 +135,6 @@ export default function App({ loaderData }: Route.ComponentProps) {
       </header>
 
       <main className="relative overflow-hidden bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
-        {/* Grid overlay */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.05]"
           aria-hidden="true"
@@ -175,9 +149,6 @@ export default function App({ loaderData }: Route.ComponentProps) {
 
         {userNav?.SIDEBAR && userNav.SIDEBAR.length > 0 ? (
           <aside className="relative z-10 hidden border-r border-border bg-background p-4 lg:col-span-2 lg:block">
-            <div className="mb-5 border-b border-border pb-3">
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Navigasjon</span>
-            </div>
             <Sidebar branches={userNav.SIDEBAR} />
             <div className="absolute bottom-4 left-4 right-4">
               <div className="h-px w-full bg-border/20" />
@@ -215,8 +186,6 @@ export default function App({ loaderData }: Route.ComponentProps) {
 
         <div className="hidden lg:col-span-2 lg:block"></div>
       </footer>
-
-      <Toaster />
     </div>
   );
 }

@@ -32,22 +32,14 @@ type SidebarItemProps = {
 
 function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
   const hasChildren = item.children && item.children.length > 0;
-
   const isInActiveTrail = currentPath.startsWith(item.href);
   const [isExpanded, setIsExpanded] = useState(isInActiveTrail);
-
   const isActive = currentPath === item.href;
 
-  // Breathing room: 24px per level
-  const indentStyle = {
-    paddingLeft: `${level === 0 ? 16 : 16 + level * 24}px`,
-  };
+  const indentPadding = level * 16;
+  const baseLeftPadding = hasChildren ? 0 : 40;
+  const totalLeftPadding = baseLeftPadding + indentPadding;
 
-  // Inverse highlighting: more visible as you go deeper
-  // Level 0: Very subtle (10% opacity)
-  // Level 1: Subtle (20% opacity)
-  // Level 2: Medium (35% opacity)
-  // Level 3+: Strong (50% opacity)
   const getHighlightOpacity = () => {
     if (level === 0) return 'bg-accent/10';
     if (level === 1) return 'bg-accent/20';
@@ -62,40 +54,35 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
     return 'bg-muted/30';
   };
 
-  // Border width: thinner at top, thicker at bottom
   const getBorderWidth = () => {
-    if (level === 0) return 'w-0.5'; // 2px
-    if (level === 1) return 'w-1'; // 4px
-    if (level === 2) return 'w-1.5'; // 6px
-    return 'w-2'; // 8px
+    if (level === 0) return 'w-0.5';
+    if (level === 1) return 'w-1';
+    if (level === 2) return 'w-1.5';
+    return 'w-2';
   };
 
-  // Text emphasis: less bold at top, more bold at bottom
   const getTextWeight = () => {
     if (!isActive) {
       return level === 0 ? 'font-semibold' : 'font-medium';
     }
-    // Active state gets progressively bolder
     if (level === 0) return 'font-semibold';
-    if (level === 1) return 'font-bold';
-    return 'font-extrabold';
+    if (level === 1) return 'font-semibold';
+    return 'font-semibold';
   };
 
   return (
-    <li role="listitem" className="space-y-1">
+    <li role="listitem">
       <div className="relative">
-        {/* Left border - gets thicker as you go deeper */}
         <div
           className={`
-            absolute left-0 top-0 bottom-0 transition-all duration-200
+            absolute left-0 top-0 bottom-0 transition-all duration-200 rounded-r
             ${getBorderWidth()}
             ${isActive ? 'bg-primary' : isInActiveTrail ? 'bg-secondary/50' : 'bg-transparent'}
           `}
           aria-hidden="true"
         />
 
-        <div className="flex items-center gap-2">
-          {/* Expand/collapse button */}
+        <div className="flex items-stretch min-h-[44px]">
           {hasChildren && (
             <button
               onClick={(e) => {
@@ -103,13 +90,14 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
                 setIsExpanded(!isExpanded);
               }}
               aria-expanded={isExpanded}
-              aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${item.label} section`}
-              className={`
-                flex-shrink-0 w-8 h-8 flex items-center justify-center
+              aria-label={`${isExpanded ? 'Skjul' : 'Vis'} ${item.label}`}
+              style={{ marginLeft: `${indentPadding}px` }}
+              className="
+                flex-shrink-0 w-10 flex items-center justify-center
                 transition-all duration-200 rounded
-                hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring
-                ${level === 0 ? 'ml-2' : 'ml-0'}
-              `}
+                hover:bg-muted 
+                focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
+              "
             >
               <svg
                 className={`
@@ -119,7 +107,7 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
                 `}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
@@ -128,16 +116,16 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
             </button>
           )}
 
-          {/* Navigation link - inverse highlight intensity */}
           <Link
             to={item.href}
             aria-current={isActive ? 'page' : undefined}
-            style={indentStyle}
+            style={{ paddingLeft: hasChildren ? '8px' : `${totalLeftPadding}px` }}
             className={`
-              flex-1 flex items-center gap-3 py-3 pr-4
-              text-sm transition-all duration-200
-              rounded-r focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
-              ${hasChildren ? '' : level === 0 ? 'pl-14' : 'pl-6'}
+              flex-1 flex items-center
+              py-2.5 pr-3
+              text-[0.9375rem] leading-snug transition-all duration-200
+              rounded-r 
+              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
               ${getTextWeight()}
               ${
                 isActive
@@ -148,14 +136,13 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
               }
             `}
           >
-            <span>{item.label}</span>
+            <span className="truncate">{item.label}</span>
           </Link>
         </div>
       </div>
 
-      {/* Progressive disclosure */}
       {hasChildren && isExpanded && (
-        <ul className="space-y-1 mt-1" role="list" aria-label={`${item.label} submenu`}>
+        <ul className="mt-1 space-y-1" role="list" aria-label={`${item.label} undermeny`}>
           {item.children!.map((child) => (
             <SidebarItem key={child.id} item={child} currentPath={currentPath} level={level + 1} />
           ))}
