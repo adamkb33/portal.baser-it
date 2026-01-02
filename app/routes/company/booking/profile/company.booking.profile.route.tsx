@@ -120,16 +120,13 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
   const dialogTitle = bookingProfile ? 'Rediger bookingprofil' : 'Lag bookingprofil';
   const dialogSubmitLabel = bookingProfile ? 'Lagre endringer' : 'Opprett';
 
-  console.log(bookingProfile?.image?.url);
-
   return (
     <>
       <PageHeader
-        title="Dine detaljer"
-        subtitle="Bookingprofil"
-        description="Hvordan du fremstår for kunder når de booker time med deg."
+        title="Offentlig bookingprofil"
+        subtitle="Slik vises du til kunder"
+        description="Denne beskrivelsen og bildet er synlig for kunder når de booker time med deg."
       />
-
       {bookingProfile ? (
         <BookingProfileCard bookingProfile={bookingProfile} onEditProfile={handleEditBookingProfile} />
       ) : (

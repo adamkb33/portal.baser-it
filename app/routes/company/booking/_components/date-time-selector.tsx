@@ -28,7 +28,12 @@ export function DateTimeSelector({
   );
 
   const getScheduleForDate = (date: Date): ScheduleDto | undefined => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Format date in local timezone for comparison
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
     return schedules.find((schedule) => schedule.date === dateStr);
   };
 
@@ -90,13 +95,16 @@ export function DateTimeSelector({
       year: 'numeric',
       month: 'long',
       day: 'numeric',
+      timeZone: 'Europe/Oslo',
     }).format(date);
   };
 
-  const formatTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleTimeString('nb-NO', {
+  const formatTime = (dateTime: string | Date) => {
+    const date = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
+    return date.toLocaleTimeString('nb-NO', {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'Europe/Oslo',
     });
   };
 
@@ -157,7 +165,7 @@ export function DateTimeSelector({
           <Clock className="h-4 w-4" />
           <span>Velg tid</span>
         </Label>
-        <div className="border rounded-md p-4 h-[210px] overflow-y-auto">
+        <div className="border rounded-md p-4 h-[250px] overflow-y-auto">
           {!selectedDate ? (
             <div className="py-8 text-center">
               <Clock className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
@@ -190,7 +198,7 @@ export function DateTimeSelector({
           )}
         </div>
         {selectedDateTime && (
-          <p className="text-xs text-muted-foreground px-1">Valgt tid: {formatTime(selectedDateTime.toISOString())}</p>
+          <p className="text-xs text-muted-foreground px-1">Valgt tid: {formatTime(selectedDateTime)}</p>
         )}
       </div>
     </div>

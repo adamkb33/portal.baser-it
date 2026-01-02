@@ -288,6 +288,12 @@ export type ApiResponseListDailyScheduleDto = {
     timestamp: string;
 };
 
+export type CompanyUserCreateAppointmentDto = {
+    contactId: number;
+    serviceIds: Array<number>;
+    startTime: string;
+};
+
 export type ApiResponseListBookingProfileDto = {
     success: boolean;
     message: string;
@@ -747,6 +753,45 @@ export type CreateOrUpdateDailySchedulesResponses = {
 
 export type CreateOrUpdateDailySchedulesResponse = CreateOrUpdateDailySchedulesResponses[keyof CreateOrUpdateDailySchedulesResponses];
 
+export type GetAppointmentsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        size?: number;
+        sort?: string;
+        fromDateTime?: string;
+        toDateTime?: string;
+        search?: string;
+    };
+    url: '/company-user/appointments';
+};
+
+export type GetAppointmentsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponsePaginatedResponseAppointmentDto;
+};
+
+export type GetAppointmentsResponse = GetAppointmentsResponses[keyof GetAppointmentsResponses];
+
+export type CompanyUserCreateAppointmentData = {
+    body: CompanyUserCreateAppointmentDto;
+    path?: never;
+    query?: never;
+    url: '/company-user/appointments';
+};
+
+export type CompanyUserCreateAppointmentResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseAppointmentDto;
+};
+
+export type CompanyUserCreateAppointmentResponse = CompanyUserCreateAppointmentResponses[keyof CompanyUserCreateAppointmentResponses];
+
 export type GetAppointmentSessionData = {
     body?: never;
     path?: never;
@@ -868,29 +913,6 @@ export type GetCompanyBookingInfoResponses = {
 };
 
 export type GetCompanyBookingInfoResponse = GetCompanyBookingInfoResponses[keyof GetCompanyBookingInfoResponses];
-
-export type GetAppointmentsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        page?: number;
-        size?: number;
-        sort?: string;
-        fromDateTime?: string;
-        toDateTime?: string;
-        search?: string;
-    };
-    url: '/company-user/appointments';
-};
-
-export type GetAppointmentsResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponsePaginatedResponseAppointmentDto;
-};
-
-export type GetAppointmentsResponse = GetAppointmentsResponses[keyof GetAppointmentsResponses];
 
 export type ValidateCompanyBookingData = {
     body?: never;

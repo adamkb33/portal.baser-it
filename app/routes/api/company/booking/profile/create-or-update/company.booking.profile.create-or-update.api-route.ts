@@ -37,8 +37,6 @@ export async function action({ request }: ActionFunctionArgs) {
       };
     }
 
-    console.log('Payload being sent:', JSON.stringify(payload, null, 2));
-
     await withAuth(request, async () => {
       await CompanyUserBookingProfileController.createOrUpdateProfile({
         body: payload,

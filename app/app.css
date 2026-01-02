@@ -1,178 +1,5 @@
-/* =============================================================================
-
-You are a world-class mobile product designer and front-end architect with expert mastery in:
-
-Mobile-first UI/UX
-
-React + React Router v7
-
-shadcn/ui
-
-TailwindCSS
-
-Data-dense mobile interfaces
-
-Creative space-efficient layouts
-
-Interaction design, gestures, accessibility, performance
-
-Your role: design data-heavy mobile screens using creative, compact, efficient layouts, and produce production-ready React solutions.
-
-You MUST think in terms of:
-
-Progressive disclosure
-
-Expand/collapse patterns
-
-Smart truncation
-
-Swipeable interactions
-
-Sticky headers
-
-Micro-summaries
-
-Carousels
-
-Off-canvas details
-
-Adaptive list→grid transformations
-
-Performance and readability
-
-   app.css — BRUTALIST THEME SPEC (BLACK / WHITE / PURPLE)
-
-   SCOPE:
-   - Global design tokens (colors, radius, tracking, shadows).
-   - Base body + border behavior.
-   - **Only atomic documentation** for how to style UI with Tailwind utilities.
-   - NO component/domain-specific CSS, NO @apply, NO custom classes.
-
-   RULES:
-   - Components must use Tailwind utilities like:
-       bg-background, text-foreground, border-border, bg-muted, text-muted-foreground, etc.
-   - Colors MUST come from these CSS variables via Tailwind's @theme inline mapping.
-   - All hierarchies are built with utility class combinations in TSX.
-   ========================================================================== */
-
-/* =============================================================================
-   FRONTEND CREATION RULES — READ THIS FIRST
-   =============================================================================
-
-   When building ANY component, follow these concrete rules:
-
-   ✓ ALWAYS DO:
-   ───────────────────────────────────────────────────────────────────────────
-   1. Use theme colors ONLY:
-      - bg-background, text-foreground (default surfaces)
-      - bg-muted, text-muted-foreground (secondary surfaces, helper text)
-      - bg-primary, text-primary-foreground (CTAs only)
-      - border-border (ALL borders, no exceptions)
-      
-   2. Every container/card needs:
-      - border border-border
-      - bg-background (or bg-muted for secondary)
-      - p-4 sm:p-5 (padding)
-      
-   3. Sharp corners, no rounding:
-      - rounded-none on buttons, inputs, cards
-      - Never use rounded-md, rounded-lg, etc.
-      
-   4. Black borders everywhere:
-      - border border-border on containers
-      - border-t border-border between sections
-      - divide-y divide-border for lists
-      
-   5. Spacing hierarchy:
-      - space-y-5 between major sections
-      - space-y-3 or space-y-4 within sections
-      - gap-2 for inline items (pills, buttons)
-      - p-4 sm:p-5 for outer padding
-      
-   6. Typography scale:
-      - text-xs + uppercase + tracking-[0.12em] for labels
-      - text-sm + font-semibold for headings
-      - text-base for body text
-      - text-[0.7rem] or text-xs for meta info
-      - Always text-foreground or text-muted-foreground
-      
-   7. Button pattern (pick one):
-      PRIMARY: bg-foreground text-background border border-border px-3 py-2 text-xs font-medium rounded-none
-      OUTLINE: bg-background text-foreground border border-border px-3 py-2 text-xs font-medium rounded-none
-      
-   8. Input pattern:
-      - border border-border bg-background text-foreground px-3 py-2 text-sm rounded-none
-      - focus:outline-none focus:ring-2 focus:ring-ring
-
-   ✗ NEVER DO:
-   ───────────────────────────────────────────────────────────────────────────
-   1. NO custom colors:
-      ✗ bg-gray-100, text-gray-500, border-gray-300
-      ✓ bg-muted, text-muted-foreground, border-border
-      
-   2. NO rounded corners (except minimal tokens):
-      ✗ rounded-md, rounded-lg, rounded-full
-      ✓ rounded-none
-      
-   3. NO arbitrary values for colors:
-      ✗ bg-[#f5f5f5], border-[#cccccc]
-      ✓ bg-muted, border-border
-      
-   4. NO shadows by default:
-      ✗ shadow-md, shadow-lg
-      ✓ No shadow (flat design)
-      (opt-in with shadow tokens if absolutely needed)
-      
-   5. NO gradients:
-      ✗ bg-gradient-to-r
-      ✓ Solid colors only
-      
-   6. NO custom spacing outside tokens:
-      ✗ p-7, gap-5
-      ✓ p-4, p-5, gap-2, gap-3, gap-4
-      
-   7. NO text decorations by default:
-      ✗ underline everywhere
-      ✓ underline only on hover for links
-
-   QUICK COMPONENT TEMPLATES:
-   ───────────────────────────────────────────────────────────────────────────
-   
-   Card/Container:
-   <div className="border border-border bg-background p-4 sm:p-5 space-y-4">
-   
-   Section Divider:
-   <div className="border-t border-border pt-4 first:border-t-0 first:pt-0">
-   
-   Label:
-   <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-   
-   Heading:
-   <h2 className="text-sm font-semibold text-foreground">
-   
-   Meta Text:
-   <p className="text-[0.7rem] text-muted-foreground">
-   
-   Primary Button:
-   <button className="border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none">
-   
-   Input Field:
-   <input className="w-full border border-border bg-background text-foreground px-3 py-2 text-sm rounded-none focus:outline-none focus:ring-2 focus:ring-ring" />
-   
-   Pill/Tag:
-   <span className="border border-border bg-background px-2.5 py-0.5 text-[0.7rem] font-medium rounded-none">
-   
-   Muted Surface (for media, info blocks):
-   <div className="border border-border bg-muted p-3 sm:p-4">
-
-   ========================================================================== */
-
 @import 'tailwindcss';
 @import 'tw-animate-css';
-
-/* -----------------------------------------------------------------------------
-   1. BASE TYPOGRAPHY TOKEN FOR TAILWIND
-   -------------------------------------------------------------------------- */
 
 @theme {
   --font-sans:
@@ -184,25 +11,17 @@ html,
 body {
 }
 
-/* -----------------------------------------------------------------------------
-   2. INLINE THEME BRIDGE (TAILWIND <-> CSS VARIABLES)
-   - Tailwind utilities like `bg-background` and `border-border` resolve to these.
-   -------------------------------------------------------------------------- */
-
 @theme inline {
-  /* Typography tokens */
   --font-sans: Inter, sans-serif;
   --font-serif: Merriweather, serif;
   --font-mono: JetBrains Mono, monospace;
 
-  /* Radius tokens (brutalist: small, mostly sharp) */
   --radius: 0.25rem;
   --radius-sm: 0.125rem;
   --radius-md: 0.25rem;
   --radius-lg: 0.25rem;
   --radius-xl: 0.375rem;
 
-  /* Letterspacing / tracking */
   --tracking-normal: 0em;
   --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
   --tracking-tight: calc(var(--tracking-normal) - 0.025em);
@@ -210,7 +29,6 @@ body {
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
 
-  /* Tailwind color aliases */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -230,7 +48,6 @@ body {
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Chart / data tokens (optional) */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -238,7 +55,6 @@ body {
   --color-chart-5: var(--chart-5);
   --color-chart-6: var(--chart-6);
 
-  /* Sidebar tokens (for shells) */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -248,59 +64,55 @@ body {
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
-
-/* -----------------------------------------------------------------------------
-   3. ROOT THEME VALUES — BLACK / WHITE / PURPLE
-   -------------------------------------------------------------------------- */
-
 :root {
   --radius: 0.25rem;
 
-  /* Core neutrals */
-  --background: oklch(1 0 0); /* white */
-  --foreground: oklch(0.16 0.01 260); /* near-black */
+  /* BASE: Warm Cream - NOT pure white, inviting */
+  --background: oklch(0.96 0.01 85); /* Soft warm cream */
+  --foreground: oklch(0.18 0.02 30); /* Deep warm charcoal */
 
-  /* Surfaces */
-  --card: oklch(1 0 0);
+  /* CARDS: Lighter cream for elevation */
+  --card: oklch(0.98 0.008 85); /* Almost white cream */
   --card-foreground: var(--foreground);
 
-  --popover: oklch(1 0 0);
+  /* POPOVERS: Pure white for top layer */
+  --popover: oklch(0.99 0.005 80);
   --popover-foreground: var(--foreground);
 
-  /* Primary purple */
-  --primary: oklch(0.48 0.23 330);
-  --primary-foreground: oklch(1 0 0);
+  /* PRIMARY: Rich Terracotta - warm, approachable luxury */
+  --primary: oklch(0.62 0.14 35); /* Burnt terracotta/coral */
+  --primary-foreground: oklch(0.98 0.01 85); /* Cream text */
 
-  /* Secondary (light purple tint) */
-  --secondary: oklch(0.96 0.04 330);
-  --secondary-foreground: oklch(0.25 0.03 330);
+  /* SECONDARY: Sage Green - calm, premium, friendly */
+  --secondary: oklch(0.68 0.08 150); /* Muted sage green */
+  --secondary-foreground: oklch(0.2 0.02 30); /* Dark text */
 
-  /* Muted grays */
-  --muted: oklch(0.95 0.01 260);
-  --muted-foreground: oklch(0.48 0.02 260);
+  /* MUTED: Warm Taupe */
+  --muted: oklch(0.88 0.015 70); /* Light warm taupe */
+  --muted-foreground: oklch(0.5 0.03 30); /* Mid-tone warm gray */
 
-  /* Accent purple/magenta */
-  --accent: oklch(0.86 0.12 330);
-  --accent-foreground: oklch(0.22 0.03 330);
+  /* ACCENT: Rose Gold - modern luxury */
+  --accent: oklch(0.72 0.1 45); /* Rose gold/copper */
+  --accent-foreground: oklch(0.2 0.02 30);
 
-  /* Destructive red */
-  --destructive: oklch(0.58 0.18 25);
+  /* DESTRUCTIVE: Warm burgundy - luxe error state */
+  --destructive: oklch(0.52 0.16 25); /* Rich burgundy */
 
-  /* Borders / inputs / ring */
-  --border: oklch(0.16 0 0); /* near-black */
-  --input: oklch(0.9 0.01 260);
+  /* BORDERS: Warm tan - visible but soft */
+  --border: oklch(0.82 0.02 70); /* Warm tan border */
+  --input: oklch(0.96 0.01 85); /* Same as background */
   --ring: var(--primary);
 
-  /* Chart colors (optional) */
-  --chart-1: oklch(0.48 0.23 330);
-  --chart-2: oklch(0.6 0.18 330);
-  --chart-3: oklch(0.52 0.16 300);
-  --chart-4: oklch(0.68 0.1 260);
-  --chart-5: oklch(0.8 0.06 260);
-  --chart-6: oklch(0.9 0.03 260);
+  /* CHARTS: Warm gradient terracotta to sage */
+  --chart-1: oklch(0.62 0.14 35); /* Primary terracotta */
+  --chart-2: oklch(0.66 0.12 50); /* Warm coral */
+  --chart-3: oklch(0.7 0.1 70); /* Peachy */
+  --chart-4: oklch(0.72 0.09 100); /* Warm gold */
+  --chart-5: oklch(0.7 0.08 130); /* Olive */
+  --chart-6: oklch(0.68 0.08 150); /* Sage */
 
-  /* Sidebar palette */
-  --sidebar: oklch(0.98 0.005 260);
+  /* SIDEBAR: Slightly darker cream */
+  --sidebar: oklch(0.94 0.012 80);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
@@ -309,29 +121,24 @@ body {
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 
-  /* Shadows (minimal, opt-in) */
-  --shadow-color: oklch(0 0 0);
-  --shadow-opacity: 0.1;
-  --shadow-blur: 8px;
-  --shadow-spread: -1px;
+  /* SHADOWS: Warm, soft shadows */
+  --shadow-color: oklch(0.4 0.03 35); /* Warm shadow color */
+  --shadow-opacity: 0.15; /* Subtle, not harsh */
+  --shadow-blur: 16px;
+  --shadow-spread: -3px;
   --shadow-offset-x: 0px;
-  --shadow-offset-y: 4px;
+  --shadow-offset-y: 6px;
   --spacing: 0.25rem;
 
-  --shadow-2xs: 0px 2px 4px 0px oklch(0 0 0 / 0.05);
-  --shadow-xs: 0px 2px 4px 0px oklch(0 0 0 / 0.08);
-  --shadow-sm: 0px 3px 6px -1px oklch(0 0 0 / 0.1);
-  --shadow: 0px 4px 8px -1px oklch(0 0 0 / 0.12);
-  --shadow-md: 0px 6px 12px -2px oklch(0 0 0 / 0.14);
-  --shadow-lg: 0px 8px 16px -2px oklch(0 0 0 / 0.16);
-  --shadow-xl: 0px 10px 20px -3px oklch(0 0 0 / 0.18);
-  --shadow-2xl: 0px 14px 24px -4px oklch(0 0 0 / 0.22);
+  --shadow-2xs: 0px 2px 6px 0px oklch(0.4 0.03 35 / 0.1);
+  --shadow-xs: 0px 3px 8px 0px oklch(0.4 0.03 35 / 0.12);
+  --shadow-sm: 0px 4px 12px -1px oklch(0.4 0.03 35 / 0.14);
+  --shadow: 0px 6px 16px -2px oklch(0.4 0.03 35 / 0.16);
+  --shadow-md: 0px 8px 20px -3px oklch(0.4 0.03 35 / 0.18);
+  --shadow-lg: 0px 12px 28px -4px oklch(0.4 0.03 35 / 0.2);
+  --shadow-xl: 0px 16px 36px -6px oklch(0.4 0.03 35 / 0.22);
+  --shadow-2xl: 0px 20px 48px -8px oklch(0.4 0.03 35 / 0.24);
 }
-
-/* -----------------------------------------------------------------------------
-   4. BASE LAYER HOOKS
-   -------------------------------------------------------------------------- */
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -343,287 +150,3 @@ body {
     font-family: var(--font-sans);
   }
 }
-
-/* =============================================================================
-   5. ATOMIC STYLING DOCUMENTATION (NO CLASSES, ONLY GUIDELINES)
-   -----------------------------------------------------------------------------
-   Use the tokens above with Tailwind utilities in components.
-
-   This is purely HOW TO COMBINE UTILITIES, not actual CSS rules.
-   ========================================================================== */
-
-/*
-===============================================================================
-A. CONTAINERS (BLOCKS, SECTIONS, CARDS)
--------------------------------------------------------------------------------
-Use these token-driven utilities for any rectangular blocks.
-
-1) Primary block container:
-   - border border-border
-   - bg-background
-   - p-4 sm:p-5
-   - space-y-4 or space-y-5
-
-   Example:
-   className="border border-border bg-background p-4 sm:p-5 space-y-5"
-
-2) Sub-section divider inside a block:
-   - border-t border-border
-   - pt-4
-   - first:border-t-0 first:pt-0
-
-   Example:
-   className="border-t border-border pt-4 first:border-t-0 first:pt-0"
-
-3) Muted sub-block (for secondary info or media wrapper):
-   - border border-border
-   - bg-muted
-   - p-3 sm:p-4
-
-   Example:
-   className="border border-border bg-muted p-3 sm:p-4"
-===============================================================================
-*/
-
-/*
-===============================================================================
-B. TYPOGRAPHY HIERARCHY (ATOMIC)
--------------------------------------------------------------------------------
-Use typography + tracking tokens via Tailwind utilities.
-
-1) Section label / meta heading:
-   - text-xs
-   - font-medium
-   - uppercase
-   - tracking-[0.12em]
-   - text-muted-foreground
-
-   Example:
-   className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground"
-
-2) Primary small title:
-   - text-sm (or text-base when needed)
-   - font-medium or font-semibold
-   - text-foreground
-
-   Example:
-   className="text-sm font-semibold text-foreground"
-
-3) Meta / helper text:
-   - text-[0.7rem] or text-xs
-   - text-muted-foreground
-   - normal case (no uppercase unless you want that look)
-
-   Example:
-   className="text-[0.7rem] text-muted-foreground"
-
-4) Strong contrast headline:
-   - text-base or text-lg
-   - font-semibold
-   - tracking-tight (if configured) or default
-   - text-foreground
-
-   Example:
-   className="text-base font-semibold text-foreground"
-===============================================================================
-*/
-
-/*
-===============================================================================
-C. BUTTONS (ATOMIC)
--------------------------------------------------------------------------------
-Stick to two atomic patterns: primary and neutral/outline.
-
-1) Primary action:
-   - bg-foreground
-   - text-background
-   - border border-border
-   - px-3 py-2
-   - text-xs font-medium
-   - rounded-none
-
-   Example:
-   className="border border-border bg-foreground text-background px-3 py-2 text-xs font-medium rounded-none"
-
-2) Neutral / outline action:
-   - bg-background
-   - text-foreground
-   - border border-border
-   - px-3 py-2
-   - text-xs font-medium
-   - rounded-none
-
-   Example:
-   className="border border-border bg-background text-foreground px-3 py-2 text-xs font-medium rounded-none"
-
-3) Muted text-only action (link-like):
-   - bg-transparent (default)
-   - text-muted-foreground
-   - text-[0.7rem] or text-xs
-   - font-medium
-   - underline-offset-2 hover:underline
-   - px-0
-
-   Example:
-   className="px-0 text-[0.7rem] font-medium text-muted-foreground underline-offset-2 hover:underline"
-===============================================================================
-*/
-
-/*
-===============================================================================
-D. LAYOUT / STACKING (ATOMIC)
--------------------------------------------------------------------------------
-General patterns for vertical and horizontal layout.
-
-1) Vertical stack:
-   - flex flex-col
-   - gap-x (e.g. gap-1, gap-2, gap-4)
-
-   Example:
-   className="flex flex-col gap-2"
-
-2) Horizontal row with wrapping:
-   - flex flex-wrap
-   - gap-x (e.g. gap-2, gap-3)
-
-   Example:
-   className="flex flex-wrap gap-2.5"
-
-3) Align to left / top:
-   - items-start
-   - justify-start
-   - text-left
-
-4) Full-width block within constrained container:
-   - w-full
-   - max-w-[1200px] (or container class)
-===============================================================================
-*/
-
-/*
-===============================================================================
-E. PILLS / TAGS (ATOMIC)
--------------------------------------------------------------------------------
-Generic pill/tag style for selected items or labels.
-
-1) Neutral pill:
-   - border border-border
-   - bg-background
-   - text-[0.7rem]
-   - font-medium
-   - rounded-none
-   - px-2.5 py-0.5
-
-   Example:
-   className="rounded-none border border-border bg-background px-2.5 py-0.5 text-[0.7rem] font-medium"
-
-2) Meta label pill:
-   - border border-border
-   - text-xs
-   - text-muted-foreground
-   - px-2 py-0.5
-
-   Example:
-   className="border border-border px-2 py-0.5 text-xs text-muted-foreground"
-===============================================================================
-*/
-
-/*
-===============================================================================
-F. MEDIA / IMAGE WRAPPERS (ATOMIC)
--------------------------------------------------------------------------------
-For inline galleries, carousels, or media surfaces.
-
-1) Outer media block:
-   - border border-border
-   - bg-muted
-
-   Example:
-   className="border border-border bg-muted"
-
-2) Inner media frame:
-   - border border-border
-   - bg-background
-   - overflow-hidden
-   - w-full
-   - max-w-* (e.g. max-w-xl)
-
-   Example:
-   className="w-full max-w-xl overflow-hidden border border-border bg-background"
-
-3) Image sizing:
-   - h-64 or h-72
-   - w-full
-   - object-cover
-
-   Example:
-   className="h-64 w-full object-cover"
-===============================================================================
-*/
-
-/*
-===============================================================================
-G. DIALOG / OVERLAY CONTENT (ATOMIC)
--------------------------------------------------------------------------------
-For any modal-like content.
-
-1) Dialog container:
-   - max-w-3xl (or similar)
-   - rounded-none
-   - border border-border
-   - bg-background
-   - px-4 py-5 sm:px-6 sm:py-6
-
-   Example:
-   className="max-w-3xl rounded-none border border-border bg-background px-4 py-5 sm:px-6 sm:py-6"
-
-2) Dialog header:
-   - mb-3
-   - border-b border-border
-   - pb-3
-
-   Example:
-   className="mb-3 border-b border-border pb-3"
-
-3) Dialog title:
-   - text-sm
-   - font-medium
-   - text-foreground
-
-4) Dialog description:
-   - text-[0.8rem]
-   - text-muted-foreground
-===============================================================================
-*/
-
-/*
-===============================================================================
-H. HIERARCHY PRINCIPLES (GLOBAL)
--------------------------------------------------------------------------------
-1) Color hierarchy:
-   - Use bg-background + text-foreground as the base.
-   - Use text-muted-foreground for less-important information.
-   - Use bg-muted only for secondary surfaces behind content (media, info blocks).
-   - Use primary/secondary/accent colors sparingly, for focus or important affordances.
-
-2) Border hierarchy:
-   - border border-border defines primary separation between UI regions.
-   - border-t border-border is used to divide stacked sections.
-   - Avoid different border colors; rely on near-black and spacing.
-
-3) Spacing:
-   - Outer blocks: p-4 or p-5.
-   - Section spacing: space-y-4 or space-y-5.
-   - Small gaps between inline elements: gap-1 or gap-1.5.
-   - Larger gaps between components: gap-3 or gap-4.
-
-4) Typography:
-   - Use uppercase + tracking for small labels/headings.
-   - Use regular case for main content text.
-   - Keep font sizes small to medium; rely on spacing and borders for hierarchy.
-
-5) Motion:
-   - Default: static. No animations.
-   - If any, must be subtle and not default for core components.
-===============================================================================
-*/
