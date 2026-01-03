@@ -27,6 +27,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
         </Link>
         <CompanyHeader company={companyContext} />
       </div>
+
       <div className="hidden md:flex items-center gap-4 h-full">
         {userBranches.length > 0 && (
           <DropdownMenu modal={false}>
@@ -45,10 +46,11 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-        {authBranches.map((link) => (
-          <NavLink key={link.id} link={link} />
-        ))}
       </div>
+
+      {authBranches.map((link) => (
+        <NavLink key={link.id} link={link} />
+      ))}
     </div>
   );
 }

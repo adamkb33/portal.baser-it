@@ -29,7 +29,7 @@ export function AuthFormContainer({
   footerLink = { to: '/', label: 'Tilbake til hovedsiden' },
 }: AuthFormContainerProps) {
   return (
-    <div className="relative px-4 py-8 sm:py-16">
+    <div className="relative p-2 sm:py-16">
       <div className="relative z-10 mx-auto w-full max-w-md">
         <div className="relative border-2 border-border bg-background">
           <div className="space-y-5 border-b-2 border-border bg-muted p-6 sm:p-8">

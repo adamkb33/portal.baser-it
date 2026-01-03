@@ -105,18 +105,6 @@ export async function action({ request }: Route.ActionArgs) {
     const contactId = Number(formData.get('contactId'));
     const serviceIds = formData.get('serviceIds')?.toString().split(',').map(Number) || [];
     const startTime = formData.get('startTime')?.toString() || '';
-    // Change to ISO 8601 with timezone
-    const startTimeWithZone = `${startTime}+02:00`;
-    console.log(startTimeWithZone);
-
-    console.log({
-      body: {
-        contactId,
-        serviceIds,
-        startTime: startTimeWithZone,
-      },
-    });
-
     const response = await withAuth(request, async () => {
       return await CompanyUserAppointmentController.companyUserCreateAppointment({
         body: {
@@ -129,7 +117,6 @@ export async function action({ request }: Route.ActionArgs) {
 
     return { success: true, data: response.data };
   } catch (error: any) {
-    console.log('first');
     console.error(JSON.stringify(error, null, 2));
     if (error as ApiClientError) {
       return { error: error.body?.message || 'Kunne ikke opprette avtale' };

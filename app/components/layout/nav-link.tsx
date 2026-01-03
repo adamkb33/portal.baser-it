@@ -77,7 +77,6 @@ export function NavLink({
 
   const renderIcon = () => {
     if (!link.icon) {
-      console.log('No icon provided');
       return null;
     }
 

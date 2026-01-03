@@ -15,6 +15,7 @@ import { defaultResponse, refreshAndBuildResponse, buildResponseData } from './r
 import { getFlashMessage } from './routes/company/_lib/flash-message.server';
 import { getAuthPayloadFromRequest } from './lib/auth.utils';
 import { FlashMessageBanner } from './routes/_components/flash-message-banner';
+import { Button } from './components/ui/button';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -117,13 +118,14 @@ export default function App({ loaderData }: Route.ComponentProps) {
         <nav className="border-b border-border lg:col-span-8 lg:border-b-0 h-20">
           <div className="flex h-full items-center gap-3 px-2">
             {hasSidebar && (
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setMobileMenuOpen(true)}
                 className="lg:hidden h-10 w-10 flex items-center justify-center hover:bg-muted rounded transition-colors"
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />
-              </button>
+              </Button>
             )}
             <div className="flex-1 flex items-center h-full">
               <Navbar navRoutes={userNav} companyContext={companyContext} />
