@@ -26,12 +26,12 @@ export function TableDesktopHeader({
 
   return (
     <div className="border-b border-border p-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4">
         <div className="text-xs text-muted-foreground">
           Viser {totalElements ? startIndex : 0}–{endIndex} av {totalElements}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3">
           {headerSlot && <div className="flex items-center gap-2">{headerSlot}</div>}
 
           <div className="flex items-center gap-2">
