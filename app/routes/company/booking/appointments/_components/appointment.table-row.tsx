@@ -5,26 +5,15 @@ import { Badge } from '~/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import type { AppointmentDto } from 'tmp/openapi/gen/booking';
 import { Link } from 'react-router';
+import { formatDateTime, getTotalDuration, getTotalPrice, getTotalServiceCount } from '../_utils/appointments.utils';
 
 type AppointmentTableRowProps = {
   appointment: AppointmentDto;
   onDelete: (id: number) => void;
   isDeleting?: boolean;
-  formatDateTime: (dateTime: string) => string;
-  getTotalDuration: (appointment: AppointmentDto) => string;
-  getTotalPrice: (appointment: AppointmentDto) => string;
-  getTotalServiceCount: (appointment: AppointmentDto) => number;
 };
 
-export function AppointmentTableRow({
-  appointment,
-  onDelete,
-  isDeleting = false,
-  formatDateTime,
-  getTotalDuration,
-  getTotalPrice,
-  getTotalServiceCount,
-}: AppointmentTableRowProps) {
+export function AppointmentTableRow({ appointment, onDelete, isDeleting = false }: AppointmentTableRowProps) {
   return (
     <TableRow>
       <TableCell className="font-medium">

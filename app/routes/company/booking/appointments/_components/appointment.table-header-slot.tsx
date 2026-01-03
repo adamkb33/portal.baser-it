@@ -6,107 +6,50 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '~/co
 import { Badge } from '~/components/ui/badge';
 import { SlidersHorizontal, X, Search, Calendar } from 'lucide-react';
 import { cn } from '~/lib/utils';
+import { useNavigate, useSearchParams } from 'react-router';
+import { AppointmentPaginationService } from '../_services/appointment.pagination-service';
 
-type AppointmentTableHeaderSlotProps = {
-  searchFilter: string;
-  onSearchChange: (value: string) => void;
-  fromDate: string;
-  fromTime: string;
-  toDate: string;
-  toTime: string;
-  onFromDateChange: (value: string) => void;
-  onFromTimeChange: (value: string) => void;
-  onToDateChange: (value: string) => void;
-  onToTimeChange: (value: string) => void;
-  onApplyDateFilters: () => void;
-  onUpcomingFilter: () => void;
-  onPastFilter: () => void;
-  onTodayFilter: () => void;
-  onThisWeekFilter: () => void;
-  onThisMonthFilter: () => void;
-  onClearFilters: () => void;
-  onRemoveFilter: (filterType: 'search' | 'fromDate' | 'toDate') => void;
-};
-
-export function AppointmentTableHeaderSlot({
-  searchFilter,
-  onSearchChange,
-  fromDate,
-  fromTime,
-  toDate,
-  toTime,
-  onFromDateChange,
-  onFromTimeChange,
-  onToDateChange,
-  onToTimeChange,
-  onApplyDateFilters,
-  onUpcomingFilter,
-  onPastFilter,
-  onTodayFilter,
-  onThisWeekFilter,
-  onThisMonthFilter,
-  onClearFilters,
-  onRemoveFilter,
-}: AppointmentTableHeaderSlotProps) {
+export function AppointmentTableHeaderSlot() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+
+  const paginationService = new AppointmentPaginationService(searchParams, navigate);
+
+  // Derive everything from URL
+  const fromDateTime = searchParams.get('fromDateTime') || '';
+  const toDateTime = searchParams.get('toDateTime') || '';
+  const searchFilter = searchParams.get('search') || '';
+
+  const fromDate = fromDateTime ? new Date(fromDateTime).toISOString().split('T')[0] : '';
+  const fromTime = fromDateTime ? new Date(fromDateTime).toTimeString().slice(0, 5) : '';
+  const toDate = toDateTime ? new Date(toDateTime).toISOString().split('T')[0] : '';
+  const toTime = toDateTime ? new Date(toDateTime).toTimeString().slice(0, 5) : '';
+
+  // Local state for form inputs (before applying)
+  const [localFromDate, setLocalFromDate] = useState(fromDate);
+  const [localFromTime, setLocalFromTime] = useState(fromTime);
+  const [localToDate, setLocalToDate] = useState(toDate);
+  const [localToTime, setLocalToTime] = useState(toTime);
+
   const hasActiveFilters = fromDate || toDate || searchFilter;
   const activeFilterCount = [fromDate, toDate, searchFilter].filter(Boolean).length;
 
-  const getActiveQuickFilter = () => {
-    if (!fromDate && !toDate) return 'upcoming';
-
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    if (fromDate && !toDate) {
-      const fromDt = new Date(fromDate);
-      if (Math.abs(fromDt.getTime() - now.getTime()) < 5000) {
-        return 'upcoming';
-      }
-    }
-
-    if (!fromDate && toDate) {
-      const toDt = new Date(toDate);
-      if (Math.abs(toDt.getTime() - now.getTime()) < 5000) {
-        return 'past';
-      }
-    }
-
-    if (fromDate && toDate) {
-      const fromDt = new Date(fromDate);
-      const toDt = new Date(toDate);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      if (fromDt.getDate() === today.getDate() && toDt.getDate() === tomorrow.getDate() - 1) {
-        return 'today';
-      }
-
-      const weekStart = new Date(now);
-      const day = now.getDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      weekStart.setDate(now.getDate() + diff);
-      weekStart.setHours(0, 0, 0, 0);
-
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 7);
-
-      if (fromDt.getTime() === weekStart.getTime() && Math.abs(toDt.getTime() - weekEnd.getTime()) < 86400000) {
-        return 'week';
-      }
-
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-
-      if (fromDt.getTime() === monthStart.getTime() && Math.abs(toDt.getTime() - monthEnd.getTime()) < 86400000) {
-        return 'month';
-      }
-    }
-
-    return null;
+  const handleApplyDateFilters = () => {
+    paginationService.applyDateFilters(localFromDate, localFromTime, localToDate, localToTime);
+    setIsAdvancedOpen(false);
   };
 
-  const activeQuickFilter = getActiveQuickFilter();
+  const handleClearFilters = () => {
+    setLocalFromDate('');
+    setLocalFromTime('');
+    setLocalToDate('');
+    setLocalToTime('');
+    paginationService.handleClearFilters();
+    setIsAdvancedOpen(false);
+  };
+
+  const activeQuickFilter = paginationService.getActiveQuickFilter(fromDate, toDate);
 
   return (
     <div className="space-y-2 md:space-y-4">
@@ -116,7 +59,7 @@ export function AppointmentTableHeaderSlot({
           <Input
             placeholder="Søk avtaler..."
             value={searchFilter}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={(e) => paginationService.handleSearchChange(e.target.value)}
             className="pl-9 h-10 text-sm"
           />
           {searchFilter && (
@@ -124,7 +67,7 @@ export function AppointmentTableHeaderSlot({
               variant="ghost"
               size="icon"
               className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-              onClick={() => onRemoveFilter('search')}
+              onClick={() => paginationService.handleRemoveFilter('search')}
             >
               <X className="h-3.5 w-3.5" />
             </Button>
@@ -134,19 +77,19 @@ export function AppointmentTableHeaderSlot({
         <div className="flex items-center gap-2">
           <div className="flex-1 overflow-x-auto scrollbar-hide -mx-4 px-4">
             <div className="flex flex-wrap gap-2">
-              <FilterButton onClick={onUpcomingFilter} active={activeQuickFilter === 'upcoming'}>
+              <FilterButton onClick={paginationService.handleUpcomingFilter} active={activeQuickFilter === 'upcoming'}>
                 Kommende
               </FilterButton>
-              <FilterButton onClick={onTodayFilter} active={activeQuickFilter === 'today'}>
+              <FilterButton onClick={paginationService.handleTodayFilter} active={activeQuickFilter === 'today'}>
                 I dag
               </FilterButton>
-              <FilterButton onClick={onThisWeekFilter} active={activeQuickFilter === 'week'}>
+              <FilterButton onClick={paginationService.handleThisWeekFilter} active={activeQuickFilter === 'week'}>
                 Uke
               </FilterButton>
-              <FilterButton onClick={onThisMonthFilter} active={activeQuickFilter === 'month'}>
+              <FilterButton onClick={paginationService.handleThisMonthFilter} active={activeQuickFilter === 'month'}>
                 Måned
               </FilterButton>
-              <FilterButton onClick={onPastFilter} active={activeQuickFilter === 'past'}>
+              <FilterButton onClick={paginationService.handlePastFilter} active={activeQuickFilter === 'past'}>
                 Tidligere
               </FilterButton>
             </div>
@@ -181,10 +124,7 @@ export function AppointmentTableHeaderSlot({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        onClearFilters();
-                        setIsAdvancedOpen(false);
-                      }}
+                      onClick={handleClearFilters}
                       className="h-8 text-xs text-destructive"
                     >
                       <X className="h-3.5 w-3.5 mr-1" />
@@ -203,14 +143,14 @@ export function AppointmentTableHeaderSlot({
                   <div className="grid grid-cols-[1fr_auto] gap-2">
                     <Input
                       type="date"
-                      value={fromDate}
-                      onChange={(e) => onFromDateChange(e.target.value)}
+                      value={localFromDate}
+                      onChange={(e) => setLocalFromDate(e.target.value)}
                       className="text-sm h-11"
                     />
                     <Input
                       type="time"
-                      value={fromTime}
-                      onChange={(e) => onFromTimeChange(e.target.value)}
+                      value={localFromTime}
+                      onChange={(e) => setLocalFromTime(e.target.value)}
                       className="text-sm h-11 w-24"
                       placeholder="00:00"
                     />
@@ -225,14 +165,14 @@ export function AppointmentTableHeaderSlot({
                   <div className="grid grid-cols-[1fr_auto] gap-2">
                     <Input
                       type="date"
-                      value={toDate}
-                      onChange={(e) => onToDateChange(e.target.value)}
+                      value={localToDate}
+                      onChange={(e) => setLocalToDate(e.target.value)}
                       className="text-sm h-11"
                     />
                     <Input
                       type="time"
-                      value={toTime}
-                      onChange={(e) => onToTimeChange(e.target.value)}
+                      value={localToTime}
+                      onChange={(e) => setLocalToTime(e.target.value)}
                       className="text-sm h-11 w-24"
                       placeholder="23:59"
                     />
@@ -271,13 +211,7 @@ export function AppointmentTableHeaderSlot({
               </div>
 
               <div className="shrink-0 p-4 border-t bg-background space-y-2 safe-area-inset-bottom">
-                <Button
-                  onClick={() => {
-                    onApplyDateFilters();
-                    setIsAdvancedOpen(false);
-                  }}
-                  className="w-full h-12 text-base font-semibold"
-                >
+                <Button onClick={handleApplyDateFilters} className="w-full h-12 text-base font-semibold">
                   Bruk filtre
                   {activeFilterCount > 0 && ` (${activeFilterCount})`}
                 </Button>
@@ -289,15 +223,21 @@ export function AppointmentTableHeaderSlot({
         {activeQuickFilter === null && hasActiveFilters && (
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-1">
             {searchFilter && (
-              <ActiveFilterChip onRemove={() => onRemoveFilter('search')}>
+              <ActiveFilterChip onRemove={() => paginationService.handleRemoveFilter('search')}>
                 Søk: {searchFilter.slice(0, 15)}
                 {searchFilter.length > 15 && '...'}
               </ActiveFilterChip>
             )}
             {fromDate && (
-              <ActiveFilterChip onRemove={() => onRemoveFilter('fromDate')}>Fra: {fromDate}</ActiveFilterChip>
+              <ActiveFilterChip onRemove={() => paginationService.handleRemoveFilter('fromDate')}>
+                Fra: {fromDate}
+              </ActiveFilterChip>
             )}
-            {toDate && <ActiveFilterChip onRemove={() => onRemoveFilter('toDate')}>Til: {toDate}</ActiveFilterChip>}
+            {toDate && (
+              <ActiveFilterChip onRemove={() => paginationService.handleRemoveFilter('toDate')}>
+                Til: {toDate}
+              </ActiveFilterChip>
+            )}
           </div>
         )}
       </div>
@@ -308,7 +248,7 @@ export function AppointmentTableHeaderSlot({
           <Input
             placeholder="Søk på tjenestenavn eller gruppe…"
             value={searchFilter}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={(e) => paginationService.handleSearchChange(e.target.value)}
             className="pl-9"
           />
         </div>
@@ -317,7 +257,7 @@ export function AppointmentTableHeaderSlot({
           <Button
             variant={activeQuickFilter === 'upcoming' ? 'default' : 'outline'}
             size="sm"
-            onClick={onUpcomingFilter}
+            onClick={paginationService.handleUpcomingFilter}
             className="h-8"
           >
             Kommende
@@ -325,7 +265,7 @@ export function AppointmentTableHeaderSlot({
           <Button
             variant={activeQuickFilter === 'past' ? 'default' : 'outline'}
             size="sm"
-            onClick={onPastFilter}
+            onClick={paginationService.handlePastFilter}
             className="h-8"
           >
             Tidligere
@@ -333,7 +273,7 @@ export function AppointmentTableHeaderSlot({
           <Button
             variant={activeQuickFilter === 'today' ? 'default' : 'outline'}
             size="sm"
-            onClick={onTodayFilter}
+            onClick={paginationService.handleTodayFilter}
             className="h-8"
           >
             I dag
@@ -341,7 +281,7 @@ export function AppointmentTableHeaderSlot({
           <Button
             variant={activeQuickFilter === 'week' ? 'default' : 'outline'}
             size="sm"
-            onClick={onThisWeekFilter}
+            onClick={paginationService.handleThisWeekFilter}
             className="h-8"
           >
             Denne uken
@@ -349,13 +289,13 @@ export function AppointmentTableHeaderSlot({
           <Button
             variant={activeQuickFilter === 'month' ? 'default' : 'outline'}
             size="sm"
-            onClick={onThisMonthFilter}
+            onClick={paginationService.handleThisMonthFilter}
             className="h-8"
           >
             Denne måneden
           </Button>
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={onClearFilters} className="h-8 text-destructive">
+            <Button variant="ghost" size="sm" onClick={handleClearFilters} className="h-8 text-destructive">
               <X className="h-4 w-4 mr-1.5" />
               Nullstill filtre
             </Button>
@@ -370,8 +310,8 @@ export function AppointmentTableHeaderSlot({
             <Input
               id="fromDate"
               type="date"
-              value={fromDate}
-              onChange={(e) => onFromDateChange(e.target.value)}
+              value={localFromDate}
+              onChange={(e) => setLocalFromDate(e.target.value)}
               className="w-[140px] h-9"
             />
           </div>
@@ -383,8 +323,8 @@ export function AppointmentTableHeaderSlot({
             <Input
               id="fromTime"
               type="time"
-              value={fromTime}
-              onChange={(e) => onFromTimeChange(e.target.value)}
+              value={localFromTime}
+              onChange={(e) => setLocalFromTime(e.target.value)}
               className="w-[100px] h-9"
             />
           </div>
@@ -396,8 +336,8 @@ export function AppointmentTableHeaderSlot({
             <Input
               id="toDate"
               type="date"
-              value={toDate}
-              onChange={(e) => onToDateChange(e.target.value)}
+              value={localToDate}
+              onChange={(e) => setLocalToDate(e.target.value)}
               className="w-[140px] h-9"
             />
           </div>
@@ -409,13 +349,13 @@ export function AppointmentTableHeaderSlot({
             <Input
               id="toTime"
               type="time"
-              value={toTime}
-              onChange={(e) => onToTimeChange(e.target.value)}
+              value={localToTime}
+              onChange={(e) => setLocalToTime(e.target.value)}
               className="w-[100px] h-9"
             />
           </div>
 
-          <Button onClick={onApplyDateFilters} size="sm" className="h-9">
+          <Button onClick={handleApplyDateFilters} size="sm" className="h-9">
             Bruk filtre
           </Button>
         </div>

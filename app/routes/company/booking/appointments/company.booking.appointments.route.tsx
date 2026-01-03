@@ -1,5 +1,5 @@
 import { useFetcher, useNavigate, useSearchParams } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { AppointmentDto } from 'tmp/openapi/gen/booking';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
@@ -10,6 +10,7 @@ import type { Route } from './+types/company.booking.appointments.route';
 import { AppointmentCardRow } from './_components/appointment.card-row';
 import { AppointmentTableHeaderSlot } from './_components/appointment.table-header-slot';
 import { AppointmentTableRow } from './_components/appointment.table-row';
+import { AppointmentPaginationService } from './_services/appointment.pagination-service';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -50,12 +51,6 @@ export async function loader({ request }: Route.LoaderArgs) {
         totalElements: pageData?.totalElements ?? 0,
         totalPages: pageData?.totalPages ?? 1,
       },
-      filters: {
-        sort,
-        search,
-        fromDateTime: fromDateTime || '',
-        toDateTime: toDateTime || '',
-      },
     };
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
@@ -67,12 +62,6 @@ export async function loader({ request }: Route.LoaderArgs) {
         size: 10,
         totalElements: 0,
         totalPages: 1,
-      },
-      filters: {
-        sort: '',
-        search: '',
-        fromDateTime: '',
-        toDateTime: '',
       },
       error: error?.message || 'Kunne ikke hente timebestillinger',
     };
@@ -110,30 +99,17 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function CompanyBookingAppointmentsPage({ loaderData }: Route.ComponentProps) {
-  const { appointments, pagination, filters } = loaderData;
+  const { appointments, pagination } = loaderData;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingAppointmentId, setDeletingAppointmentId] = useState<number | null>(null);
-  const [searchFilter, setSearchFilter] = useState(filters?.search || '');
-  const [fromDate, setFromDate] = useState('');
-  const [fromTime, setFromTime] = useState('');
-  const [toDate, setToDate] = useState('');
-  const [toTime, setToTime] = useState('');
 
-  useEffect(() => {
-    if (filters?.fromDateTime) {
-      const fromDt = new Date(filters.fromDateTime);
-      setFromDate(fromDt.toISOString().split('T')[0]);
-      setFromTime(fromDt.toTimeString().slice(0, 5));
-    }
-    if (filters?.toDateTime) {
-      const toDt = new Date(filters.toDateTime);
-      setToDate(toDt.toISOString().split('T')[0]);
-      setToTime(toDt.toTimeString().slice(0, 5));
-    }
-  }, [filters]);
+  const paginationService = useMemo(
+    () => new AppointmentPaginationService(searchParams, navigate),
+    [searchParams, navigate],
+  );
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return;
@@ -162,201 +138,10 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
     fetcher.submit(fd, { method: 'post' });
   };
 
-  const handleSearchChange = (value: string) => {
-    setSearchFilter(value);
-    const params = new URLSearchParams(searchParams);
-    if (value) {
-      params.set('search', value);
-    } else {
-      params.delete('search');
-    }
-    params.set('page', '0');
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
-  const applyDateFilters = () => {
-    const params = new URLSearchParams(searchParams);
-
-    if (fromDate) {
-      const fromDateTime = `${fromDate}T${fromTime || '00:00:00'}`;
-      params.set('fromDateTime', fromDateTime);
-    } else {
-      params.delete('fromDateTime');
-    }
-
-    if (toDate) {
-      const toDateTime = `${toDate}T${toTime || '23:59:59'}`;
-      params.set('toDateTime', toDateTime);
-    } else {
-      params.delete('toDateTime');
-    }
-
-    params.set('page', '0');
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
-  const handleQuickFilter = (from: string, to: string) => {
-    const params = new URLSearchParams(searchParams);
-
-    if (from) {
-      params.set('fromDateTime', from);
-      const fromDt = new Date(from);
-      setFromDate(fromDt.toISOString().split('T')[0]);
-      setFromTime(fromDt.toTimeString().slice(0, 5));
-    } else {
-      params.delete('fromDateTime');
-      setFromDate('');
-      setFromTime('');
-    }
-
-    if (to) {
-      params.set('toDateTime', to);
-      const toDt = new Date(to);
-      setToDate(toDt.toISOString().split('T')[0]);
-      setToTime(toDt.toTimeString().slice(0, 5));
-    } else {
-      params.delete('toDateTime');
-      setToDate('');
-      setToTime('');
-    }
-
-    params.set('page', '0');
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
-  const handleUpcomingFilter = () => {
-    const now = new Date().toISOString();
-    handleQuickFilter(now, '');
-  };
-
-  const handlePastFilter = () => {
-    const now = new Date().toISOString();
-    handleQuickFilter('', now);
-  };
-
-  const handleTodayFilter = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setSeconds(tomorrow.getSeconds() - 1);
-    handleQuickFilter(today.toISOString(), tomorrow.toISOString());
-  };
-
-  const handleThisWeekFilter = () => {
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    const day = now.getDay();
-    const diff = day === 0 ? -6 : 1 - day; // Monday
-    startOfWeek.setDate(now.getDate() + diff);
-    startOfWeek.setHours(0, 0, 0, 0);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 7);
-    endOfWeek.setSeconds(endOfWeek.getSeconds() - 1);
-    handleQuickFilter(startOfWeek.toISOString(), endOfWeek.toISOString());
-  };
-
-  const handleThisMonthFilter = () => {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    startOfMonth.setHours(0, 0, 0, 0);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-    handleQuickFilter(startOfMonth.toISOString(), endOfMonth.toISOString());
-  };
-
-  const handleClearFilters = () => {
-    setSearchFilter('');
-    setFromDate('');
-    setFromTime('');
-    setToDate('');
-    setToTime('');
-    navigate('?', { replace: true });
-  };
-
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('page', newPage.toString());
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
-  const handlePageSizeChange = (newSize: number) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('size', newSize.toString());
-    params.set('page', '0');
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
-  const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString('nb-NO', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const getTotalPrice = (appointment: AppointmentDto) => {
-    const allServices = appointment.groupedServiceGroups?.flatMap((group) => group.services ?? []) ?? [];
-    const total = allServices.reduce((sum, service) => sum + (service.price ?? 0), 0);
-    return total.toLocaleString('nb-NO', { style: 'currency', currency: 'NOK' });
-  };
-
-  const getTotalDuration = (appointment: AppointmentDto) => {
-    const allServices = appointment.groupedServiceGroups?.flatMap((group) => group.services ?? []) ?? [];
-    const total = allServices.reduce((sum, service) => sum + (service.duration ?? 0), 0);
-    return `${total} min`;
-  };
-
-  const getTotalServiceCount = (appointment: AppointmentDto) => {
-    return appointment.groupedServiceGroups?.reduce((sum, group) => sum + (group.services?.length ?? 0), 0) ?? 0;
-  };
-
-  const handleRemoveFilter = (filterType: 'search' | 'fromDate' | 'toDate') => {
-    const params = new URLSearchParams(searchParams);
-
-    switch (filterType) {
-      case 'search':
-        params.delete('search');
-        setSearchFilter('');
-        break;
-      case 'fromDate':
-        params.delete('fromDateTime');
-        setFromDate('');
-        setFromTime('');
-        break;
-      case 'toDate':
-        params.delete('toDateTime');
-        setToDate('');
-        setToTime('');
-        break;
-    }
-
-    params.set('page', '0');
-    navigate(`?${params.toString()}`, { replace: true });
-  };
-
   return (
     <div className="container mx-auto">
-      {/* Desktop View */}
       <ServerPaginatedTable<AppointmentDto>
         items={appointments}
-        pagination={pagination}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-        emptyMessage="Ingen avtaler ennå"
-        getRowKey={(appointment, index) => appointment.id ?? `appointment-${index}`}
-        renderMobileCard={(appointment) => (
-          <AppointmentCardRow
-            appointment={appointment}
-            onDelete={handleDeleteClick}
-            isDeleting={fetcher.state !== 'idle' && deletingAppointmentId === appointment.id}
-            formatDateTime={formatDateTime}
-            getTotalDuration={getTotalDuration}
-            getTotalPrice={getTotalPrice}
-            getTotalServiceCount={getTotalServiceCount}
-          />
-        )}
         columns={[
           { header: 'Tidspunkt', className: 'font-medium' },
           { header: 'Kunde' },
@@ -365,59 +150,25 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
           { header: 'Pris' },
           { header: 'Handlinger' },
         ]}
-        headerSlot={
-          <AppointmentTableHeaderSlot
-            onRemoveFilter={handleRemoveFilter}
-            searchFilter={searchFilter}
-            onSearchChange={handleSearchChange}
-            fromDate={fromDate}
-            fromTime={fromTime}
-            toDate={toDate}
-            toTime={toTime}
-            onFromDateChange={setFromDate}
-            onFromTimeChange={setFromTime}
-            onToDateChange={setToDate}
-            onToTimeChange={setToTime}
-            onApplyDateFilters={applyDateFilters}
-            onUpcomingFilter={handleUpcomingFilter}
-            onPastFilter={handlePastFilter}
-            onTodayFilter={handleTodayFilter}
-            onThisWeekFilter={handleThisWeekFilter}
-            onThisMonthFilter={handleThisMonthFilter}
-            onClearFilters={handleClearFilters}
+        pagination={pagination}
+        onPageChange={paginationService.handlePageChange}
+        onPageSizeChange={paginationService.handlePageSizeChange}
+        emptyMessage="Ingen avtaler ennå"
+        getRowKey={(appointment, index) => appointment.id ?? `appointment-${index}`}
+        renderMobileCard={(appointment) => (
+          <AppointmentCardRow
+            appointment={appointment}
+            onDelete={handleDeleteClick}
+            isDeleting={fetcher.state !== 'idle' && deletingAppointmentId === appointment.id}
           />
-        }
-        mobileHeaderSlot={
-          <AppointmentTableHeaderSlot
-            onRemoveFilter={handleRemoveFilter}
-            searchFilter={searchFilter}
-            onSearchChange={handleSearchChange}
-            fromDate={fromDate}
-            fromTime={fromTime}
-            toDate={toDate}
-            toTime={toTime}
-            onFromDateChange={setFromDate}
-            onFromTimeChange={setFromTime}
-            onToDateChange={setToDate}
-            onToTimeChange={setToTime}
-            onApplyDateFilters={applyDateFilters}
-            onUpcomingFilter={handleUpcomingFilter}
-            onPastFilter={handlePastFilter}
-            onTodayFilter={handleTodayFilter}
-            onThisWeekFilter={handleThisWeekFilter}
-            onThisMonthFilter={handleThisMonthFilter}
-            onClearFilters={handleClearFilters}
-          />
-        }
+        )}
+        headerSlot={<AppointmentTableHeaderSlot />}
+        mobileHeaderSlot={<AppointmentTableHeaderSlot />}
         renderRow={(appointment) => (
           <AppointmentTableRow
             appointment={appointment}
             onDelete={handleDeleteClick}
             isDeleting={fetcher.state !== 'idle' && deletingAppointmentId === appointment.id}
-            formatDateTime={formatDateTime}
-            getTotalDuration={getTotalDuration}
-            getTotalPrice={getTotalPrice}
-            getTotalServiceCount={getTotalServiceCount}
           />
         )}
       />

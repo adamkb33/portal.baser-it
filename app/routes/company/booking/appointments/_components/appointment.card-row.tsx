@@ -7,26 +7,15 @@ import { User, Trash2, Clock, Banknote, Info } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import type { AppointmentDto } from 'tmp/openapi/gen/booking';
 import { Link } from 'react-router';
+import { getTotalServiceCount, formatDateTime, getTotalDuration, getTotalPrice } from '../_utils/appointments.utils';
 
 type AppointmentCardRowProps = {
   appointment: AppointmentDto;
   onDelete: (id: number) => void;
   isDeleting?: boolean;
-  formatDateTime: (dateTime: string) => string;
-  getTotalDuration: (appointment: AppointmentDto) => string;
-  getTotalPrice: (appointment: AppointmentDto) => string;
-  getTotalServiceCount: (appointment: AppointmentDto) => number;
 };
 
-export function AppointmentCardRow({
-  appointment,
-  onDelete,
-  isDeleting = false,
-  formatDateTime,
-  getTotalDuration,
-  getTotalPrice,
-  getTotalServiceCount,
-}: AppointmentCardRowProps) {
+export function AppointmentCardRow({ appointment, onDelete, isDeleting = false }: AppointmentCardRowProps) {
   const totalServices = getTotalServiceCount(appointment);
   const isPast = new Date(appointment.startTime) < new Date();
 
@@ -34,7 +23,7 @@ export function AppointmentCardRow({
     <Card
       className={cn(
         'group relative overflow-hidden transition-all duration-200',
-        isPast && 'opacity-60 grayscale-[0.3]',
+        isPast && 'opacity-60 grayscale-[0.5]',
         !isPast && 'border-l-4 border-l-primary shadow-sm hover:shadow-md',
       )}
     >
