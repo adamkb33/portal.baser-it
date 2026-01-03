@@ -28,29 +28,31 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
         <CompanyHeader company={companyContext} />
       </div>
 
-      <div className="hidden md:flex items-center gap-4 h-full">
-        {userBranches.length > 0 && (
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="User menu" className="h-10 w-10 rounded">
-                <User className="h-8 w-8" />
-              </Button>
-            </DropdownMenuTrigger>
+      <div className="flex items-center gap-4 h-full">
+        <div className="hidden md:flex">
+          {userBranches.length > 0 && (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" aria-label="User menu" className="h-10 w-10 rounded">
+                  <User className="h-8 w-8" />
+                </Button>
+              </DropdownMenuTrigger>
 
-            <DropdownMenuContent>
-              {userBranches.map((link) => (
-                <DropdownMenuItem key={link.id} asChild>
-                  <Link to={link.href}>{link.label}</Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+              <DropdownMenuContent>
+                {userBranches.map((link) => (
+                  <DropdownMenuItem key={link.id} asChild>
+                    <Link to={link.href}>{link.label}</Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+
+        {authBranches.map((link) => (
+          <NavLink key={link.id} link={link} />
+        ))}
       </div>
-
-      {authBranches.map((link) => (
-        <NavLink key={link.id} link={link} />
-      ))}
     </div>
   );
 }
