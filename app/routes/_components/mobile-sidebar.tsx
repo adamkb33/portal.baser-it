@@ -36,13 +36,13 @@ export function MobileSidebar({ branches, isOpen, onClose }: MobileSidebarProps)
   return (
     <>
       <div
-        className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
+        className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
 
       <aside
-        className="fixed inset-y-0 left-0 w-[85vw] max-w-sm border-r border-border bg-background z-50 md:hidden shadow-2xl"
+        className="fixed inset-y-0 left-0 w-[85vw] max-w-sm border-r border-border bg-background z-50 lg:hidden shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
@@ -52,14 +52,7 @@ export function MobileSidebar({ branches, isOpen, onClose }: MobileSidebarProps)
 
           <button
             onClick={onClose}
-            className="
-              w-11 h-11 flex items-center justify-center
-              rounded border border-border
-              text-foreground hover:bg-accent hover:text-accent-foreground
-              active:scale-95
-              focus:outline-none focus:ring-2 focus:ring-ring
-              transition-all duration-200
-            "
+            className="w-11 h-11 flex items-center justify-center rounded border border-border text-foreground hover:bg-accent hover:text-accent-foreground active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
             aria-label="Lukk meny"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -124,10 +117,7 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
   };
 
   const getTextWeight = () => {
-    if (!isActive) {
-      return level === 0 ? 'font-semibold' : 'font-medium';
-    }
-    return level === 0 ? 'font-semibold' : 'font-bold';
+    return isActive || level === 0 ? 'font-semibold' : 'font-medium';
   };
 
   return (
@@ -153,12 +143,7 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
               aria-expanded={isExpanded}
               aria-label={`${isExpanded ? 'Skjul' : 'Vis'} ${item.label}`}
               style={{ marginLeft: level === 0 ? '4px' : `${indentPadding}px` }}
-              className="
-                flex-shrink-0 w-11 h-11 flex items-center justify-center
-                transition-all duration-200 rounded
-                hover:bg-muted active:bg-muted/80
-                focus:outline-none focus:ring-2 focus:ring-ring
-              "
+              className="flex-shrink-0 w-11 h-11 flex items-center justify-center transition-all duration-200 rounded hover:bg-muted active:bg-muted/80 focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <svg
                 className={`
@@ -195,7 +180,7 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
                   ? `text-primary ${getHighlightOpacity()}`
                   : isInActiveTrail
                     ? `text-foreground ${getTrailOpacity()}`
-                    : 'text-muted-foreground active:text-foreground active:bg-muted'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted/80'
               }
             `}
           >

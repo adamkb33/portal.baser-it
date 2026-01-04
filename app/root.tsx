@@ -16,6 +16,7 @@ import { getFlashMessage } from './routes/company/_lib/flash-message.server';
 import { getAuthPayloadFromRequest } from './lib/auth.utils';
 import { FlashMessageBanner } from './routes/_components/flash-message-banner';
 import { Button } from './components/ui/button';
+import { Footer } from './routes/_components/footer';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -136,7 +137,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
         <div className="hidden lg:col-span-2 lg:block"></div>
       </header>
 
-      <main className="relative overflow-hidden bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
+      <main className="relative overflow-hidden bg-content-bg lg:col-span-12 lg:grid lg:grid-cols-12">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.05]"
           aria-hidden="true"
@@ -157,14 +158,14 @@ export default function App({ loaderData }: Route.ComponentProps) {
             </div>
           </aside>
         ) : (
-          <aside className="relative z-10 hidden border-r border-border bg-transparent lg:col-span-2 lg:block" />
+          <aside className="relative z-10 hidden border-r border-content-border bg-transparent lg:col-span-2 lg:block" />
         )}
 
         {hasSidebar && (
           <MobileSidebar branches={sidebarBranches} isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         )}
 
-        <section className="relative z-10 overflow-auto border-r border-border p-2 sm:p-5 lg:col-span-8 bg-background/70">
+        <section className="relative z-10 overflow-auto border-r border-content-border p-2 sm:p-5 lg:col-span-8 bg-content-bg/70">
           <Outlet
             context={{
               userNav,
@@ -178,16 +179,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
         <div className="relative z-10 hidden lg:col-span-2 lg:block"></div>
       </main>
 
-      <footer className="border-t border-border lg:col-span-12 lg:grid lg:grid-cols-12 bg-foreground">
-        <div className="hidden lg:col-span-2 lg:block"></div>
-
-        <section className="p-2 lg:col-span-8">
-          <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Footer</span>
-          <p className="mt-2 text-[0.7rem] text-muted-foreground">Footer content goes here</p>
-        </section>
-
-        <div className="hidden lg:col-span-2 lg:block"></div>
-      </footer>
+      <Footer />
     </div>
   );
 }

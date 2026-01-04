@@ -4,10 +4,16 @@ import { Button } from '~/components/ui/button';
 import { Label } from '~/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { Badge } from '~/components/ui/badge';
-import { Calendar, X, Search, SlidersHorizontal, Check } from 'lucide-react';
+import { Calendar as CalendarIcon, X, Search, Check } from 'lucide-react';
+import { Calendar } from '~/components/ui/calendar';
 import { cn } from '~/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router';
-import { AppointmentPaginationService } from '../_services/appointment.pagination-service';
+import { type DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
+import {
+  AppointmentPaginationQuickFilter,
+  AppointmentPaginationService,
+} from '../_services/appointment.pagination-service';
 
 export function AppointmentTableHeaderSlot() {
   const navigate = useNavigate();
@@ -31,8 +37,7 @@ export function AppointmentTableHeaderSlot() {
   const [localToTime, setLocalToTime] = useState(toTime);
 
   const hasActiveFilters = fromDate || toDate || searchFilter;
-  const hasCustomDateFilter = (fromDate || toDate) && paginationService.getActiveQuickFilter(fromDate, toDate) === null;
-  const activeFilterCount = [fromDate, toDate, searchFilter].filter(Boolean).length;
+  const hasCustomDateFilter = (fromDate || toDate) && paginationService.getActiveQuickFilter() === null;
 
   const handleApplyDateFilters = () => {
     paginationService.applyDateFilters(localFromDate, localFromTime, localToDate, localToTime);
@@ -48,12 +53,12 @@ export function AppointmentTableHeaderSlot() {
     setIsDatePickerOpen(false);
   };
 
-  const activeQuickFilter = paginationService.getActiveQuickFilter(fromDate, toDate);
+  const activeQuickFilter = paginationService.getActiveQuickFilter();
 
   return (
     <div className="space-y-3 md:space-y-4 w-full">
       {/* Search */}
-      <div className="relative max-w-full md:max-w-md">
+      <div className="relative max-w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           placeholder="Søk avtaler..."
@@ -73,29 +78,41 @@ export function AppointmentTableHeaderSlot() {
         )}
       </div>
 
-      {/* Segmented Control - Primary Filters */}
-      <div className="grid grid-cols-3 gap-1 p-1 bg-muted/50 rounded-lg md:inline-flex md:w-auto md:gap-2 md:p-0 md:bg-transparent">
-        <SegmentButton active={activeQuickFilter === 'upcoming'} onClick={paginationService.handleUpcomingFilter}>
+      <div className="flex gap-4">
+        <SegmentButton
+          active={activeQuickFilter === AppointmentPaginationQuickFilter.UPCOMING}
+          onClick={paginationService.handleUpcomingFilter}
+        >
           Kommende
         </SegmentButton>
-        <SegmentButton active={activeQuickFilter === 'today'} onClick={paginationService.handleTodayFilter}>
+        <SegmentButton
+          active={activeQuickFilter === AppointmentPaginationQuickFilter.TODAY}
+          onClick={paginationService.handleTodayFilter}
+        >
           I dag
         </SegmentButton>
-        <SegmentButton active={activeQuickFilter === 'past'} onClick={paginationService.handlePastFilter}>
+        <SegmentButton
+          active={activeQuickFilter === AppointmentPaginationQuickFilter.PAST}
+          onClick={paginationService.handlePastFilter}
+        >
           Tidligere
         </SegmentButton>
       </div>
 
-      {/* Secondary Filters Row */}
       <div className="flex items-center gap-2">
-        <SecondaryFilterButton active={activeQuickFilter === 'week'} onClick={paginationService.handleNext7days}>
+        <SecondaryFilterButton
+          active={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_7_DAYS}
+          onClick={paginationService.handleNext7days}
+        >
           Neste 7 dager
         </SecondaryFilterButton>
-        <SecondaryFilterButton active={activeQuickFilter === 'month'} onClick={paginationService.handleNext30Days}>
+        <SecondaryFilterButton
+          active={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_30_DAYS}
+          onClick={paginationService.handleNext30Days}
+        >
           Neste 30 dager
         </SecondaryFilterButton>
 
-        {/* Date Range Popover */}
         <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -103,7 +120,7 @@ export function AppointmentTableHeaderSlot() {
               size="sm"
               className="h-8 md:h-9 gap-1.5 relative"
             >
-              <Calendar className="h-3.5 w-3.5" />
+              <CalendarIcon className="h-3.5 w-3.5" />
               <span className="text-xs">Periode</span>
               {hasCustomDateFilter && (
                 <Badge className="h-4 w-4 p-0 flex items-center justify-center ml-0.5">
@@ -112,8 +129,8 @@ export function AppointmentTableHeaderSlot() {
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-4" align="end">
-            <div className="space-y-4">
+          <PopoverContent className="w-auto p-0" align="end">
+            <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold">Velg periode</h4>
                 {hasActiveFilters && (
@@ -128,45 +145,48 @@ export function AppointmentTableHeaderSlot() {
                 )}
               </div>
 
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1.5 block">Fra</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="date"
-                      value={localFromDate}
-                      onChange={(e) => setLocalFromDate(e.target.value)}
-                      className="flex-1 text-sm h-9"
-                    />
-                    <Input
-                      type="time"
-                      value={localFromTime}
-                      onChange={(e) => setLocalFromTime(e.target.value)}
-                      className="w-20 text-sm h-9"
-                    />
-                  </div>
-                </div>
+              <Calendar
+                mode="range"
+                selected={{
+                  from: localFromDate ? new Date(localFromDate) : undefined,
+                  to: localToDate ? new Date(localToDate) : undefined,
+                }}
+                onSelect={(range: DateRange | undefined) => {
+                  setLocalFromDate(range?.from ? format(range.from, 'yyyy-MM-dd') : '');
+                  setLocalToDate(range?.to ? format(range.to, 'yyyy-MM-dd') : '');
+                }}
+                numberOfMonths={1}
+                className="rounded-md border"
+              />
 
-                <div>
-                  <Label className="text-xs text-muted-foreground mb-1.5 block">Til</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="date"
-                      value={localToDate}
-                      onChange={(e) => setLocalToDate(e.target.value)}
-                      className="flex-1 text-sm h-9"
-                    />
-                    <Input
-                      type="time"
-                      value={localToTime}
-                      onChange={(e) => setLocalToTime(e.target.value)}
-                      className="w-20 text-sm h-9"
-                    />
-                  </div>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Fra tid</Label>
+                  <Input
+                    type="time"
+                    value={localFromTime}
+                    onChange={(e) => setLocalFromTime(e.target.value)}
+                    className="text-sm h-9"
+                    disabled={!localFromDate}
+                  />
+                </div>
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-1.5 block">Til tid</Label>
+                  <Input
+                    type="time"
+                    value={localToTime}
+                    onChange={(e) => setLocalToTime(e.target.value)}
+                    className="text-sm h-9"
+                    disabled={!localToDate}
+                  />
                 </div>
               </div>
 
-              <Button onClick={handleApplyDateFilters} className="w-full h-9 text-sm">
+              <Button
+                onClick={handleApplyDateFilters}
+                className="w-full h-9 text-sm"
+                disabled={!localFromDate && !localToDate}
+              >
                 Bruk filter
               </Button>
             </div>
@@ -184,41 +204,6 @@ export function AppointmentTableHeaderSlot() {
           </Button>
         )}
       </div>
-
-      {/* Active Filter Summary - Fixed Height Always */}
-      {/* <div className="h-14 md:h-11">
-        {hasActiveFilters ? (
-          <div className="flex items-center gap-2 p-2 md:px-3 rounded-lg bg-primary/5 md:bg-muted/30 border border-primary/20 md:border-border h-full">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-primary md:text-muted-foreground shrink-0" />
-            <div className="flex-1 min-w-0 overflow-hidden">
-              <p className="text-[10px] md:text-xs font-medium text-primary md:text-muted-foreground uppercase md:normal-case tracking-wide md:tracking-normal mb-1 md:mb-0 md:inline md:mr-2 shrink-0">
-                {activeFilterCount} {activeFilterCount === 1 ? 'filter' : 'filtre'}
-                <span className="hidden md:inline">:</span>
-              </p>
-              <div className="flex gap-1.5 md:gap-2 overflow-x-auto scrollbar-hide md:inline-flex">
-                {searchFilter && (
-                  <FilterTag onRemove={() => paginationService.handleRemoveFilter('search')}>
-                    Søk: {searchFilter.slice(0, 15)}
-                    {searchFilter.length > 15 && '...'}
-                  </FilterTag>
-                )}
-                {fromDate && (
-                  <FilterTag onRemove={() => paginationService.handleRemoveFilter('fromDate')}>
-                    Fra: {fromDate} {fromTime && `kl. ${fromTime}`}
-                  </FilterTag>
-                )}
-                {toDate && (
-                  <FilterTag onRemove={() => paginationService.handleRemoveFilter('toDate')}>
-                    Til: {toDate} {toTime && `kl. ${toTime}`}
-                  </FilterTag>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="h-full" /> // Empty spacer to maintain height
-        )}
-      </div> */}
     </div>
   );
 }
@@ -263,17 +248,5 @@ function SecondaryFilterButton({
     <Button variant={active ? 'default' : 'outline'} size="sm" onClick={onClick} className="h-8 md:h-9 text-xs">
       {children}
     </Button>
-  );
-}
-
-// Compact Filter Tags
-function FilterTag({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
-  return (
-    <span className="inline-flex items-center gap-1 pl-2 pr-0.5 py-0.5 rounded bg-primary/10 text-primary text-[11px] font-medium whitespace-nowrap shrink-0">
-      {children}
-      <button onClick={onRemove} className="h-5 w-5 rounded hover:bg-primary/20 flex items-center justify-center">
-        <X className="h-2.5 w-2.5" />
-      </button>
-    </span>
   );
 }

@@ -1,4 +1,13 @@
 // ~/services/appointment-pagination.service.ts
+
+export enum AppointmentPaginationQuickFilter {
+  UPCOMING,
+  PAST,
+  TODAY,
+  NEXT_7_DAYS,
+  NEXT_30_DAYS,
+}
+
 export class AppointmentPaginationService {
   private searchParams: URLSearchParams;
   private navigate: (to: string, options?: { replace?: boolean }) => void;
@@ -8,54 +17,57 @@ export class AppointmentPaginationService {
     this.navigate = navigate;
   }
 
-  getActiveQuickFilter = (fromDate: string, toDate: string): string | null => {
-    if (!fromDate && !toDate) return 'upcoming';
+  getActiveQuickFilter = (): AppointmentPaginationQuickFilter | null => {
+    const fromDate = this.searchParams.get('fromDateTime');
+    const toDate = this.searchParams.get('toDateTime');
 
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (!fromDate && !toDate) return AppointmentPaginationQuickFilter.UPCOMING;
 
+    // UPCOMING: fromDate exists, no toDate
     if (fromDate && !toDate) {
-      const fromDt = new Date(fromDate);
-      if (Math.abs(fromDt.getTime() - now.getTime()) < 5000) {
-        return 'upcoming';
-      }
+      return AppointmentPaginationQuickFilter.UPCOMING;
     }
 
+    // PAST: no fromDate, toDate exists
     if (!fromDate && toDate) {
-      const toDt = new Date(toDate);
-      if (Math.abs(toDt.getTime() - now.getTime()) < 5000) {
-        return 'past';
-      }
+      return AppointmentPaginationQuickFilter.PAST;
     }
 
     if (fromDate && toDate) {
       const fromDt = new Date(fromDate);
       const toDt = new Date(toDate);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
 
-      if (fromDt.getDate() === today.getDate() && toDt.getDate() === tomorrow.getDate() - 1) {
-        return 'today';
-      }
+      // Check if fromDate is midnight (00:00:00 or 23:00:00 UTC for CET)
+      const isMidnight = fromDt.getUTCHours() === 0 || fromDt.getUTCHours() === 23;
 
-      const weekStart = new Date(now);
-      const day = now.getDay();
-      const diff = day === 0 ? -6 : 1 - day;
-      weekStart.setDate(now.getDate() + diff);
-      weekStart.setHours(0, 0, 0, 0);
+      // Check if toDate is end-of-day (22:59:59.999Z or 23:59:59.999)
+      const isEndOfDay =
+        (toDt.getUTCHours() === 22 || toDt.getUTCHours() === 23) &&
+        toDt.getUTCMinutes() === 59 &&
+        toDt.getUTCSeconds() === 59;
 
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 7);
+      if (isMidnight && isEndOfDay) {
+        const now = new Date();
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
 
-      if (fromDt.getTime() === weekStart.getTime() && Math.abs(toDt.getTime() - weekEnd.getTime()) < 86400000) {
-        return 'week';
-      }
+        const daysDiff = Math.round((toDt.getTime() - fromDt.getTime()) / (1000 * 60 * 60 * 24));
+        const daysFromToday = Math.round((fromDt.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+        // TODAY: 1-day range starting today
+        if ((daysDiff === 0 || daysDiff === 1) && Math.abs(daysFromToday) <= 1) {
+          return AppointmentPaginationQuickFilter.TODAY;
+        }
 
-      if (fromDt.getTime() === monthStart.getTime() && Math.abs(toDt.getTime() - monthEnd.getTime()) < 86400000) {
-        return 'month';
+        // NEXT_7_DAYS: 7-8 day range starting today
+        if (daysDiff >= 7 && daysDiff <= 8 && Math.abs(daysFromToday) <= 1) {
+          return AppointmentPaginationQuickFilter.NEXT_7_DAYS;
+        }
+
+        // NEXT_30_DAYS: 30-31 day range starting today
+        if (daysDiff >= 30 && daysDiff <= 31 && Math.abs(daysFromToday) <= 1) {
+          return AppointmentPaginationQuickFilter.NEXT_30_DAYS;
+        }
       }
     }
 

@@ -85,9 +85,10 @@ export function TableDesktopView<T>({
         </div>
 
         {showScrollHint && hasScrollableContent && (
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex items-center justify-center bg-gradient-to-t from-background/95 to-transparent pb-1 pt-4">
-            <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground/60">
-              <ChevronDown className="h-2.5 w-2.5" />
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex items-center justify-center bg-gradient-to-t from-background via-background/90 to-transparent pb-2 pt-6">
+            <div className="flex items-center gap-1 text-xs font-medium text-foreground/80">
+              <ChevronDown className="h-3.5 w-3.5" />
+              <span>Scroll</span>
             </div>
           </div>
         )}
