@@ -15,7 +15,7 @@ interface BreadcrumbsProps {
   className?: string;
 }
 
-export function NavBreadcrumbs({ items, className }: BreadcrumbsProps) {
+export function SidebarBreadcrumbs({ items, className }: BreadcrumbsProps) {
   const location = useLocation();
 
   const breadcrumbTrail = React.useMemo(() => {

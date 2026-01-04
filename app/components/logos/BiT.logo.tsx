@@ -5,12 +5,14 @@ export interface BiTLogoProps extends React.HTMLAttributes<HTMLSpanElement> {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   variant?: 'default' | 'stacked' | 'compact' | 'wordmark';
   animated?: boolean;
+  onDark?: boolean; // For navbar/dark backgrounds
 }
 
 export default function BiTLogo({
   size = 'md',
   variant = 'default',
   animated = false,
+  onDark = false,
   className,
   ...props
 }: BiTLogoProps) {
@@ -53,6 +55,21 @@ export default function BiTLogo({
     },
   }[size];
 
+  // Color configuration based on context
+  const colorConfig = onDark
+    ? {
+        primary: 'text-navbar-text',
+        secondary: 'text-primary',
+        dot: 'bg-accent',
+        muted: 'text-navbar-text-muted',
+      }
+    : {
+        primary: 'text-primary',
+        secondary: 'text-secondary',
+        dot: 'bg-accent',
+        muted: 'text-muted-foreground',
+      };
+
   // Default horizontal logo
   if (variant === 'default') {
     return (
@@ -70,7 +87,8 @@ export default function BiTLogo({
         {/* B - Primary accent */}
         <span
           className={cn(
-            'text-primary relative',
+            colorConfig.primary,
+            'relative',
             animated && 'transition-all duration-300 hover:scale-110 hover:-rotate-3',
           )}
         >
@@ -87,20 +105,22 @@ export default function BiTLogo({
           {/* Dot above i */}
           <span
             className={cn(
-              'rounded-full bg-accent absolute -top-1',
+              'rounded-full absolute -top-1',
+              colorConfig.dot,
               sizeConfig.dot,
               animated && 'transition-all duration-500 hover:bg-primary',
             )}
             aria-hidden="true"
           />
           {/* i stem */}
-          <span className="text-secondary">i</span>
+          <span className={colorConfig.secondary}>i</span>
         </span>
 
         {/* T - Primary accent */}
         <span
           className={cn(
-            'text-primary relative',
+            colorConfig.primary,
+            'relative',
             animated && 'transition-all duration-300 hover:scale-110 hover:rotate-3',
           )}
         >
@@ -123,12 +143,12 @@ export default function BiTLogo({
         )}
         {...props}
       >
-        <span className="text-primary leading-none">B</span>
+        <span className={cn(colorConfig.primary, 'leading-none')}>B</span>
         <span className="relative inline-flex flex-col items-center leading-none -my-1">
-          <span className={cn('rounded-full bg-accent absolute -top-1', sizeConfig.dot)} aria-hidden="true" />
-          <span className="text-secondary">i</span>
+          <span className={cn('rounded-full absolute -top-1', colorConfig.dot, sizeConfig.dot)} aria-hidden="true" />
+          <span className={colorConfig.secondary}>i</span>
         </span>
-        <span className="text-primary leading-none">T</span>
+        <span className={cn(colorConfig.primary, 'leading-none')}>T</span>
       </span>
     );
   }
@@ -140,9 +160,9 @@ export default function BiTLogo({
         className={cn('font-bold inline-flex items-center gap-0', sizeConfig.text, sizeConfig.letterSpacing, className)}
         {...props}
       >
-        <span className="text-primary">B</span>
-        <span className="text-secondary -mx-1">i</span>
-        <span className="text-primary">T</span>
+        <span className={colorConfig.primary}>B</span>
+        <span className={cn(colorConfig.secondary, '-mx-1')}>i</span>
+        <span className={colorConfig.primary}>T</span>
       </span>
     );
   }
@@ -153,21 +173,22 @@ export default function BiTLogo({
       <span className={cn('inline-flex items-center', sizeConfig.gap, className)} {...props}>
         {/* Logo part */}
         <span className={cn('font-bold inline-flex items-center gap-1', sizeConfig.text, sizeConfig.letterSpacing)}>
-          <span className="text-primary">B</span>
+          <span className={colorConfig.primary}>B</span>
           <span className="relative inline-flex flex-col items-center">
-            <span className={cn('rounded-full bg-accent absolute -top-1', sizeConfig.dot)} aria-hidden="true" />
-            <span className="text-secondary">i</span>
+            <span className={cn('rounded-full absolute -top-1', colorConfig.dot, sizeConfig.dot)} aria-hidden="true" />
+            <span className={colorConfig.secondary}>i</span>
           </span>
-          <span className="text-primary">T</span>
+          <span className={colorConfig.primary}>T</span>
         </span>
 
         {/* Divider */}
-        <span className="w-px h-4 bg-border" aria-hidden="true" />
+        <span className={cn('w-px h-4', onDark ? 'bg-navbar-border' : 'bg-border')} aria-hidden="true" />
 
         {/* Wordmark */}
         <span
           className={cn(
-            'font-medium text-muted-foreground',
+            'font-medium',
+            colorConfig.muted,
             size === 'xs' && 'text-xs',
             size === 'sm' && 'text-xs',
             size === 'md' && 'text-sm',
@@ -183,17 +204,4 @@ export default function BiTLogo({
   }
 
   return null;
-}
-
-// Export convenience components
-export function BiTLogoStacked(props: Omit<BiTLogoProps, 'variant'>) {
-  return <BiTLogo variant="stacked" {...props} />;
-}
-
-export function BiTLogoCompact(props: Omit<BiTLogoProps, 'variant'>) {
-  return <BiTLogo variant="compact" {...props} />;
-}
-
-export function BiTLogoWordmark(props: Omit<BiTLogoProps, 'variant'>) {
-  return <BiTLogo variant="wordmark" {...props} />;
 }

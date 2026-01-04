@@ -7,21 +7,20 @@
     'Noto Color Emoji';
 }
 
-html,
-body {
-}
-
 @theme inline {
+  /* Typography */
   --font-sans: Inter, sans-serif;
   --font-serif: Merriweather, serif;
   --font-mono: JetBrains Mono, monospace;
 
+  /* Border Radius */
   --radius: 0.25rem;
   --radius-sm: 0.125rem;
   --radius-md: 0.25rem;
   --radius-lg: 0.25rem;
   --radius-xl: 0.375rem;
 
+  /* Letter Spacing */
   --tracking-normal: 0em;
   --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
   --tracking-tight: calc(var(--tracking-normal) - 0.025em);
@@ -29,12 +28,9 @@ body {
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
 
+  /* Base Theme Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -44,10 +40,18 @@ body {
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  /* Component Colors */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  /* Chart Colors */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -55,90 +59,117 @@ body {
   --color-chart-5: var(--chart-5);
   --color-chart-6: var(--chart-6);
 
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  /* Navbar Tokens */
+  --color-navbar-bg: var(--navbar-bg);
+  --color-navbar-text: var(--navbar-text);
+  --color-navbar-text-muted: var(--navbar-text-muted);
+  --color-navbar-border: var(--navbar-border);
+  --color-navbar-accent: var(--navbar-accent);
+  --color-navbar-accent-foreground: var(--navbar-accent-foreground);
+  --color-navbar-icon-bg: var(--navbar-icon-bg);
+  --color-navbar-ring: var(--navbar-ring);
+
+  /* Sidebar Tokens */
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-text-muted: var(--sidebar-text-muted);
+  --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
+
 :root {
-  --radius: 0.25rem;
+  /* ========================================
+     BASE THEME COLORS
+     Used for main content areas
+     ======================================== */
 
-  /* BASE: Warm Cream - NOT pure white, inviting */
-  --background: oklch(0.96 0.01 85); /* Soft warm cream */
-  --foreground: oklch(0.18 0.02 30); /* Deep warm charcoal */
-
-  /* CARDS: Lighter cream for elevation */
-  --card: oklch(0.98 0.008 85); /* Almost white cream */
-  --card-foreground: var(--foreground);
-
-  /* POPOVERS: Pure white for top layer */
-  --popover: oklch(0.99 0.005 80);
-  --popover-foreground: var(--foreground);
-
-  /* PRIMARY: Rich Terracotta - warm, approachable luxury */
-  --primary: oklch(0.62 0.14 35); /* Burnt terracotta/coral */
-  --primary-foreground: oklch(0.98 0.01 85); /* Cream text */
-
-  /* SECONDARY: Sage Green - calm, premium, friendly */
-  --secondary: oklch(0.68 0.08 150); /* Muted sage green */
-  --secondary-foreground: oklch(0.2 0.02 30); /* Dark text */
-
-  /* MUTED: Warm Taupe */
-  --muted: oklch(0.88 0.015 70); /* Light warm taupe */
-  --muted-foreground: oklch(0.5 0.03 30); /* Mid-tone warm gray */
-
-  /* ACCENT: Rose Gold - modern luxury */
-  --accent: oklch(0.72 0.1 45); /* Rose gold/copper */
-  --accent-foreground: oklch(0.2 0.02 30);
-
-  /* DESTRUCTIVE: Warm burgundy - luxe error state */
-  --destructive: oklch(0.52 0.16 25); /* Rich burgundy */
-
-  /* BORDERS: Warm tan - visible but soft */
-  --border: oklch(0.82 0.02 70); /* Warm tan border */
-  --input: oklch(0.96 0.01 85); /* Same as background */
+  --background: oklch(0.89 0.006 240);
+  --foreground: oklch(0.28 0.012 240);
+  --border: oklch(0.74 0.012 240);
+  --input: oklch(0.89 0.006 240);
   --ring: var(--primary);
 
-  /* CHARTS: Warm gradient terracotta to sage */
-  --chart-1: oklch(0.62 0.14 35); /* Primary terracotta */
-  --chart-2: oklch(0.66 0.12 50); /* Warm coral */
-  --chart-3: oklch(0.7 0.1 70); /* Peachy */
-  --chart-4: oklch(0.72 0.09 100); /* Warm gold */
-  --chart-5: oklch(0.7 0.08 130); /* Olive */
-  --chart-6: oklch(0.68 0.08 150); /* Sage */
+  /* Primary - Blue/Purple */
+  --primary: oklch(0.56 0.065 245);
+  --primary-foreground: oklch(0.96 0.004 240);
 
-  /* SIDEBAR: Slightly darker cream */
-  --sidebar: oklch(0.94 0.012 80);
-  --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--accent-foreground);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
+  /* Secondary - Green */
+  --secondary: oklch(0.62 0.045 140);
+  --secondary-foreground: oklch(0.28 0.012 240);
 
-  /* SHADOWS: Warm, soft shadows */
-  --shadow-color: oklch(0.4 0.03 35); /* Warm shadow color */
-  --shadow-opacity: 0.15; /* Subtle, not harsh */
-  --shadow-blur: 16px;
-  --shadow-spread: -3px;
-  --shadow-offset-x: 0px;
-  --shadow-offset-y: 6px;
-  --spacing: 0.25rem;
+  /* Muted - Warm neutral */
+  --muted: oklch(0.82 0.008 60);
+  --muted-foreground: oklch(0.46 0.018 240);
 
-  --shadow-2xs: 0px 2px 6px 0px oklch(0.4 0.03 35 / 0.1);
-  --shadow-xs: 0px 3px 8px 0px oklch(0.4 0.03 35 / 0.12);
-  --shadow-sm: 0px 4px 12px -1px oklch(0.4 0.03 35 / 0.14);
-  --shadow: 0px 6px 16px -2px oklch(0.4 0.03 35 / 0.16);
-  --shadow-md: 0px 8px 20px -3px oklch(0.4 0.03 35 / 0.18);
-  --shadow-lg: 0px 12px 28px -4px oklch(0.4 0.03 35 / 0.2);
-  --shadow-xl: 0px 16px 36px -6px oklch(0.4 0.03 35 / 0.22);
-  --shadow-2xl: 0px 20px 48px -8px oklch(0.4 0.03 35 / 0.24);
+  /* Accent - Yellow/Warm */
+  --accent: oklch(0.68 0.055 70);
+  --accent-foreground: oklch(0.28 0.012 240);
+
+  /* Destructive - Red */
+  --destructive: oklch(0.5 0.11 25);
+  --destructive-foreground: oklch(0.96 0.004 240);
+
+  /* Component Surfaces */
+  --card: oklch(0.91 0.005 240);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.94 0.004 240);
+  --popover-foreground: var(--foreground);
+
+  /* ========================================
+     NAVBAR TOKENS
+     Dark surface (uses foreground as bg)
+     ======================================== */
+
+  --navbar-bg: var(--foreground);
+  --navbar-text: var(--background);
+  --navbar-text-muted: oklch(0.65 0.012 240);
+  --navbar-border: oklch(0.42 0.015 240);
+  --navbar-accent: oklch(0.35 0.015 240);
+  --navbar-accent-foreground: oklch(0.92 0.008 240);
+  --navbar-icon-bg: oklch(0.35 0.015 240);
+  --navbar-ring: var(--primary);
+
+  /* ========================================
+     SIDEBAR TOKENS
+     Dark with subtle blue/purple hue
+     ======================================== */
+
+  --sidebar-bg: oklch(0.18 0.015 245);
+  --sidebar-text: oklch(0.92 0.008 240);
+  --sidebar-text-muted: oklch(0.68 0.012 240);
+  --sidebar-border: oklch(0.32 0.018 245);
+  --sidebar-accent: oklch(0.24 0.02 245);
+  --sidebar-accent-foreground: oklch(0.92 0.008 240);
+  --sidebar-ring: var(--primary);
+
+  /* ========================================
+     SHADOWS
+     ======================================== */
+
+  --shadow-color: oklch(0.32 0.015 240);
+  --shadow-2xs: 0px 2px 6px 0px oklch(0.32 0.015 240 / 0.05);
+  --shadow-xs: 0px 3px 8px 0px oklch(0.32 0.015 240 / 0.06);
+  --shadow-sm: 0px 4px 12px -1px oklch(0.32 0.015 240 / 0.07);
+  --shadow: 0px 6px 16px -2px oklch(0.32 0.015 240 / 0.09);
+  --shadow-md: 0px 8px 20px -3px oklch(0.32 0.015 240 / 0.1);
+  --shadow-lg: 0px 12px 28px -4px oklch(0.32 0.015 240 / 0.11);
+  --shadow-xl: 0px 16px 36px -6px oklch(0.32 0.015 240 / 0.13);
+  --shadow-2xl: 0px 20px 48px -8px oklch(0.32 0.015 240 / 0.15);
+
+  /* ========================================
+     CHART COLORS
+     ======================================== */
+
+  --chart-1: oklch(0.56 0.065 245);
+  --chart-2: oklch(0.62 0.045 140);
+  --chart-3: oklch(0.68 0.055 70);
+  --chart-4: oklch(0.5 0.11 25);
+  --chart-5: oklch(0.46 0.018 240);
+  --chart-6: oklch(0.74 0.012 240);
 }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

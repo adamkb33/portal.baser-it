@@ -15,8 +15,8 @@ import { AppointmentPaginationService } from './_services/appointment.pagination
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const url = new URL(request.url);
-    const page = parseInt(url.searchParams.get('page') || '0', 10);
-    const size = parseInt(url.searchParams.get('size') || '10', 10);
+    const page = parseInt(url.searchParams.get('page') || '0', 5);
+    const size = parseInt(url.searchParams.get('size') || '10', 5);
     const sort = url.searchParams.get('sort') || '';
     const search = url.searchParams.get('search') || '';
     const fromDateTime = url.searchParams.get('fromDateTime');

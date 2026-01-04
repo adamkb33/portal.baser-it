@@ -1,5 +1,4 @@
 import { Link } from 'react-router';
-import { NavLink } from './nav-link';
 import type { UserNavigation } from '~/lib/route-tree';
 import { RoutePlaceMent, BrachCategory } from '~/lib/route-tree';
 import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
@@ -23,7 +22,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
     <div className="flex h-full items-center justify-between w-full">
       <div className="flex h-full items-center gap-6">
         <Link to="/" className="flex items-center h-full text-xl font-semibold">
-          <BiTLogo size={'xl'} />
+          <BiTLogo size="xl" onDark />
         </Link>
         <CompanyHeader company={companyContext} />
       </div>
@@ -33,15 +32,22 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
           {userBranches.length > 0 && (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" aria-label="User menu" className="h-10 w-10 rounded">
-                  <User className="h-8 w-8" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="User menu"
+                  className="h-10 w-10 rounded border border-navbar-border bg-navbar-icon-bg text-navbar-text hover:bg-navbar-accent hover:border-primary hover:text-primary transition-all duration-200"
+                >
+                  <User className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent>
+              <DropdownMenuContent align="end" className="min-w-[180px]">
                 {userBranches.map((link) => (
                   <DropdownMenuItem key={link.id} asChild>
-                    <Link to={link.href}>{link.label}</Link>
+                    <Link to={link.href} className="cursor-pointer">
+                      {link.label}
+                    </Link>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -50,7 +56,13 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
         </div>
 
         {authBranches.map((link) => (
-          <NavLink key={link.id} link={link} />
+          <Link
+            key={link.id}
+            to={link.href}
+            className="px-3 py-2 text-sm font-medium text-navbar-text-muted hover:text-navbar-text hover:bg-navbar-accent rounded transition-all duration-200"
+          >
+            {link.label}
+          </Link>
         ))}
       </div>
     </div>

@@ -88,11 +88,11 @@ export function AppointmentTableHeaderSlot() {
 
       {/* Secondary Filters Row */}
       <div className="flex items-center gap-2">
-        <SecondaryFilterButton active={activeQuickFilter === 'week'} onClick={paginationService.handleThisWeekFilter}>
-          Uke
+        <SecondaryFilterButton active={activeQuickFilter === 'week'} onClick={paginationService.handleNext7days}>
+          Neste 7 dager
         </SecondaryFilterButton>
-        <SecondaryFilterButton active={activeQuickFilter === 'month'} onClick={paginationService.handleThisMonthFilter}>
-          Måned
+        <SecondaryFilterButton active={activeQuickFilter === 'month'} onClick={paginationService.handleNext30Days}>
+          Neste 30 dager
         </SecondaryFilterButton>
 
         {/* Date Range Popover */}
@@ -186,7 +186,7 @@ export function AppointmentTableHeaderSlot() {
       </div>
 
       {/* Active Filter Summary - Fixed Height Always */}
-      <div className="h-14 md:h-11">
+      {/* <div className="h-14 md:h-11">
         {hasActiveFilters ? (
           <div className="flex items-center gap-2 p-2 md:px-3 rounded-lg bg-primary/5 md:bg-muted/30 border border-primary/20 md:border-border h-full">
             <SlidersHorizontal className="h-3.5 w-3.5 text-primary md:text-muted-foreground shrink-0" />
@@ -218,7 +218,7 @@ export function AppointmentTableHeaderSlot() {
         ) : (
           <div className="h-full" /> // Empty spacer to maintain height
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

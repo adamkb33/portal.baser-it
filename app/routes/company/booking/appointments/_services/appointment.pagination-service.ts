@@ -145,25 +145,28 @@ export class AppointmentPaginationService {
     this.handleQuickFilter(today.toISOString(), tomorrow.toISOString());
   };
 
-  handleThisWeekFilter = () => {
+  handleNext7days = () => {
     const now = new Date();
-    const startOfWeek = new Date(now);
-    const day = now.getDay();
-    const diff = day === 0 ? -6 : 1 - day; // Monday
-    startOfWeek.setDate(now.getDate() + diff);
-    startOfWeek.setHours(0, 0, 0, 0);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 7);
-    endOfWeek.setSeconds(endOfWeek.getSeconds() - 1);
-    this.handleQuickFilter(startOfWeek.toISOString(), endOfWeek.toISOString());
+    const startDate = new Date(now);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(now);
+    endDate.setDate(endDate.getDate() + 7);
+    endDate.setHours(23, 59, 59, 999);
+
+    this.handleQuickFilter(startDate.toISOString(), endDate.toISOString());
   };
 
-  handleThisMonthFilter = () => {
+  handleNext30Days = () => {
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    startOfMonth.setHours(0, 0, 0, 0);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-    this.handleQuickFilter(startOfMonth.toISOString(), endOfMonth.toISOString());
+    const startDate = new Date(now);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(now);
+    endDate.setDate(endDate.getDate() + 30);
+    endDate.setHours(23, 59, 59, 999);
+
+    this.handleQuickFilter(startDate.toISOString(), endDate.toISOString());
   };
 
   handleClearFilters = () => {

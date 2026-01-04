@@ -71,7 +71,7 @@ export const links: LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="bg-foreground">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -112,16 +112,16 @@ export default function App({ loaderData }: Route.ComponentProps) {
     <div className="grid min-h-screen grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-cols-12">
       <FlashMessageBanner message={loaderData.flashMessage} />
 
-      <header className="border-b border-border bg-background lg:col-span-12 lg:grid lg:grid-cols-12">
+      <header className="border-b border-navbar-border lg:col-span-12 lg:grid lg:grid-cols-12 bg-navbar-bg">
         <div className="hidden lg:col-span-2 lg:block"></div>
 
-        <nav className="border-b border-border lg:col-span-8 lg:border-b-0 h-20">
+        <nav className="border-b border-navbar-border lg:col-span-8 lg:border-b-0 h-20">
           <div className="flex h-full items-center gap-3 px-2">
             {hasSidebar && (
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden h-10 w-10 flex items-center justify-center hover:bg-muted rounded transition-colors"
+                className="lg:hidden h-10 w-10 flex items-center justify-center text-navbar-text hover:bg-navbar-accent hover:text-primary rounded transition-colors"
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />
@@ -150,10 +150,10 @@ export default function App({ loaderData }: Route.ComponentProps) {
         />
 
         {userNav?.SIDEBAR && userNav.SIDEBAR.length > 0 ? (
-          <aside className="relative z-10 hidden border-r border-border bg-background p-4 lg:col-span-2 lg:block">
+          <aside className="relative z-10 hidden border-r border-sidebar-border bg-sidebar-bg p-4 lg:col-span-2 lg:block">
             <Sidebar branches={userNav.SIDEBAR} />
             <div className="absolute bottom-4 left-4 right-4">
-              <div className="h-px w-full bg-border/20" />
+              <div className="h-px w-full bg-sidebar-border/20" />
             </div>
           </aside>
         ) : (
@@ -178,7 +178,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
         <div className="relative z-10 hidden lg:col-span-2 lg:block"></div>
       </main>
 
-      <footer className="border-t border-border bg-muted lg:col-span-12 lg:grid lg:grid-cols-12">
+      <footer className="border-t border-border lg:col-span-12 lg:grid lg:grid-cols-12 bg-foreground">
         <div className="hidden lg:col-span-2 lg:block"></div>
 
         <section className="p-2 lg:col-span-8">
