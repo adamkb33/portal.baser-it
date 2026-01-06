@@ -21,6 +21,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const search = url.searchParams.get('search') || '';
     const fromDateTime = url.searchParams.get('fromDateTime');
     const toDateTime = url.searchParams.get('toDateTime');
+    const direction = url.searchParams.get('direction') as 'ASC' | 'DESC' | null;
 
     const hasDateFilters = fromDateTime !== null || toDateTime !== null;
     const now = new Date().toISOString();
@@ -36,6 +37,7 @@ export async function loader({ request }: Route.LoaderArgs) {
           ...(search && { search }),
           ...(effectiveFromDateTime && { fromDateTime: effectiveFromDateTime }),
           ...(effectiveToDateTime && { toDateTime: effectiveToDateTime }),
+          direction: direction || undefined,
         },
       });
     });

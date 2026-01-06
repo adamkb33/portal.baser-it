@@ -74,6 +74,27 @@ export class AppointmentPaginationService {
     return null;
   };
 
+  getDirection = (): 'ASC' | 'DESC' | undefined => {
+    const dir = this.searchParams.get('direction');
+    return dir === 'ASC' || dir === 'DESC' ? dir : undefined;
+  };
+
+  setDirection = (direction: 'ASC' | 'DESC' | undefined): void => {
+    const params = new URLSearchParams(this.searchParams);
+    const currentDirection = this.searchParams.get('direction');
+
+    if (direction === currentDirection) {
+      params.delete('direction');
+    } else if (direction === 'ASC' || direction === 'DESC') {
+      params.set('direction', direction);
+    } else {
+      params.delete('direction');
+    }
+
+    params.set('page', '0');
+    this.navigate(`?${params.toString()}`, { replace: true });
+  };
+
   handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(this.searchParams);
     params.set('page', newPage.toString());
@@ -98,18 +119,18 @@ export class AppointmentPaginationService {
     this.navigate(`?${params.toString()}`, { replace: true });
   };
 
-  applyDateFilters = (fromDate: string, fromTime: string, toDate: string, toTime: string) => {
+  applyDateFilters = (fromDate: string, toDate: string) => {
     const params = new URLSearchParams(this.searchParams);
 
     if (fromDate) {
-      const fromDateTime = `${fromDate}T${fromTime || '00:00:00'}`;
+      const fromDateTime = `${fromDate}T00:00:00`;
       params.set('fromDateTime', fromDateTime);
     } else {
       params.delete('fromDateTime');
     }
 
     if (toDate) {
-      const toDateTime = `${toDate}T${toTime || '23:59:59'}`;
+      const toDateTime = `${toDate}T23:59:59`;
       params.set('toDateTime', toDateTime);
     } else {
       params.delete('toDateTime');

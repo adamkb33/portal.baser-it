@@ -4,11 +4,11 @@ import { Button } from '~/components/ui/button';
 import { Label } from '~/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { Badge } from '~/components/ui/badge';
-import { Calendar as CalendarIcon, X, Search, Check } from 'lucide-react';
+import { Calendar as CalendarIcon, X, Search, Check, ChevronUp } from 'lucide-react';
 import { Calendar } from '~/components/ui/calendar';
 import { cn } from '~/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router';
-import { type DateRange } from 'react-day-picker';
+import { Chevron, type DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
 import {
   AppointmentPaginationQuickFilter,
@@ -27,28 +27,22 @@ export function AppointmentTableHeaderSlot() {
   const searchFilter = searchParams.get('search') || '';
 
   const fromDate = fromDateTime ? new Date(fromDateTime).toISOString().split('T')[0] : '';
-  const fromTime = fromDateTime ? new Date(fromDateTime).toTimeString().slice(0, 5) : '';
   const toDate = toDateTime ? new Date(toDateTime).toISOString().split('T')[0] : '';
-  const toTime = toDateTime ? new Date(toDateTime).toTimeString().slice(0, 5) : '';
 
   const [localFromDate, setLocalFromDate] = useState(fromDate);
-  const [localFromTime, setLocalFromTime] = useState(fromTime);
   const [localToDate, setLocalToDate] = useState(toDate);
-  const [localToTime, setLocalToTime] = useState(toTime);
 
   const hasActiveFilters = fromDate || toDate || searchFilter;
   const hasCustomDateFilter = (fromDate || toDate) && paginationService.getActiveQuickFilter() === null;
 
   const handleApplyDateFilters = () => {
-    paginationService.applyDateFilters(localFromDate, localFromTime, localToDate, localToTime);
+    paginationService.applyDateFilters(localFromDate, localToDate);
     setIsDatePickerOpen(false);
   };
 
   const handleClearFilters = () => {
     setLocalFromDate('');
-    setLocalFromTime('');
     setLocalToDate('');
-    setLocalToTime('');
     paginationService.handleClearFilters();
     setIsDatePickerOpen(false);
   };
@@ -97,6 +91,22 @@ export function AppointmentTableHeaderSlot() {
         >
           Tidligere
         </SegmentButton>
+
+        <Button
+          size={'sm'}
+          variant={paginationService.getDirection() == 'ASC' ? 'default' : 'outline'}
+          onClick={() => paginationService.setDirection('ASC')}
+        >
+          Tidligste først
+        </Button>
+        <Button
+          size={'sm'}
+          variant={paginationService.getDirection() == 'DESC' ? 'default' : 'outline'}
+          onClick={() => paginationService.setDirection('DESC')}
+        >
+          Seneste først
+        </Button>
+        <></>
       </div>
 
       <div className="flex items-center gap-2">
@@ -158,29 +168,6 @@ export function AppointmentTableHeaderSlot() {
                 numberOfMonths={1}
                 className="rounded-md border"
               />
-
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground mb-1.5 block">Fra tid</Label>
-                  <Input
-                    type="time"
-                    value={localFromTime}
-                    onChange={(e) => setLocalFromTime(e.target.value)}
-                    className="text-sm h-9"
-                    disabled={!localFromDate}
-                  />
-                </div>
-                <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground mb-1.5 block">Til tid</Label>
-                  <Input
-                    type="time"
-                    value={localToTime}
-                    onChange={(e) => setLocalToTime(e.target.value)}
-                    className="text-sm h-9"
-                    disabled={!localToDate}
-                  />
-                </div>
-              </div>
 
               <Button
                 onClick={handleApplyDateFilters}

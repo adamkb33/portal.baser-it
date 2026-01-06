@@ -1,7 +1,7 @@
 import { Outlet, redirect, useOutletContext, type LoaderFunctionArgs } from 'react-router';
 import { SidebarBreadcrumbs } from '~/components/layout/sidebar-breadcrums';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
-import type { RootOutletContext } from '~/root';
+import type { RootOutletContext } from '~/root.layout';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const auth = await getAuthPayloadFromRequest(request);

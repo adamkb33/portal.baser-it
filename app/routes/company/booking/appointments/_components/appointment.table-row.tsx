@@ -77,30 +77,42 @@ export function AppointmentTableRow({ appointment, onDelete, isDeleting = false 
         {getTotalServiceCount(appointment) > 1 ? (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="link" size="sm" className="h-7 px-0">
-                Se tjenester ({getTotalServiceCount(appointment)})
-              </Button>
+              <button className="group inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-border bg-background hover:bg-accent transition-colors">
+                <span className="text-xs font-medium">Klikk for å se alle</span>
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                  {getTotalServiceCount(appointment)}
+                </span>
+              </button>
             </PopoverTrigger>
-            <PopoverContent className="w-96" align="start">
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm border-b border-border pb-2">
-                  Tjenester ({getTotalServiceCount(appointment)})
+            <PopoverContent className="w-80 p-0" align="start">
+              <div className="p-4 border-b border-border bg-muted/30">
+                <h4 className="font-bold text-sm">
+                  Tjenester{' '}
+                  <span className="text-muted-foreground font-normal">({getTotalServiceCount(appointment)})</span>
                 </h4>
-                {appointment.groupedServiceGroups?.map((group) => (
-                  <div key={group.id} className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1 w-1 rounded-full bg-primary" />
-                      <Badge variant="outline" className="font-semibold text-xs">
-                        {group.name}
-                      </Badge>
+              </div>
+              <div className="p-4 space-y-4 max-h-[320px] overflow-y-auto">
+                {appointment.groupedServiceGroups?.map((group, idx) => (
+                  <div key={group.id} className="space-y-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-1 h-1 rounded-full bg-primary flex-shrink-0" />
+                      <span className="font-semibold text-sm text-foreground">{group.name}</span>
                     </div>
-                    <div className="flex flex-wrap gap-1.5 pl-3">
+                    <div className="flex flex-wrap gap-1.5 pl-3.5">
                       {group.services?.map((service) => (
-                        <Badge key={service.id} variant="secondary" className="font-normal text-xs">
+                        <span
+                          key={service.id}
+                          className="inline-flex items-center px-2 py-1 rounded-md bg-secondary text-secondary-foreground text-xs border border-border/50"
+                        >
                           {service.name}
-                        </Badge>
+                        </span>
                       ))}
                     </div>
+                    {idx < appointment.groupedServiceGroups.length - 1 && (
+                      <div className="pt-2">
+                        <div className="h-px bg-border/50" />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

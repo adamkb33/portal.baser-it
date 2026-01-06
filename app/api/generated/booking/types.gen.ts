@@ -762,6 +762,7 @@ export type GetAppointmentsData = {
         sort?: string;
         fromDateTime?: string;
         toDateTime?: string;
+        direction?: 'ASC' | 'DESC';
         search?: string;
     };
     url: '/company-user/appointments';
