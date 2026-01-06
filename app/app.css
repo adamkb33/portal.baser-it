@@ -95,6 +95,76 @@
   --color-footer-accent: var(--footer-accent);
   --color-footer-accent-foreground: var(--footer-accent-foreground);
   --color-footer-ring: var(--footer-ring);
+
+  /* From Tokens */
+  --color-form-bg: var(--form-bg);
+  --color-form-text: var(--form-text);
+  --color-form-text-muted: var(--form-text-muted);
+  --color-form-border: var(--form-border);
+  --color-form-accent: var(--form-accent);
+  --color-form-accent-foreground: var(--form-accent-foreground);
+  --color-form-ring: var(--form-ring);
+  --color-form-invalid: var(--form-invalid);
+  --color-form-invalid-foreground: var(--form-invalid-foreground);
+  --color-form-valid: var(--form-valid);
+  --color-form-valid-foreground: var(--form-valid-foreground);
+  --color-form-disabled: var(--form-disabled);
+  --color-form-disabled-foreground: var(--form-disabled-foreground);
+
+  /* Button Tokens - Primary */
+  --color-button-primary-bg: var(--button-primary-bg);
+  --color-button-primary-text: var(--button-primary-text);
+  --color-button-primary-border: var(--button-primary-border);
+  --color-button-primary-hover-bg: var(--button-primary-hover-bg);
+  --color-button-primary-hover-text: var(--button-primary-hover-text);
+  --color-button-primary-hover-border: var(--button-primary-hover-border);
+  --color-button-primary-active-bg: var(--button-primary-active-bg);
+  --color-button-primary-ring: var(--button-primary-ring);
+
+  /* Button Tokens - Secondary */
+  --color-button-secondary-bg: var(--button-secondary-bg);
+  --color-button-secondary-text: var(--button-secondary-text);
+  --color-button-secondary-border: var(--button-secondary-border);
+  --color-button-secondary-hover-bg: var(--button-secondary-hover-bg);
+  --color-button-secondary-hover-text: var(--button-secondary-hover-text);
+  --color-button-secondary-hover-border: var(--button-secondary-hover-border);
+  --color-button-secondary-active-bg: var(--button-secondary-active-bg);
+  --color-button-secondary-ring: var(--button-secondary-ring);
+
+  /* Button Tokens - Destructive */
+  --color-button-destructive-bg: var(--button-destructive-bg);
+  --color-button-destructive-text: var(--button-destructive-text);
+  --color-button-destructive-border: var(--button-destructive-border);
+  --color-button-destructive-hover-bg: var(--button-destructive-hover-bg);
+  --color-button-destructive-hover-text: var(--button-destructive-hover-text);
+  --color-button-destructive-hover-border: var(--button-destructive-hover-border);
+  --color-button-destructive-active-bg: var(--button-destructive-active-bg);
+  --color-button-destructive-ring: var(--button-destructive-ring);
+
+  /* Button Tokens - Ghost */
+  --color-button-ghost-bg: var(--button-ghost-bg);
+  --color-button-ghost-text: var(--button-ghost-text);
+  --color-button-ghost-border: var(--button-ghost-border);
+  --color-button-ghost-hover-bg: var(--button-ghost-hover-bg);
+  --color-button-ghost-hover-text: var(--button-ghost-hover-text);
+  --color-button-ghost-hover-border: var(--button-ghost-hover-border);
+  --color-button-ghost-active-bg: var(--button-ghost-active-bg);
+  --color-button-ghost-ring: var(--button-ghost-ring);
+
+  /* Button Tokens - Outline */
+  --color-button-outline-bg: var(--button-outline-bg);
+  --color-button-outline-text: var(--button-outline-text);
+  --color-button-outline-border: var(--button-outline-border);
+  --color-button-outline-hover-bg: var(--button-outline-hover-bg);
+  --color-button-outline-hover-text: var(--button-outline-hover-text);
+  --color-button-outline-hover-border: var(--button-outline-hover-border);
+  --color-button-outline-active-bg: var(--button-outline-active-bg);
+  --color-button-outline-ring: var(--button-outline-ring);
+
+  /* Button Tokens - Disabled */
+  --color-button-disabled-bg: var(--button-disabled-bg);
+  --color-button-disabled-text: var(--button-disabled-text);
+  --color-button-disabled-border: var(--button-disabled-border);
 }
 
 :root {
@@ -187,6 +257,99 @@
   --footer-accent: oklch(0.35 0.015 240);
   --footer-accent-foreground: oklch(0.92 0.008 240);
   --footer-ring: var(--primary);
+
+  /* ========================================
+     FORM TOKENS
+     Light, clean inputs with clear states
+  ======================================== */
+  --form-bg: oklch(0.98 0.002 240);
+  --form-text: var(--foreground);
+  --form-text-muted: oklch(0.58 0.015 240);
+  --form-border: oklch(0.74 0.012 240);
+  --form-accent: oklch(0.92 0.005 240);
+  --form-accent-foreground: var(--foreground);
+  --form-ring: var(--primary);
+
+  /* Form State Colors */
+  --form-invalid: oklch(0.5 0.11 25);
+  --form-invalid-foreground: oklch(0.96 0.004 240);
+  --form-valid: oklch(0.62 0.045 140);
+  --form-valid-foreground: oklch(0.96 0.004 240);
+  --form-disabled: oklch(0.86 0.005 240);
+  --form-disabled-foreground: oklch(0.62 0.012 240);
+
+  /* ========================================
+     BUTTON TOKENS - PRIMARY
+     Main call-to-action button
+  ======================================== */
+  --button-primary-bg: var(--primary);
+  --button-primary-text: var(--primary-foreground);
+  --button-primary-border: var(--primary);
+  --button-primary-hover-bg: oklch(0.52 0.07 245);
+  --button-primary-hover-text: var(--primary-foreground);
+  --button-primary-hover-border: oklch(0.52 0.07 245);
+  --button-primary-active-bg: oklch(0.48 0.075 245);
+  --button-primary-ring: var(--primary);
+
+  /* ========================================
+     BUTTON TOKENS - SECONDARY
+     Secondary actions
+  ======================================== */
+  --button-secondary-bg: var(--secondary);
+  --button-secondary-text: var(--secondary-foreground);
+  --button-secondary-border: var(--secondary);
+  --button-secondary-hover-bg: oklch(0.58 0.05 140);
+  --button-secondary-hover-text: var(--secondary-foreground);
+  --button-secondary-hover-border: oklch(0.58 0.05 140);
+  --button-secondary-active-bg: oklch(0.54 0.055 140);
+  --button-secondary-ring: var(--secondary);
+
+  /* ========================================
+     BUTTON TOKENS - DESTRUCTIVE
+     Dangerous/delete actions
+  ======================================== */
+  --button-destructive-bg: var(--destructive);
+  --button-destructive-text: var(--destructive-foreground);
+  --button-destructive-border: var(--destructive);
+  --button-destructive-hover-bg: oklch(0.46 0.12 25);
+  --button-destructive-hover-text: var(--destructive-foreground);
+  --button-destructive-hover-border: oklch(0.46 0.12 25);
+  --button-destructive-active-bg: oklch(0.42 0.13 25);
+  --button-destructive-ring: var(--destructive);
+
+  /* ========================================
+     BUTTON TOKENS - GHOST
+     Minimal, text-only appearance
+  ======================================== */
+  --button-ghost-bg: transparent;
+  --button-ghost-text: var(--foreground);
+  --button-ghost-border: transparent;
+  --button-ghost-hover-bg: oklch(0.82 0.008 60);
+  --button-ghost-hover-text: var(--foreground);
+  --button-ghost-hover-border: transparent;
+  --button-ghost-active-bg: oklch(0.78 0.01 60);
+  --button-ghost-ring: var(--primary);
+
+  /* ========================================
+     BUTTON TOKENS - OUTLINE
+     Outlined button with transparent bg
+  ======================================== */
+  --button-outline-bg: transparent;
+  --button-outline-text: var(--foreground);
+  --button-outline-border: var(--border);
+  --button-outline-hover-bg: oklch(0.82 0.008 60);
+  --button-outline-hover-text: var(--foreground);
+  --button-outline-hover-border: var(--foreground);
+  --button-outline-active-bg: oklch(0.78 0.01 60);
+  --button-outline-ring: var(--primary);
+
+  /* ========================================
+     BUTTON TOKENS - DISABLED STATE
+     All disabled buttons use same styling
+  ======================================== */
+  --button-disabled-bg: oklch(0.86 0.005 240);
+  --button-disabled-text: oklch(0.62 0.012 240);
+  --button-disabled-border: oklch(0.82 0.008 240);
 
   /* ========================================
      SHADOWS

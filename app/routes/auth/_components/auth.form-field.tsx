@@ -28,7 +28,7 @@ export function AuthFormField({
 }: AuthFormFieldProps) {
   return (
     <div className="space-y-3">
-      <Label htmlFor={id} className="text-xs font-medium uppercase tracking-[0.12em] text-foreground">
+      <Label htmlFor={id} className="text-xs font-medium uppercase tracking-[0.12em] text-form-text">
         {label}
       </Label>
       <Input

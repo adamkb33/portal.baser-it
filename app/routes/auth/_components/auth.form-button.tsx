@@ -18,14 +18,8 @@ export function AuthFormButton({
   loadingText,
 }: AuthFormButtonProps) {
   return (
-    <div className="pt-2">
-      <Button
-        type={type}
-        className="relative w-full border-2 border-border bg-foreground px-4 py-3 text-xs font-medium uppercase tracking-[0.08em] text-background transition-transform hover:translate-x-0.5 hover:translate-y-0.5 disabled:opacity-50"
-        disabled={disabled || isLoading}
-      >
-        <span className="relative z-10">{isLoading && loadingText ? loadingText : children}</span>
-      </Button>
-    </div>
+    <Button className="w-full" type={type} disabled={disabled || isLoading}>
+      <span className="relative z-10">{isLoading && loadingText ? loadingText : children}</span>
+    </Button>
   );
 }
