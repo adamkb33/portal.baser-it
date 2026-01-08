@@ -11,24 +11,15 @@ type DateTimeSelectorProps = {
   schedules: ScheduleDto[];
   selectedDateTime: Date | null;
   onSelectDateTime: (dateTime: Date) => void;
-  dateRange: { from: Date; to: Date };
-  onDateRangeChange: (from: Date, to: Date) => void;
 };
 
-export function DateTimeSelector({
-  schedules,
-  selectedDateTime,
-  onSelectDateTime,
-  dateRange,
-  onDateRangeChange,
-}: DateTimeSelectorProps) {
+export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime }: DateTimeSelectorProps) {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(
     selectedDateTime ? new Date(selectedDateTime.toDateString()) : null,
   );
 
   const getScheduleForDate = (date: Date): ScheduleDto | undefined => {
-    // Format date in local timezone for comparison
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -42,9 +33,6 @@ export function DateTimeSelector({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date < today) return true;
-
-    // Disable dates outside range
-    if (date < dateRange.from || date > dateRange.to) return true;
 
     // Disable if no schedule for this date
     const schedule = getScheduleForDate(date);
@@ -63,30 +51,6 @@ export function DateTimeSelector({
     // Parse the startTime from the slot (LocalDateTime format)
     const dateTime = new Date(slot.startTime);
     onSelectDateTime(dateTime);
-  };
-
-  const handlePreviousWeek = () => {
-    const newFrom = new Date(dateRange.from);
-    const newTo = new Date(dateRange.to);
-    newFrom.setDate(newFrom.getDate() - 7);
-    newTo.setDate(newTo.getDate() - 7);
-
-    // Don't go before today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (newFrom < today) {
-      return;
-    }
-
-    onDateRangeChange(newFrom, newTo);
-  };
-
-  const handleNextWeek = () => {
-    const newFrom = new Date(dateRange.from);
-    const newTo = new Date(dateRange.to);
-    newFrom.setDate(newFrom.getDate() + 7);
-    newTo.setDate(newTo.getDate() + 7);
-    onDateRangeChange(newFrom, newTo);
   };
 
   const formatDate = (date: Date) => {
@@ -111,30 +75,8 @@ export function DateTimeSelector({
   const currentSchedule = selectedDate ? getScheduleForDate(selectedDate) : null;
   const availableTimeSlots = currentSchedule?.timeSlots || [];
 
-  const canGoPrevious = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const previousWeek = new Date(dateRange.from);
-    previousWeek.setDate(previousWeek.getDate() - 7);
-    return previousWeek >= today;
-  };
-
   return (
     <div className="space-y-4">
-      {/* Date Range Navigation */}
-      <div className="flex items-center justify-between border-b pb-2">
-        <Button variant="ghost" size="sm" onClick={handlePreviousWeek} disabled={!canGoPrevious()} className="h-8">
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <div className="text-xs text-muted-foreground">
-          {dateRange.from.toLocaleDateString('nb-NO', { day: 'numeric', month: 'short' })} -{' '}
-          {dateRange.to.toLocaleDateString('nb-NO', { day: 'numeric', month: 'short', year: 'numeric' })}
-        </div>
-        <Button variant="ghost" size="sm" onClick={handleNextWeek} className="h-8">
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-
       {/* Date Selector with Popover */}
       <div className="space-y-3">
         <Label htmlFor="date" className="flex items-center gap-2 text-sm font-medium px-1">

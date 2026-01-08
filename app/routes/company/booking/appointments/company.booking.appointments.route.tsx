@@ -45,6 +45,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     const apiResponse = appointmentsResponse.data;
     const pageData = apiResponse?.data;
 
+    console.log(pageData?.content);
+
     return {
       appointments: pageData?.content || [],
       pagination: {

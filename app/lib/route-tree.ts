@@ -153,7 +153,7 @@ export const ROUTE_TREE: RouteBranch[] = [
       {
         id: 'company.admin',
         href: '/company/admin',
-        label: 'Selskap administrasjon',
+        label: 'Administrasjon',
         category: BrachCategory.NONE,
         accessType: Access.ROLE,
         companyRoles: [CompanyRole.ADMIN],

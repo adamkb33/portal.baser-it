@@ -17,6 +17,7 @@ import { DateTimeSelector } from '../../_components/date-time-selector';
 import React from 'react';
 import { Calendar, Clock, DollarSign, User } from 'lucide-react';
 import type { ApiClientError } from '~/api/clients/http';
+import { formatISO, format } from 'date-fns';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -29,9 +30,6 @@ export async function loader({ request }: Route.LoaderArgs) {
     const sessionParam = url.searchParams.get('appointment-session') || '';
     const serviceIdsMatch = sessionParam.match(/service_ids:(\d+(?:,\d+)*)/);
     const selectedServiceIds = serviceIdsMatch ? serviceIdsMatch[1].split(',').map(Number) : [];
-
-    const fromDateMatch = sessionParam.match(/from_date:(\d{4}-\d{2}-\d{2})/);
-    const toDateMatch = sessionParam.match(/to_date:(\d{4}-\d{2}-\d{2})/);
 
     const apiResponses = await withAuth(request, async () => {
       const contactsResponse = await CompanyUserContactController.getContacts({
@@ -50,8 +48,6 @@ export async function loader({ request }: Route.LoaderArgs) {
         scheduleResponse = await CompanyUserScheduleController.getSchedule({
           body: {
             selectedServiceIds,
-            fromDate: fromDateMatch ? fromDateMatch[1] : undefined,
-            toDate: toDateMatch ? toDateMatch[1] : undefined,
           },
         });
       }
@@ -133,11 +129,7 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
   const { contacts, contactPagination, contactSearch, serviceSearch, schedules } = loaderData;
   const [selectedContact, setSelectedContact] = useState<ContactDto | null>(null);
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
-  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: new Date(),
-    to: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
-  });
+  const [selectedDateTime, setSelectedDateTime] = useState<string | null>(null);
   const [filteredServices, setFilteredServices] = useState<GroupedServiceGroupDto[]>(
     loaderData.bookingProfile?.services || [],
   );
@@ -170,16 +162,7 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
       if (dateTimeMatch) {
         const dateTimeStr = dateTimeMatch[1] + (dateTimeMatch[2] || ':00');
         const dateTime = new Date(dateTimeStr);
-        setSelectedDateTime(dateTime);
-      }
-
-      const fromDateMatch = sessionParam.match(/from_date:(\d{4}-\d{2}-\d{2})/);
-      const toDateMatch = sessionParam.match(/to_date:(\d{4}-\d{2}-\d{2})/);
-      if (fromDateMatch && toDateMatch) {
-        setDateRange({
-          from: new Date(fromDateMatch[1]),
-          to: new Date(toDateMatch[1]),
-        });
+        setSelectedDateTime(formatISO(dateTime));
       }
     }
   }, [searchParams, contacts]);
@@ -209,7 +192,7 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
   const updateSessionParams = (
     contactId?: number,
     serviceIds?: number[],
-    dateTime?: Date | null,
+    dateTime?: string | null,
     newDateRange?: { from: Date; to: Date },
   ) => {
     const params = new URLSearchParams(searchParams);
@@ -218,7 +201,6 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
     const finalContactId = contactId ?? selectedContact?.id;
     const finalServiceIds = serviceIds ?? selectedServiceIds;
     const finalDateTime = dateTime !== undefined ? dateTime : selectedDateTime;
-    const finalDateRange = newDateRange ?? dateRange;
 
     if (finalContactId) {
       parts.push(`contact_id:${finalContactId}`);
@@ -232,11 +214,6 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
       parts.push(`datetime:${finalDateTime}`);
     }
 
-    const fromDateStr = finalDateRange.from.toISOString().split('T')[0];
-    const toDateStr = finalDateRange.to.toISOString().split('T')[0];
-    parts.push(`from_date:${fromDateStr}`);
-    parts.push(`to_date:${toDateStr}`);
-
     if (parts.length > 0) {
       params.set('appointment-session', parts.join('|'));
     } else {
@@ -248,30 +225,24 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
 
   const handleSelectContact = (contact: ContactDto) => {
     setSelectedContact(contact);
-    updateSessionParams(contact.id, selectedServiceIds, selectedDateTime, dateRange);
+    updateSessionParams(contact.id, selectedServiceIds, selectedDateTime);
   };
 
   const handleSelectService = (serviceId: number) => {
     const newServiceIds = [...selectedServiceIds, serviceId];
     setSelectedServiceIds(newServiceIds);
-    updateSessionParams(selectedContact?.id, newServiceIds, selectedDateTime, dateRange);
+    updateSessionParams(selectedContact?.id, newServiceIds, selectedDateTime);
   };
 
   const handleDeselectService = (serviceId: number) => {
     const newServiceIds = selectedServiceIds.filter((id) => id !== serviceId);
     setSelectedServiceIds(newServiceIds);
-    updateSessionParams(selectedContact?.id, newServiceIds, selectedDateTime, dateRange);
+    updateSessionParams(selectedContact?.id, newServiceIds, selectedDateTime);
   };
 
   const handleSelectDateTime = (dateTime: Date) => {
-    setSelectedDateTime(dateTime);
-    updateSessionParams(selectedContact?.id, selectedServiceIds, dateTime, dateRange);
-  };
-
-  const handleDateRangeChange = (from: Date, to: Date) => {
-    const newDateRange = { from, to };
-    setDateRange(newDateRange);
-    updateSessionParams(selectedContact?.id, selectedServiceIds, selectedDateTime, newDateRange);
+    setSelectedDateTime(formatISO(dateTime));
+    updateSessionParams(selectedContact?.id, selectedServiceIds, formatISO(dateTime));
   };
 
   const handleContactPageChange = (newPage: number) => {
@@ -305,7 +276,7 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
     navigate('/company/booking/appointments');
   };
 
-  const formatDateTime = (date: Date) => {
+  const formatDateTime = (date: Date | string) => {
     return new Intl.DateTimeFormat('nb-NO', {
       weekday: 'long',
       year: 'numeric',
@@ -314,7 +285,7 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
       hour: '2-digit',
       minute: '2-digit',
       timeZone: 'Europe/Oslo',
-    }).format(date);
+    }).format(date instanceof Date ? date : new Date(date));
   };
 
   const formatPrice = (price: number) => {
@@ -341,7 +312,6 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
       group.services.filter((service) => selectedServiceIds.includes(service.id)),
     );
   };
-
   const selectedServices = getSelectedServices();
   const totalPrice = selectedServices.reduce((sum, service) => sum + service.price, 0);
   const totalDuration = selectedServices.reduce((sum, service) => sum + service.duration, 0);
@@ -457,10 +427,8 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
           {selectedServiceIds.length > 0 ? (
             <DateTimeSelector
               schedules={schedules}
-              selectedDateTime={selectedDateTime}
+              selectedDateTime={selectedDateTime ? new Date(selectedDateTime) : null}
               onSelectDateTime={handleSelectDateTime}
-              dateRange={dateRange}
-              onDateRangeChange={handleDateRangeChange}
             />
           ) : (
             <div className="border-2 border-dashed border-black/20 p-6 text-center">

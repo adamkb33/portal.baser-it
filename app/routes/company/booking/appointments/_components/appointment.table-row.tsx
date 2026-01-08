@@ -1,11 +1,12 @@
 // components/appointments/appointment-table-row.tsx
 import { TableRow, TableCell } from '~/components/ui/table';
 import { Button } from '~/components/ui/button';
-import { Badge } from '~/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import type { AppointmentDto } from 'tmp/openapi/gen/booking';
 import { Link } from 'react-router';
-import { formatDateTime, getTotalDuration, getTotalPrice, getTotalServiceCount } from '../_utils/appointments.utils';
+import { parseISO, format } from 'date-fns';
+import { nb } from 'date-fns/locale';
+import { getTotalDuration, getTotalPrice, getTotalServiceCount } from '../_utils/appointments.utils';
 
 type AppointmentTableRowProps = {
   appointment: AppointmentDto;
@@ -18,7 +19,7 @@ export function AppointmentTableRow({ appointment, onDelete, isDeleting = false 
     <TableRow>
       <TableCell className="font-medium">
         <div className="flex flex-col">
-          <span>{formatDateTime(appointment.startTime)}</span>
+          <span>{format(parseISO(appointment.startTime), 'HH:mm d. MMM yy', { locale: nb })}</span>
         </div>
       </TableCell>
 

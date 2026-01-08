@@ -442,6 +442,88 @@ export type InviteTokenPayload = {
     companyRoles: Array<'ADMIN' | 'EMPLOYEE'>;
 };
 
+export type ApiResponseCompanyDashboardMetrics = {
+    success: boolean;
+    message: string;
+    data?: CompanyDashboardMetrics;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type CompanyDashboardMetrics = {
+    companyId: number;
+    overview: CompanyOverview;
+    users: UserMetrics;
+    invitations: InvitationMetrics;
+    security: SecurityMetrics;
+    contacts: ContactMetrics;
+};
+
+export type CompanyOverview = {
+    totalUsers: number;
+    roleDistribution: {
+        [key: string]: number;
+    };
+    enabledProducts: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+    accountCreatedAt: string;
+};
+
+export type ContactMetrics = {
+    totalContacts: number;
+    contactsWithCompleteInfo: number;
+    recentContacts: Array<RecentContact>;
+};
+
+export type InvitationMetrics = {
+    pending: number;
+    expired: number;
+    totalSent: number;
+    totalUsed: number;
+    acceptanceRate: number;
+    recentInvites: Array<RecentInvite>;
+};
+
+export type RecentContact = {
+    contactId: number;
+    givenName: string;
+    familyName: string;
+    hasEmail: boolean;
+    hasMobile: boolean;
+    createdAt: string;
+};
+
+export type RecentInvite = {
+    email: string;
+    sentAt: string;
+    expiresAt: string;
+    used: boolean;
+    usedAt?: string;
+};
+
+export type RecentUser = {
+    userId: number;
+    givenName: string;
+    familyName: string;
+    email: string;
+    lastActiveAt: string;
+};
+
+export type SecurityMetrics = {
+    passwordResetsLastThirtyDays: number;
+    activeSessions: number;
+    revokedTokensLastThirtyDays: number;
+};
+
+export type UserMetrics = {
+    totalActive: number;
+    activeLastThirtyDays: number;
+    newThisMonth: number;
+    inactiveUsers: number;
+    lastActiveUsers: Array<RecentUser>;
+    averageAccountAgeDays: number;
+};
+
 export type Link = {
     href?: string;
     templated?: boolean;
@@ -1170,6 +1252,22 @@ export type GetInvitationsResponses = {
 };
 
 export type GetInvitationsResponse = GetInvitationsResponses[keyof GetInvitationsResponses];
+
+export type GetDashboardMetricsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/companies/dashboard/metrics';
+};
+
+export type GetDashboardMetricsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseCompanyDashboardMetrics;
+};
+
+export type GetDashboardMetricsResponse = GetDashboardMetricsResponses[keyof GetDashboardMetricsResponses];
 
 export type LinksData = {
     body?: never;

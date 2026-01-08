@@ -165,76 +165,221 @@
   --color-button-disabled-bg: var(--button-disabled-bg);
   --color-button-disabled-text: var(--button-disabled-text);
   --color-button-disabled-border: var(--button-disabled-border);
+
+  /* ========================================
+   CARD TOKENS - BASE
+   Clean, elevated surfaces
+   ======================================== */
+
+  /* Card Base */
+  --card-bg: oklch(0.99 0.002 240);
+  --card-text: var(--foreground);
+  --card-text-muted: oklch(0.55 0.015 240);
+  --card-border: oklch(0.8 0.008 240);
+  --card-ring: oklch(0.65 0.085 265);
+
+  /* Card Hover/Interactive States */
+  --card-hover-bg: oklch(0.995 0.002 240);
+  --card-hover-border: oklch(0.72 0.012 240);
+  --card-hover-shadow: oklch(0.18 0.015 240 / 0.08);
+
+  /* Card Header */
+  --card-header-text: var(--foreground);
+  --card-header-text-muted: var(--muted-foreground);
+  --card-header-border: oklch(0.85 0.006 240); /* Divider line */
+
+  /* Card Footer */
+  --card-footer-bg: oklch(0.97 0.003 240); /* Subtle background */
+  --card-footer-text: var(--foreground);
+  --card-footer-text-muted: oklch(0.55 0.015 240);
+  --card-footer-border: oklch(0.85 0.006 240);
+
+  /* Card Accent/Highlight */
+  --card-accent: oklch(0.75 0.015 240); /* Platinum accent */
+  --card-accent-foreground: oklch(0.15 0.015 240);
+
+  /* Card Gradient Overlay */
+  --card-gradient-from: oklch(0.98 0.003 240 / 0.4);
+  --card-gradient-to: transparent;
+
+  /* ========================================
+   CARD TOKENS - ELEVATED VARIANT
+   Stronger depth
+   ======================================== */
+
+  --card-elevated-bg: oklch(1 0.001 240);
+  --card-elevated-text: var(--foreground);
+  --card-elevated-border: oklch(0.88 0.005 240);
+  --card-elevated-shadow: oklch(0.18 0.015 240 / 0.12);
+  --card-elevated-hover-shadow: oklch(0.18 0.015 240 / 0.16);
+
+  /* ========================================
+   CARD TOKENS - FLAT VARIANT
+   Minimal, borderless
+   ======================================== */
+
+  --card-flat-bg: oklch(0.96 0.003 240);
+  --card-flat-text: var(--foreground);
+  --card-flat-border: transparent;
+  --card-flat-hover-bg: oklch(0.94 0.004 240);
+
+  /* ========================================
+   CARD TOKENS - BORDERED VARIANT
+   Emphasized outline
+   ======================================== */
+
+  --card-bordered-bg: var(--background);
+  --card-bordered-text: var(--foreground);
+  --card-bordered-border: oklch(0.72 0.015 240);
+  --card-bordered-hover-border: oklch(0.45 0.12 265); /* Primary color */
+
+  /* ========================================
+   CARD TOKENS - INTERACTIVE VARIANT
+   For clickable cards
+   ======================================== */
+
+  --card-interactive-bg: var(--card-bg);
+  --card-interactive-text: var(--foreground);
+  --card-interactive-border: var(--card-border);
+  --card-interactive-hover-bg: oklch(0.995 0.002 240);
+  --card-interactive-hover-border: oklch(0.65 0.085 265); /* Purple ring color */
+  --card-interactive-active-bg: oklch(0.985 0.003 240);
+  --card-interactive-ring: oklch(0.65 0.085 265);
+
+  /* ========================================
+   CARD TOKENS - GHOST VARIANT
+   Transparent, minimal
+   ======================================== */
+
+  --card-ghost-bg: transparent;
+  --card-ghost-text: var(--foreground);
+  --card-ghost-border: transparent;
+  --card-ghost-hover-bg: oklch(0.96 0.003 240 / 0.6);
+  --card-ghost-hover-border: oklch(0.85 0.006 240 / 0.4);
+
+  /* ========================================
+   CARD TOKENS - MUTED VARIANT
+   Subtle, background-level
+   ======================================== */
+
+  --card-muted-bg: oklch(0.92 0.005 240);
+  --card-muted-text: var(--foreground);
+  --card-muted-border: oklch(0.86 0.007 240);
+  --card-muted-hover-bg: oklch(0.9 0.006 240);
+
+  /* ========================================
+   CARD TOKENS - ACCENT VARIANT
+   Highlighted, special cards
+   ======================================== */
+
+  --card-accent-bg: oklch(0.75 0.015 240);
+  --card-accent-text: oklch(0.15 0.015 240);
+  --card-accent-border: oklch(0.7 0.02 240);
+  --card-accent-hover-bg: oklch(0.72 0.018 240);
+
+  /* Add to your app.css after the card tokens */
+
+  /* ========================================
+   ACCORDION TOKENS
+   Subtle, organized sections
+   ======================================== */
+
+  /* Accordion Base */
+  --accordion-bg: oklch(0.985 0.003 240);
+  --accordion-text: var(--foreground);
+  --accordion-text-muted: oklch(0.52 0.015 240);
+  --accordion-border: oklch(0.82 0.007 240);
+
+  /* Accordion Header/Trigger */
+  --accordion-trigger-bg: transparent;
+  --accordion-trigger-text: oklch(0.22 0.018 240);
+  --accordion-trigger-text-muted: oklch(0.52 0.015 240);
+  --accordion-trigger-hover-bg: oklch(0.97 0.004 240);
+  --accordion-trigger-hover-text: oklch(0.18 0.02 240);
+  --accordion-trigger-active-bg: oklch(0.96 0.005 240);
+  --accordion-trigger-icon: oklch(0.55 0.015 240);
+  --accordion-trigger-icon-hover: oklch(0.35 0.025 240);
+
+  /* Accordion Content */
+  --accordion-content-bg: oklch(0.99 0.002 240);
+  --accordion-content-text: var(--foreground);
+  --accordion-content-text-muted: oklch(0.52 0.015 240);
+
+  /* Accordion Focus State */
+  --accordion-ring: oklch(0.65 0.085 265);
+
+  /* Accordion Open State */
+  --accordion-open-border: oklch(0.7 0.015 240);
+  --accordion-open-accent: oklch(0.45 0.12 265); /* Indigo accent */
 }
 
 :root {
   /* ========================================
-     BASE THEME COLORS
-     Used for main content areas
+     MODERN LUXURY BASE THEME
+     Cool, sophisticated with platinum accents
      ======================================== */
 
-  --background: oklch(0.89 0.006 240);
-  --foreground: oklch(0.28 0.012 240);
-  --border: oklch(0.74 0.012 240);
-  --input: oklch(0.89 0.006 240);
-  --ring: var(--primary);
+  --background: oklch(0.98 0.003 240); /* Cool white */
+  --foreground: oklch(0.18 0.015 240); /* Deep slate */
+  --border: oklch(0.8 0.008 240); /* Cool gray border */
+  --input: oklch(0.99 0.002 240);
+  --ring: oklch(0.65 0.085 265); /* Vibrant purple ring */
 
-  /* Primary - Blue/Purple */
-  --primary: oklch(0.56 0.065 245);
-  --primary-foreground: oklch(0.96 0.004 240);
+  /* Primary - Rich Indigo */
+  --primary: oklch(0.45 0.12 265);
+  --primary-foreground: oklch(0.98 0.003 240);
 
-  /* Secondary - Green */
-  --secondary: oklch(0.62 0.045 140);
-  --secondary-foreground: oklch(0.28 0.012 240);
+  /* Secondary - Emerald Green */
+  --secondary: oklch(0.55 0.11 165);
+  --secondary-foreground: oklch(0.98 0.003 240);
 
-  /* Muted - Warm neutral */
-  --muted: oklch(0.82 0.008 60);
-  --muted-foreground: oklch(0.46 0.018 240);
+  /* Muted - Sophisticated Gray */
+  --muted: oklch(0.92 0.005 240);
+  --muted-foreground: oklch(0.48 0.015 240);
 
-  /* Accent - Yellow/Warm */
-  --accent: oklch(0.68 0.055 70);
-  --accent-foreground: oklch(0.28 0.012 240);
+  /* Accent - Platinum Silver */
+  --accent: oklch(0.75 0.015 240);
+  --accent-foreground: oklch(0.15 0.015 240);
 
-  /* Destructive - Red */
-  --destructive: oklch(0.5 0.11 25);
-  --destructive-foreground: oklch(0.96 0.004 240);
+  /* Destructive - Deep Rose */
+  --destructive: oklch(0.52 0.145 15);
+  --destructive-foreground: oklch(0.98 0.003 240);
 
   /* Component Surfaces */
-  --card: oklch(0.91 0.005 240);
+  --card: oklch(0.99 0.002 240);
   --card-foreground: var(--foreground);
-  --popover: oklch(0.94 0.004 240);
+  --popover: oklch(0.995 0.002 240);
   --popover-foreground: var(--foreground);
 
   /* ========================================
      NAVBAR TOKENS
-     Dark surface (uses foreground as bg)
+     Sleek dark slate
      ======================================== */
 
-  --navbar-bg: var(--foreground);
-  --navbar-text: var(--background);
-  --navbar-text-muted: oklch(0.65 0.012 240);
-  --navbar-border: oklch(0.42 0.015 240);
-  --navbar-accent: oklch(0.35 0.015 240);
-  --navbar-accent-foreground: oklch(0.92 0.008 240);
-  --navbar-icon-bg: oklch(0.35 0.015 240);
-  --navbar-ring: var(--primary);
+  --navbar-bg: oklch(0.15 0.018 240);
+  --navbar-text: oklch(0.96 0.005 240);
+  --navbar-text-muted: oklch(0.68 0.012 240);
+  --navbar-border: oklch(0.25 0.022 240);
+  --navbar-accent: oklch(0.22 0.02 240);
+  --navbar-accent-foreground: oklch(0.75 0.085 265); /* Vibrant purple accent */
+  --navbar-icon-bg: oklch(0.22 0.02 240);
+  --navbar-ring: oklch(0.65 0.085 265);
 
   /* ========================================
      SIDEBAR TOKENS
-     Dark with subtle blue/purple hue
      ======================================== */
 
-  --sidebar-bg: oklch(0.18 0.015 245);
-  --sidebar-text: oklch(0.92 0.008 240);
-  --sidebar-text-muted: oklch(0.68 0.012 240);
-  --sidebar-border: oklch(0.32 0.018 245);
-  --sidebar-accent: oklch(0.24 0.02 245);
-  --sidebar-accent-foreground: oklch(0.92 0.008 240);
-  --sidebar-ring: var(--primary);
+  --sidebar-bg: oklch(0.17 0.015 240);
+  --sidebar-text: oklch(0.94 0.005 240);
+  --sidebar-text-muted: oklch(0.65 0.012 240);
+  --sidebar-border: oklch(0.32 0.025 240);
+  --sidebar-accent: oklch(0.25 0.022 240);
+  --sidebar-accent-foreground: oklch(0.75 0.085 265);
+  --sidebar-ring: oklch(0.65 0.085 265);
 
   /* ========================================
      CONTENT/MAIN TOKENS
-     Light surface for main content area
+     Clean, bright workspace
      ======================================== */
 
   --content-bg: var(--background);
@@ -247,134 +392,275 @@
 
   /* ========================================
      FOOTER TOKENS
-     Dark surface (matches navbar)
+     Matches navbar
      ======================================== */
 
-  --footer-bg: var(--foreground);
-  --footer-text: var(--background);
-  --footer-text-muted: oklch(0.65 0.012 240);
-  --footer-border: oklch(0.42 0.015 240);
-  --footer-accent: oklch(0.35 0.015 240);
-  --footer-accent-foreground: oklch(0.92 0.008 240);
-  --footer-ring: var(--primary);
+  --footer-bg: oklch(0.15 0.018 240);
+  --footer-text: oklch(0.96 0.005 240);
+  --footer-text-muted: oklch(0.68 0.012 240);
+  --footer-border: oklch(0.25 0.022 240);
+  --footer-accent: oklch(0.22 0.02 240);
+  --footer-accent-foreground: oklch(0.75 0.085 265);
+  --footer-ring: oklch(0.65 0.085 265);
 
   /* ========================================
      FORM TOKENS
-     Light, clean inputs with clear states
+     Pristine, minimal
   ======================================== */
-  --form-bg: oklch(0.98 0.002 240);
+  --form-bg: oklch(0.995 0.002 240);
   --form-text: var(--foreground);
-  --form-text-muted: oklch(0.58 0.015 240);
-  --form-border: oklch(0.74 0.012 240);
-  --form-accent: oklch(0.92 0.005 240);
+  --form-text-muted: oklch(0.55 0.015 240);
+  --form-border: oklch(0.78 0.01 240);
+  --form-accent: oklch(0.96 0.003 240);
   --form-accent-foreground: var(--foreground);
-  --form-ring: var(--primary);
+  --form-ring: oklch(0.65 0.085 265);
 
   /* Form State Colors */
-  --form-invalid: oklch(0.5 0.11 25);
-  --form-invalid-foreground: oklch(0.96 0.004 240);
-  --form-valid: oklch(0.62 0.045 140);
-  --form-valid-foreground: oklch(0.96 0.004 240);
-  --form-disabled: oklch(0.86 0.005 240);
+  --form-invalid: oklch(0.52 0.145 15);
+  --form-invalid-foreground: oklch(0.98 0.003 240);
+  --form-valid: oklch(0.55 0.11 165);
+  --form-valid-foreground: oklch(0.98 0.003 240);
+  --form-disabled: oklch(0.93 0.004 240);
   --form-disabled-foreground: oklch(0.62 0.012 240);
 
   /* ========================================
      BUTTON TOKENS - PRIMARY
-     Main call-to-action button
+     Bold indigo
   ======================================== */
-  --button-primary-bg: var(--primary);
-  --button-primary-text: var(--primary-foreground);
-  --button-primary-border: var(--primary);
-  --button-primary-hover-bg: oklch(0.52 0.07 245);
-  --button-primary-hover-text: var(--primary-foreground);
-  --button-primary-hover-border: oklch(0.52 0.07 245);
-  --button-primary-active-bg: oklch(0.48 0.075 245);
-  --button-primary-ring: var(--primary);
+  --button-primary-bg: oklch(0.45 0.12 265);
+  --button-primary-text: oklch(0.98 0.003 240);
+  --button-primary-border: oklch(0.45 0.12 265);
+  --button-primary-hover-bg: oklch(0.42 0.13 265);
+  --button-primary-hover-text: oklch(0.98 0.003 240);
+  --button-primary-hover-border: oklch(0.42 0.13 265);
+  --button-primary-active-bg: oklch(0.38 0.14 265);
+  --button-primary-ring: oklch(0.65 0.085 265);
 
   /* ========================================
      BUTTON TOKENS - SECONDARY
-     Secondary actions
+     Emerald green
   ======================================== */
-  --button-secondary-bg: var(--secondary);
-  --button-secondary-text: var(--secondary-foreground);
-  --button-secondary-border: var(--secondary);
-  --button-secondary-hover-bg: oklch(0.58 0.05 140);
-  --button-secondary-hover-text: var(--secondary-foreground);
-  --button-secondary-hover-border: oklch(0.58 0.05 140);
-  --button-secondary-active-bg: oklch(0.54 0.055 140);
-  --button-secondary-ring: var(--secondary);
+  --button-secondary-bg: oklch(0.55 0.11 165);
+  --button-secondary-text: oklch(0.98 0.003 240);
+  --button-secondary-border: oklch(0.55 0.11 165);
+  --button-secondary-hover-bg: oklch(0.52 0.12 165);
+  --button-secondary-hover-text: oklch(0.98 0.003 240);
+  --button-secondary-hover-border: oklch(0.52 0.12 165);
+  --button-secondary-active-bg: oklch(0.48 0.13 165);
+  --button-secondary-ring: oklch(0.55 0.11 165);
 
   /* ========================================
      BUTTON TOKENS - DESTRUCTIVE
-     Dangerous/delete actions
+     Deep rose
   ======================================== */
-  --button-destructive-bg: var(--destructive);
-  --button-destructive-text: var(--destructive-foreground);
-  --button-destructive-border: var(--destructive);
-  --button-destructive-hover-bg: oklch(0.46 0.12 25);
-  --button-destructive-hover-text: var(--destructive-foreground);
-  --button-destructive-hover-border: oklch(0.46 0.12 25);
-  --button-destructive-active-bg: oklch(0.42 0.13 25);
-  --button-destructive-ring: var(--destructive);
+  --button-destructive-bg: oklch(0.52 0.145 15);
+  --button-destructive-text: oklch(0.98 0.003 240);
+  --button-destructive-border: oklch(0.52 0.145 15);
+  --button-destructive-hover-bg: oklch(0.48 0.155 15);
+  --button-destructive-hover-text: oklch(0.98 0.003 240);
+  --button-destructive-hover-border: oklch(0.48 0.155 15);
+  --button-destructive-active-bg: oklch(0.44 0.165 15);
+  --button-destructive-ring: oklch(0.52 0.145 15);
 
   /* ========================================
      BUTTON TOKENS - GHOST
-     Minimal, text-only appearance
+     Minimal
   ======================================== */
   --button-ghost-bg: transparent;
   --button-ghost-text: var(--foreground);
   --button-ghost-border: transparent;
-  --button-ghost-hover-bg: oklch(0.82 0.008 60);
+  --button-ghost-hover-bg: oklch(0.94 0.004 240);
   --button-ghost-hover-text: var(--foreground);
   --button-ghost-hover-border: transparent;
-  --button-ghost-active-bg: oklch(0.78 0.01 60);
-  --button-ghost-ring: var(--primary);
+  --button-ghost-active-bg: oklch(0.9 0.006 240);
+  --button-ghost-ring: oklch(0.65 0.085 265);
 
   /* ========================================
      BUTTON TOKENS - OUTLINE
-     Outlined button with transparent bg
+     Refined border
   ======================================== */
   --button-outline-bg: transparent;
   --button-outline-text: var(--foreground);
-  --button-outline-border: var(--border);
-  --button-outline-hover-bg: oklch(0.82 0.008 60);
+  --button-outline-border: oklch(0.72 0.015 240);
+  --button-outline-hover-bg: oklch(0.94 0.004 240);
   --button-outline-hover-text: var(--foreground);
-  --button-outline-hover-border: var(--foreground);
-  --button-outline-active-bg: oklch(0.78 0.01 60);
-  --button-outline-ring: var(--primary);
+  --button-outline-hover-border: oklch(0.55 0.025 240);
+  --button-outline-active-bg: oklch(0.9 0.006 240);
+  --button-outline-ring: oklch(0.65 0.085 265);
 
   /* ========================================
      BUTTON TOKENS - DISABLED STATE
-     All disabled buttons use same styling
+     Subtle gray
   ======================================== */
-  --button-disabled-bg: oklch(0.86 0.005 240);
+  --button-disabled-bg: oklch(0.93 0.004 240);
   --button-disabled-text: oklch(0.62 0.012 240);
-  --button-disabled-border: oklch(0.82 0.008 240);
+  --button-disabled-border: oklch(0.88 0.005 240);
 
   /* ========================================
      SHADOWS
+     Crisp, modern depth
      ======================================== */
 
-  --shadow-color: oklch(0.32 0.015 240);
-  --shadow-2xs: 0px 2px 6px 0px oklch(0.32 0.015 240 / 0.05);
-  --shadow-xs: 0px 3px 8px 0px oklch(0.32 0.015 240 / 0.06);
-  --shadow-sm: 0px 4px 12px -1px oklch(0.32 0.015 240 / 0.07);
-  --shadow: 0px 6px 16px -2px oklch(0.32 0.015 240 / 0.09);
-  --shadow-md: 0px 8px 20px -3px oklch(0.32 0.015 240 / 0.1);
-  --shadow-lg: 0px 12px 28px -4px oklch(0.32 0.015 240 / 0.11);
-  --shadow-xl: 0px 16px 36px -6px oklch(0.32 0.015 240 / 0.13);
-  --shadow-2xl: 0px 20px 48px -8px oklch(0.32 0.015 240 / 0.15);
+  --shadow-color: oklch(0.18 0.015 240);
+  --shadow-2xs: 0px 2px 6px 0px oklch(0.18 0.015 240 / 0.04);
+  --shadow-xs: 0px 3px 8px 0px oklch(0.18 0.015 240 / 0.05);
+  --shadow-sm: 0px 4px 12px -1px oklch(0.18 0.015 240 / 0.06);
+  --shadow: 0px 6px 16px -2px oklch(0.18 0.015 240 / 0.08);
+  --shadow-md: 0px 8px 20px -3px oklch(0.18 0.015 240 / 0.09);
+  --shadow-lg: 0px 12px 28px -4px oklch(0.18 0.015 240 / 0.11);
+  --shadow-xl: 0px 16px 36px -6px oklch(0.18 0.015 240 / 0.13);
+  --shadow-2xl: 0px 20px 48px -8px oklch(0.18 0.015 240 / 0.15);
 
   /* ========================================
      CHART COLORS
+     Vibrant, professional palette
      ======================================== */
 
-  --chart-1: oklch(0.56 0.065 245);
-  --chart-2: oklch(0.62 0.045 140);
-  --chart-3: oklch(0.68 0.055 70);
-  --chart-4: oklch(0.5 0.11 25);
-  --chart-5: oklch(0.46 0.018 240);
-  --chart-6: oklch(0.74 0.012 240);
+  --chart-1: oklch(0.45 0.12 265); /* Indigo */
+  --chart-2: oklch(0.55 0.11 165); /* Emerald */
+  --chart-3: oklch(0.65 0.12 45); /* Amber */
+  --chart-4: oklch(0.6 0.13 300); /* Magenta */
+  --chart-5: oklch(0.58 0.1 200); /* Cyan */
+  --chart-6: oklch(0.62 0.14 25); /* Coral */
+
+  /* ========================================
+   CARD TOKENS - BASE
+   Clean, elevated surfaces
+   ======================================== */
+
+  /* Card Base */
+  --card-bg: oklch(0.99 0.002 240);
+  --card-text: var(--foreground);
+  --card-text-muted: oklch(0.55 0.015 240);
+  --card-border: oklch(0.8 0.008 240);
+  --card-ring: oklch(0.65 0.085 265);
+
+  /* Card Hover/Interactive States */
+  --card-hover-bg: oklch(0.995 0.002 240);
+  --card-hover-border: oklch(0.72 0.012 240);
+  --card-hover-shadow: oklch(0.18 0.015 240 / 0.08);
+
+  /* Card Header */
+  --card-header-text: var(--foreground);
+  --card-header-text-muted: var(--muted-foreground);
+  --card-header-border: oklch(0.85 0.006 240); /* Divider line */
+
+  /* Card Footer */
+  --card-footer-bg: oklch(0.97 0.003 240); /* Subtle background */
+  --card-footer-text: var(--foreground);
+  --card-footer-text-muted: oklch(0.55 0.015 240);
+  --card-footer-border: oklch(0.85 0.006 240);
+
+  /* Card Accent/Highlight */
+  --card-accent: oklch(0.75 0.015 240); /* Platinum accent */
+  --card-accent-foreground: oklch(0.15 0.015 240);
+
+  /* Card Gradient Overlay */
+  --card-gradient-from: oklch(0.98 0.003 240 / 0.4);
+  --card-gradient-to: transparent;
+
+  /* ========================================
+   CARD TOKENS - ELEVATED VARIANT
+   Stronger depth
+   ======================================== */
+
+  --card-elevated-bg: oklch(1 0.001 240);
+  --card-elevated-text: var(--foreground);
+  --card-elevated-border: oklch(0.88 0.005 240);
+  --card-elevated-shadow: oklch(0.18 0.015 240 / 0.12);
+  --card-elevated-hover-shadow: oklch(0.18 0.015 240 / 0.16);
+
+  /* ========================================
+   CARD TOKENS - FLAT VARIANT
+   Minimal, borderless
+   ======================================== */
+
+  --card-flat-bg: oklch(0.96 0.003 240);
+  --card-flat-text: var(--foreground);
+  --card-flat-border: transparent;
+  --card-flat-hover-bg: oklch(0.94 0.004 240);
+
+  /* ========================================
+   CARD TOKENS - BORDERED VARIANT
+   Emphasized outline
+   ======================================== */
+
+  --card-bordered-bg: var(--background);
+  --card-bordered-text: var(--foreground);
+  --card-bordered-border: oklch(0.72 0.015 240);
+  --card-bordered-hover-border: oklch(0.45 0.12 265); /* Primary color */
+
+  /* ========================================
+   CARD TOKENS - INTERACTIVE VARIANT
+   For clickable cards
+   ======================================== */
+
+  --card-interactive-bg: var(--card-bg);
+  --card-interactive-text: var(--foreground);
+  --card-interactive-border: var(--card-border);
+  --card-interactive-hover-bg: oklch(0.995 0.002 240);
+  --card-interactive-hover-border: oklch(0.65 0.085 265); /* Purple ring color */
+  --card-interactive-active-bg: oklch(0.985 0.003 240);
+  --card-interactive-ring: oklch(0.65 0.085 265);
+
+  /* ========================================
+   CARD TOKENS - GHOST VARIANT
+   Transparent, minimal
+   ======================================== */
+
+  --card-ghost-bg: transparent;
+  --card-ghost-text: var(--foreground);
+  --card-ghost-border: transparent;
+  --card-ghost-hover-bg: oklch(0.96 0.003 240 / 0.6);
+  --card-ghost-hover-border: oklch(0.85 0.006 240 / 0.4);
+
+  /* ========================================
+   CARD TOKENS - MUTED VARIANT
+   Subtle, background-level
+   ======================================== */
+
+  --card-muted-bg: oklch(0.92 0.005 240);
+  --card-muted-text: var(--foreground);
+  --card-muted-border: oklch(0.86 0.007 240);
+  --card-muted-hover-bg: oklch(0.9 0.006 240);
+
+  /* ========================================
+   CARD TOKENS - ACCENT VARIANT
+   Highlighted, special cards
+   ======================================== */
+
+  --card-accent-bg: oklch(0.75 0.015 240);
+  --card-accent-text: oklch(0.15 0.015 240);
+  --card-accent-border: oklch(0.7 0.02 240);
+  --card-accent-hover-bg: oklch(0.72 0.018 240);
+
+  /* Accordion Tokens */
+  --color-accordion-bg: var(--accordion-bg);
+  --color-accordion-text: var(--accordion-text);
+  --color-accordion-text-muted: var(--accordion-text-muted);
+  --color-accordion-border: var(--accordion-border);
+
+  /* Accordion Trigger */
+  --color-accordion-trigger-bg: var(--accordion-trigger-bg);
+  --color-accordion-trigger-text: var(--accordion-trigger-text);
+  --color-accordion-trigger-text-muted: var(--accordion-trigger-text-muted);
+  --color-accordion-trigger-hover-bg: var(--accordion-trigger-hover-bg);
+  --color-accordion-trigger-hover-text: var(--accordion-trigger-hover-text);
+  --color-accordion-trigger-active-bg: var(--accordion-trigger-active-bg);
+  --color-accordion-trigger-icon: var(--accordion-trigger-icon);
+  --color-accordion-trigger-icon-hover: var(--accordion-trigger-icon-hover);
+
+  /* Accordion Content */
+  --color-accordion-content-bg: var(--accordion-content-bg);
+  --color-accordion-content-text: var(--accordion-content-text);
+  --color-accordion-content-text-muted: var(--accordion-content-text-muted);
+
+  /* Accordion Focus */
+  --color-accordion-ring: var(--accordion-ring);
+
+  /* Accordion Open State */
+  --color-accordion-open-border: var(--accordion-open-border);
+  --color-accordion-open-accent: var(--accordion-open-accent);
 }
 
 @layer base {

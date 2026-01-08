@@ -7,7 +7,9 @@ import { User, Trash2, Clock, Banknote, Info } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import type { AppointmentDto } from 'tmp/openapi/gen/booking';
 import { Link } from 'react-router';
-import { getTotalServiceCount, formatDateTime, getTotalDuration, getTotalPrice } from '../_utils/appointments.utils';
+import { parseISO, format } from 'date-fns';
+import { nb } from 'date-fns/locale';
+import { getTotalServiceCount, getTotalDuration, getTotalPrice } from '../_utils/appointments.utils';
 
 type AppointmentCardRowProps = {
   appointment: AppointmentDto;
@@ -34,7 +36,7 @@ export function AppointmentCardRow({ appointment, onDelete, isDeleting = false }
               className="block text-base font-semibold text-foreground leading-tight md:text-lg"
               dateTime={appointment.startTime}
             >
-              {formatDateTime(appointment.startTime)}
+              {format(parseISO(appointment.startTime), 'PPPp', { locale: nb })}
             </time>
 
             <p className="text-sm text-muted-foreground flex items-center gap-1.5">
