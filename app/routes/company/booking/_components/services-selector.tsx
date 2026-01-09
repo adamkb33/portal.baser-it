@@ -85,10 +85,10 @@ export function ServicesSelector({
   const totalServices = serviceGroups?.reduce((acc, group) => acc + group.services.length, 0);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3 md:space-y-2">
+      {/* Search - Touch-friendly */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             placeholder="Søk tjeneste…"
             value={searchFilter}
@@ -97,85 +97,89 @@ export function ServicesSelector({
               setSearchFilter(value);
               handleSearchChange(value);
             }}
-            className="h-8 text-sm pl-8"
+            className="h-11 text-sm md:h-10 md:text-base"
           />
         </div>
       </div>
 
-      <div className="space-y-2 h-[350px] overflow-y-auto p-4 border">
+      {/* Service List - Responsive height */}
+      <div className="space-y-2.5 md:space-y-2 h-[450px] md:h-[350px] overflow-y-auto p-3 md:p-4 border rounded-lg">
         {totalServices === 0 ? (
-          <div className="py-8 text-center">
-            <DollarSign className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-            <p className="text-xs text-muted-foreground">
+          <div className="py-12 md:py-8 text-center">
+            <DollarSign className="h-12 w-12 md:h-10 md:w-10 mx-auto text-muted-foreground/50 mb-3 md:mb-2" />
+            <p className="text-sm md:text-xs text-muted-foreground">
               {searchFilter ? 'Ingen tjenester funnet' : 'Ingen tjenester'}
             </p>
           </div>
         ) : (
           serviceGroups.map((group) => (
-            <div key={group.id} className="space-y-1.5">
-              {/* Service Group Header */}
+            <div key={group.id} className="space-y-2 md:space-y-1.5">
+              {/* Group Header - Touch target */}
               <button
                 onClick={() => toggleGroup(group.id)}
-                className="w-full flex items-center justify-between p-2 hover:bg-muted/50 rounded transition-colors"
+                className="w-full flex items-center justify-between p-3 md:p-2 hover:bg-muted/50 rounded-lg transition-colors min-h-[44px] md:min-h-0"
               >
-                <div className="flex items-center gap-2">
-                  <div className="font-bold text-xs uppercase tracking-wide text-foreground/80">{group.name}</div>
-                  <div className="text-[10px] text-muted-foreground">({group.services.length})</div>
+                <div className="flex items-center gap-2.5 md:gap-2">
+                  <div className="font-bold text-sm md:text-xs uppercase tracking-wide text-foreground/80">
+                    {group.name}
+                  </div>
+                  <div className="text-xs md:text-[10px] text-muted-foreground">({group.services.length})</div>
                 </div>
                 {expandedGroups.has(group.id) ? (
-                  <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                  <ChevronUp className="h-4 w-4 md:h-3.5 md:w-3.5 text-muted-foreground" />
                 ) : (
-                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  <ChevronDown className="h-4 w-4 md:h-3.5 md:w-3.5 text-muted-foreground" />
                 )}
               </button>
 
               {/* Services in Group */}
               {expandedGroups.has(group.id) && (
-                <div className="space-y-1.5 pl-2">
+                <div className="space-y-2 md:space-y-1.5 pl-2 md:pl-2">
                   {group.services.map((service) => {
                     const isSelected = selectedServiceIds.includes(service.id);
                     return (
                       <div
                         key={service.id}
                         className={cn(
-                          'relative group cursor-pointer rounded border p-2 transition-all',
+                          'relative group cursor-pointer rounded-lg border p-3 md:p-2 transition-all',
                           'hover:shadow-sm hover:border-primary/50',
+                          'active:scale-[0.98]', // Mobile tap feedback
                           isSelected && 'border-primary bg-primary/5 shadow-sm',
                         )}
                         onClick={() => handleToggleService(service.id)}
                       >
                         {isSelected && (
-                          <div className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground rounded-full p-0.5">
-                            <Check className="h-2.5 w-2.5" />
+                          <div className="absolute -top-2 -right-2 md:-top-1.5 md:-right-1.5 bg-primary text-primary-foreground rounded-full p-1 md:p-0.5">
+                            <Check className="h-3 w-3 md:h-2.5 md:w-2.5" />
                           </div>
                         )}
 
-                        <div className="flex items-start gap-2">
-                          {/* Checkbox indicator */}
+                        <div className="flex items-start gap-3 md:gap-2">
+                          {/* Checkbox - Touch-friendly */}
                           <div
                             className={cn(
-                              'flex-shrink-0 h-4 w-4 rounded border-2 flex items-center justify-center transition-all',
+                              'flex-shrink-0 h-5 w-5 md:h-4 md:w-4 rounded border-2 flex items-center justify-center transition-all',
                               isSelected
                                 ? 'bg-primary border-primary'
                                 : 'border-muted-foreground/30 group-hover:border-primary/50',
                             )}
                           >
-                            {isSelected && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+                            {isSelected && <Check className="h-3 w-3 md:h-2.5 md:w-2.5 text-primary-foreground" />}
                           </div>
 
                           {/* Content */}
-                          <div className="flex-1 min-w-0 space-y-0.5">
-                            {/* Service name */}
-                            <div className="font-semibold text-xs">{service.name}</div>
+                          <div className="flex-1 min-w-0 space-y-1 md:space-y-0.5">
+                            {/* Service name - Readable */}
+                            <div className="font-semibold text-sm md:text-xs">{service.name}</div>
 
-                            {/* Service details */}
-                            <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                              <div className="flex items-center gap-1">
-                                <DollarSign className="h-2.5 w-2.5 flex-shrink-0" />
+                            {/* Service details - Minimum 14px mobile */}
+                            <div className="flex items-center gap-3 md:gap-3 text-xs md:text-[10px] text-muted-foreground">
+                              <div className="flex items-center gap-1.5 md:gap-1">
+                                <DollarSign className="h-3.5 w-3.5 md:h-2.5 md:w-2.5 flex-shrink-0" />
                                 <span>{formatPrice(service.price)}</span>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-2.5 w-2.5 flex-shrink-0" />
+                              <div className="flex items-center gap-1.5 md:gap-1">
+                                <Clock className="h-3.5 w-3.5 md:h-2.5 md:w-2.5 flex-shrink-0" />
                                 <span>{formatDuration(service.duration)}</span>
                               </div>
                             </div>
@@ -191,15 +195,16 @@ export function ServicesSelector({
         )}
       </div>
 
+      {/* Footer - Mobile stacks */}
       {selectedServiceIds.length > 0 && (
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1.5 border-t">
-          <div className="font-medium">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between text-xs md:text-[10px] text-muted-foreground pt-3 md:pt-1.5 border-t">
+          <div className="font-medium text-center md:text-left">
             {selectedServiceIds.length} tjeneste{selectedServiceIds.length !== 1 ? 'r' : ''} valgt
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-[10px]"
+            className="w-full md:w-auto h-11 md:h-7 text-sm md:text-[10px]"
             onClick={() => selectedServiceIds.forEach((id) => onDeselectService(id))}
           >
             Fjern alle

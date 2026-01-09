@@ -189,12 +189,7 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
     setFilteredServices(filtered);
   }, [serviceSearch, loaderData.bookingProfile]);
 
-  const updateSessionParams = (
-    contactId?: number,
-    serviceIds?: number[],
-    dateTime?: string | null,
-    newDateRange?: { from: Date; to: Date },
-  ) => {
+  const updateSessionParams = (contactId?: number, serviceIds?: number[], dateTime?: string | null) => {
     const params = new URLSearchParams(searchParams);
     const parts: string[] = [];
 
@@ -355,12 +350,6 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Step 1: Contact */}
         <div className="flex-1 space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 border-2 border-black bg-black text-white flex items-center justify-center font-bold text-xs shrink-0">
-              1
-            </div>
-            <Label className="text-sm font-bold">Velg kontakt</Label>
-          </div>
           <ContactSelector
             contacts={contacts}
             selectedContactId={selectedContact?.id || null}

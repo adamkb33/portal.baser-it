@@ -51,7 +51,7 @@ export function AppointmentTableHeaderSlot() {
 
   return (
     <div className="space-y-3 md:space-y-4 w-full">
-      {/* Search */}
+      {/* Search Input */}
       <div className="relative max-w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
@@ -72,64 +72,79 @@ export function AppointmentTableHeaderSlot() {
         )}
       </div>
 
-      <div className="flex gap-4">
-        <SegmentButton
-          active={activeQuickFilter === AppointmentPaginationQuickFilter.UPCOMING}
+      {/* Quick Filters - Wrapping on mobile */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant={activeQuickFilter === AppointmentPaginationQuickFilter.UPCOMING ? 'secondary' : 'outline'}
           onClick={paginationService.handleUpcomingFilter}
+          className="h-9"
         >
           Kommende
-        </SegmentButton>
-        <SegmentButton
-          active={activeQuickFilter === AppointmentPaginationQuickFilter.TODAY}
+        </Button>
+        <Button
+          size="sm"
+          variant={activeQuickFilter === AppointmentPaginationQuickFilter.TODAY ? 'secondary' : 'outline'}
           onClick={paginationService.handleTodayFilter}
+          className="h-9"
         >
           I dag
-        </SegmentButton>
-        <SegmentButton
-          active={activeQuickFilter === AppointmentPaginationQuickFilter.PAST}
-          onClick={paginationService.handlePastFilter}
-        >
-          Tidligere
-        </SegmentButton>
-
+        </Button>
         <Button
-          size={'sm'}
+          size="sm"
+          variant={activeQuickFilter === AppointmentPaginationQuickFilter.PAST ? 'secondary' : 'outline'}
+          onClick={paginationService.handlePastFilter}
+          className="h-9"
+        >
+          Fullførte
+        </Button>
+
+        {/* Separator */}
+        <div className="w-px bg-border self-stretch hidden sm:block" />
+
+        {/* Sort Direction Buttons */}
+        <Button
+          size="sm"
           variant={paginationService.getDirection() == 'ASC' ? 'default' : 'outline'}
           onClick={() => paginationService.setDirection('ASC')}
+          className="h-9"
         >
-          Tidligste først
+          <span className="hidden sm:inline">Tidligste først</span>
+          <span className="sm:hidden">↑ Tidligste</span>
         </Button>
         <Button
-          size={'sm'}
+          size="sm"
           variant={paginationService.getDirection() == 'DESC' ? 'default' : 'outline'}
           onClick={() => paginationService.setDirection('DESC')}
+          className="h-9"
         >
-          Seneste først
+          <span className="hidden sm:inline">Seneste først</span>
+          <span className="sm:hidden">↓ Seneste</span>
         </Button>
-        <></>
       </div>
 
-      <div className="flex items-center gap-2">
-        <SecondaryFilterButton
-          active={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_7_DAYS}
+      {/* Date Range Filters */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          size="sm"
+          variant={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_7_DAYS ? 'default' : 'outline'}
           onClick={paginationService.handleNext7days}
+          className="h-9"
         >
           Neste 7 dager
-        </SecondaryFilterButton>
-        <SecondaryFilterButton
-          active={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_30_DAYS}
+        </Button>
+        <Button
+          size="sm"
+          variant={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_30_DAYS ? 'default' : 'outline'}
           onClick={paginationService.handleNext30Days}
+          className="h-9"
         >
           Neste 30 dager
-        </SecondaryFilterButton>
+        </Button>
 
         <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
           <PopoverTrigger asChild>
-            <Button
-              variant={hasCustomDateFilter ? 'default' : 'outline'}
-              size="sm"
-              className="h-8 md:h-9 gap-1.5 relative"
-            >
+            <Button variant={hasCustomDateFilter ? 'default' : 'outline'} size="sm" className="h-9 gap-1.5 relative">
               <CalendarIcon className="h-3.5 w-3.5" />
               <span className="text-xs">Periode</span>
               {hasCustomDateFilter && (
@@ -179,61 +194,7 @@ export function AppointmentTableHeaderSlot() {
             </div>
           </PopoverContent>
         </Popover>
-
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleClearFilters}
-            className="h-8 w-8 ml-auto text-destructive md:h-9"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
       </div>
     </div>
-  );
-}
-
-// Segmented Button for Mobile (iOS-style), regular buttons on desktop
-function SegmentButton({
-  children,
-  active,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'px-3 py-2 text-xs font-medium rounded-md transition-all',
-        'md:px-4 md:py-2 md:text-sm md:h-9',
-        active
-          ? 'bg-background text-foreground shadow-sm md:bg-primary md:text-primary-foreground md:shadow-none'
-          : 'text-muted-foreground hover:text-foreground md:bg-background md:border md:border-border md:hover:bg-accent',
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-// Secondary Filter Chips
-function SecondaryFilterButton({
-  children,
-  active,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <Button variant={active ? 'default' : 'outline'} size="sm" onClick={onClick} className="h-8 md:h-9 text-xs">
-      {children}
-    </Button>
   );
 }

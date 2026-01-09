@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import type { ContactDto } from 'tmp/openapi/gen/base';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
-import { Check, ChevronLeft, ChevronRight, Mail, Phone, Plus, User } from 'lucide-react';
+import { CalendarIcon, Check, ChevronLeft, ChevronRight, Mail, Phone, Plus, User, User2Icon } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import { ContactFormDialog } from '../../admin/contacts/_components/contact.form-dialog';
+import { Label } from '~/components/ui/label';
 
 type ContactSelectorProps = {
   contacts: ContactDto[];
@@ -60,8 +61,12 @@ export function ContactSelector({
   const canNextPage = pagination.page < pagination.totalPages - 1;
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
+    <div className="space-y-3 md:space-y-4">
+      <Label htmlFor="date" className="flex items-center gap-2 text-sm font-medium px-1">
+        <User2Icon className="h-4 w-4" />
+        <span>Velg eller legg til kontakt</span>
+      </Label>
+      <div className="flex flex-col gap-2">
         <Input
           placeholder="Søk kontakt…"
           value={searchFilter}
@@ -70,15 +75,22 @@ export function ContactSelector({
             setSearchFilter(value);
             handleSearchChange(value);
           }}
-          className="h-8 text-sm"
+          className="h-11 text-sm md:h-10 md:text-base"
+        />
+        <ContactFormDialog
+          trigger={
+            <Button variant="outline" className="w-full">
+              Legg til kontakt
+            </Button>
+          }
         />
       </div>
 
-      <div className="space-y-1.5 h-[350px] overflow-y-auto p-4 border">
+      <div className="space-y-2 md:space-y-1.5 h-[450px] md:h-[350px] overflow-y-auto p-3 md:p-4 border rounded-lg">
         {contacts.length === 0 ? (
-          <div className="py-8 text-center">
-            <User className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-            <p className="text-xs text-muted-foreground">
+          <div className="py-12 md:py-8 text-center">
+            <User className="h-12 w-12 md:h-10 md:w-10 mx-auto text-muted-foreground/50 mb-3 md:mb-2" />
+            <p className="text-sm md:text-xs text-muted-foreground">
               {searchFilter ? 'Ingen kontakter funnet' : 'Ingen kontakter'}
             </p>
           </div>
@@ -89,23 +101,23 @@ export function ContactSelector({
               <div
                 key={contact.id}
                 className={cn(
-                  'relative group cursor-pointer rounded border p-2 transition-all',
+                  'relative group cursor-pointer rounded-lg border p-3 md:p-2 transition-all',
                   'hover:shadow-sm hover:border-primary/50',
+                  'active:scale-[0.98]',
                   isSelected && 'border-primary bg-primary/5 shadow-sm',
                 )}
                 onClick={() => onSelectContact(contact)}
               >
                 {isSelected && (
-                  <div className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground rounded-full p-0.5">
-                    <Check className="h-2.5 w-2.5" />
+                  <div className="absolute -top-2 -right-2 md:-top-1.5 md:-right-1.5 bg-primary text-primary-foreground rounded-full p-1 md:p-0.5">
+                    <Check className="h-3 w-3 md:h-2.5 md:w-2.5" />
                   </div>
                 )}
 
-                <div className="flex items-start gap-2">
-                  {/* Avatar */}
+                <div className="flex items-start gap-3 md:gap-2">
                   <div
                     className={cn(
-                      'flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center font-semibold text-xs',
+                      'flex-shrink-0 h-10 w-10 md:h-8 md:w-8 rounded-full flex items-center justify-center font-semibold text-sm md:text-xs',
                       isSelected
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary',
@@ -114,27 +126,24 @@ export function ContactSelector({
                     {getInitials(contact)}
                   </div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0 space-y-0.5">
-                    {/* Name */}
-                    <div className="font-semibold text-xs truncate">{formatName(contact)}</div>
+                  <div className="flex-1 min-w-0 space-y-1 md:space-y-0.5">
+                    <div className="font-semibold text-sm md:text-xs truncate">{formatName(contact)}</div>
 
-                    {/* Contact details */}
-                    <div className="space-y-0.5">
+                    <div className="space-y-1 md:space-y-0.5">
                       {contact.email?.value && (
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                          <Mail className="h-2.5 w-2.5 flex-shrink-0" />
+                        <div className="flex items-center gap-2 md:gap-1.5 text-xs md:text-[10px] text-muted-foreground">
+                          <Mail className="h-3.5 w-3.5 md:h-2.5 md:w-2.5 flex-shrink-0" />
                           <span className="truncate">{contact.email.value}</span>
                         </div>
                       )}
                       {contact.mobileNumber?.value && (
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                          <Phone className="h-2.5 w-2.5 flex-shrink-0" />
+                        <div className="flex items-center gap-2 md:gap-1.5 text-xs md:text-[10px] text-muted-foreground">
+                          <Phone className="h-3.5 w-3.5 md:h-2.5 md:w-2.5 flex-shrink-0" />
                           <span className="truncate">{contact.mobileNumber.value}</span>
                         </div>
                       )}
                       {!contact.email?.value && !contact.mobileNumber?.value && (
-                        <div className="text-[10px] text-muted-foreground italic">Ingen kontaktinfo</div>
+                        <div className="text-xs md:text-[10px] text-muted-foreground italic">Ingen kontaktinfo</div>
                       )}
                     </div>
                   </div>
@@ -145,29 +154,30 @@ export function ContactSelector({
         )}
       </div>
 
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1.5 border-t">
-        <ContactFormDialog
-          trigger={
-            <Button variant="outline" size="sm" className="h-8 px-2">
-              Legg til kontakt
-            </Button>
-          }
-        />
-        <div className="font-medium">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-xs md:text-[10px] text-muted-foreground pt-3 md:pt-1.5 border-t">
+        <div className="font-medium text-center md:text-left">
           Side {pagination.page + 1} av {pagination.totalPages}
           <span className="text-muted-foreground/70 ml-1">({pagination.totalElements} totalt)</span>
         </div>
-        <div className="flex items-center gap-1">
+
+        <div className="flex items-center gap-2 md:gap-1">
           <Button
             variant="outline"
             size="sm"
             onClick={() => onPageChange(pagination.page - 1)}
             disabled={!canPreviousPage}
+            className="flex-1 md:flex-none h-11 md:h-auto"
           >
-            Forrige side
+            Forrige
           </Button>
-          <Button variant="outline" size="sm" onClick={() => onPageChange(pagination.page + 1)} disabled={!canNextPage}>
-            Neste side
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(pagination.page + 1)}
+            disabled={!canNextPage}
+            className="flex-1 md:flex-none h-11 md:h-auto"
+          >
+            Neste
           </Button>
         </div>
       </div>

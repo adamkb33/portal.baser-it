@@ -3,7 +3,7 @@ import { Calendar } from '~/components/ui/calendar';
 import { Button } from '~/components/ui/button';
 import { Label } from '~/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { Clock, CalendarIcon, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, CalendarIcon, ChevronDown } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import type { ScheduleDto, ScheduleTimeSlot } from '~/api/generated/booking';
 
@@ -29,12 +29,10 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
   };
 
   const isDateDisabled = (date: Date): boolean => {
-    // Disable past dates
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date < today) return true;
 
-    // Disable if no schedule for this date
     const schedule = getScheduleForDate(date);
     return !schedule || schedule.timeSlots.length === 0;
   };
@@ -47,8 +45,6 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
 
   const handleTimeSlotSelect = (slot: ScheduleTimeSlot) => {
     if (!selectedDate) return;
-
-    // Parse the startTime from the slot (LocalDateTime format)
     const dateTime = new Date(slot.startTime);
     onSelectDateTime(dateTime);
   };
@@ -76,8 +72,8 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
   const availableTimeSlots = currentSchedule?.timeSlots || [];
 
   return (
-    <div className="space-y-4">
-      {/* Date Selector with Popover */}
+    <div className="space-y-5 md:space-y-4">
+      {/* Date Selector */}
       <div className="space-y-3">
         <Label htmlFor="date" className="flex items-center gap-2 text-sm font-medium px-1">
           <CalendarIcon className="h-4 w-4" />
@@ -85,8 +81,8 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
         </Label>
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" id="date" className="w-full justify-between font-normal h-10">
-              <span className="text-sm">{selectedDate ? formatDate(selectedDate) : 'Velg dato'}</span>
+            <Button variant="outline" id="date" className="w-full justify-between font-normal h-12 md:h-10">
+              <span className="text-sm md:text-sm">{selectedDate ? formatDate(selectedDate) : 'Velg dato'}</span>
               <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -107,19 +103,19 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
           <Clock className="h-4 w-4" />
           <span>Velg tid</span>
         </Label>
-        <div className="border rounded-md p-4 h-[250px] overflow-y-auto">
+        <div className="border rounded-lg p-3 md:p-4 h-[320px] md:h-[250px] overflow-y-auto">
           {!selectedDate ? (
-            <div className="py-8 text-center">
-              <Clock className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-              <p className="text-xs text-muted-foreground">Velg en dato først</p>
+            <div className="py-12 md:py-8 text-center">
+              <Clock className="h-12 w-12 md:h-10 md:w-10 mx-auto text-muted-foreground/50 mb-3 md:mb-2" />
+              <p className="text-sm md:text-xs text-muted-foreground">Velg en dato først</p>
             </div>
           ) : availableTimeSlots.length === 0 ? (
-            <div className="py-8 text-center">
-              <Clock className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
-              <p className="text-xs text-muted-foreground">Ingen ledige tider</p>
+            <div className="py-12 md:py-8 text-center">
+              <Clock className="h-12 w-12 md:h-10 md:w-10 mx-auto text-muted-foreground/50 mb-3 md:mb-2" />
+              <p className="text-sm md:text-xs text-muted-foreground">Ingen ledige tider</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-2">
               {availableTimeSlots.map((slot, index) => {
                 const slotStart = new Date(slot.startTime);
                 const isSelected = selectedDateTime && slotStart.getTime() === selectedDateTime.getTime();
@@ -129,7 +125,11 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
                     key={index}
                     variant={isSelected ? 'default' : 'outline'}
                     size="sm"
-                    className={cn('h-9 text-xs font-medium', isSelected && 'shadow-sm')}
+                    className={cn(
+                      'h-11 md:h-9 text-sm md:text-xs font-medium',
+                      'active:scale-95 transition-transform',
+                      isSelected && 'shadow-sm',
+                    )}
                     onClick={() => handleTimeSlotSelect(slot)}
                   >
                     {formatTime(slot.startTime)}
