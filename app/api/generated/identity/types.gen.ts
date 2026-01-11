@@ -340,6 +340,15 @@ export type ApiResponseUserDto = {
     timestamp: string;
 };
 
+export type ApiResponseListCompanyRole = {
+    success: boolean;
+    message: string;
+    data?: Array<'ADMIN' | 'EMPLOYEE'>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
 export type ApiResponseCompanyUserDto = {
     success: boolean;
     message: string;
@@ -1075,6 +1084,25 @@ export type ValidateCompanyUserResponses = {
 };
 
 export type ValidateCompanyUserResponse = ValidateCompanyUserResponses[keyof ValidateCompanyUserResponses];
+
+export type GetCompanyRoleData = {
+    body?: never;
+    path: {
+        companyId: number;
+        userId: number;
+    };
+    query?: never;
+    url: '/internal/internal/users/company-role/{companyId}/{userId}';
+};
+
+export type GetCompanyRoleResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListCompanyRole;
+};
+
+export type GetCompanyRoleResponse = GetCompanyRoleResponses[keyof GetCompanyRoleResponses];
 
 export type ValidateProductData = {
     body?: never;

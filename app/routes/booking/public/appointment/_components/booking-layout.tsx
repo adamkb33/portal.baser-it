@@ -1,4 +1,10 @@
 import type { ReactNode } from 'react';
+import { cn } from '~/lib/utils';
+
+/* ========================================
+   BOOKING PAGE HEADER
+   Mobile-first page title component
+   ======================================== */
 
 interface BookingPageHeaderProps {
   label?: string;
@@ -8,124 +14,245 @@ interface BookingPageHeaderProps {
   className?: string;
 }
 
-export function BookingPageHeader({ label, title, description, meta, className = '' }: BookingPageHeaderProps) {
+export function BookingPageHeader({ label, title, description, meta, className }: BookingPageHeaderProps) {
   return (
-    <div className={`border-b border-border pb-4 ${className}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 space-y-1">
+    <header
+      className={cn(
+        // Mobile: No border, tight spacing
+        // Desktop: Border separator
+        'pb-3 md:border-b md:border-border md:pb-4',
+        className,
+      )}
+    >
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        {/* Title content */}
+        <div className="flex-1 space-y-2 md:space-y-2.5">
           {label && (
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{label}</span>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground md:text-sm">{label}</p>
           )}
-          <h1 className="text-base font-semibold text-foreground">{title}</h1>
-          {description && <p className="text-[0.7rem] text-muted-foreground mt-1">{description}</p>}
+
+          <h1 className="text-xl font-bold text-foreground md:text-2xl lg:text-3xl">{title}</h1>
+
+          {description && <p className="text-sm text-muted-foreground md:text-base">{description}</p>}
         </div>
-        {meta && <div className="flex-shrink-0">{meta}</div>}
+
+        {/* Meta content */}
+        {meta && <div className="shrink-0">{meta}</div>}
       </div>
-    </div>
+    </header>
   );
 }
+
+/* ========================================
+   BOOKING SECTION
+   Card-style content container
+   ======================================== */
 
 interface BookingSectionProps {
   label?: string;
   title?: string;
   children: ReactNode;
   className?: string;
-  variant?: 'default' | 'muted';
+  variant?: 'default' | 'muted' | 'elevated';
 }
 
-export function BookingSection({ label, title, children, className = '', variant = 'default' }: BookingSectionProps) {
-  const baseClasses = 'border border-border p-4 sm:p-5 space-y-4';
-  const variantClasses = variant === 'muted' ? 'bg-muted' : 'bg-background';
-
+export function BookingSection({ label, title, children, className, variant = 'default' }: BookingSectionProps) {
   return (
-    <div className={`${baseClasses} ${variantClasses} ${className}`}>
+    <section
+      className={cn(
+        // Base styles - mobile-first padding
+        'rounded-lg border p-3 md:p-4 lg:p-5',
+
+        // Variant backgrounds
+        variant === 'default' && 'border-card-border bg-card',
+        variant === 'muted' && 'border-card-muted-border bg-card-muted-bg',
+        variant === 'elevated' && 'border-card-elevated-border bg-card-elevated-bg shadow-sm',
+
+        className,
+      )}
+    >
+      {/* Section header */}
       {(label || title) && (
-        <div className="border-b border-border pb-3">
+        <div className="mb-3 space-y-1.5 md:mb-4">
           {label && (
-            <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{label}</span>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground md:text-sm">{label}</p>
           )}
-          {title && <h2 className="text-sm font-semibold text-foreground mt-1">{title}</h2>}
+
+          {title && <h2 className="text-base font-bold text-card-text md:text-lg">{title}</h2>}
         </div>
       )}
+
+      {/* Content */}
+      <div className="space-y-3 md:space-y-4">{children}</div>
+    </section>
+  );
+}
+
+/* ========================================
+   BOOKING CONTAINER
+   Main layout wrapper
+   ======================================== */
+
+interface BookingContainerProps {
+  children: ReactNode;
+  className?: string;
+}
+
+export function BookingContainer({ children, className }: BookingContainerProps) {
+  return (
+    <div
+      className={cn(
+        // Mobile: Tight spacing, no margin
+        // Desktop: More breathing room
+        'mx-auto w-full max-w-4xl space-y-4 md:space-y-5 lg:space-y-6',
+        className,
+      )}
+    >
       {children}
     </div>
   );
 }
 
-interface BookingContainerProps {
-  children: ReactNode;
-  className?: string;
-  withShadow?: boolean;
-}
-
-export function BookingContainer({ children, className = '' }: BookingContainerProps) {
-  return <div className={`space-y-5 shadow-[8px_8px_0px_0px_rgb(120,40,180)] ${className}`}>{children}</div>;
-}
+/* ========================================
+   BOOKING GRID
+   Responsive grid layout
+   ======================================== */
 
 interface BookingGridProps {
   children: ReactNode;
-  cols?: 1 | 2 | 3;
+  cols?: 1 | 2 | 3 | 4;
   className?: string;
 }
 
-export function BookingGrid({ children, cols = 2, className = '' }: BookingGridProps) {
-  const colsClass = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-  }[cols];
+export function BookingGrid({ children, cols = 2, className }: BookingGridProps) {
+  return (
+    <div
+      className={cn(
+        'grid gap-3 md:gap-4 lg:gap-5',
 
-  return <div className={`grid ${colsClass} gap-4 ${className}`}>{children}</div>;
+        // Mobile-first column definitions
+        cols === 1 && 'grid-cols-1',
+        cols === 2 && 'grid-cols-1 md:grid-cols-2',
+        cols === 3 && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+        cols === 4 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
+
+/* ========================================
+   BOOKING META
+   Definition list for key-value pairs
+   ======================================== */
 
 interface BookingMetaProps {
-  items: Array<{ label: string; value: ReactNode }>;
+  items: Array<{ label: string; value: ReactNode; icon?: ReactNode }>;
+  layout?: 'stacked' | 'inline' | 'compact';
   className?: string;
 }
 
-export function BookingMeta({ items, className = '' }: BookingMetaProps) {
+export function BookingMeta({ items, layout = 'inline', className }: BookingMetaProps) {
+  if (layout === 'compact') {
+    // Compact: Side-by-side labels and values
+    return (
+      <dl className={cn('space-y-2', className)}>
+        {items.map((item, index) => (
+          <div key={index} className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            {item.icon && <dt className="shrink-0 text-muted-foreground">{item.icon}</dt>}
+            <dt className="text-xs font-medium text-muted-foreground">{item.label}:</dt>
+            <dd className="text-sm font-medium text-card-text md:text-base">{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
+
+  if (layout === 'stacked') {
+    // Stacked: Label above value
+    return (
+      <dl className={cn('space-y-3 md:space-y-4', className)}>
+        {items.map((item, index) => (
+          <div key={index}>
+            <dt className="mb-1 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {item.icon}
+              {item.label}
+            </dt>
+            <dd className="text-sm font-semibold text-card-text md:text-base">{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
+
+  // Inline: Grid layout with aligned columns
   return (
-    <div className={`space-y-2 ${className}`}>
+    <dl className={cn('grid gap-2 md:gap-3', className)}>
       {items.map((item, index) => (
-        <div key={index} className="flex items-baseline gap-2">
-          <span className="text-[0.7rem] text-muted-foreground min-w-20">{item.label}:</span>
-          <span className="text-sm text-foreground">{item.value}</span>
+        <div key={index} className="grid grid-cols-[auto_1fr] items-baseline gap-x-3">
+          <dt className="flex items-center gap-2 text-xs font-medium text-muted-foreground md:text-sm">
+            {item.icon}
+            {item.label}
+          </dt>
+          <dd className="text-sm font-medium text-card-text md:text-base">{item.value}</dd>
         </div>
       ))}
-    </div>
+    </dl>
   );
 }
+
+/* ========================================
+   BOOKING STEP LIST
+   Ordered list with step numbers
+   ======================================== */
 
 interface BookingStepListProps {
-  steps: Array<{ title: string; description: string }>;
+  steps: Array<{
+    title: string;
+    description?: string;
+    icon?: ReactNode;
+  }>;
   className?: string;
 }
 
-export function BookingStepList({ steps, className = '' }: BookingStepListProps) {
+export function BookingStepList({ steps, className }: BookingStepListProps) {
   return (
-    <div className={`space-y-2 ${className}`}>
+    <ol className={cn('space-y-3 md:space-y-4', className)}>
       {steps.map((step, index) => (
-        <div key={index} className="flex gap-3">
-          <div className="flex-shrink-0 mt-0.5">
-            <div className="border border-border bg-background px-2 py-0.5 text-[0.7rem] font-medium">{index + 1}</div>
+        <li key={index} className="flex gap-3 md:gap-4">
+          {/* Step number */}
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground md:size-10">
+            {step.icon || <span className="text-sm font-bold md:text-base">{index + 1}</span>}
           </div>
-          <div className="space-y-0.5">
-            <p className="text-sm font-medium text-foreground">{step.title}</p>
-            <p className="text-[0.7rem] text-muted-foreground">{step.description}</p>
+
+          {/* Step content */}
+          <div className="flex-1 space-y-1 pt-0.5">
+            <h3 className="text-sm font-semibold text-card-text md:text-base">{step.title}</h3>
+
+            {step.description && <p className="text-xs text-muted-foreground md:text-sm">{step.description}</p>}
           </div>
-        </div>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }
+
+/* ========================================
+   BOOKING BUTTON
+   Mobile-first button component
+   ======================================== */
 
 interface BookingButtonProps {
   children: ReactNode;
-  variant?: 'primary' | 'outline' | 'text';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   className?: string;
   disabled?: boolean;
+  loading?: boolean;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
 }
@@ -135,36 +262,163 @@ export function BookingButton({
   variant = 'primary',
   size = 'md',
   fullWidth = false,
-  className = '',
+  className,
   disabled = false,
+  loading = false,
   onClick,
   type = 'button',
 }: BookingButtonProps) {
-  const baseClasses =
-    'border border-border font-medium rounded-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
-
-  const variantClasses = {
-    primary: 'bg-foreground text-background hover:bg-foreground/90',
-    outline: 'bg-background text-foreground hover:bg-muted',
-    text: 'bg-transparent text-muted-foreground hover:text-foreground px-0 border-0 hover:underline underline-offset-2',
-  }[variant];
-
-  const sizeClasses = {
-    sm: variant === 'text' ? 'text-[0.7rem]' : 'px-2.5 py-1.5 text-[0.7rem]',
-    md: variant === 'text' ? 'text-xs' : 'px-3 py-2 text-xs',
-    lg: variant === 'text' ? 'text-sm' : 'px-4 py-2.5 text-sm',
-  }[size];
-
-  const widthClass = fullWidth ? 'w-full' : '';
+  const isDisabled = disabled || loading;
 
   return (
     <button
       type={type}
-      disabled={disabled}
+      disabled={isDisabled}
       onClick={onClick}
-      className={`${baseClasses} ${variantClasses} ${sizeClasses} ${widthClass} ${className}`}
+      className={cn(
+        // Base styles - always touch-friendly
+        'inline-flex items-center justify-center gap-2',
+        'rounded-lg font-semibold transition-colors',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+
+        // Size variants - all meet 44px minimum on mobile
+        size === 'sm' && 'h-10 px-4 text-sm md:h-9 md:px-3 md:text-xs',
+        size === 'md' && 'h-12 px-6 text-base md:h-11 md:px-5 md:text-sm',
+        size === 'lg' && 'h-14 px-8 text-lg md:h-12 md:px-7 md:text-base',
+
+        // Variant styles
+        variant === 'primary' && [
+          'bg-button-primary-bg text-button-primary-text',
+          'border-2 border-button-primary-border',
+          'hover:bg-button-primary-hover-bg',
+          'active:bg-button-primary-active-bg',
+          'focus-visible:ring-button-primary-ring',
+        ],
+
+        variant === 'secondary' && [
+          'bg-button-secondary-bg text-button-secondary-text',
+          'border-2 border-button-secondary-border',
+          'hover:bg-button-secondary-hover-bg',
+          'active:bg-button-secondary-active-bg',
+          'focus-visible:ring-button-secondary-ring',
+        ],
+
+        variant === 'outline' && [
+          'bg-button-outline-bg text-button-outline-text',
+          'border-2 border-button-outline-border',
+          'hover:bg-button-outline-hover-bg',
+          'active:bg-button-outline-active-bg',
+          'focus-visible:ring-button-outline-ring',
+        ],
+
+        variant === 'ghost' && [
+          'bg-button-ghost-bg text-button-ghost-text',
+          'border-2 border-button-ghost-border',
+          'hover:bg-button-ghost-hover-bg',
+          'active:bg-button-ghost-active-bg',
+          'focus-visible:ring-button-ghost-ring',
+        ],
+
+        variant === 'destructive' && [
+          'bg-button-destructive-bg text-button-destructive-text',
+          'border-2 border-button-destructive-border',
+          'hover:bg-button-destructive-hover-bg',
+          'active:bg-button-destructive-active-bg',
+          'focus-visible:ring-button-destructive-ring',
+        ],
+
+        // Disabled state
+        isDisabled && [
+          'cursor-not-allowed opacity-60',
+          'bg-button-disabled-bg text-button-disabled-text',
+          'border-button-disabled-border',
+        ],
+
+        // Full width
+        fullWidth && 'w-full',
+
+        className,
+      )}
+      aria-busy={loading}
     >
+      {loading && (
+        <svg
+          className="size-4 animate-spin"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          />
+        </svg>
+      )}
       {children}
     </button>
+  );
+}
+
+/* ========================================
+   BOOKING CARD
+   Clickable/selectable card component
+   ======================================== */
+
+interface BookingCardProps {
+  children: ReactNode;
+  selected?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  className?: string;
+}
+
+export function BookingCard({ children, selected = false, disabled = false, onClick, className }: BookingCardProps) {
+  const isInteractive = !!onClick && !disabled;
+
+  return (
+    <div
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      onClick={isInteractive ? onClick : undefined}
+      onKeyDown={
+        isInteractive
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
+      className={cn(
+        // Base styles
+        'rounded-lg border-2 p-3 transition-all md:p-4',
+
+        // Interactive states
+        isInteractive && [
+          'cursor-pointer',
+          'hover:border-card-interactive-hover-border',
+          'hover:bg-card-interactive-hover-bg',
+          'active:bg-card-interactive-active-bg',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-card-interactive-ring',
+        ],
+
+        // Selected state
+        selected && ['border-primary bg-primary/5', 'shadow-sm'],
+
+        // Default state
+        !selected && 'border-card-border bg-card',
+
+        // Disabled state
+        disabled && 'cursor-not-allowed opacity-50',
+
+        className,
+      )}
+    >
+      {children}
+    </div>
   );
 }

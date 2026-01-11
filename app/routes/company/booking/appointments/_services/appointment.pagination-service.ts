@@ -1,4 +1,6 @@
 // ~/services/appointment-pagination.service.ts
+import { addDays, endOfDay, formatISO, isSameDay, startOfDay } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 export enum AppointmentPaginationQuickFilter {
   UPCOMING,
@@ -23,50 +25,45 @@ export class AppointmentPaginationService {
 
     if (!fromDate && !toDate) return AppointmentPaginationQuickFilter.UPCOMING;
 
-    // UPCOMING: fromDate exists, no toDate
     if (fromDate && !toDate) {
       return AppointmentPaginationQuickFilter.UPCOMING;
     }
 
-    // PAST: no fromDate, toDate exists
     if (!fromDate && toDate) {
       return AppointmentPaginationQuickFilter.PAST;
     }
 
     if (fromDate && toDate) {
-      const fromDt = new Date(fromDate);
-      const toDt = new Date(toDate);
+      const timezone = 'Europe/Oslo';
+      const now = toZonedTime(new Date(), timezone);
 
-      // Check if fromDate is midnight (00:00:00 or 23:00:00 UTC for CET)
-      const isMidnight = fromDt.getUTCHours() === 0 || fromDt.getUTCHours() === 23;
+      const fromDt = toZonedTime(new Date(fromDate), timezone);
+      const toDt = toZonedTime(new Date(toDate), timezone);
 
-      // Check if toDate is end-of-day (22:59:59.999Z or 23:59:59.999)
-      const isEndOfDay =
-        (toDt.getUTCHours() === 22 || toDt.getUTCHours() === 23) &&
-        toDt.getUTCMinutes() === 59 &&
-        toDt.getUTCSeconds() === 59;
+      // Check if toDate is end of day
+      const toEndOfDay = endOfDay(toDt);
+      const isToEndOfDay = Math.abs(toDt.getTime() - toEndOfDay.getTime()) < 1000; // Within 1 second
 
-      if (isMidnight && isEndOfDay) {
-        const now = new Date();
-        const today = new Date(now);
-        today.setHours(0, 0, 0, 0);
+      if (isToEndOfDay) {
+        const isFromToday = isSameDay(fromDt, now);
+        const isToToday = isSameDay(toDt, now);
 
-        const daysDiff = Math.round((toDt.getTime() - fromDt.getTime()) / (1000 * 60 * 60 * 24));
-        const daysFromToday = Math.round((fromDt.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-        // TODAY: 1-day range starting today
-        if ((daysDiff === 0 || daysDiff === 1) && Math.abs(daysFromToday) <= 1) {
+        // TODAY: both from and to are today
+        if (isFromToday && isToToday) {
           return AppointmentPaginationQuickFilter.TODAY;
         }
 
-        // NEXT_7_DAYS: 7-8 day range starting today
-        if (daysDiff >= 7 && daysDiff <= 8 && Math.abs(daysFromToday) <= 1) {
-          return AppointmentPaginationQuickFilter.NEXT_7_DAYS;
-        }
+        // For NEXT_7_DAYS and NEXT_30_DAYS, from should be today
+        if (isFromToday) {
+          const daysDiff = Math.round((toDt.getTime() - fromDt.getTime()) / (1000 * 60 * 60 * 24));
 
-        // NEXT_30_DAYS: 30-31 day range starting today
-        if (daysDiff >= 30 && daysDiff <= 31 && Math.abs(daysFromToday) <= 1) {
-          return AppointmentPaginationQuickFilter.NEXT_30_DAYS;
+          if (daysDiff >= 7 && daysDiff <= 8) {
+            return AppointmentPaginationQuickFilter.NEXT_7_DAYS;
+          }
+
+          if (daysDiff >= 30 && daysDiff <= 31) {
+            return AppointmentPaginationQuickFilter.NEXT_30_DAYS;
+          }
         }
       }
     }
@@ -120,17 +117,18 @@ export class AppointmentPaginationService {
   };
 
   applyDateFilters = (fromDate: string, toDate: string) => {
+    const timezone = 'Europe/Oslo';
     const params = new URLSearchParams(this.searchParams);
 
     if (fromDate) {
-      const fromDateTime = `${fromDate}T00:00:00`;
+      const fromDateTime = formatISO(startOfDay(toZonedTime(new Date(fromDate), timezone)));
       params.set('fromDateTime', fromDateTime);
     } else {
       params.delete('fromDateTime');
     }
 
     if (toDate) {
-      const toDateTime = `${toDate}T23:59:59`;
+      const toDateTime = formatISO(endOfDay(toZonedTime(new Date(toDate), timezone)));
       params.set('toDateTime', toDateTime);
     } else {
       params.delete('toDateTime');
@@ -160,46 +158,41 @@ export class AppointmentPaginationService {
   };
 
   handleUpcomingFilter = () => {
-    const now = new Date().toISOString();
-    this.handleQuickFilter(now, '');
+    this.handleQuickFilter(formatISO(toZonedTime(new Date(), 'Europe/Oslo')), '');
   };
 
   handlePastFilter = () => {
-    const now = new Date().toISOString();
-    this.handleQuickFilter('', now);
+    this.handleQuickFilter('', formatISO(toZonedTime(new Date(), 'Europe/Oslo')));
   };
 
   handleTodayFilter = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setSeconds(tomorrow.getSeconds() - 1);
-    this.handleQuickFilter(today.toISOString(), tomorrow.toISOString());
+    const timezone = 'Europe/Oslo';
+    const nowInNorway = toZonedTime(new Date(), timezone);
+
+    const startOfToday = formatISO(nowInNorway);
+    const endOfToday = formatISO(endOfDay(nowInNorway));
+
+    this.handleQuickFilter(startOfToday, endOfToday);
   };
 
   handleNext7days = () => {
-    const now = new Date();
-    const startDate = new Date(now);
-    startDate.setHours(0, 0, 0, 0);
+    const timezone = 'Europe/Oslo';
+    const nowInNorway = toZonedTime(new Date(), timezone);
 
-    const endDate = new Date(now);
-    endDate.setDate(endDate.getDate() + 7);
-    endDate.setHours(23, 59, 59, 999);
+    const startDate = formatISO(nowInNorway);
+    const endDate = formatISO(endOfDay(addDays(nowInNorway, 7)));
 
-    this.handleQuickFilter(startDate.toISOString(), endDate.toISOString());
+    this.handleQuickFilter(startDate, endDate);
   };
 
   handleNext30Days = () => {
-    const now = new Date();
-    const startDate = new Date(now);
-    startDate.setHours(0, 0, 0, 0);
+    const timezone = 'Europe/Oslo';
+    const nowInNorway = toZonedTime(new Date(), timezone);
 
-    const endDate = new Date(now);
-    endDate.setDate(endDate.getDate() + 30);
-    endDate.setHours(23, 59, 59, 999);
+    const startDate = formatISO(nowInNorway);
+    const endDate = formatISO(endOfDay(addDays(nowInNorway, 30)));
 
-    this.handleQuickFilter(startDate.toISOString(), endDate.toISOString());
+    this.handleQuickFilter(startDate, endDate);
   };
 
   handleClearFilters = () => {

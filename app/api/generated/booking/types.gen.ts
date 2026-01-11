@@ -373,6 +373,131 @@ export type PaginatedResponseServiceGroupDto = {
     hasPrevious: boolean;
 };
 
+export type ApiResponseBookingDashboardMetrics = {
+    success: boolean;
+    message: string;
+    data?: BookingDashboardMetrics;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type BookingActivityMetrics = {
+    upcomingSevenDays: number;
+    appointmentsToday: number;
+    appointmentsThisMonth: number;
+    appointmentsLastMonth: number;
+    monthOverMonthChangePercent: number;
+    peakBookingTimes: Array<PeakTime>;
+    trendLast30Days: Array<DailyBookingCount>;
+};
+
+export type BookingDashboardMetrics = {
+    summary: CompanySummary;
+    profiles: Array<ProfileBreakdown>;
+};
+
+export type BookingSessionMetrics = {
+    activeSessions: number;
+    abandonedSessionsLast30Days: number;
+    completedSessionsLast30Days: number;
+    sessionToBookingConversionRate: number;
+    averageSessionDurationMinutes: number;
+};
+
+export type CompanySummary = {
+    revenue: RevenueMetrics;
+    bookings: BookingActivityMetrics;
+    services: ServicePerformanceMetrics;
+    customers: CustomerInsightsMetrics;
+    sessions: BookingSessionMetrics;
+};
+
+export type CustomerInsightsMetrics = {
+    uniqueCustomersThisMonth: number;
+    totalUniqueCustomers: number;
+    returningCustomers: number;
+    averageAppointmentsPerCustomer: number;
+    customersWithUpcomingAppointments: number;
+};
+
+export type DailyBookingCount = {
+    date: string;
+    count: number;
+};
+
+export type NeverBookedService = {
+    serviceId: number;
+    serviceName: string;
+    groupName: string;
+    price: number;
+    createdAt: string;
+};
+
+export type PeakTime = {
+    dayOfWeek: string;
+    hour: number;
+    bookingCount: number;
+};
+
+export type PopularService = {
+    serviceId: number;
+    serviceName: string;
+    groupName: string;
+    bookingCount: number;
+    totalRevenue: number;
+};
+
+export type ProfileBreakdown = {
+    profileId: number;
+    profileName: string;
+    profileImageUrl?: string;
+    revenueThisMonth: number;
+    revenueLastMonth: number;
+    projectedRevenue: number;
+    averageAppointmentValue: number;
+    appointmentsThisMonth: number;
+    appointmentsLastMonth: number;
+    upcomingSevenDays: number;
+    totalHoursThisMonth: number;
+    hasSchedule: boolean;
+    upcomingUnavailability: Array<UnavailabilityPeriod>;
+    uniqueCustomersThisMonth: number;
+    totalUniqueCustomers: number;
+    returningCustomerCount: number;
+};
+
+export type RevenueMetrics = {
+    revenueToday: number;
+    revenueThisMonth: number;
+    revenueLastMonth: number;
+    monthOverMonthChangePercent: number;
+    projectedRevenue: number;
+    averageAppointmentValue: number;
+    revenueByServiceGroup: Array<ServiceGroupRevenue>;
+};
+
+export type ServiceGroupRevenue = {
+    groupId: number;
+    groupName: string;
+    totalRevenue: number;
+    appointmentCount: number;
+};
+
+export type ServicePerformanceMetrics = {
+    totalActiveServices: number;
+    totalServiceGroups: number;
+    servicesWithoutImages: number;
+    mostPopularServices: Array<PopularService>;
+    neverBookedServices: Array<NeverBookedService>;
+};
+
+export type UnavailabilityPeriod = {
+    startTime: string;
+    endTime: string;
+    reason?: string;
+};
+
 export type ApiResponseCompanyBookingInfoDto = {
     success: boolean;
     message: string;
@@ -898,6 +1023,22 @@ export type GetDailySchedulesResponses = {
 };
 
 export type GetDailySchedulesResponse = GetDailySchedulesResponses[keyof GetDailySchedulesResponses];
+
+export type GetCompanyBookingMetricsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/company-user/booking/metrics';
+};
+
+export type GetCompanyBookingMetricsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseBookingDashboardMetrics;
+};
+
+export type GetCompanyBookingMetricsResponse = GetCompanyBookingMetricsResponses[keyof GetCompanyBookingMetricsResponses];
 
 export type GetCompanyBookingInfoData = {
     body?: never;

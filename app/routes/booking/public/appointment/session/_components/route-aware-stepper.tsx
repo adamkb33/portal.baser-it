@@ -1,5 +1,5 @@
 import { useLocation, Link } from 'react-router';
-import { ChevronRight, Check, AlertCircle } from 'lucide-react';
+import { ChevronRight, Check } from 'lucide-react';
 import type { AppointmentSessionDto } from '~/api/clients/types';
 import { cn } from '~/lib/utils';
 import {
@@ -21,159 +21,260 @@ export function RouteAwareStepper({ session }: RouteAwareStepperProps) {
 
   const currentStep = steps.find((s) => s.isCurrent);
   const nextStep = getNextStep(steps);
-
   const validation = currentStep ? canProceedToNextStep(currentStep, session) : { canProceed: true };
-
-  const StepContent = ({ step, index }: { step: EnhancedStepStatus; index: number }) => {
-    const isLast = index === steps.length - 1;
-
-    const stepElement = (
-      <div
-        className={cn(
-          'flex items-center gap-2 border border-border px-3 py-2 transition-colors',
-          step.isComplete && 'bg-muted',
-          step.isCurrent && 'border-2 border-primary bg-background',
-          !step.isCurrent && !step.isComplete && 'bg-background opacity-60',
-          step.isAccessible && !step.isCurrent && 'hover:bg-muted cursor-pointer',
-          !step.isAccessible && 'opacity-40 cursor-not-allowed',
-        )}
-      >
-        <div
-          className={cn(
-            'flex size-6 shrink-0 items-center justify-center border border-border text-xs font-medium',
-            step.isComplete && 'bg-foreground text-background',
-            step.isCurrent && 'border-primary bg-background text-foreground',
-            !step.isCurrent && !step.isComplete && 'bg-muted text-muted-foreground',
-          )}
-        >
-          {step.isComplete ? <Check className="size-3" /> : step.order}
-        </div>
-
-        <span
-          className={cn(
-            'text-xs font-medium',
-            step.isComplete && 'text-muted-foreground',
-            step.isCurrent && 'text-foreground',
-            !step.isCurrent && !step.isComplete && 'text-muted-foreground',
-          )}
-        >
-          {step.name}
-        </span>
-
-        {step.isCurrent && (
-          <span className="ml-1 border border-primary bg-primary px-1.5 py-0.5 text-[0.65rem] font-medium leading-none text-primary-foreground">
-            NÅ
-          </span>
-        )}
-      </div>
-    );
-
-    return (
-      <div className="flex items-center">
-        {step.isAccessible && !step.isCurrent ? (
-          <Link to={step.routePath} className="transition-opacity hover:opacity-80">
-            {stepElement}
-          </Link>
-        ) : (
-          stepElement
-        )}
-
-        {!isLast && (
-          <ChevronRight className={cn('mx-1 size-4 shrink-0', step.isComplete ? 'text-foreground' : 'text-border')} />
-        )}
-      </div>
-    );
-  };
 
   return (
     <>
-      {/* Mobile */}
-      <div className="border border-border bg-background p-4 md:hidden">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex flex-1 items-center gap-3">
-            <div className="flex size-8 shrink-0 items-center justify-center border-2 border-primary bg-background text-xs font-medium text-foreground">
-              {currentStep?.order}
+      {/* ========================================
+          MOBILE - Simplified, Touch-Friendly
+          ======================================== */}
+      <div className="bg-card border-card-border md:hidden">
+        {/* Progress Bar - Visual feedback only */}
+        <div className="h-1 bg-muted">
+          <div
+            className="h-full bg-primary transition-all duration-500"
+            style={{ width: `${progress.percentage}%` }}
+            role="progressbar"
+            aria-valuenow={progress.percentage}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Fremdrift: ${progress.completed} av ${progress.total} steg fullført`}
+          />
+        </div>
+
+        {/* Current Step - Large, Readable */}
+        <div className="p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            {/* Step Indicator Circle */}
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              {currentStep?.isComplete ? (
+                <Check className="size-6" strokeWidth={2.5} />
+              ) : (
+                <span className="text-lg font-semibold">{currentStep?.order}</span>
+              )}
             </div>
-            <div className="flex-1">
-              <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+
+            {/* Step Info */}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Steg {currentStep?.order} av {steps.length}
-              </span>
-              <h3 className="text-sm font-semibold text-foreground">{currentStep?.name}</h3>
+              </p>
+              <h2 className="text-base font-semibold text-card-text truncate">{currentStep?.name}</h2>
             </div>
           </div>
 
-          {nextStep && (
-            <div className="flex items-center gap-2 opacity-40">
-              <ChevronRight className="size-4 text-muted-foreground" />
-              <div className="flex size-6 items-center justify-center border border-border bg-muted text-[0.65rem] font-medium text-muted-foreground">
-                {nextStep.order}
-              </div>
+          {/* Next Step Hint - Only if validation passes */}
+          {nextStep && validation.canProceed && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded text-xs text-muted-foreground">
+              <span>Neste:</span>
+              <span className="font-medium text-card-text">{nextStep.name}</span>
+              <ChevronRight className="size-3 ml-auto" />
             </div>
           )}
         </div>
 
-        <div className="mt-3 h-1 border-t border-border bg-muted">
-          <div
-            className="h-full bg-foreground transition-all duration-300"
-            style={{ width: `${progress.percentage}%` }}
-          />
-        </div>
+        {/* Step Navigation - Large Touch Targets (Thumb Zone) */}
+        <div className="border-t border-card-border bg-card-footer-bg p-3">
+          <div className="flex justify-center gap-2">
+            {steps.map((step) => {
+              const StepButton = (
+                <button
+                  type="button"
+                  disabled={!step.isAccessible}
+                  className={cn(
+                    // Touch target: 44px minimum (h-11)
+                    'flex-1 min-h-11 px-3 py-2.5 rounded transition-all',
+                    'flex flex-col items-center justify-center gap-1',
 
-        {/* Mobile Navigation Dots */}
-        <div className="mt-3 flex justify-center gap-1">
-          {steps.map((step) => (
-            <Link
-              key={step.id}
-              to={step.isAccessible ? step.routePath : '#'}
-              className={cn(
-                'w-2 h-2 border border-border transition-colors',
-                step.isCurrent && 'bg-primary',
-                step.isComplete && 'bg-foreground',
-                !step.isCurrent && !step.isComplete && 'bg-muted',
-                step.isAccessible && 'cursor-pointer hover:bg-primary/50',
-                !step.isAccessible && 'opacity-30 cursor-not-allowed pointer-events-none',
-              )}
-              aria-label={`${step.name} - ${step.isComplete ? 'Fullført' : step.isCurrent ? 'Pågående' : 'Ikke startet'}`}
-            />
-          ))}
+                    // Current step - Primary color
+                    step.isCurrent && ['bg-primary text-primary-foreground', 'border-2 border-primary'],
+
+                    // Completed step - Muted
+                    step.isComplete && !step.isCurrent && ['bg-muted border border-card-border', 'text-card-text'],
+
+                    // Future accessible step - Outline
+                    !step.isCurrent &&
+                      !step.isComplete &&
+                      step.isAccessible && [
+                        'border border-card-border bg-background',
+                        'text-muted-foreground hover:bg-muted',
+                      ],
+
+                    // Inaccessible - Disabled
+                    !step.isAccessible && [
+                      'bg-button-disabled-bg border border-button-disabled-border',
+                      'text-button-disabled-text cursor-not-allowed opacity-50',
+                    ],
+                  )}
+                  aria-label={`${step.name} - ${
+                    step.isComplete ? 'Fullført' : step.isCurrent ? 'Pågående' : 'Ikke startet'
+                  }`}
+                  aria-current={step.isCurrent ? 'step' : undefined}
+                >
+                  {/* Icon/Number */}
+                  <div className="flex items-center justify-center size-5">
+                    {step.isComplete ? (
+                      <Check className="size-4" strokeWidth={2.5} />
+                    ) : (
+                      <span className="text-xs font-bold">{step.order}</span>
+                    )}
+                  </div>
+
+                  {/* Label - Hidden on very small screens */}
+                  <span className="text-[0.625rem] font-medium leading-tight text-center hidden xs:block">
+                    {step.name.split(' ')[0]}
+                  </span>
+                </button>
+              );
+
+              return step.isAccessible && !step.isCurrent ? (
+                <Link key={step.id} to={step.routePath} className="flex-1">
+                  {StepButton}
+                </Link>
+              ) : (
+                <div key={step.id} className="flex-1">
+                  {StepButton}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Desktop */}
-      <div className="hidden border border-border bg-background p-4 sm:p-5 md:block">
-        <div className="flex items-center gap-2">
-          {steps.map((step, index) => (
-            <StepContent key={step.id} step={step} index={index} />
-          ))}
+      {/* ========================================
+          DESKTOP - Horizontal Flow
+          ======================================== */}
+      <div className="hidden md:block bg-card border border-card-border rounded-lg overflow-hidden">
+        {/* Progress Bar */}
+        <div className="h-1 bg-muted">
+          <div
+            className="h-full bg-primary transition-all duration-500"
+            style={{ width: `${progress.percentage}%` }}
+            role="progressbar"
+            aria-valuenow={progress.percentage}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          />
         </div>
 
-        {/* Desktop Step Description */}
-        {currentStep && (
-          <div className="mt-4 border-t border-border pt-3 space-y-3">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                  Pågående steg
-                </span>
-                <p className="text-sm font-semibold text-foreground mt-1">{currentStep.name}</p>
-                {currentStep.description && (
-                  <p className="text-xs text-muted-foreground mt-0.5">{currentStep.description}</p>
-                )}
+        {/* Steps Row */}
+        <div className="p-4 lg:p-6">
+          <div className="flex items-center justify-between gap-3">
+            {steps.map((step, index) => {
+              const isLast = index === steps.length - 1;
+
+              const StepContent = (
+                <div
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-3 rounded-lg transition-all',
+                    'border-2',
+
+                    // Current
+                    step.isCurrent && ['bg-primary/5 border-primary', 'shadow-sm'],
+
+                    // Complete
+                    step.isComplete && !step.isCurrent && ['bg-muted border-card-border'],
+
+                    // Future accessible
+                    !step.isCurrent &&
+                      !step.isComplete &&
+                      step.isAccessible && [
+                        'border-card-border hover:border-primary/50',
+                        'hover:bg-muted/50 cursor-pointer',
+                      ],
+
+                    // Inaccessible
+                    !step.isAccessible && [
+                      'border-button-disabled-border bg-button-disabled-bg',
+                      'opacity-50 cursor-not-allowed',
+                    ],
+                  )}
+                >
+                  {/* Step Number Circle */}
+                  <div
+                    className={cn(
+                      'flex size-10 shrink-0 items-center justify-center rounded-full',
+                      'border-2 transition-colors',
+
+                      step.isCurrent && 'bg-primary border-primary text-primary-foreground',
+                      step.isComplete && !step.isCurrent && 'bg-foreground border-foreground text-background',
+                      !step.isCurrent && !step.isComplete && 'border-muted-foreground/30 text-muted-foreground',
+                    )}
+                  >
+                    {step.isComplete ? (
+                      <Check className="size-5" strokeWidth={2.5} />
+                    ) : (
+                      <span className="text-sm font-bold">{step.order}</span>
+                    )}
+                  </div>
+
+                  {/* Step Label */}
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={cn(
+                        'text-sm font-semibold',
+                        step.isCurrent && 'text-card-text',
+                        step.isComplete && !step.isCurrent && 'text-muted-foreground',
+                        !step.isCurrent && !step.isComplete && 'text-muted-foreground',
+                      )}
+                    >
+                      {step.name}
+                    </p>
+
+                    {/* Description only for current step on desktop */}
+                    {step.isCurrent && step.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{step.description}</p>
+                    )}
+                  </div>
+                </div>
+              );
+
+              return (
+                <div key={step.id} className="flex items-center flex-1">
+                  {step.isAccessible && !step.isCurrent ? (
+                    <Link to={step.routePath} className="flex-1 transition-opacity hover:opacity-90">
+                      {StepContent}
+                    </Link>
+                  ) : (
+                    <div className="flex-1">{StepContent}</div>
+                  )}
+
+                  {/* Connector */}
+                  {!isLast && (
+                    <ChevronRight
+                      className={cn(
+                        'size-5 mx-2 shrink-0 transition-colors',
+                        step.isComplete ? 'text-foreground' : 'text-muted-foreground/30',
+                      )}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Next Step Action - Only if validation passes */}
+          {nextStep && validation.canProceed && currentStep && (
+            <div className="mt-4 pt-4 border-t border-card-header-border">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Klar for neste steg
+                  </p>
+                  <p className="text-sm text-card-text mt-0.5">{nextStep.name}</p>
+                </div>
+
+                <Link
+                  to={nextStep.routePath}
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors"
+                >
+                  Fortsett
+                  <ChevronRight className="inline-block size-4 ml-1" />
+                </Link>
               </div>
             </div>
-
-            {/* Next Step Preview */}
-            {nextStep && validation.canProceed && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>Neste steg:</span>
-                <Link to={nextStep.routePath} className="font-medium text-primary hover:underline">
-                  {nextStep.name}
-                </Link>
-                <ChevronRight className="w-3 h-3" />
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </>
   );

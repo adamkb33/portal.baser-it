@@ -57,12 +57,6 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
 
   return (
     <>
-      <PageHeader
-        title="Kontakter"
-        description="Administrer kontaktpersoner og detaljer. Hold oversikt over viktige kontakter for ditt selskap."
-        actions={<ContactFormDialog trigger={<Button>Ny kontakt</Button>} />}
-      />
-
       <div className="flex items-center py-2">
         <Input
           placeholder="Filtrer på navn, e-post eller mobil…"
