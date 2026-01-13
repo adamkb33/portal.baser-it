@@ -78,7 +78,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
                   ) : (
                     <TrendingDown className="h-4 w-4" />
                   )}
-                  {Math.abs(summary.revenue.monthOverMonthChangePercent)}% fra forrige måned
+                  {Math.abs(summary.revenue.monthOverMonthChangePercent).toFixed(2)}% fra forrige måned
                 </p>
               </div>
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">

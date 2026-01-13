@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router';
 import { type RouteBranch } from '~/lib/route-tree';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { getIcon } from '~/lib/route-icon-map';
 
 type MobileSidebarProps = {
@@ -42,17 +42,17 @@ export function MobileSidebar({ branches, isOpen, onClose }: MobileSidebarProps)
       />
 
       <aside
-        className="fixed inset-y-0 left-0 w-[85vw] max-w-sm border-r border-border bg-background z-50 lg:hidden shadow-2xl"
+        className="fixed inset-y-0 left-0 w-[85vw] max-w-sm border-r border-sidebar-border bg-sidebar-bg z-50 lg:hidden shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
       >
-        <div className="flex items-center justify-between border-b border-border px-4 py-3 bg-muted/30">
-          <span className="text-sm font-semibold text-muted-foreground">Meny</span>
+        <div className="flex items-center justify-between border-b border-sidebar-border px-4 py-3 bg-sidebar-accent/20">
+          <span className="text-sm font-semibold text-sidebar-text-muted">Meny</span>
 
           <button
             onClick={onClose}
-            className="w-11 h-11 flex items-center justify-center rounded border border-border text-foreground hover:bg-accent hover:text-accent-foreground active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-200"
+            className="w-11 h-11 flex items-center justify-center rounded border border-sidebar-border text-sidebar-text hover:bg-sidebar-accent hover:text-sidebar-text active:scale-95 focus:outline-none focus:ring-2 focus:ring-sidebar-ring transition-all duration-200"
             aria-label="Lukk meny"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -90,30 +90,22 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
   const Icon = item.iconName ? getIcon(item.iconName) : undefined;
   const hasChildren = item.children && item.children.length > 0;
   const isInActiveTrail = currentPath.startsWith(item.href);
-  const [isExpanded, setIsExpanded] = useState(isInActiveTrail);
   const isActive = currentPath === item.href;
 
-  const indentPadding = level * 16;
+  const indentPadding = level * 16; // 16px indent per level
 
   const getHighlightOpacity = () => {
-    if (level === 0) return 'bg-accent/10';
-    if (level === 1) return 'bg-accent/25';
-    if (level === 2) return 'bg-accent/40';
-    return 'bg-accent/60';
+    if (level === 0) return 'bg-sidebar-accent/30';
+    if (level === 1) return 'bg-sidebar-accent/40';
+    if (level === 2) return 'bg-sidebar-accent/50';
+    return 'bg-sidebar-accent/60';
   };
 
   const getTrailOpacity = () => {
-    if (level === 0) return 'bg-muted/10';
-    if (level === 1) return 'bg-muted/20';
-    if (level === 2) return 'bg-muted/30';
-    return 'bg-muted/40';
-  };
-
-  const getBorderWidth = () => {
-    if (level === 0) return 'w-1';
-    if (level === 1) return 'w-1.5';
-    if (level === 2) return 'w-2';
-    return 'w-2.5';
+    if (level === 0) return 'bg-sidebar-accent/10';
+    if (level === 1) return 'bg-sidebar-accent/15';
+    if (level === 2) return 'bg-sidebar-accent/20';
+    return 'bg-sidebar-accent/25';
   };
 
   const getTextWeight = () => {
@@ -121,83 +113,55 @@ function MobileSidebarItem({ item, currentPath, level, onNavigate }: MobileSideb
   };
 
   return (
-    <li role="listitem">
-      <div className="relative">
+    <li role="listitem" className="relative">
+      {/* Vertical trail line that spans this item AND all its children */}
+      {hasChildren && (
         <div
-          className={`
-            absolute left-0 top-0 bottom-0 transition-all duration-200 rounded-r
-            ${getBorderWidth()}
-            ${isActive ? 'bg-primary' : isInActiveTrail ? 'bg-secondary/60' : 'bg-transparent'}
-          `}
+          className="absolute top-6 bottom-0 w-px bg-sidebar-text/20"
+          style={{ left: `${indentPadding + 6}px` }}
           aria-hidden="true"
         />
+      )}
 
-        <div className="flex items-center">
-          {hasChildren && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
-              aria-expanded={isExpanded}
-              aria-label={`${isExpanded ? 'Skjul' : 'Vis'} ${item.label}`}
-              style={{ marginLeft: level === 0 ? '4px' : `${indentPadding}px` }}
-              className="flex-shrink-0 w-11 h-11 flex items-center justify-center transition-all duration-200 rounded hover:bg-muted active:bg-muted/80 focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <svg
-                className={`
-                  w-5 h-5 transition-transform duration-200
-                  ${isExpanded ? 'rotate-90' : 'rotate-0'}
-                  ${isActive ? 'text-primary' : 'text-muted-foreground'}
-                `}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+      <div className="relative">
+        {/* Navigation link */}
+        <Link
+          to={item.href}
+          onClick={onNavigate}
+          aria-current={isActive ? 'page' : undefined}
+          style={{ paddingLeft: `${indentPadding + 12}px` }}
+          className={`
+            flex items-center gap-3
+            py-3 pr-3 min-h-[48px]
+            text-sm leading-tight 
+            transition-all duration-200
+            rounded-r 
+            active:scale-[0.98]
+            focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-inset
+            ${getTextWeight()}
+            ${
+              isActive
+                ? `text-sidebar-accent-foreground ${getHighlightOpacity()}`
+                : isInActiveTrail
+                  ? `text-sidebar-text ${getTrailOpacity()}`
+                  : 'text-sidebar-text-muted hover:text-sidebar-text hover:bg-sidebar-accent active:bg-sidebar-accent/80'
+            }
+          `}
+        >
+          {Icon && level === 0 && (
+            <Icon
+              className={`h-5 w-5 shrink-0 ${isActive ? 'text-sidebar-accent-foreground' : 'text-sidebar-text-muted'}`}
+              aria-hidden="true"
+            />
           )}
 
-          <Link
-            to={item.href}
-            onClick={onNavigate}
-            aria-current={isActive ? 'page' : undefined}
-            style={{
-              paddingLeft: hasChildren ? '8px' : `${(level === 0 ? 48 : 12) + indentPadding}px`,
-            }}
-            className={`
-              flex-1 flex items-center gap-3 min-h-[48px] py-3 pr-3
-              text-sm leading-tight transition-all duration-200
-              rounded-r active:scale-[0.98]
-              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset
-              ${getTextWeight()}
-              ${
-                isActive
-                  ? `text-primary ${getHighlightOpacity()}`
-                  : isInActiveTrail
-                    ? `text-foreground ${getTrailOpacity()}`
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted/80'
-              }
-            `}
-          >
-            {Icon && level === 0 && (
-              <Icon
-                className={`h-5 w-5 shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
-                aria-hidden="true"
-              />
-            )}
-
-            <span className="truncate">{item.label}</span>
-          </Link>
-        </div>
+          <span className="truncate">{item.label}</span>
+        </Link>
       </div>
 
-      {hasChildren && isExpanded && (
-        <ul className="mt-0.5 space-y-0.5" role="list" aria-label={`${item.label} undermeny`}>
+      {/* Child items - always rendered */}
+      {hasChildren && (
+        <ul className="mt-0.5 space-y-0.5 relative" role="list" aria-label={`${item.label} undermeny`}>
           {item.children!.map((child) => (
             <MobileSidebarItem
               key={child.id}

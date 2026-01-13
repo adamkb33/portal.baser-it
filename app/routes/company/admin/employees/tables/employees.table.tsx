@@ -10,6 +10,7 @@ import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { EditEmployeeForm } from '../forms/edit-employee.form-dialog';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import type { CompanyUserDto } from '~/api/generated/identity';
+import { InviteEmployeeForm } from '../forms/invite-employee.form-dialog';
 
 type EmployeesTableProps = {
   users: CompanyUserDto[];
@@ -83,6 +84,16 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
           { header: 'Roller' },
           { header: 'Handlinger', className: 'text-right' },
         ]}
+        headerSlot={
+          <div>
+            <InviteEmployeeForm trigger={<Button>Inviter en ny ansatt</Button>} />
+          </div>
+        }
+        mobileHeaderSlot={
+          <div>
+            <InviteEmployeeForm trigger={<Button size={'sm'}>Inviter en ny ansatt</Button>} />
+          </div>
+        }
         renderRow={(user) => (
           <TableRow>
             <TableCell className="font-medium">{formatName(user)}</TableCell>

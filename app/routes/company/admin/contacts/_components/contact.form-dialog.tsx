@@ -94,6 +94,7 @@ export function ContactFormDialog({ trigger, contact }: ContactFormDialogProps) 
         formData={formData}
         onFieldChange={handleFieldChange}
         onSubmit={handleSubmit}
+        errors={errors}
         fields={[
           {
             name: 'givenName',
@@ -101,7 +102,8 @@ export function ContactFormDialog({ trigger, contact }: ContactFormDialogProps) 
             type: 'text',
             placeholder: 'Skriv inn fornavn',
             required: true,
-            error: errors.givenName,
+            autoComplete: 'given-name',
+            inputMode: 'text',
           },
           {
             name: 'familyName',
@@ -109,22 +111,25 @@ export function ContactFormDialog({ trigger, contact }: ContactFormDialogProps) 
             type: 'text',
             placeholder: 'Skriv inn etternavn',
             required: true,
-            error: errors.familyName,
+            autoComplete: 'family-name',
+            inputMode: 'text',
           },
           {
             name: 'email',
             label: 'E‑post',
             type: 'email',
             placeholder: 'fornavn@firma.no',
-            error: errors.email,
+            autoComplete: 'email',
+            inputMode: 'email',
           },
           {
             name: 'mobileNumber',
             label: 'Mobil',
-            type: 'text',
-            placeholder: 'Eks: +4741234567',
-            description: 'Valgfritt. Bruk tall, ev. med + og landskode.',
-            error: errors.mobileNumber,
+            type: 'tel',
+            placeholder: '+47 412 34 567',
+            description: 'Valgfritt. Inkluder +47 for norske nummer.',
+            autoComplete: 'tel-national',
+            inputMode: 'tel',
           },
         ]}
         actions={[
@@ -137,7 +142,6 @@ export function ContactFormDialog({ trigger, contact }: ContactFormDialogProps) 
             label: 'Lagre',
             type: 'submit',
             variant: 'default',
-            onClick: () => {},
           },
         ]}
       />

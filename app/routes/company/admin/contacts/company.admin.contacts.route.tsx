@@ -1,11 +1,8 @@
 // routes/company/contacts/company.contacts.route.tsx
-import { data, redirect } from 'react-router';
+import { data } from 'react-router';
 import { useState } from 'react';
-import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
-import { PageHeader } from '../../_components/page-header';
 import type { Route } from './+types/company.admin.contacts.route';
-import { ContactFormDialog } from './_components/contact.form-dialog';
 import { ContactsTable } from './_components/contacts.table';
 import { CompanyUserContactController } from '~/api/generated/identity';
 import { withAuth } from '~/api/utils/with-auth';
@@ -57,7 +54,7 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
 
   return (
     <>
-      <div className="flex items-center py-2">
+      <div className="flex py-2">
         <Input
           placeholder="Filtrer på navn, e-post eller mobil…"
           value={filter}

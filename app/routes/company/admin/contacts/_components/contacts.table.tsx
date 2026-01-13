@@ -78,6 +78,16 @@ export function ContactsTable({ contacts, pagination }: ContactsTableProps) {
           { header: 'Mobil' },
           { header: 'Handlinger', className: 'text-right' },
         ]}
+        headerSlot={
+          <div>
+            <ContactFormDialog trigger={<Button>Legg til ny kontakt</Button>} />
+          </div>
+        }
+        mobileHeaderSlot={
+          <div>
+            <ContactFormDialog trigger={<Button size="sm">Legg til ny kontakt</Button>} />
+          </div>
+        }
         renderRow={(contact) => (
           <TableRow>
             <TableCell className="font-medium">{formatName(contact)}</TableCell>

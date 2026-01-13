@@ -52,30 +52,22 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
     return 'bg-sidebar-accent/25';
   };
 
-  const getBorderWidth = () => {
-    if (level === 0) return 'w-0.5';
-    if (level === 1) return 'w-1';
-    if (level === 2) return 'w-1.5';
-    return 'w-2';
-  };
-
   const getTextWeight = () => {
     return isActive || level === 0 ? 'font-semibold' : 'font-medium';
   };
 
   return (
-    <li role="listitem">
-      <div className="relative">
-        {/* Left border indicator */}
+    <li role="listitem" className="relative">
+      {/* Vertical trail line that spans this item AND all its children */}
+      {hasChildren && (
         <div
-          className={`
-            absolute left-0 top-0 bottom-0 transition-all duration-200 rounded-r
-            ${getBorderWidth()}
-            ${isActive ? 'bg-sidebar-accent-foreground' : isInActiveTrail ? 'bg-sidebar-border' : 'bg-transparent'}
-          `}
+          className="absolute top-6 bottom-0 w-px bg-sidebar-text/20"
+          style={{ left: `${indentPadding + 6}px` }}
           aria-hidden="true"
         />
+      )}
 
+      <div className="relative">
         {/* Navigation link */}
         <Link
           to={item.href}
@@ -112,7 +104,11 @@ function SidebarItem({ item, currentPath, level }: SidebarItemProps) {
 
       {/* Child items - always rendered */}
       {hasChildren && (
-        <ul className="mt-0.5 md:mt-1 space-y-0.5 md:space-y-1" role="list" aria-label={`${item.label} undermeny`}>
+        <ul
+          className="mt-0.5 md:mt-1 space-y-0.5 md:space-y-1 relative"
+          role="list"
+          aria-label={`${item.label} undermeny`}
+        >
           {item.children!.map((child) => (
             <SidebarItem key={child.id} item={child} currentPath={currentPath} level={level + 1} />
           ))}

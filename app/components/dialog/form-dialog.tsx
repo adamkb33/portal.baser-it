@@ -16,7 +16,7 @@ export interface FormFieldRenderProps<T> {
 export interface FormField<T> {
   name: keyof T;
   label: string;
-  type?: 'text' | 'email' | 'password' | 'number' | 'time' | 'date' | 'select' | 'textarea' | 'file';
+  type?: 'text' | 'email' | 'tel' | 'password' | 'number' | 'time' | 'date' | 'select' | 'textarea' | 'file';
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
@@ -25,11 +25,15 @@ export interface FormField<T> {
   error?: string;
   description?: string;
 
-  // file-specific
-  accept?: string; // e.g. "image/*,.pdf"
-  multiple?: boolean; // allow multi file selection
+  // Mobile optimization
+  inputMode?: 'text' | 'email' | 'tel' | 'numeric' | 'decimal' | 'search' | 'url';
+  autoComplete?: string;
 
-  // custom renderer (Option A)
+  // File-specific
+  accept?: string;
+  multiple?: boolean;
+
+  // Custom renderer
   render?: (props: FormFieldRenderProps<T>) => React.ReactNode;
 }
 
@@ -75,7 +79,7 @@ export function FormDialog<T>({
       onFieldChange(field.name, val);
     };
 
-    // ✅ Custom renderer takes full control of the input
+    // Custom renderer
     if (field.render) {
       return (
         <div>
@@ -86,26 +90,12 @@ export function FormDialog<T>({
             error: fieldError,
           })}
           {field.description && (
-            <p
-              id={`${fieldId}-desc`}
-              className={[
-                'mt-1', // spacing
-                'text-[0.7rem]', // typography
-                'text-muted-foreground', // color
-              ].join(' ')}
-            >
+            <p id={`${fieldId}-desc`} className="mt-1.5 text-xs text-form-text-muted sm:text-sm">
               {field.description}
             </p>
           )}
           {fieldError && (
-            <p
-              className={[
-                'mt-1', // spacing
-                'text-xs', // typography
-                'text-destructive', // color
-              ].join(' ')}
-              role="alert"
-            >
+            <p className="mt-1.5 text-xs text-form-invalid sm:text-sm" role="alert">
               {fieldError}
             </p>
           )}
@@ -113,7 +103,7 @@ export function FormDialog<T>({
       );
     }
 
-    // select
+    // Select
     if (field.type === 'select' && field.options) {
       return (
         <div>
@@ -122,7 +112,12 @@ export function FormDialog<T>({
             onValueChange={(val) => handleValueChange(val)}
             disabled={field.disabled}
           >
-            <SelectTrigger id={fieldId} aria-invalid={ariaInvalid} aria-describedby={describedById} className="mt-1">
+            <SelectTrigger
+              id={fieldId}
+              aria-invalid={ariaInvalid}
+              aria-describedby={describedById}
+              className="h-12 text-base bg-form-bg border-form-border text-form-text sm:h-11 sm:text-base"
+            >
               <SelectValue placeholder={field.placeholder} />
             </SelectTrigger>
             <SelectContent>
@@ -134,26 +129,12 @@ export function FormDialog<T>({
             </SelectContent>
           </Select>
           {field.description && (
-            <p
-              id={`${fieldId}-desc`}
-              className={[
-                'mt-1', // spacing
-                'text-[0.7rem]', // typography
-                'text-muted-foreground', // color
-              ].join(' ')}
-            >
+            <p id={`${fieldId}-desc`} className="mt-1.5 text-xs text-form-text-muted sm:text-sm">
               {field.description}
             </p>
           )}
           {fieldError && (
-            <p
-              className={[
-                'mt-1', // spacing
-                'text-xs', // typography
-                'text-destructive', // color
-              ].join(' ')}
-              role="alert"
-            >
+            <p className="mt-1.5 text-xs text-form-invalid sm:text-sm" role="alert">
               {fieldError}
             </p>
           )}
@@ -161,7 +142,7 @@ export function FormDialog<T>({
       );
     }
 
-    // textarea
+    // Textarea
     if (field.type === 'textarea') {
       return (
         <div>
@@ -174,29 +155,15 @@ export function FormDialog<T>({
             placeholder={field.placeholder}
             required={field.required}
             disabled={field.disabled}
-            className={field.className ? `mt-1 ${field.className}` : 'mt-1'}
+            className={`min-h-24 px-3 py-3 text-base bg-form-bg border-form-border text-form-text sm:min-h-28 ${field.className || ''}`}
           />
           {field.description && (
-            <p
-              id={`${fieldId}-desc`}
-              className={[
-                'mt-1', // spacing
-                'text-[0.7rem]', // typography
-                'text-muted-foreground', // color
-              ].join(' ')}
-            >
+            <p id={`${fieldId}-desc`} className="mt-1.5 text-xs text-form-text-muted sm:text-sm">
               {field.description}
             </p>
           )}
           {fieldError && (
-            <p
-              className={[
-                'mt-1', // spacing
-                'text-xs', // typography
-                'text-destructive', // color
-              ].join(' ')}
-              role="alert"
-            >
+            <p className="mt-1.5 text-xs text-form-invalid sm:text-sm" role="alert">
               {fieldError}
             </p>
           )}
@@ -204,7 +171,7 @@ export function FormDialog<T>({
       );
     }
 
-    // file
+    // File
     if (field.type === 'file') {
       return (
         <div>
@@ -217,43 +184,23 @@ export function FormDialog<T>({
             disabled={field.disabled}
             accept={field.accept}
             multiple={field.multiple}
-            className={field.className ? `mt-1 ${field.className}` : 'mt-1'}
+            className={`h-12 text-base bg-form-bg border-form-border sm:h-11 ${field.className || ''}`}
             onChange={(e) => {
               const files = e.target.files;
-
               if (!files) {
                 handleValueChange(field.multiple ? [] : null);
                 return;
               }
-
-              if (field.multiple) {
-                handleValueChange(Array.from(files)); // File[]
-              } else {
-                handleValueChange(files[0] ?? null); // File | null
-              }
+              handleValueChange(field.multiple ? Array.from(files) : (files[0] ?? null));
             }}
           />
           {field.description && (
-            <p
-              id={`${fieldId}-desc`}
-              className={[
-                'mt-1', // spacing
-                'text-[0.7rem]', // typography
-                'text-muted-foreground', // color
-              ].join(' ')}
-            >
+            <p id={`${fieldId}-desc`} className="mt-1.5 text-xs text-form-text-muted sm:text-sm">
               {field.description}
             </p>
           )}
           {fieldError && (
-            <p
-              className={[
-                'mt-1', // spacing
-                'text-xs', // typography
-                'text-destructive', // color
-              ].join(' ')}
-              role="alert"
-            >
+            <p className="mt-1.5 text-xs text-form-invalid sm:text-sm" role="alert">
               {fieldError}
             </p>
           )}
@@ -261,7 +208,7 @@ export function FormDialog<T>({
       );
     }
 
-    // default input
+    // Default input
     return (
       <div>
         <Input
@@ -269,34 +216,22 @@ export function FormDialog<T>({
           aria-invalid={ariaInvalid}
           aria-describedby={describedById}
           type={field.type || 'text'}
+          inputMode={field.inputMode}
+          autoComplete={field.autoComplete}
           value={String(value ?? '')}
           onChange={(e) => handleValueChange(e.target.value)}
           placeholder={field.placeholder}
           required={field.required}
           disabled={field.disabled}
-          className={field.className ? `mt-1 ${field.className}` : 'mt-1'}
+          className={`h-12 px-3 text-base bg-form-bg border-form-border text-form-text sm:h-11 sm:px-4 ${field.className || ''}`}
         />
         {field.description && (
-          <p
-            id={`${fieldId}-desc`}
-            className={[
-              'mt-1', // spacing
-              'text-[0.7rem]', // typography
-              'text-muted-foreground', // color
-            ].join(' ')}
-          >
+          <p id={`${fieldId}-desc`} className="mt-1.5 text-xs text-form-text-muted sm:text-sm">
             {field.description}
           </p>
         )}
         {fieldError && (
-          <p
-            className={[
-              'mt-1', // spacing
-              'text-xs', // typography
-              'text-destructive', // color
-            ].join(' ')}
-            role="alert"
-          >
+          <p className="mt-1.5 text-xs text-form-invalid sm:text-sm" role="alert">
             {fieldError}
           </p>
         )}
@@ -306,97 +241,37 @@ export function FormDialog<T>({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className={[
-          // G. Dialog / Overlay Content (ATOMIC) - Dialog container
-          'max-w-3xl', // sizing
-          'rounded-none', // brutalist: sharp corners
-          'border border-border', // visual tokens
-          'bg-background', // visual tokens
-          'px-4 py-5 sm:px-6 sm:py-6', // spacing
-        ].join(' ')}
-      >
-        <DialogHeader
-          className={[
-            // G. Dialog / Overlay Content (ATOMIC) - Dialog header
-            'mb-3', // spacing
-            'border-b border-border', // visual tokens
-            'pb-3', // spacing
-          ].join(' ')}
-        >
-          <DialogTitle
-            className={[
-              // G. Dialog / Overlay Content (ATOMIC) - Dialog title
-              'text-sm', // typography
-              'font-medium', // typography
-              'text-foreground', // color
-            ].join(' ')}
-          >
-            {title}
-          </DialogTitle>
+      <DialogContent className="max-h-[100dvh] w-full p-0 sm:max-h-[90vh] sm:max-w-2xl sm:rounded-lg sm:p-6">
+        <DialogHeader className="border-b border-border p-4 sm:border-b-0 sm:p-0 sm:pb-4">
+          <DialogTitle className="text-lg font-semibold text-foreground sm:text-xl">{title}</DialogTitle>
         </DialogHeader>
 
-        <form
-          onSubmit={onSubmit}
-          className={[
-            // A. Containers - Primary block container
-            'space-y-5', // spacing
-            'pt-1', // spacing adjustment
-          ].join(' ')}
-          encType="multipart/form-data" // important for file uploads
-        >
-          <div
-            className={[
-              // D. Layout / Stacking (ATOMIC) - Vertical stack
-              'flex flex-col', // layout
-              'gap-4', // spacing
-            ].join(' ')}
-          >
-            {fields.map((field) => (
-              <div
-                key={String(field.name)}
-                className={[
-                  // D. Layout / Stacking (ATOMIC) - Vertical stack
-                  'flex flex-col', // layout
-                  'gap-1.5', // spacing
-                ].join(' ')}
-              >
-                <Label
-                  htmlFor={String(field.name)}
-                  className={[
-                    // B. Typography Hierarchy (ATOMIC) - Section label / meta heading
-                    'text-xs', // typography
-                    'font-medium', // typography
-                    'uppercase', // typography
-                    'tracking-[0.12em]', // typography
-                    'text-muted-foreground', // color
-                  ].join(' ')}
-                >
-                  {field.label}
-                </Label>
-                {renderField(field)}
-              </div>
-            ))}
+        <form onSubmit={onSubmit} className="flex flex-col" encType="multipart/form-data">
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-0">
+            <div className="space-y-4 sm:space-y-5">
+              {fields.map((field) => (
+                <div key={String(field.name)} className="space-y-1.5">
+                  <Label htmlFor={String(field.name)} className="text-sm font-medium text-foreground sm:text-base">
+                    {field.label}
+                    {field.required && <span className="ml-1 text-form-invalid">*</span>}
+                  </Label>
+                  {renderField(field)}
+                </div>
+              ))}
+            </div>
           </div>
 
+          {/* Sticky footer on mobile */}
           {actions && actions.length > 0 && (
-            <div
-              className={[
-                // A. Containers - Sub-section divider inside a block
-                'mt-4', // spacing
-                'flex items-center justify-end', // layout
-                'gap-2', // spacing
-                'border-t border-border', // visual tokens
-                'pt-4', // spacing
-              ].join(' ')}
-            >
+            <div className="sticky bottom-0 flex flex-col-reverse gap-2 border-t border-border bg-background p-4 sm:static sm:flex-row sm:justify-end sm:gap-3 sm:border-t-0 sm:bg-transparent sm:p-0 sm:pt-6">
               {actions.map((action, index) => (
                 <Button
                   key={index}
                   type={action.type || 'button'}
                   variant={action.variant || 'outline'}
                   onClick={action.onClick}
-                  className={action.className}
+                  className={`w-full py-3 text-sm sm:w-auto sm:px-6 sm:py-3 sm:text-base ${action.className || ''}`}
                 >
                   {action.label}
                 </Button>
