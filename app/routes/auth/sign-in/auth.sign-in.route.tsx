@@ -69,25 +69,25 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
   return (
     <AuthFormContainer
       title="Logg inn"
-      description="Logg inn for å ta i bruk våre tjenester, administrer ditt selskap og ditt kundeforhold."
+      description="Logg inn for å administrere ditt selskap og kundeforhold."
       error={actionData?.error}
       secondaryAction={
-        <>
-          <p className="text-center text-xs text-muted-foreground">Har du glemt ditt passord?</p>
+        <div className="space-y-2 text-center">
+          <p className="text-xs text-muted-foreground">Glemt passordet?</p>
           <Link
             to={ROUTES_MAP['auth.forgot-password'].href}
-            className="mt-2 block text-center text-sm font-medium text-foreground hover:underline"
+            className="inline-block text-sm font-medium text-foreground hover:underline"
           >
-            Tilbakestill passordet ditt her →
+            Tilbakestill passord →
           </Link>
-        </>
+        </div>
       }
     >
-      <Form method="post" className="space-y-6">
+      <Form method="post" className="space-y-4 md:space-y-6" aria-busy={isSubmitting}>
         <AuthFormField
           id="email"
           name="email"
-          label="E-post adresse"
+          label="E-post"
           type="email"
           autoComplete="email"
           placeholder="din@e-post.no"
@@ -106,9 +106,11 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
           disabled={isSubmitting}
         />
 
-        <AuthFormButton isLoading={isSubmitting} loadingText="Logger inn…">
-          Logg inn
-        </AuthFormButton>
+        <div className="pt-2">
+          <AuthFormButton isLoading={isSubmitting} loadingText="Logger inn…">
+            Logg inn
+          </AuthFormButton>
+        </div>
       </Form>
     </AuthFormContainer>
   );

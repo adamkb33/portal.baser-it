@@ -13,6 +13,8 @@ import type { ApiClientError } from '~/api/clients/http';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
+import { AuthController } from '~/api/generated/identity';
+import { authService, AuthService } from '~/lib/auth-service';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -39,15 +41,15 @@ export async function action({ request }: Route.ActionArgs) {
   const confirmPassword = String(formData.get('confirmPassword'));
 
   try {
-    const response = await baseApi().AuthControllerService.AuthControllerService.resetPassword({
-      requestBody: {
+    const response = await AuthController.resetPassword({
+      body: {
         resetPasswordToken,
         password,
         password2: confirmPassword,
       },
     });
 
-    if (!response.success || !response.data) {
+    if (!response.data || !response.data.data) {
       return data(
         {
           error: 'Token er ikke gyldig',
@@ -57,21 +59,14 @@ export async function action({ request }: Route.ActionArgs) {
       );
     }
 
-    const tokens = toAuthTokens(response.data);
-
-    const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
-      expires: new Date(tokens.accessTokenExpiresAt * 1000),
-    });
-    const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
-      expires: new Date(tokens.refreshTokenExpiresAt * 1000),
+    const { headers } = await authService.processTokenRefresh({
+      accessToken: response.data.data.accessToken,
+      refreshToken: response.data.data.refreshToken,
+      accessTokenExpiresAt: response.data.data.accessTokenExpiresAt,
+      refreshTokenExpiresAt: response.data.data.refreshTokenExpiresAt,
     });
 
-    return redirect('/', {
-      headers: [
-        ['Set-Cookie', accessCookie],
-        ['Set-Cookie', refreshCookie],
-      ],
-    });
+    return redirect('/', { headers });
   } catch (error: any) {
     console.error('[reset-password] Error:', error);
 

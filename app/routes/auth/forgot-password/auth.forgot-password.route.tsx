@@ -3,25 +3,23 @@ import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.forgot-password.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { OpenAPI } from '~/api/clients/base/OpenAPI';
-import { ENV } from '~/api/config/env';
-import { baseApi } from '~/lib/utils';
 import type { ApiClientError } from '~/api/clients/http';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
+import { AuthController } from '~/api/generated/identity';
+import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 
 export async function action({ request }: Route.ActionArgs) {
-  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
-
   const formData = await request.formData();
   const email = String(formData.get('email'));
 
   try {
-    await baseApi().AuthControllerService.AuthControllerService.forgotPassword({
-      requestBody: { email },
+    await AuthController.forgotPassword({
+      body: { email },
     });
-    return redirect('/');
+
+    return redirectWithInfo(request, '/', 'Vi har sendt deg en e-post');
   } catch (error: any) {
     console.error('[forgot-password] Error:', error);
 

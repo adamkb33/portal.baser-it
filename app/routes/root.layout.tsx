@@ -65,7 +65,6 @@ export type RootOutletContext = {
 };
 
 export default function RootLayout({ loaderData }: Route.ComponentProps) {
-  const location = useLocation();
   const [userNav, setUserNav] = React.useState<UserNavigation | undefined>(undefined);
   const [companyContext, setCompanyContext] = React.useState<CompanySummaryDto | null | undefined>(undefined);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -77,53 +76,56 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
 
   const sidebarBranches = userNav?.[RoutePlaceMent.SIDEBAR] || [];
   const hasSidebar = sidebarBranches.length > 0 && companyContext;
-  const isRootPage = location.pathname === '/';
 
   return (
-    <div className="grid min-h-screen grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-cols-12">
+    <div className="min-h-screen flex flex-col">
       <FlashMessageBanner message={loaderData.flashMessage} />
 
-      <header className="border-b border-navbar-border lg:col-span-12 lg:grid lg:grid-cols-12 bg-navbar-bg">
-        <div className="hidden lg:col-span-2 lg:block"></div>
+      <header className="flex-shrink-0 h-20 border-b border-navbar-border bg-navbar-bg">
+        <div className="h-full lg:grid lg:grid-cols-12">
+          <div className="hidden lg:col-span-2 lg:block" />
 
-        <nav className="border-b border-navbar-border lg:col-span-8 lg:border-b-0 h-20">
-          <div className="flex h-full items-center gap-3 px-2">
-            {hasSidebar && (
-              <Button
-                variant="ghost"
-                onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden h-10 w-10 flex items-center justify-center text-navbar-text hover:bg-navbar-accent hover:text-primary rounded transition-colors"
-                aria-label="Open menu"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            )}
-            <div className="flex-1 flex items-center h-full">
-              <Navbar navRoutes={userNav} companyContext={companyContext} />
+          <nav className="lg:col-span-8 h-full">
+            <div className="flex h-full items-center gap-3 px-2">
+              {hasSidebar && (
+                <Button
+                  variant="ghost"
+                  onClick={() => setMobileMenuOpen(true)}
+                  className="lg:hidden h-10 w-10 flex items-center justify-center"
+                  aria-label="Open menu"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              )}
+
+              <div className="flex-1 flex items-center h-full">
+                <Navbar navRoutes={userNav} companyContext={companyContext} />
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
 
-        <div className="hidden lg:col-span-2 lg:block"></div>
+          <div className="hidden lg:col-span-2 lg:block" />
+        </div>
       </header>
 
-      <main className="relative overflow-hidden bg-content-bg lg:col-span-12 lg:grid lg:grid-cols-12">
-        {userNav?.SIDEBAR && userNav.SIDEBAR.length > 0 ? (
-          <aside className="relative z-10 hidden border-r border-sidebar-border bg-sidebar-bg p-4 lg:col-span-2 lg:block">
-            <Sidebar branches={userNav.SIDEBAR} />
-            <div className="absolute bottom-4 left-4 right-4">
-              <div className="h-px w-full bg-sidebar-border/20" />
-            </div>
+      {/* Main — stretches between header and footer */}
+      <main className="flex-1 min-h-0 bg-content-bg relative lg:grid lg:grid-cols-12">
+        {/* Desktop Sidebar */}
+        {hasSidebar ? (
+          <aside className="hidden lg:block lg:col-span-2 border-r border-sidebar-border bg-sidebar-bg p-4">
+            <Sidebar branches={sidebarBranches} />
           </aside>
         ) : (
-          <aside className="relative z-10 hidden border-r border-content-border bg-transparent lg:col-span-2 lg:block" />
+          <aside className="hidden lg:block lg:col-span-2" />
         )}
 
+        {/* Mobile Sidebar Overlay */}
         {hasSidebar && (
           <MobileSidebar branches={sidebarBranches} isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
         )}
 
-        <section className="relative z-10 overflow-auto border-r border-content-border p-2 sm:p-5 lg:col-span-8 bg-content-bg/70">
+        {/* Content — THIS is the scroll container */}
+        <section className="flex-1 min-h-0 overflow-auto p-4 sm:p-6 lg:col-span-8 bg-content-bg/70">
           <Outlet
             context={{
               userNav,
@@ -134,10 +136,14 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
           />
         </section>
 
-        <div className="relative z-10 hidden lg:col-span-2 lg:block"></div>
+        <div className="hidden lg:block lg:col-span-2" />
       </main>
 
-      <Footer />
+      {/* Footer — fixed height */}
+      <footer className="flex-shrink-0">
+        <Footer />
+      </footer>
+
       <DashWaveBackground />
     </div>
   );
