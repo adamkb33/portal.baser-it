@@ -67,30 +67,19 @@ export default function CompanyAdminEmployees({ loaderData }: Route.ComponentPro
   const { users, pagination, invites } = loaderData;
 
   return (
-    <>
-      <div className="flex items-center py-2">
-        <Input
-          placeholder="Filtrer på e-post eller rolle…"
-          value={filter}
-          onChange={(event) => setFilter(event.target.value)}
-          className="max-w-sm"
-        />
-      </div>
+    <Tabs defaultValue="employees">
+      <TabsList>
+        <TabsTrigger value="employees">Ansatte</TabsTrigger>
+        <TabsTrigger value="invited">Inviterte</TabsTrigger>
+      </TabsList>
 
-      <Tabs defaultValue="employees">
-        <TabsList>
-          <TabsTrigger value="employees">Ansatte</TabsTrigger>
-          <TabsTrigger value="invited">Inviterte</TabsTrigger>
-        </TabsList>
+      <TabsContent value="employees">
+        <EmployeesTable users={users} pagination={pagination} />
+      </TabsContent>
 
-        <TabsContent value="employees">
-          <EmployeesTable users={users} pagination={pagination} />
-        </TabsContent>
-
-        <TabsContent value="invited">
-          <InvitesTable invites={invites} />
-        </TabsContent>
-      </Tabs>
-    </>
+      <TabsContent value="invited">
+        <InvitesTable invites={invites} />
+      </TabsContent>
+    </Tabs>
   );
 }

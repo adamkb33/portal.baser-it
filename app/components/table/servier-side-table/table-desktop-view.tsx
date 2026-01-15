@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Database } from 'lucide-react';
 import { CELL_HEIGHT, TOTAL_VISIBLE_ROWS } from '../constants';
 import { TableDesktopHeader } from './table-desktop-header';
 import { TableDesktopFooter } from './table-desktop-footer';
@@ -42,7 +42,12 @@ export function TableDesktopView<T>({
   const columnWidth = `${100 / columns.length}%`;
 
   return (
-    <div className={cn('hidden md:block border border-border bg-background', className)}>
+    <div
+      className={cn(
+        'hidden md:block bg-card-bg border border-card-border rounded-lg shadow-md overflow-hidden',
+        className,
+      )}
+    >
       <TableDesktopHeader
         pagination={pagination}
         onPageSizeChange={onPageSizeChange}
@@ -50,19 +55,19 @@ export function TableDesktopView<T>({
         headerSlot={headerSlot}
       />
 
-      <div className="relative overflow-x-auto">
+      <div className="relative">
         <div
           ref={scrollContainerRef}
-          className="overflow-y-auto"
+          className="overflow-y-auto overflow-x-auto"
           style={{ height: `${CELL_HEIGHT * TOTAL_VISIBLE_ROWS}px` }}
         >
           <Table className="w-full table-fixed">
             <TableHeader>
-              <TableRow style={{ height: `${CELL_HEIGHT}px` }}>
+              <TableRow style={{ height: `${CELL_HEIGHT}px` }} className="border-b-2 border-card-border">
                 {columns.map((c, i) => (
                   <TableHead
                     key={i}
-                    className="sticky top-0 z-10 bg-background border-b"
+                    className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm font-semibold text-foreground border-b border-card-border"
                     style={{ width: columnWidth }}
                   >
                     {c.header}
@@ -74,9 +79,14 @@ export function TableDesktopView<T>({
               {items.length ? (
                 items.map((item, index) => renderRow(item, index))
               ) : (
-                <TableRow style={{ height: `${CELL_HEIGHT}px` }}>
+                <TableRow style={{ height: `${CELL_HEIGHT * 3}px` }}>
                   <TableCell colSpan={columns.length} className="text-center">
-                    {emptyMessage}
+                    <div className="flex flex-col items-center justify-center gap-3 py-8">
+                      <div className="h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center">
+                        <Database className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -84,11 +94,12 @@ export function TableDesktopView<T>({
           </Table>
         </div>
 
+        {/* Scroll hint with gradient */}
         {showScrollHint && hasScrollableContent && (
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex items-center justify-center bg-gradient-to-t from-background via-background/90 to-transparent pb-2 pt-6">
-            <div className="flex items-center gap-1 text-xs font-medium text-foreground/80">
-              <ChevronDown className="h-3.5 w-3.5" />
-              <span>Scroll</span>
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card-bg via-card-bg/95 to-transparent flex items-end justify-center pb-3">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+              <ChevronDown className="h-4 w-4 text-primary animate-bounce" />
+              <span className="text-xs font-medium text-primary">Scroll for mer</span>
             </div>
           </div>
         )}

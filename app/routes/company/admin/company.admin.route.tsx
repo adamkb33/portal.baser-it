@@ -55,7 +55,7 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
     <div className="max-w-[1600px] mx-auto space-y-6">
       {/* Hero Stats - 3 Cards Only */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card variant="elevated">
+        <Card variant="elevated" className="bg-card">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -69,7 +69,7 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
           </CardContent>
         </Card>
 
-        <Card variant="elevated">
+        <Card variant="elevated" className="bg-card">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -83,7 +83,7 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
           </CardContent>
         </Card>
 
-        <Card variant="elevated">
+        <Card variant="elevated" className="bg-card">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -101,28 +101,28 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
       {/* Collapsible Sections */}
       <Accordion type="multiple" className="space-y-4">
         {/* User Analytics Section */}
-        <AccordionItem value="analytics">
+        <AccordionItem value="analytics" className="border-0 bg-accordion-bg">
           <Card variant="bordered">
-            <AccordionTrigger>
+            <AccordionTrigger className="px-6 py-4 hover:bg-accordion-trigger-hover-bg">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   <BarChart3 className="h-5 w-5 text-primary" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-lg font-semibold text-foreground">Brukeranalyse</h3>
-                  <p className="text-sm text-muted-foreground">Detaljert brukerstatistikk og aktivitet</p>
+                  <h3 className="text-lg font-semibold text-accordion-trigger-text">Brukeranalyse</h3>
+                  <p className="text-sm text-accordion-trigger-text-muted">Detaljert brukerstatistikk og aktivitet</p>
                 </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-6">
+            <AccordionContent className="px-6 pb-6 bg-accordion-content-bg">
+              <div className="space-y-6 pt-4">
                 {/* User Metrics */}
                 <div>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Users className="h-4 w-4 text-primary" />
                     </div>
-                    <h4 className="font-semibold text-foreground">Brukerstatistikk</h4>
+                    <h4 className="font-semibold text-accordion-content-text">Brukerstatistikk</h4>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <MetricBox
@@ -158,7 +158,7 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
                     <div className="h-8 w-8 rounded-lg bg-secondary/10 flex items-center justify-center">
                       <Shield className="h-4 w-4 text-secondary" />
                     </div>
-                    <h4 className="font-semibold text-foreground">Rollefordeling</h4>
+                    <h4 className="font-semibold text-accordion-content-text">Rollefordeling</h4>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {Object.entries(metrics.overview.roleDistribution).map(([role, count]) => (
@@ -181,7 +181,7 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
                     <div className="h-8 w-8 rounded-lg bg-chart-3/10 flex items-center justify-center">
                       <Mail className="h-4 w-4 text-chart-3" />
                     </div>
-                    <h4 className="font-semibold text-foreground">Invitasjonsstatistikk</h4>
+                    <h4 className="font-semibold text-accordion-content-text">Invitasjonsstatistikk</h4>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <MetricBox
@@ -222,24 +222,26 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
         </AccordionItem>
 
         {/* Security & Products Section */}
-        <AccordionItem value="security">
+        <AccordionItem value="security" className="border-0 bg-accordion-bg">
           <Card variant="bordered">
-            <AccordionTrigger>
+            <AccordionTrigger className="px-6 py-4 hover:bg-accordion-trigger-hover-bg">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-destructive/10 flex items-center justify-center">
                   <Shield className="h-5 w-5 text-destructive" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-lg font-semibold text-foreground">Sikkerhet & Produkter</h3>
-                  <p className="text-sm text-muted-foreground">Sikkerhetsmetrikker og aktiverte tjenester</p>
+                  <h3 className="text-lg font-semibold text-accordion-trigger-text">Sikkerhet & Produkter</h3>
+                  <p className="text-sm text-accordion-trigger-text-muted">
+                    Sikkerhetsmetrikker og aktiverte tjenester
+                  </p>
                 </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <AccordionContent className="px-6 pb-6 bg-accordion-content-bg">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
                 {/* Security Metrics */}
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-foreground flex items-center gap-2">
+                  <h4 className="font-semibold text-accordion-content-text flex items-center gap-2">
                     <Shield className="h-4 w-4 text-destructive" />
                     Sikkerhet
                   </h4>
@@ -270,7 +272,7 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
 
                 {/* Products */}
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-foreground flex items-center gap-2">
+                  <h4 className="font-semibold text-accordion-content-text flex items-center gap-2">
                     <Layers className="h-4 w-4 text-secondary" />
                     Aktiverte Produkter
                   </h4>
@@ -289,17 +291,19 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
 
                 {/* Contacts */}
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-foreground flex items-center gap-2">
+                  <h4 className="font-semibold text-accordion-content-text flex items-center gap-2">
                     <Contact className="h-4 w-4 text-chart-5" />
                     Kontakter
                   </h4>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Totalt</span>
-                      <span className="text-2xl font-bold text-foreground">{metrics.contacts.totalContacts}</span>
+                      <span className="text-sm text-accordion-content-text-muted">Totalt</span>
+                      <span className="text-2xl font-bold text-accordion-content-text">
+                        {metrics.contacts.totalContacts}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Komplett Info</span>
+                      <span className="text-sm text-accordion-content-text-muted">Komplett Info</span>
                       <span className="text-lg font-semibold text-secondary">
                         {metrics.contacts.contactsWithCompleteInfo}
                       </span>
@@ -320,24 +324,24 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
         </AccordionItem>
 
         {/* Recent Activity Section */}
-        <AccordionItem value="activity">
+        <AccordionItem value="activity" className="border-0 bg-accordion-bg">
           <Card variant="bordered">
-            <AccordionTrigger>
+            <AccordionTrigger className="px-6 py-4 hover:bg-accordion-trigger-hover-bg">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-chart-5/10 flex items-center justify-center">
                   <Activity className="h-5 w-5 text-chart-5" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-lg font-semibold text-foreground">Nylig Aktivitet</h3>
-                  <p className="text-sm text-muted-foreground">Siste brukere, invitasjoner og kontakter</p>
+                  <h3 className="text-lg font-semibold text-accordion-trigger-text">Nylig Aktivitet</h3>
+                  <p className="text-sm text-accordion-trigger-text-muted">Siste brukere, invitasjoner og kontakter</p>
                 </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <AccordionContent className="px-6 pb-6 bg-accordion-content-bg">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
                 {/* Recent Users */}
                 <div>
-                  <h4 className="font-semibold text-foreground mb-4">Siste Aktive Brukere</h4>
+                  <h4 className="font-semibold text-accordion-content-text mb-4">Siste Aktive Brukere</h4>
                   <div className="space-y-3">
                     {metrics.users.lastActiveUsers.map((user) => (
                       <div
@@ -351,12 +355,12 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
+                          <p className="text-sm font-medium text-accordion-content-text truncate">
                             {user.givenName} {user.familyName}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                          <p className="text-xs text-accordion-content-text-muted truncate">{user.email}</p>
                         </div>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        <span className="text-xs text-accordion-content-text-muted whitespace-nowrap">
                           {formatRelativeTime(user.lastActiveAt)}
                         </span>
                       </div>
@@ -366,7 +370,7 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
 
                 {/* Recent Invitations */}
                 <div>
-                  <h4 className="font-semibold text-foreground mb-4">Siste Invitasjoner</h4>
+                  <h4 className="font-semibold text-accordion-content-text mb-4">Siste Invitasjoner</h4>
                   <div className="space-y-3">
                     {metrics.invitations.recentInvites.map((invite, idx) => (
                       <div
@@ -377,8 +381,10 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
                           <Mail className="h-4 w-4 text-chart-3" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{invite.email}</p>
-                          <p className="text-xs text-muted-foreground">Sendt {formatRelativeTime(invite.sentAt)}</p>
+                          <p className="text-sm font-medium text-accordion-content-text truncate">{invite.email}</p>
+                          <p className="text-xs text-accordion-content-text-muted">
+                            Sendt {formatRelativeTime(invite.sentAt)}
+                          </p>
                         </div>
                         {invite.used ? (
                           <CheckCircle2 className="h-5 w-5 text-secondary flex-shrink-0" />
@@ -392,7 +398,7 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
 
                 {/* Recent Contacts */}
                 <div>
-                  <h4 className="font-semibold text-foreground mb-4">Nye Kontakter</h4>
+                  <h4 className="font-semibold text-accordion-content-text mb-4">Nye Kontakter</h4>
                   <div className="space-y-3">
                     {metrics.contacts.recentContacts.map((contact) => (
                       <div
@@ -403,7 +409,7 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
                           <Contact className="h-4 w-4 text-chart-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
+                          <p className="text-sm font-medium text-accordion-content-text truncate">
                             {contact.givenName} {contact.familyName}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
@@ -411,7 +417,7 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
                             {contact.hasMobile && <Activity className="h-3 w-3 text-secondary" />}
                           </div>
                         </div>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        <span className="text-xs text-accordion-content-text-muted whitespace-nowrap">
                           {formatRelativeTime(contact.createdAt)}
                         </span>
                       </div>

@@ -1,6 +1,6 @@
 // components/table/table-mobile-pagination.tsx
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react'; // Better than text arrows
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 type TableMobilePaginationProps = {
   pagination: {
@@ -18,63 +18,44 @@ export function TableMobilePagination({ pagination, onPageChange }: TableMobileP
   const canNext = page < totalPages - 1;
 
   return (
-    // Sticky bottom on mobile (thumb-reachable), static on desktop
-    <div
-      className="
-      sticky bottom-0 left-0 right-0 z-10 md:static
-      border border-border bg-background/95 backdrop-blur-sm
-      p-3 md:p-4 lg:p-6
-      space-y-2 md:space-y-3
-      shadow-lg md:shadow-sm
-      rounded-t-lg md:rounded-md
-    "
-    >
-      {/* Page indicator - responsive typography */}
-      <div className="text-sm md:text-base text-muted-foreground text-center font-medium">
-        Side <span className="text-foreground font-semibold">{page + 1}</span> av {totalPages || 1}
+    <div className="sticky bottom-0 left-0 right-0 z-10 bg-card-bg/95 backdrop-blur-sm border border-card-border rounded-lg p-4 shadow-lg">
+      {/* Page indicator with badge style */}
+      <div className="flex items-center justify-center gap-2 mb-3">
+        <span className="text-xs font-semibold text-muted-foreground">Side</span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full">
+          <span className="text-sm font-bold text-primary">{page + 1}</span>
+          <span className="text-xs text-muted-foreground">/</span>
+          <span className="text-sm font-semibold text-foreground">{totalPages || 1}</span>
+        </div>
       </div>
 
-      {/* Navigation buttons - generous mobile spacing */}
-      <div className="flex justify-center items-center gap-3 md:gap-4">
-        {/* Previous button - minimum 48px tap target */}
+      {/* Navigation buttons - 48px touch targets on mobile */}
+      <div className="flex justify-center items-center gap-3">
         <Button
           variant="outline"
-          size="default" // NOT "sm" - we need proper touch targets
+          size="default"
           onClick={() => onPageChange(page - 1)}
           disabled={!canPrev}
-          className="
-            min-w-[48px] min-h-[48px] md:min-w-[44px] md:min-h-[44px]
-            px-4 md:px-6
-            font-semibold
-            disabled:opacity-40 disabled:cursor-not-allowed
-            hover:bg-muted active:scale-95 transition-all
-          "
+          className="min-w-[48px] min-h-[48px] px-6 font-semibold hover:bg-muted active:scale-95 transition-all"
           aria-label="Forrige side"
         >
-          <ChevronLeft className="h-5 w-5 md:h-4 md:w-4" />
+          <ChevronLeft className="h-5 w-5" />
         </Button>
 
-        {/* Page number display - only on larger screens for breathing room */}
-        <span className="hidden sm:inline-flex items-center justify-center min-w-[44px] text-sm font-medium text-foreground">
-          {page + 1}
-        </span>
+        {/* Current page number - visible on mobile for context */}
+        <div className="flex items-center justify-center min-w-[44px]">
+          <span className="text-base font-bold text-foreground">{page + 1}</span>
+        </div>
 
-        {/* Next button - minimum 48px tap target */}
         <Button
           variant="outline"
           size="default"
           onClick={() => onPageChange(page + 1)}
           disabled={!canNext}
-          className="
-            min-w-[48px] min-h-[48px] md:min-w-[44px] md:min-h-[44px]
-            px-4 md:px-6
-            font-semibold
-            disabled:opacity-40 disabled:cursor-not-allowed
-            hover:bg-muted active:scale-95 transition-all
-          "
+          className="min-w-[48px] min-h-[48px] px-6 font-semibold hover:bg-muted active:scale-95 transition-all"
           aria-label="Neste side"
         >
-          <ChevronRight className="h-5 w-5 md:h-4 md:w-4" />
+          <ChevronRight className="h-5 w-5" />
         </Button>
       </div>
     </div>

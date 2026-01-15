@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { TableMobilePagination } from './table-mobile-pagination';
+import { Database } from 'lucide-react';
 import type { ServerPaginatedTableProps } from './server-paginated-table';
 
 function DefaultMobileCard<T>({
@@ -24,20 +25,25 @@ function DefaultMobileCard<T>({
   const actionsCell = cells[cells.length - 1] as any;
 
   return (
-    <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="p-3">
-        {/* Main content area - 2 column grid */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 mb-3">
+    <Card className="bg-card-bg border border-card-border hover:border-card-hover-border hover:shadow-md transition-all">
+      <CardContent className="p-4">
+        {/* Index badge */}
+        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-card-header-border">
+          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+            <span className="text-xs font-bold text-primary">#{index + 1}</span>
+          </div>
+        </div>
+
+        {/* Main content - 2 column grid */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-3">
           {mainCells.map((cell: any, cellIndex: number) => {
             const columnHeader = columns[cellIndex]?.header;
             const cellContent = cell.props?.children;
 
             return (
-              <div key={cellIndex} className="flex flex-col gap-0.5 min-w-0">
-                <dt className="text-[0.6875rem] font-medium text-muted-foreground uppercase tracking-wide">
-                  {columnHeader}
-                </dt>
-                <dd className="text-sm text-foreground break-words">{cellContent}</dd>
+              <div key={cellIndex} className="flex flex-col gap-1 min-w-0">
+                <dt className="text-xs font-semibold text-card-text-muted uppercase tracking-wider">{columnHeader}</dt>
+                <dd className="text-sm font-medium text-card-text break-words">{cellContent}</dd>
               </div>
             );
           })}
@@ -45,7 +51,7 @@ function DefaultMobileCard<T>({
 
         {/* Actions footer */}
         {actionsCell && (
-          <div className="pt-2.5 border-t border-border">
+          <div className="pt-3 border-t border-card-header-border">
             <div className="flex items-center justify-end gap-2">{actionsCell.props?.children}</div>
           </div>
         )}
@@ -66,11 +72,13 @@ export function TableMobileView<T>({
   mobileHeaderSlot,
 }: ServerPaginatedTableProps<T>) {
   return (
-    <div className="md:hidden space-y-3">
-      {mobileHeaderSlot && <div className="border border-border bg-background p-3 rounded-md">{mobileHeaderSlot}</div>}
+    <div className="md:hidden space-y-4">
+      {mobileHeaderSlot && (
+        <div className="bg-card-bg border border-card-border rounded-lg p-4">{mobileHeaderSlot}</div>
+      )}
 
-      {/* Scrollable container with auto height cards */}
-      <div className="max-h-[600px] overflow-y-auto space-y-2 pr-1">
+      {/* Scrollable container */}
+      <div className="max-h-[600px] overflow-y-auto space-y-3 pr-1">
         {items.length > 0 ? (
           items.map((item, index) => (
             <React.Fragment key={getRowKey(item, index)}>
@@ -82,19 +90,20 @@ export function TableMobileView<T>({
             </React.Fragment>
           ))
         ) : (
-          <Card className="border-border bg-card shadow-sm">
-            <CardContent className="p-6 text-center">
-              <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+          <Card className="bg-card-bg border border-card-border">
+            <CardContent className="p-8">
+              <div className="flex flex-col items-center justify-center gap-3">
+                <div className="h-14 w-14 rounded-full bg-muted/50 flex items-center justify-center">
+                  <Database className="h-7 w-7 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground text-center">{emptyMessage}</p>
+              </div>
             </CardContent>
           </Card>
         )}
       </div>
 
-      {items.length > 0 && (
-        <div className="pt-2">
-          <TableMobilePagination pagination={pagination} onPageChange={onPageChange} />
-        </div>
-      )}
+      {items.length > 0 && <TableMobilePagination pagination={pagination} onPageChange={onPageChange} />}
     </div>
   );
 }

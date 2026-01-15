@@ -1,6 +1,6 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, MapPin } from 'lucide-react';
+import { Building2, MapPin, ChevronRight } from 'lucide-react';
 import type { CompanySummaryDto } from '~/api/clients/types';
 
 interface CompanyCardProps {
@@ -9,46 +9,42 @@ interface CompanyCardProps {
 }
 
 export function CompanyContextSummaryCard({ company }: CompanyCardProps) {
-  const { id, name, orgNumber, organizationType, postalAddress, businessAddress } = company;
+  const { name, orgNumber, postalAddress } = company;
 
   const formatAddress = (address?: typeof company.postalAddress) => {
     if (!address) return 'N/A';
-    const parts = [...(address.addressLines || []), address.postalCode, address.city, address.country].filter(Boolean);
+    const parts = [...(address.addressLines || []), address.postalCode, address.city].filter(Boolean);
     return parts.join(', ');
   };
 
   return (
-    <Card className="w-full min-w-md hover:shadow-md transition-shadow">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-          <Building2 className="h-5 w-5 text-[#702963]" />
-          {name}
-        </CardTitle>
-        <CardDescription>
-          Org. No: <span className="font-medium">{orgNumber}</span>
-        </CardDescription>
+    <Card className="w-md bg-card border-card-border hover:border-card-hover-border hover:shadow-card-hover-shadow transition-all">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-base font-semibold mb-1 line-clamp-2 text-card-text">{name}</CardTitle>
+            <p className="text-sm text-card-text-muted truncate">{orgNumber}</p>
+          </div>
+          <Building2 className="h-5 w-5 text-card-text-muted shrink-0 mt-0.5" />
+        </div>
       </CardHeader>
 
-      <CardContent className="space-y-3 text-sm">
-        <div>
-          <p className="text-muted-foreground font-medium">Organization Type</p>
-          <p>{organizationType?.description || 'Unknown'}</p>
-        </div>
-
+      <CardContent className="pt-0 pb-4 space-y-4">
         {postalAddress && (
-          <div className="flex gap-2 items-start">
-            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-            <div>
-              <p className="text-muted-foreground font-medium">Postal Address</p>
-              <p>{formatAddress(postalAddress)}</p>
-            </div>
+          <div className="flex gap-2 min-w-0">
+            <MapPin className="h-4 w-4 text-card-text-muted shrink-0 mt-0.5" />
+            <p className="text-sm leading-relaxed text-card-text line-clamp-2">{formatAddress(postalAddress)}</p>
           </div>
         )}
-      </CardContent>
 
-      <CardFooter className="flex justify-end">
-        <Button variant="outline">View Details</Button>
-      </CardFooter>
+        <Button
+          className="w-full justify-between bg-button-primary-bg text-button-primary-text hover:bg-button-primary-hover-bg border-button-primary-border"
+          variant="default"
+        >
+          Logg inn
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </CardContent>
     </Card>
   );
 }
