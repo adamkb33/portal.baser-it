@@ -5,31 +5,34 @@ import { FormDialog } from '~/components/dialog/form-dialog';
 import { fileToBase64 } from '~/lib/file.utils';
 import { createImageUploadRenderer } from '~/components/dialog/create-image-upload-renderer';
 import { createServicesSelectionRenderer } from '~/components/dialog/create-services-rendrer';
+import type { DailyScheduleDto } from '~/api/generated/booking';
 
-import { EmptyBookingProfile } from '../../../company/booking/profile/_components/booking-profile-placeholder';
 import { BookingProfileCard } from '../../../company/booking/profile/_components/booking-profile-card';
-import { PageHeader } from '../../../company/booking/profile/_components/page-header';
 import type { Route } from './+types/company.booking.profile.route';
-import { CompanyUserBookingProfileController, ServiceController } from '~/api/generated/booking';
+import { CompanyUserBookingProfileController, CompanyUserServiceGroupController } from '~/api/generated/booking';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
+import { createDailyScheduleRenderer } from '~/components/dialog/create-daily-schedule-renderer';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const [bookingProfileResponse, servicesResponse] = await withAuth(request, async () => {
-      return Promise.all([CompanyUserBookingProfileController.getBookingProfile(), ServiceController.getServices()]);
+    const [bookingProfileResponse, groupedServiceGroupsResponse] = await withAuth(request, async () => {
+      return Promise.all([
+        CompanyUserBookingProfileController.getBookingProfile(),
+        CompanyUserServiceGroupController.getGroupedServiceGroups(),
+      ]);
     });
 
     return {
       bookingProfile: bookingProfileResponse.data,
-      services: servicesResponse.data?.data?.content ?? [],
+      groupedServiceGroups: groupedServiceGroupsResponse.data?.data ?? [],
     };
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
 
     return {
       bookingProfile: undefined,
-      services: [],
+      groupedServiceGroups: [],
       error: error?.message || 'Kunne ikke hente bookingprofil',
     };
   }
@@ -38,26 +41,33 @@ export async function loader({ request }: Route.LoaderArgs) {
 export default function BookingCompanyUserProfile({ loaderData }: Route.ComponentProps) {
   const fetcher = useFetcher<{ success?: boolean; message?: string }>();
 
-  const { bookingProfile, services = [] } = loaderData;
+  const { bookingProfile, groupedServiceGroups = [] } = loaderData;
 
   const [createOrUpdateDialogOpen, setCreateOrUpdateBookingProfileDialogOpen] = useState(false);
   const [createOrUpdateDialogForm, setCreateOrUpdateDialogForm] = useState({
     description: '',
     services: [] as number[],
+    dailySchedules: [] as DailyScheduleDto[],
     image: null as { file: File; previewUrl: string } | null,
   });
 
   useEffect(() => {
     if (createOrUpdateDialogOpen && bookingProfile) {
+      // Extract individual service IDs from all service groups
+      const serviceIds =
+        bookingProfile.services?.flatMap((group: any) => group.services.map((service: any) => service.id)) || [];
+
       setCreateOrUpdateDialogForm({
         description: bookingProfile.description || '',
-        services: bookingProfile.services?.map((s: any) => s.id) || [],
+        services: serviceIds,
+        dailySchedules: bookingProfile.dailySchedule || [],
         image: null,
       });
     } else if (createOrUpdateDialogOpen && !bookingProfile) {
       setCreateOrUpdateDialogForm({
         description: '',
         services: [],
+        dailySchedules: [],
         image: null,
       });
     }
@@ -74,13 +84,18 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
       const formData = new FormData();
       formData.append('description', createOrUpdateDialogForm.description);
 
+      // Services
       for (const serviceId of createOrUpdateDialogForm.services) {
         formData.append('services[]', String(serviceId));
       }
 
+      // Daily schedules
+      if (createOrUpdateDialogForm.dailySchedules.length > 0) {
+        formData.append('dailySchedules', JSON.stringify(createOrUpdateDialogForm.dailySchedules));
+      }
+
       // Handle image action
       if (createOrUpdateDialogForm.image?.file) {
-        // Upload new image
         formData.append('imageAction', 'UPLOAD');
         const base64Data = await fileToBase64(createOrUpdateDialogForm.image.file);
         formData.append('imageData[fileName]', createOrUpdateDialogForm.image.file.name);
@@ -91,8 +106,6 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
         formData.append('imageData[data]', base64Data);
         formData.append('imageData[label]', createOrUpdateDialogForm.image.file.name);
       }
-      // If image is null and there's an existing image, we keep it (no imageAction sent)
-      // If you want to add a "delete image" button, you'd set: formData.append('imageAction', 'DELETE');
 
       fetcher.submit(formData, {
         method: 'post',
@@ -115,23 +128,18 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
       : 'Last opp et profilbilde som vises til kunder.',
   });
 
-  const renderServicesSelection = createServicesSelectionRenderer({ services });
+  const renderServicesSelection = createServicesSelectionRenderer({ services: groupedServiceGroups });
+
+  const renderDailySchedule = createDailyScheduleRenderer({
+    helperText: 'Velg hvilke dager og klokkeslett du er tilgjengelig for bookinger.',
+  });
 
   const dialogTitle = bookingProfile ? 'Rediger bookingprofil' : 'Lag bookingprofil';
   const dialogSubmitLabel = bookingProfile ? 'Lagre endringer' : 'Opprett';
 
   return (
     <>
-      <PageHeader
-        title="Offentlig bookingprofil"
-        subtitle="Slik vises du til kunder"
-        description="Denne beskrivelsen og bildet er synlig for kunder når de booker time med deg."
-      />
-      {bookingProfile ? (
-        <BookingProfileCard bookingProfile={bookingProfile} onEditProfile={handleEditBookingProfile} />
-      ) : (
-        <EmptyBookingProfile onCreateProfile={() => setCreateOrUpdateBookingProfileDialogOpen(true)} />
-      )}
+      <BookingProfileCard bookingProfile={bookingProfile} onEditProfile={handleEditBookingProfile} />
 
       <FormDialog
         open={createOrUpdateDialogOpen}
@@ -156,6 +164,12 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
             label: 'Tjenester',
             render: renderServicesSelection,
             description: 'Velg hvilke tjenester du tilbyr.',
+          },
+          {
+            name: 'dailySchedules',
+            label: 'Arbeidstider',
+            render: renderDailySchedule,
+            description: 'Sett dine tilgjengelige dager og klokkeslett.',
           },
         ]}
         formData={createOrUpdateDialogForm}

@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router';
 import { type RouteBranch } from '~/lib/route-tree';
 import { useEffect } from 'react';
 import { getIcon } from '~/lib/route-icon-map';
+import { Button } from '~/components/ui/button';
 
 type MobileSidebarProps = {
   branches: RouteBranch[];

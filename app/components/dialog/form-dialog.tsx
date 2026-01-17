@@ -116,7 +116,7 @@ export function FormDialog<T>({
               id={fieldId}
               aria-invalid={ariaInvalid}
               aria-describedby={describedById}
-              className="h-12 text-base bg-form-bg border-form-border text-form-text sm:h-11 sm:text-base"
+              className="h-11 text-base bg-form-bg border-form-border text-form-text"
             >
               <SelectValue placeholder={field.placeholder} />
             </SelectTrigger>
@@ -155,7 +155,7 @@ export function FormDialog<T>({
             placeholder={field.placeholder}
             required={field.required}
             disabled={field.disabled}
-            className={`min-h-24 px-3 py-3 text-base bg-form-bg border-form-border text-form-text sm:min-h-28 ${field.className || ''}`}
+            className={`min-h-24 px-3 py-3 text-sm bg-form-bg border-form-border text-form-text ${field.className || ''}`}
           />
           {field.description && (
             <p id={`${fieldId}-desc`} className="mt-1.5 text-xs text-form-text-muted sm:text-sm">
@@ -184,7 +184,7 @@ export function FormDialog<T>({
             disabled={field.disabled}
             accept={field.accept}
             multiple={field.multiple}
-            className={`h-12 text-base bg-form-bg border-form-border sm:h-11 ${field.className || ''}`}
+            className={`h-11 text-sm bg-form-bg border-form-border ${field.className || ''}`}
             onChange={(e) => {
               const files = e.target.files;
               if (!files) {
@@ -223,7 +223,7 @@ export function FormDialog<T>({
           placeholder={field.placeholder}
           required={field.required}
           disabled={field.disabled}
-          className={`h-12 px-3 text-base bg-form-bg border-form-border text-form-text sm:h-11 sm:px-4 ${field.className || ''}`}
+          className={`h-11 px-3 text-sm bg-form-bg border-form-border text-form-text ${field.className || ''}`}
         />
         {field.description && (
           <p id={`${fieldId}-desc`} className="mt-1.5 text-xs text-form-text-muted sm:text-sm">
@@ -241,18 +241,19 @@ export function FormDialog<T>({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[100dvh] w-full p-0 sm:max-h-[90vh] sm:max-w-2xl sm:rounded-lg sm:p-6">
-        <DialogHeader className="border-b border-border p-4 sm:border-b-0 sm:p-0 sm:pb-4">
-          <DialogTitle className="text-lg font-semibold text-foreground sm:text-xl">{title}</DialogTitle>
+      <DialogContent className="flex max-h-[90vh] w-full flex-col gap-0 p-0 sm:max-w-2xl">
+        {/* Fixed Header */}
+        <DialogHeader className="flex-shrink-0 border-b border-card-border bg-card-bg px-4 py-3 sm:px-6 sm:py-4">
+          <DialogTitle className="text-lg font-semibold text-card-text sm:text-xl">{title}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={onSubmit} className="flex flex-col" encType="multipart/form-data">
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-0">
+        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col" encType="multipart/form-data">
+          {/* Scrollable content area */}
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
             <div className="space-y-4 sm:space-y-5">
               {fields.map((field) => (
                 <div key={String(field.name)} className="space-y-1.5">
-                  <Label htmlFor={String(field.name)} className="text-sm font-medium text-foreground sm:text-base">
+                  <Label htmlFor={String(field.name)} className="text-sm font-medium text-form-text">
                     {field.label}
                     {field.required && <span className="ml-1 text-form-invalid">*</span>}
                   </Label>
@@ -262,20 +263,22 @@ export function FormDialog<T>({
             </div>
           </div>
 
-          {/* Sticky footer on mobile */}
+          {/* Fixed footer */}
           {actions && actions.length > 0 && (
-            <div className="sticky bottom-0 flex flex-col-reverse gap-2 border-t border-border bg-background p-4 sm:static sm:flex-row sm:justify-end sm:gap-3 sm:border-t-0 sm:bg-transparent sm:p-0 sm:pt-6">
-              {actions.map((action, index) => (
-                <Button
-                  key={index}
-                  type={action.type || 'button'}
-                  variant={action.variant || 'outline'}
-                  onClick={action.onClick}
-                  className={`w-full py-3 text-sm sm:w-auto sm:px-6 sm:py-3 sm:text-base ${action.className || ''}`}
-                >
-                  {action.label}
-                </Button>
-              ))}
+            <div className="flex-shrink-0 border-t border-card-border bg-card-footer-bg px-4 py-3 sm:px-6 sm:py-4">
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+                {actions.map((action, index) => (
+                  <Button
+                    key={index}
+                    type={action.type || 'button'}
+                    variant={action.variant || 'outline'}
+                    onClick={action.onClick}
+                    className={`min-h-[44px] w-full text-sm sm:w-auto sm:min-h-[40px] sm:px-6 ${action.className || ''}`}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
             </div>
           )}
         </form>

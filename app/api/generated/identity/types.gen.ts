@@ -171,6 +171,8 @@ export type AuthenticatedUserPayload = {
     id: number;
     email: string;
     companyId?: number;
+    companyRoles?: Array<'ADMIN' | 'EMPLOYEE'>;
+    companyProducts?: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
 };
 
 /**
@@ -331,6 +333,15 @@ export type InviteCompanyUserDto = {
     roles: Array<'ADMIN' | 'EMPLOYEE'>;
 };
 
+export type ApiResponseListCompanyRole = {
+    success: boolean;
+    message: string;
+    data?: Array<'ADMIN' | 'EMPLOYEE'>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
 export type ApiResponseUserDto = {
     success: boolean;
     message: string;
@@ -340,10 +351,10 @@ export type ApiResponseUserDto = {
     timestamp: string;
 };
 
-export type ApiResponseListCompanyRole = {
+export type ApiResponseListBiTProduct = {
     success: boolean;
     message: string;
-    data?: Array<'ADMIN' | 'EMPLOYEE'>;
+    data?: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
@@ -712,7 +723,7 @@ export type ValidateCompanyUsersData = {
         companyId: number;
     };
     query?: never;
-    url: '/internal/internal/users/validate-company-users/{companyId}';
+    url: '/internal/users/validate-company-users/{companyId}';
 };
 
 export type ValidateCompanyUsersResponses = {
@@ -740,24 +751,6 @@ export type FindByIdsResponses = {
 
 export type FindByIdsResponse = FindByIdsResponses[keyof FindByIdsResponses];
 
-export type ValidateContactsData = {
-    body: Array<number>;
-    path: {
-        companyId: number;
-    };
-    query?: never;
-    url: '/internal/internal/company-contact/validate/contacts/{companyId}';
-};
-
-export type ValidateContactsResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponseBoolean;
-};
-
-export type ValidateContactsResponse = ValidateContactsResponses[keyof ValidateContactsResponses];
-
 export type FindByIds1Data = {
     body: Array<number>;
     path?: never;
@@ -773,6 +766,24 @@ export type FindByIds1Responses = {
 };
 
 export type FindByIds1Response = FindByIds1Responses[keyof FindByIds1Responses];
+
+export type ValidateContactsData = {
+    body: Array<number>;
+    path: {
+        companyId: number;
+    };
+    query?: never;
+    url: '/internal/company-contact/validate/contacts/{companyId}';
+};
+
+export type ValidateContactsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseBoolean;
+};
+
+export type ValidateContactsResponse = ValidateContactsResponses[keyof ValidateContactsResponses];
 
 export type GetContactsData = {
     body?: never;
@@ -1030,31 +1041,13 @@ export type GetContactResponses = {
 
 export type GetContactResponse = GetContactResponses[keyof GetContactResponses];
 
-export type FindByIdData = {
-    body?: never;
-    path: {
-        userId: number;
-    };
-    query?: never;
-    url: '/internal/internal/users/{userId}';
-};
-
-export type FindByIdResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponseUserDto;
-};
-
-export type FindByIdResponse = FindByIdResponses[keyof FindByIdResponses];
-
 export type ValidateCompanyData = {
     body?: never;
     path: {
         companyId: number;
     };
     query?: never;
-    url: '/internal/internal/users/validate-company/{companyId}';
+    url: '/internal/users/validate-company/{companyId}';
 };
 
 export type ValidateCompanyResponses = {
@@ -1073,7 +1066,7 @@ export type ValidateCompanyUserData = {
         userId: number;
     };
     query?: never;
-    url: '/internal/internal/users/validate-company-user/{companyId}/{userId}';
+    url: '/internal/users/validate-company-user/{companyId}/{userId}';
 };
 
 export type ValidateCompanyUserResponses = {
@@ -1092,7 +1085,7 @@ export type GetCompanyRoleData = {
         userId: number;
     };
     query?: never;
-    url: '/internal/internal/users/company-role/{companyId}/{userId}';
+    url: '/internal/users/company-role/{companyId}/{userId}';
 };
 
 export type GetCompanyRoleResponses = {
@@ -1104,43 +1097,23 @@ export type GetCompanyRoleResponses = {
 
 export type GetCompanyRoleResponse = GetCompanyRoleResponses[keyof GetCompanyRoleResponses];
 
-export type ValidateProductData = {
+export type FindByIdData = {
     body?: never;
     path: {
-        companyId: number;
-        product: 'BOOKING' | 'EVENT' | 'TIMESHEET';
+        userId: number;
     };
     query?: never;
-    url: '/internal/internal/company-contact/validate/product/{companyId}/{product}';
+    url: '/internal/internal/users/{userId}';
 };
 
-export type ValidateProductResponses = {
+export type FindByIdResponses = {
     /**
      * OK
      */
-    200: ApiResponseBoolean;
+    200: ApiResponseUserDto;
 };
 
-export type ValidateProductResponse = ValidateProductResponses[keyof ValidateProductResponses];
-
-export type ValidateContactData = {
-    body?: never;
-    path: {
-        companyId: number;
-        contactId: number;
-    };
-    query?: never;
-    url: '/internal/internal/company-contact/validate/contact/{companyId}/{contactId}';
-};
-
-export type ValidateContactResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponseBoolean;
-};
-
-export type ValidateContactResponse = ValidateContactResponses[keyof ValidateContactResponses];
+export type FindByIdResponse = FindByIdResponses[keyof FindByIdResponses];
 
 export type FindById1Data = {
     body?: never;
@@ -1159,6 +1132,62 @@ export type FindById1Responses = {
 };
 
 export type FindById1Response = FindById1Responses[keyof FindById1Responses];
+
+export type ValidateProductData = {
+    body?: never;
+    path: {
+        companyId: number;
+        product: 'BOOKING' | 'EVENT' | 'TIMESHEET';
+    };
+    query?: never;
+    url: '/internal/company-contact/validate/product/{companyId}/{product}';
+};
+
+export type ValidateProductResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseBoolean;
+};
+
+export type ValidateProductResponse = ValidateProductResponses[keyof ValidateProductResponses];
+
+export type ValidateContactData = {
+    body?: never;
+    path: {
+        companyId: number;
+        contactId: number;
+    };
+    query?: never;
+    url: '/internal/company-contact/validate/contact/{companyId}/{contactId}';
+};
+
+export type ValidateContactResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseBoolean;
+};
+
+export type ValidateContactResponse = ValidateContactResponses[keyof ValidateContactResponses];
+
+export type GetCompanyProductsData = {
+    body?: never;
+    path: {
+        companyId: number;
+    };
+    query?: never;
+    url: '/internal/company-contact/products/{companyId}';
+};
+
+export type GetCompanyProductsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListBiTProduct;
+};
+
+export type GetCompanyProductsResponse = GetCompanyProductsResponses[keyof GetCompanyProductsResponses];
 
 export type GetCompanyUserData = {
     body?: never;

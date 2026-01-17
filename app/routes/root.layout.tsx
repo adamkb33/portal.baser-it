@@ -91,7 +91,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
                 <Button
                   variant="ghost"
                   onClick={() => setMobileMenuOpen(true)}
-                  className="lg:hidden h-10 w-10 flex items-center justify-center"
+                  className="lg:hidden h-10 w-10 flex items-center justify-center text-navbar-accent-foreground border-navbar-border"
                   aria-label="Open menu"
                 >
                   <Menu className="h-5 w-5" />

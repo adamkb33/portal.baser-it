@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptInviteData, AcceptInviteResponses, AddCompanyRoleData, AddCompanyRoleResponses, AddProductsToCompanyData, AddProductsToCompanyResponses, CancelCompanyUserInviteData, CancelCompanyUserInviteResponses, CompanySignInData, CompanySignInResponses, CreateCompanyData, CreateCompanyResponses, CreateContactData, CreateContactResponses, DeleteCompanyUserData, DeleteCompanyUserResponses, DeleteContactData, DeleteContactResponses, EditCompanyUserData, EditCompanyUserResponses, FindById1Data, FindById1Responses, FindByIdData, FindByIdResponses, FindByIds1Data, FindByIds1Responses, FindByIdsData, FindByIdsResponses, ForgotPasswordData, ForgotPasswordResponses, GetCompanyContextsData, GetCompanyContextsResponses, GetCompanyData, GetCompanyResponses, GetCompanyRoleData, GetCompanyRoleResponses, GetCompanySummaryData, GetCompanySummaryResponses, GetCompanyUserData, GetCompanyUserResponses, GetCompanyUsersByIdsData, GetCompanyUsersByIdsResponses, GetCompanyUsersData, GetCompanyUsersResponses, GetContactData, GetContactResponses, GetContactsByIdsData, GetContactsByIdsResponses, GetContactsData, GetContactsResponses, GetDashboardMetricsData, GetDashboardMetricsResponses, GetInvitationsData, GetInvitationsResponses, GetUser1Data, GetUser1Responses, GetUserData, GetUserResponses, HealthData, HealthResponses, InfoData, InfoResponses, InviteCompanyUserData, InviteCompanyUserResponses, InviteUserData, InviteUserResponses, JwtClaimsData, JwtClaimsResponses, LinksData, LinksResponses, PublicGetCompanyByIdData, PublicGetCompanyByIdResponses, PublicGetCreateOrUpdateContactData, PublicGetCreateOrUpdateContactResponses, RefreshData, RefreshResponses, RequestDeleteRoleData, RequestDeleteRoleResponses, ResetPasswordData, ResetPasswordResponses, SignInData, SignInResponses, SignOutData, SignOutResponses, UpdateContactData, UpdateContactResponses, ValidateCompanyData, ValidateCompanyResponses, ValidateCompanyUserData, ValidateCompanyUserResponses, ValidateCompanyUsersData, ValidateCompanyUsersResponses, ValidateContactData, ValidateContactResponses, ValidateContactsData, ValidateContactsResponses, ValidateProductData, ValidateProductResponses } from './types.gen';
+import type { AcceptInviteData, AcceptInviteResponses, AddCompanyRoleData, AddCompanyRoleResponses, AddProductsToCompanyData, AddProductsToCompanyResponses, CancelCompanyUserInviteData, CancelCompanyUserInviteResponses, CompanySignInData, CompanySignInResponses, CreateCompanyData, CreateCompanyResponses, CreateContactData, CreateContactResponses, DeleteCompanyUserData, DeleteCompanyUserResponses, DeleteContactData, DeleteContactResponses, EditCompanyUserData, EditCompanyUserResponses, FindById1Data, FindById1Responses, FindByIdData, FindByIdResponses, FindByIds1Data, FindByIds1Responses, FindByIdsData, FindByIdsResponses, ForgotPasswordData, ForgotPasswordResponses, GetCompanyContextsData, GetCompanyContextsResponses, GetCompanyData, GetCompanyProductsData, GetCompanyProductsResponses, GetCompanyResponses, GetCompanyRoleData, GetCompanyRoleResponses, GetCompanySummaryData, GetCompanySummaryResponses, GetCompanyUserData, GetCompanyUserResponses, GetCompanyUsersByIdsData, GetCompanyUsersByIdsResponses, GetCompanyUsersData, GetCompanyUsersResponses, GetContactData, GetContactResponses, GetContactsByIdsData, GetContactsByIdsResponses, GetContactsData, GetContactsResponses, GetDashboardMetricsData, GetDashboardMetricsResponses, GetInvitationsData, GetInvitationsResponses, GetUser1Data, GetUser1Responses, GetUserData, GetUserResponses, HealthData, HealthResponses, InfoData, InfoResponses, InviteCompanyUserData, InviteCompanyUserResponses, InviteUserData, InviteUserResponses, JwtClaimsData, JwtClaimsResponses, LinksData, LinksResponses, PublicGetCompanyByIdData, PublicGetCompanyByIdResponses, PublicGetCreateOrUpdateContactData, PublicGetCreateOrUpdateContactResponses, RefreshData, RefreshResponses, RequestDeleteRoleData, RequestDeleteRoleResponses, ResetPasswordData, ResetPasswordResponses, SignInData, SignInResponses, SignOutData, SignOutResponses, UpdateContactData, UpdateContactResponses, ValidateCompanyData, ValidateCompanyResponses, ValidateCompanyUserData, ValidateCompanyUserResponses, ValidateCompanyUsersData, ValidateCompanyUsersResponses, ValidateContactData, ValidateContactResponses, ValidateContactsData, ValidateContactsResponses, ValidateProductData, ValidateProductResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -234,7 +234,7 @@ export class InternalCompanyController {
     public static validateCompanyUsers<ThrowOnError extends boolean = false>(options: Options<ValidateCompanyUsersData, ThrowOnError>) {
         return (options.client ?? client).post<ValidateCompanyUsersResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/internal/users/validate-company-users/{companyId}',
+            url: '/internal/users/validate-company-users/{companyId}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -246,7 +246,7 @@ export class InternalCompanyController {
     public static validateContacts<ThrowOnError extends boolean = false>(options: Options<ValidateContactsData, ThrowOnError>) {
         return (options.client ?? client).post<ValidateContactsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/internal/company-contact/validate/contacts/{companyId}',
+            url: '/internal/company-contact/validate/contacts/{companyId}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -258,7 +258,7 @@ export class InternalCompanyController {
     public static validateCompany<ThrowOnError extends boolean = false>(options: Options<ValidateCompanyData, ThrowOnError>) {
         return (options.client ?? client).get<ValidateCompanyResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/internal/users/validate-company/{companyId}',
+            url: '/internal/users/validate-company/{companyId}',
             ...options
         });
     }
@@ -266,7 +266,7 @@ export class InternalCompanyController {
     public static validateCompanyUser<ThrowOnError extends boolean = false>(options: Options<ValidateCompanyUserData, ThrowOnError>) {
         return (options.client ?? client).get<ValidateCompanyUserResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/internal/users/validate-company-user/{companyId}/{userId}',
+            url: '/internal/users/validate-company-user/{companyId}/{userId}',
             ...options
         });
     }
@@ -274,7 +274,7 @@ export class InternalCompanyController {
     public static getCompanyRole<ThrowOnError extends boolean = false>(options: Options<GetCompanyRoleData, ThrowOnError>) {
         return (options.client ?? client).get<GetCompanyRoleResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/internal/users/company-role/{companyId}/{userId}',
+            url: '/internal/users/company-role/{companyId}/{userId}',
             ...options
         });
     }
@@ -282,7 +282,7 @@ export class InternalCompanyController {
     public static validateProduct<ThrowOnError extends boolean = false>(options: Options<ValidateProductData, ThrowOnError>) {
         return (options.client ?? client).get<ValidateProductResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/internal/company-contact/validate/product/{companyId}/{product}',
+            url: '/internal/company-contact/validate/product/{companyId}/{product}',
             ...options
         });
     }
@@ -290,7 +290,15 @@ export class InternalCompanyController {
     public static validateContact<ThrowOnError extends boolean = false>(options: Options<ValidateContactData, ThrowOnError>) {
         return (options.client ?? client).get<ValidateContactResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/internal/company-contact/validate/contact/{companyId}/{contactId}',
+            url: '/internal/company-contact/validate/contact/{companyId}/{contactId}',
+            ...options
+        });
+    }
+    
+    public static getCompanyProducts<ThrowOnError extends boolean = false>(options: Options<GetCompanyProductsData, ThrowOnError>) {
+        return (options.client ?? client).get<GetCompanyProductsResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/internal/company-contact/products/{companyId}',
             ...options
         });
     }

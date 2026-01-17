@@ -237,11 +237,17 @@ export type ScheduleTimeSlot = {
 };
 
 export type CreateOrUpdateCompanyUserProfile = {
-    userId: number;
-    companyId: number;
     imageAction?: Delete | Upload;
+    dailySchedules?: Array<DailyScheduleDto>;
     description?: string;
     serviceIds: Array<number>;
+};
+
+export type DailyScheduleDto = {
+    id: number;
+    dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+    startTime: string;
+    endTime: string;
 };
 
 export type ApiResponseBookingProfileDto = {
@@ -263,13 +269,6 @@ export type BookingProfileDto = {
     description?: string;
     dailySchedule: Array<DailyScheduleDto>;
     services: Array<GroupedServiceGroupDto>;
-};
-
-export type DailyScheduleDto = {
-    id: number;
-    dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
-    startTime: string;
-    endTime: string;
 };
 
 export type CreateOrUpdateDailySchedulesDto = {
@@ -450,7 +449,8 @@ export type PopularService = {
 
 export type ProfileBreakdown = {
     profileId: number;
-    profileName: string;
+    userId: number;
+    profileName?: string;
     profileImageUrl?: string;
     revenueThisMonth: number;
     revenueLastMonth: number;
@@ -1007,6 +1007,22 @@ export type GetAppointmentSessionOverviewResponses = {
 };
 
 export type GetAppointmentSessionOverviewResponse = GetAppointmentSessionOverviewResponses[keyof GetAppointmentSessionOverviewResponses];
+
+export type GetGroupedServiceGroupsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/company-user/service-groups/grouped-service-groups';
+};
+
+export type GetGroupedServiceGroupsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListGroupedServiceGroupDto;
+};
+
+export type GetGroupedServiceGroupsResponse = GetGroupedServiceGroupsResponses[keyof GetGroupedServiceGroupsResponses];
 
 export type GetDailySchedulesData = {
     body?: never;

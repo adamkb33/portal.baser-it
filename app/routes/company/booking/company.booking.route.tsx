@@ -62,7 +62,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
     <div className="max-w-[1600px] mx-auto space-y-6">
       {/* Hero Stats - 3 Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card variant="elevated">
+        <Card variant="elevated" className="bg-card">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -88,7 +88,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
           </CardContent>
         </Card>
 
-        <Card variant="elevated">
+        <Card variant="elevated" className="bg-card">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -105,7 +105,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
           </CardContent>
         </Card>
 
-        <Card variant="elevated">
+        <Card variant="elevated" className="bg-card">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -124,7 +124,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
       {/* Collapsible Sections */}
       <Accordion type="multiple" className="space-y-4">
         {/* Revenue & Financial Section */}
-        <AccordionItem value="revenue">
+        <AccordionItem value="revenue" className="bg-accordion-bg">
           <Card variant="bordered">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
@@ -220,7 +220,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
         </AccordionItem>
 
         {/* Booking Activity Section */}
-        <AccordionItem value="bookings">
+        <AccordionItem value="bookings" className="bg-accordion-bg">
           <Card variant="bordered">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
@@ -325,7 +325,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
         </AccordionItem>
 
         {/* Service Performance Section */}
-        <AccordionItem value="services">
+        <AccordionItem value="services" className="bg-accordion-bg">
           <Card variant="bordered">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
@@ -431,7 +431,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
         </AccordionItem>
 
         {/* Customer Insights Section */}
-        <AccordionItem value="customers">
+        <AccordionItem value="customers" className="bg-accordion-bg">
           <Card variant="bordered">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
@@ -494,7 +494,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
         </AccordionItem>
 
         {/* Session Analytics Section */}
-        <AccordionItem value="sessions">
+        <AccordionItem value="sessions" className="bg-accordion-bg">
           <Card variant="bordered">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
@@ -551,7 +551,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
         </AccordionItem>
 
         {/* Profile Breakdown Section */}
-        <AccordionItem value="profiles">
+        <AccordionItem value="profiles" className="bg-accordion-bg">
           <Card variant="bordered">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
