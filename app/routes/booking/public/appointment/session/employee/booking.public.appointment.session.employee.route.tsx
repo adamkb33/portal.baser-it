@@ -207,7 +207,7 @@ export default function AppointmentsEmployee() {
               label: 'Valgt frisør',
               value: selectedProfile ? `${selectedProfile.givenName} ${selectedProfile.familyName}` : 'Ikke valgt',
             },
-            { label: 'Neste', value: 'Velg tjenester' },
+            { label: 'Neste steg', value: 'Velg tjenester' },
           ],
           primaryAction: selectedProfileId ? (
             <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>

@@ -66,9 +66,23 @@ function getStartOfWeek(date: Date): Date {
   return new Date(d.setDate(diff));
 }
 
+function parseDateTime(value: string): number | null {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.getTime();
+}
+
+function isSameSlotTime(a: string, b: string): boolean {
+  const aTime = parseDateTime(a);
+  const bTime = parseDateTime(b);
+  if (aTime !== null && bTime !== null) {
+    return aTime === bTime;
+  }
+  return a === b;
+}
+
 function findScheduleWithTime(schedules: ScheduleDto[], startTime: string): string | null {
   for (const schedule of schedules) {
-    if (schedule.timeSlots.some((slot) => slot.startTime === startTime)) {
+    if (schedule.timeSlots.some((slot) => isSameSlotTime(slot.startTime, startTime))) {
       return schedule.date;
     }
   }
@@ -288,10 +302,76 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
     }
   };
 
+  const getOsloDateParts = (date: Date) => {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Oslo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+
+    const parts = formatter.formatToParts(date);
+    const map = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return {
+      year: Number(map.year),
+      month: Number(map.month),
+      day: Number(map.day),
+      hour: Number(map.hour),
+      minute: Number(map.minute),
+      second: Number(map.second),
+    };
+  };
+
+  const getOsloOffsetMinutes = (date: Date) => {
+    const osloParts = getOsloDateParts(date);
+    const osloAsUtc = Date.UTC(
+      osloParts.year,
+      osloParts.month - 1,
+      osloParts.day,
+      osloParts.hour,
+      osloParts.minute,
+      osloParts.second,
+    );
+    return (osloAsUtc - date.getTime()) / 60000;
+  };
+
+  const formatOffset = (minutes: number) => {
+    const sign = minutes >= 0 ? '+' : '-';
+    const abs = Math.abs(minutes);
+    const hours = String(Math.floor(abs / 60)).padStart(2, '0');
+    const mins = String(abs % 60).padStart(2, '0');
+    return `${sign}${hours}:${mins}`;
+  };
+
+  const normalizeToOsloIso = (value: string): string => {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+
+    const osloParts = getOsloDateParts(parsed);
+    const offset = formatOffset(getOsloOffsetMinutes(parsed));
+    return `${osloParts.year}-${String(osloParts.month).padStart(2, '0')}-${String(osloParts.day).padStart(
+      2,
+      '0',
+    )}T${String(osloParts.hour).padStart(2, '0')}:${String(osloParts.minute).padStart(2, '0')}:${String(
+      osloParts.second,
+    ).padStart(2, '0')}${offset}`;
+  };
+
   const handleSubmit = () => {
     if (selectedTime) {
+      const scheduleDate = selectedDate ?? findScheduleWithTime(schedules, selectedTime);
+      const rawDateTime = selectedTime.includes('T')
+        ? selectedTime
+        : scheduleDate
+          ? `${scheduleDate}T${selectedTime}`
+          : selectedTime;
+      const selectedStartTimeOslo = normalizeToOsloIso(rawDateTime);
       const formData = new FormData();
-      formData.set('selectedStartTime', selectedTime);
+      formData.set('selectedStartTime', selectedStartTimeOslo);
       submit(formData, { method: 'post' });
     } else {
       submit(null, {

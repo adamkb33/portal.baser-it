@@ -240,7 +240,7 @@ export default function AppointmentsContactForm() {
           title: 'Neste steg',
           items: [
             { label: 'Steg', value: 'Kontaktinformasjon' },
-            { label: 'Neste', value: 'Velg behandler' },
+            { label: 'Neste steg', value: 'Velg behandler' },
           ],
           primaryAction: (
             <BookingButton

@@ -1,10 +1,10 @@
 // app/routes/booking.public.appointment-session.$sessionId.tsx
-import { data, Outlet, useLoaderData } from 'react-router';
+import { data, Outlet, redirect, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 import { getSession } from '~/lib/appointments.server';
 import { RouteAwareStepper } from './_components/route-aware-stepper';
 import type { AppointmentSessionDto } from '~/api/generated/booking';
-import { handleRouteError, type RouteData } from '~/lib/api-error';
+import { type RouteData } from '~/lib/api-error';
 
 export type BookingPublicAppointmentSessionLayoutLoaderData = RouteData<{
   session?: AppointmentSessionDto | null;
@@ -13,9 +13,12 @@ export type BookingPublicAppointmentSessionLayoutLoaderData = RouteData<{
 export async function loader(args: LoaderFunctionArgs) {
   try {
     const session = await getSession(args.request);
-    return data<BookingPublicAppointmentSessionLayoutLoaderData>({ ok: true, session: session ?? null });
+    if (!session) {
+      return redirect('/');
+    }
+    return data<BookingPublicAppointmentSessionLayoutLoaderData>({ ok: true, session });
   } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente øktinformasjon' });
+    return redirect('/');
   }
 }
 
