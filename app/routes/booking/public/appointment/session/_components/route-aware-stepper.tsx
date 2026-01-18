@@ -1,7 +1,7 @@
 import { useLocation, Link } from 'react-router';
 import { ChevronRight, Check } from 'lucide-react';
-import type { AppointmentSessionDto } from '~/api/clients/types';
-import { cn } from '~/lib/utils';
+import type { AppointmentSessionDto } from '~/api/generated/booking';
+import { cn } from '@/lib/utils';
 import {
   getEnhancedStepStatus,
   getNextStep,

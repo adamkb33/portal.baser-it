@@ -1,38 +1,32 @@
 // app/routes/booking.public.appointment-session.$sessionId.tsx
 import { data, Outlet, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
-import type { ApiClientError } from '~/api/clients/http';
 import { getSession } from '~/lib/appointments.server';
 import { RouteAwareStepper } from './_components/route-aware-stepper';
-import type { AppointmentSessionDto } from '~/api/clients/types';
+import type { AppointmentSessionDto } from '~/api/generated/booking';
+import { handleRouteError, type RouteData } from '~/lib/api-error';
 
-export type BookingPublicAppointmentSessionLayoutLoaderData = {
-  session?: AppointmentSessionDto;
-  error?: string;
-};
+export type BookingPublicAppointmentSessionLayoutLoaderData = RouteData<{
+  session?: AppointmentSessionDto | null;
+}>;
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   try {
-    const session = await getSession(request);
-    return data<BookingPublicAppointmentSessionLayoutLoaderData>({ session });
+    const session = await getSession(args.request);
+    return data<BookingPublicAppointmentSessionLayoutLoaderData>({ ok: true, session: session ?? null });
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return data<BookingPublicAppointmentSessionLayoutLoaderData>({ error: error.body.message });
-    }
-
-    throw error;
+    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente øktinformasjon' });
   }
 }
 
 export default function BookingPublicAppointmentSessionLayout() {
   const data = useLoaderData<typeof loader>();
 
-  if ('error' in data) {
+  if (!data.ok) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="border border-border bg-background p-5 text-center">
-          <p className="text-sm text-foreground">{data.error}</p>
+          <p className="text-sm text-foreground">{data.error.message}</p>
         </div>
       </div>
     );

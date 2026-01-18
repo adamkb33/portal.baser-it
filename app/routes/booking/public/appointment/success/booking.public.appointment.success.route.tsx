@@ -14,51 +14,61 @@ import {
   PartyPopper,
 } from 'lucide-react';
 import { cn } from '~/lib/utils';
-import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
-import { baseApi, bookingApi } from '~/lib/utils';
-import type { ApiClientError } from '~/api/clients/http';
+import type { CompanySummaryDto } from '~/api/generated/identity';
+import { PublicCompanyController } from '~/api/generated/identity';
+import { AppointmentsController } from '~/api/generated/booking';
 import { BookingContainer, BookingPageHeader, BookingButton, BookingCard } from '../_components/booking-layout';
+import { handleRouteError, type RouteData } from '~/lib/api-error';
 
-export type BookingPublicAppointmentSessionSuccessRouteLoaderData = {
+export type BookingPublicAppointmentSessionSuccessRouteLoaderData = RouteData<{
   companySummary: CompanySummaryDto;
-};
+}>;
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   try {
-    const url = new URL(request.url);
+    const url = new URL(args.request.url);
     const companyId = url.searchParams.get('companyId');
     if (!companyId) {
       throw Error('Selskap ikke gjenkjent');
     }
 
-    await bookingApi().AppointmentsControllerService.AppointmentsControllerService.validateCompanyBooking({
-      companyId: parseInt(companyId),
+    await AppointmentsController.validateCompanyBooking({
+      path: {
+        companyId: parseInt(companyId),
+      },
     });
 
-    const companyResponse =
-      await baseApi().PublicCompanyControllerService.PublicCompanyControllerService.publicGetCompanyById({
+    const companyResponse = await PublicCompanyController.publicGetCompanyById({
+      path: {
         companyId: parseInt(companyId),
-      });
+      },
+    });
 
-    if (!companyResponse.data) {
+    if (!companyResponse.data?.data) {
       throw Error('Selskap ikke funnet');
     }
 
     return data<BookingPublicAppointmentSessionSuccessRouteLoaderData>({
-      companySummary: companyResponse.data,
+      ok: true,
+      companySummary: companyResponse.data.data,
     });
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
+    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente bekreftelse' });
   }
 }
 
 export default function BookingPublicAppointmentSessionSuccessRoute() {
-  const { companySummary } = useLoaderData<BookingPublicAppointmentSessionSuccessRouteLoaderData>();
+  const loaderData = useLoaderData<BookingPublicAppointmentSessionSuccessRouteLoaderData>();
+
+  if (!loaderData.ok) {
+    return (
+      <BookingContainer>
+        <BookingPageHeader title="Timen er bekreftet" description={loaderData.error.message} />
+      </BookingContainer>
+    );
+  }
+
+  const { companySummary } = loaderData;
 
   const formatAddress = () => {
     const address = companySummary.businessAddress;

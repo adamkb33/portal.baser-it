@@ -1,4 +1,4 @@
-import type { AppointmentSessionDto } from '~/api/clients/types';
+import type { AppointmentSessionDto } from '~/api/generated/booking';
 
 /**
  * Booking Step Configuration

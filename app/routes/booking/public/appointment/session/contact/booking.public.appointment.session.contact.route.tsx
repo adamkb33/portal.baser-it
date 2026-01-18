@@ -7,25 +7,25 @@ import {
   type ActionFunctionArgs,
 } from 'react-router';
 import { CheckCircle2, Edit3, AlertCircle } from 'lucide-react';
-import type { ContactDto } from 'tmp/openapi/gen/base';
-import type { ApiClientError } from '~/api/clients/http';
-import type { AppointmentSessionDto } from '~/api/clients/types';
+import type { ContactDto } from '~/api/generated/identity';
+import type { AppointmentSessionDto } from '~/api/generated/booking';
 import { SubmitContactForm } from '~/routes/booking/public/appointment/session/contact/_forms/submit-contact.form';
 import { getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { baseApi, bookingApi } from '~/lib/utils';
+import { PublicCompanyContactController } from '~/api/generated/identity';
+import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { BookingContainer, BookingSection, BookingMeta } from '../../_components/booking-layout';
 import type { SubmitContactFormSchema } from './_schemas/submit-contact.form.schema';
+import { handleRouteError, type RouteData } from '~/lib/api-error';
 
-export type AppointmentsContactFormLoaderData = {
+export type AppointmentsContactFormLoaderData = RouteData<{
   session: AppointmentSessionDto;
   existingContact?: ContactDto;
-  error?: string;
-};
+}>;
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   try {
-    const session = await getSession(request);
+    const session = await getSession(args.request);
 
     if (!session) {
       return redirect('/appointments');
@@ -34,75 +34,84 @@ export async function loader({ request }: LoaderFunctionArgs) {
     let existingContact: ContactDto | undefined = undefined;
 
     if (session.contactId) {
-      const contactResponse =
-        await baseApi().PublicCompanyContactControllerService.PublicCompanyContactControllerService.getContact({
+      const contactResponse = await PublicCompanyContactController.getContact({
+        path: {
           companyId: session.companyId,
           contactId: session.contactId,
-        });
+        },
+      });
 
-      existingContact = contactResponse.data;
+      existingContact = contactResponse.data?.data;
     }
 
-    return data<AppointmentsContactFormLoaderData>({ session, existingContact });
+    return data<AppointmentsContactFormLoaderData>({ ok: true, session, existingContact });
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-
-    if (error as ApiClientError) {
-      return { error: (error as ApiClientError).body.message };
-    }
-
-    throw error;
+    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente kontaktinformasjon' });
   }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action(args: ActionFunctionArgs) {
   try {
-    const session = await getSession(request);
+    const session = await getSession(args.request);
 
     if (!session) {
       return redirect('/appointments');
     }
 
-    const formData = await request.formData();
+    const formData = await args.request.formData();
 
-    const contactResponse =
-      await baseApi().PublicCompanyContactControllerService.PublicCompanyContactControllerService.publicGetCreateOrUpdateContact(
-        {
-          requestBody: {
-            ...(formData.get('id') ? { id: Number(formData.get('id')) } : {}),
-            companyId: Number(formData.get('companyId')),
-            givenName: String(formData.get('givenName') ?? ''),
-            familyName: String(formData.get('familyName') ?? ''),
-            email: formData.get('email') ? String(formData.get('email')) : undefined,
-            mobileNumber: formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined,
-          },
-        },
+    const contactResponse = await PublicCompanyContactController.publicGetCreateOrUpdateContact({
+      body: {
+        ...(formData.get('id') ? { id: Number(formData.get('id')) } : {}),
+        companyId: Number(formData.get('companyId')),
+        givenName: String(formData.get('givenName') ?? ''),
+        familyName: String(formData.get('familyName') ?? ''),
+        email: formData.get('email') ? String(formData.get('email')) : undefined,
+        mobileNumber: formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined,
+      },
+    });
+    if (!contactResponse.data?.data) {
+      return data<RouteData<Record<string, never>>>(
+        { ok: false, error: { message: 'En feil har skjedd med lagring av kontakt' } },
+        { status: 400 },
       );
-    if (!contactResponse.data) {
-      return { error: 'En feil har skjedd med lagring av kontakt' };
     }
 
-    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.submitAppointmentSessionContact(
-      {
+    await PublicAppointmentSessionController.submitAppointmentSessionContact({
+      query: {
         sessionId: session.sessionId,
-        contactId: contactResponse.data.id,
+        contactId: contactResponse.data.data.id,
       },
-    );
+    });
 
     return redirect(ROUTES_MAP['booking.public.appointment.session.employee'].href);
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
+    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke lagre kontakt' });
   }
 }
 
 export default function AppointmentsContactForm() {
-  const { session, existingContact, error: loaderError } = useLoaderData<AppointmentsContactFormLoaderData>();
+  const loaderData = useLoaderData<AppointmentsContactFormLoaderData>();
   const fetcher = useFetcher({ key: 'appointment-contact-form-fetcher' });
+  const session = loaderData.ok ? loaderData.session : undefined;
+  const existingContact = loaderData.ok ? loaderData.existingContact : undefined;
+
+  const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
+  const actionError = fetcher.data && 'ok' in fetcher.data ? (fetcher.data.ok ? undefined : fetcher.data.error.message) : fetcher.data?.error;
+  const loaderError = loaderData.ok ? undefined : loaderData.error.message;
+  const error = loaderError || actionError;
+
+  if (!loaderData.ok || !session) {
+    return (
+      <BookingContainer>
+        <BookingSection label="Kontaktinformasjon" title="Hvem skal vi registrere avtalen på?">
+          <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+            {loaderData.ok ? 'Ugyldig økt' : loaderData.error.message}
+          </div>
+        </BookingSection>
+      </BookingContainer>
+    );
+  }
 
   const initialValues = existingContact
     ? {
@@ -114,10 +123,6 @@ export default function AppointmentsContactForm() {
         mobileNumber: existingContact.mobileNumber?.value ?? '',
       }
     : undefined;
-
-  const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
-  const actionError = fetcher.data?.error;
-  const error = loaderError || actionError;
 
   const handleSubmit = (values: SubmitContactFormSchema) => {
     const formData = new FormData();

@@ -1,19 +1,19 @@
 import { useLoaderData, useSearchParams, useSubmit, useNavigation } from 'react-router';
 import { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock, Zap, Check, X } from 'lucide-react';
-import { cn } from '~/lib/utils';
-import type { ScheduleDto } from 'tmp/openapi/gen/booking';
-import type { AppointmentSessionDto } from '~/api/clients/types';
+import { cn } from '@/lib/utils';
+import type { ScheduleDto, AppointmentSessionDto } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { formatCompactDate, formatFullDate, formatTime } from '~/lib/date.utils';
 import { appointmentSessionSelectTimeAction } from './_features/appointment.session.select-time.loader';
 import { appointmentSessionSelectTimeLoader } from './_features/appointment.session.select-time.action';
 import { BookingContainer, BookingPageHeader, BookingButton } from '../../_components/booking-layout';
+import type { RouteData } from '~/lib/api-error';
 
-export type AppointmentsSelectTimeLoaderData = {
+export type AppointmentsSelectTimeLoaderData = RouteData<{
   session: AppointmentSessionDto;
   schedules: ScheduleDto[];
-};
+}>;
 
 export const loader = appointmentSessionSelectTimeLoader;
 export const action = appointmentSessionSelectTimeAction;
@@ -221,11 +221,21 @@ function TimeSlotButton({ time, isSelected, onClick }: TimeSlotButtonProps) {
    ======================================== */
 
 export default function BookingPublicAppointmentSessionSelectTimeRoute() {
-  const { schedules, session } = useLoaderData<AppointmentsSelectTimeLoaderData>();
+  const loaderData = useLoaderData<AppointmentsSelectTimeLoaderData>();
+  const schedules = loaderData.ok ? loaderData.schedules : [];
+  const session = loaderData.ok ? loaderData.session : undefined;
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
+
+  if (!loaderData.ok || !session) {
+    return (
+      <BookingContainer>
+        <BookingPageHeader title="Velg tidspunkt" description={loaderData.ok ? 'Ugyldig økt' : loaderData.error.message} />
+      </BookingContainer>
+    );
+  }
 
   const weekGroups = useMemo(() => groupSchedulesByWeek(schedules), [schedules]);
   const earliestSlot = useMemo(() => getEarliestSlot(schedules), [schedules]);

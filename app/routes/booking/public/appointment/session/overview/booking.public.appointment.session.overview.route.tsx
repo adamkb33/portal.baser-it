@@ -16,68 +16,61 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { cn } from '~/lib/utils';
-import type { ApiClientError } from '~/api/clients/http';
 import { getSession } from '~/lib/appointments.server';
-import { bookingApi } from '~/lib/utils';
 import { type ActionFunctionArgs } from 'react-router';
-import type { AppointmentSessionOverviewDto } from 'tmp/openapi/gen/booking';
+import { PublicAppointmentSessionController, type AppointmentSessionOverviewDto } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { BookingContainer, BookingPageHeader, BookingButton, BookingCard } from '../../_components/booking-layout';
+import { handleRouteError, type RouteData } from '~/lib/api-error';
 
-type BookingPublicAppointmentSessionOverviewRouteLoaderData = {
+type BookingPublicAppointmentSessionOverviewRouteLoaderData = RouteData<{
   sessionOverview: AppointmentSessionOverviewDto;
-};
+}>;
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   try {
-    const session = await getSession(request);
+    const session = await getSession(args.request);
 
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
-    const response =
-      await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.getAppointmentSessionOverview(
-        {
-          sessionId: session.sessionId,
-        },
-      );
+    const response = await PublicAppointmentSessionController.getAppointmentSessionOverview({
+      query: {
+        sessionId: session.sessionId,
+      },
+    });
 
-    if (!response.data) {
+    if (!response.data?.data) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
     return data<BookingPublicAppointmentSessionOverviewRouteLoaderData>({
-      sessionOverview: response.data,
+      ok: true,
+      sessionOverview: response.data.data,
     });
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    return redirect('/');
+    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente oversikt' });
   }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action(args: ActionFunctionArgs) {
   try {
-    const session = await getSession(request);
+    const session = await getSession(args.request);
 
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
-    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.submitAppointmentSession(
-      {
+    await PublicAppointmentSessionController.submitAppointmentSession({
+      query: {
         sessionId: session.sessionId,
       },
-    );
+    });
 
     return redirect(`${ROUTES_MAP['booking.public.appointment.success'].href}?companyId=${session.companyId}`);
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
+    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke bekrefte timebestilling' });
   }
 }
 
@@ -186,10 +179,19 @@ function CollapsibleSection({ title, icon, children, defaultOpen = true, editLin
    ======================================== */
 
 export default function BookingPublicAppointmentSessionOverviewRoute() {
-  const { sessionOverview } = useLoaderData<BookingPublicAppointmentSessionOverviewRouteLoaderData>();
+  const loaderData = useLoaderData<BookingPublicAppointmentSessionOverviewRouteLoaderData>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
+  if (!loaderData.ok) {
+    return (
+      <BookingContainer>
+        <BookingPageHeader title="Bekreft timebestilling" description={loaderData.error.message} />
+      </BookingContainer>
+    );
+  }
+
+  const { sessionOverview } = loaderData;
   const totalDuration = sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.duration, 0);
   const totalPrice = sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.price, 0);
 

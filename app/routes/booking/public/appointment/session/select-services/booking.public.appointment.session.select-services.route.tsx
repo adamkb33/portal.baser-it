@@ -12,79 +12,71 @@ import {
   ShoppingBag,
   Sparkles,
 } from 'lucide-react';
-import type { ApiClientError } from '~/api/clients/http';
 import { getSession } from '~/lib/appointments.server';
-import { bookingApi } from '~/lib/utils';
 import { type ActionFunctionArgs } from 'react-router';
-import { cn } from '~/lib/utils';
+import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '~/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
-import type { AppointmentSessionDto, GroupedServiceGroupsDto } from '~/api/clients/types';
-import type { GroupedServiceDto } from 'tmp/openapi/gen/booking';
+import {
+  PublicAppointmentSessionController,
+  type AppointmentSessionDto,
+  type GroupedServiceGroupDto,
+  type GroupedServiceDto,
+} from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { BookingContainer, BookingPageHeader, BookingButton, BookingCard } from '../../_components/booking-layout';
+import { handleRouteError, type RouteData } from '~/lib/api-error';
 
-export type AppointmentsSelectServicesLoaderData = {
+export type AppointmentsSelectServicesLoaderData = RouteData<{
   session: AppointmentSessionDto;
-  serviceGroups: GroupedServiceGroupsDto[];
-  error?: string;
-};
+  serviceGroups: GroupedServiceGroupDto[];
+}>;
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   try {
-    const session = await getSession(request);
+    const session = await getSession(args.request);
 
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
-    const serviceGroupsResponse =
-      await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.getAppointmentSessionProfileServices(
-        {
-          sessionId: session.sessionId,
-        },
-      );
+    const serviceGroupsResponse = await PublicAppointmentSessionController.getAppointmentSessionProfileServices({
+      query: {
+        sessionId: session.sessionId,
+      },
+    });
 
     return data<AppointmentsSelectServicesLoaderData>({
+      ok: true,
       session,
-      serviceGroups: serviceGroupsResponse.data || [],
+      serviceGroups: serviceGroupsResponse.data?.data || [],
     });
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
+    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente tjenester' });
   }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action(args: ActionFunctionArgs) {
   try {
-    const session = await getSession(request);
+    const session = await getSession(args.request);
 
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
-    const formData = await request.formData();
+    const formData = await args.request.formData();
     const selectedServices = formData.getAll('serviceId').map(Number);
 
-    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.selectAppointmentSessionProfileServices(
-      {
+    await PublicAppointmentSessionController.selectAppointmentSessionProfileServices({
+      query: {
         sessionId: session.sessionId,
         selectedServiceIds: selectedServices,
       },
-    );
+    });
 
     return redirect(ROUTES_MAP['booking.public.appointment.session.select-time'].href);
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
+    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke lagre tjenestevalg' });
   }
 }
 
@@ -213,7 +205,7 @@ function ServiceCard({ service, isSelected, onToggle, onViewImages }: ServiceCar
    ======================================== */
 
 interface ServiceGroupProps {
-  group: GroupedServiceGroupsDto;
+  group: GroupedServiceGroupDto;
   selectedServices: Set<number>;
   onToggleService: (serviceId: number) => void;
   onSelectAll: () => void;
@@ -305,7 +297,9 @@ function ServiceGroup({
    ======================================== */
 
 export default function BookingPublicAppointmentSessionSelectServicesRoute() {
-  const { serviceGroups, session } = useLoaderData<AppointmentsSelectServicesLoaderData>();
+  const loaderData = useLoaderData<AppointmentsSelectServicesLoaderData>();
+  const serviceGroups = loaderData.ok ? loaderData.serviceGroups : [];
+  const session = loaderData.ok ? loaderData.session : undefined;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
@@ -314,10 +308,18 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
   const [dialogService, setDialogService] = useState<GroupedServiceDto | null>(null);
 
   useEffect(() => {
-    if (session.selectedServices) {
+    if (session?.selectedServices) {
       setSelectedServices(new Set(session.selectedServices));
     }
   }, [session]);
+
+  if (!loaderData.ok || !session) {
+    return (
+      <BookingContainer>
+        <BookingPageHeader title="Velg tjenester" description={loaderData.ok ? 'Ugyldig økt' : loaderData.error.message} />
+      </BookingContainer>
+    );
+  }
 
   // Service lookup helpers
   const findService = (serviceId: number): GroupedServiceDto | undefined => {
@@ -354,7 +356,7 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
     });
   };
 
-  const selectAllInGroup = (group: GroupedServiceGroupsDto) => {
+  const selectAllInGroup = (group: GroupedServiceGroupDto) => {
     setSelectedServices((prev) => {
       const newSet = new Set(prev);
       group.services.forEach((service) => newSet.add(service.id));
@@ -362,7 +364,7 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
     });
   };
 
-  const deselectAllInGroup = (group: GroupedServiceGroupsDto) => {
+  const deselectAllInGroup = (group: GroupedServiceGroupDto) => {
     setSelectedServices((prev) => {
       const newSet = new Set(prev);
       group.services.forEach((service) => newSet.delete(service.id));
