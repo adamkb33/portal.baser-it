@@ -1,6 +1,5 @@
 import { useFetcher, useNavigate, useSearchParams } from 'react-router';
 import { useState } from 'react';
-import type { ServiceGroupDto } from '~/api/clients/types';
 import { Button } from '~/components/ui/button';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
@@ -9,7 +8,7 @@ import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
 import { PageHeader } from '../../../_components/page-header';
 import type { Route } from './+types/company.booking.admin.service-groups.route';
-import { ServiceGroupController } from '~/api/generated/booking';
+import { CompanyUserServiceGroupController, type ServiceGroupDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 
@@ -21,7 +20,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const search = url.searchParams.get('search') || '';
 
     const response = await withAuth(request, async () => {
-      return ServiceGroupController.getServiceGroups({
+      return CompanyUserServiceGroupController.getServiceGroups({
         query: {
           page,
           size,

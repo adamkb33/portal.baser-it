@@ -10,6 +10,7 @@ import {
   BookingSection,
   BookingButton,
 } from '../../_components/booking-layout';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { PublicAppointmentSessionController, type AppointmentSessionDto, type BookingProfileDto } from '~/api/generated/booking';
 
 export type AppointmentsEmployeeLoaderData = RouteData<{
@@ -111,9 +112,12 @@ export default function AppointmentsEmployee() {
             <BookingSection
               key={profile.id}
               label={isSelected ? 'Valgt frisør' : undefined}
-              className={isSelected ? 'border-primary' : ''}
+              className={[
+                'flex h-full min-h-[260px] flex-col',
+                isSelected ? 'border-primary' : '',
+              ].join(' ')}
             >
-              <div className="flex gap-3">
+              <div className="flex min-h-[84px] items-start gap-3">
                 {profile.image && (
                   <div className="border border-border bg-muted w-16 h-16 flex-shrink-0">
                     <img
@@ -131,35 +135,44 @@ export default function AppointmentsEmployee() {
                 </div>
               </div>
 
-              {profile.services.length > 0 && (
-                <div className="border-t border-border pt-4 space-y-3">
-                  <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                    Tjenester
-                  </span>
-                  <div className="space-y-3">
-                    {profile.services.map((group) => (
-                      <div key={group.id} className="space-y-2">
-                        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                          {group.name}
-                        </div>
-                        <div className="space-y-2">
-                          {group.services.map((service) => (
-                            <div key={service.id} className="flex items-baseline justify-between gap-2">
-                              <span className="text-sm text-foreground">{service.name}</span>
-                              <div className="flex items-baseline gap-2 flex-shrink-0">
-                                <span className="text-xs text-muted-foreground">{service.duration} min</span>
-                                <span className="text-sm font-medium text-foreground">{service.price} kr</span>
-                              </div>
+              <div className="border-t border-border py-4">
+                {profile.services.length > 0 && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline"
+                      >
+                        Vis tjenester
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 rounded-none border border-border bg-background p-4">
+                      <div className="max-h-56 space-y-3 overflow-y-auto pr-1">
+                        {profile.services.map((group) => (
+                          <div key={group.id} className="space-y-2">
+                            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                              {group.name}
                             </div>
-                          ))}
-                        </div>
+                            <div className="space-y-2">
+                              {group.services.map((service) => (
+                                <div key={service.id} className="flex items-baseline justify-between gap-2">
+                                  <span className="text-sm text-foreground">{service.name}</span>
+                                  <div className="flex items-baseline gap-2 flex-shrink-0">
+                                    <span className="text-xs text-muted-foreground">{service.duration} min</span>
+                                    <span className="text-sm font-medium text-foreground">{service.price} kr</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
 
-              <div className="border-t border-border pt-4">
+              <div className="mt-auto border-t border-border pt-4">
                 {isSelected ? (
                   <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>
                     <BookingButton variant="primary" fullWidth>

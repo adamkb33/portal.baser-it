@@ -1,22 +1,12 @@
 import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData, useNavigation } from 'react-router';
-import { useEffect, useState, useMemo } from 'react';
-import {
-  Search,
-  X,
-  Clock,
-  DollarSign,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Image as ImageIcon,
-  ShoppingBag,
-  Sparkles,
-} from 'lucide-react';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import { Search, X, Clock, DollarSign, Check, Image as ImageIcon, ShoppingBag, Sparkles } from 'lucide-react';
 import { getSession } from '~/lib/appointments.server';
 import { type ActionFunctionArgs } from 'react-router';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '~/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
 import {
   PublicAppointmentSessionController,
   type AppointmentSessionDto,
@@ -24,7 +14,14 @@ import {
   type GroupedServiceDto,
 } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { BookingContainer, BookingPageHeader, BookingButton, BookingCard } from '../../_components/booking-layout';
+import {
+  BookingBottomNav,
+  BookingBottomNavSpacer,
+  BookingContainer,
+  BookingPageHeader,
+  BookingButton,
+  BookingCard,
+} from '../../_components/booking-layout';
 import { handleRouteError, type RouteData } from '~/lib/api-error';
 
 export type AppointmentsSelectServicesLoaderData = RouteData<{
@@ -208,8 +205,6 @@ interface ServiceGroupProps {
   group: GroupedServiceGroupDto;
   selectedServices: Set<number>;
   onToggleService: (serviceId: number) => void;
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
   onViewImages: (service: GroupedServiceDto) => void;
 }
 
@@ -217,64 +212,46 @@ function ServiceGroup({
   group,
   selectedServices,
   onToggleService,
-  onSelectAll,
-  onDeselectAll,
   onViewImages,
 }: ServiceGroupProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
-
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const selectedInGroup = group.services.filter((s) => selectedServices.has(s.id)).length;
-  const allSelected = selectedInGroup === group.services.length;
-  const someSelected = selectedInGroup > 0 && !allSelected;
+
+  const handleAccordionChange = (nextValue: string | undefined) => {
+    if (nextValue) {
+      requestAnimationFrame(() => {
+        containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+  };
 
   return (
-    <section className="rounded-lg border border-card-border bg-card">
-      {/* Group Header */}
-      <button
-        type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex w-full items-center justify-between gap-3 p-3 text-left transition-colors hover:bg-card-accent/5 md:p-4"
+    <div ref={containerRef}>
+      <Accordion
+        type="single"
+        collapsible
+        onValueChange={handleAccordionChange}
+        className="rounded-lg border border-card-border bg-card"
       >
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h2 className="text-base font-bold text-card-text md:text-lg">{group.name}</h2>
-
-            {selectedInGroup > 0 && (
-              <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">
-                {selectedInGroup} valgt
-              </span>
-            )}
-          </div>
-
-          <p className="mt-0.5 text-xs text-muted-foreground md:text-sm">
-            {group.services.length} {group.services.length === 1 ? 'tjeneste' : 'tjenester'}
-          </p>
+        <AccordionItem value={String(group.id)} className="border-none">
+          <div className="flex items-start gap-3 px-3 py-3 md:px-4 md:py-4">
+            <AccordionTrigger className="flex-1 p-0 text-left hover:no-underline">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <h2 className="text-base font-bold text-card-text md:text-lg">{group.name}</h2>
+                {selectedInGroup > 0 && (
+                  <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">
+                    {selectedInGroup} valgt
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground md:text-sm">
+                {group.services.length} {group.services.length === 1 ? 'tjeneste' : 'tjenester'}
+              </p>
+            </div>
+          </AccordionTrigger>
         </div>
-
-        <div className="flex items-center gap-2">
-          {/* Quick select all */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              allSelected || someSelected ? onDeselectAll() : onSelectAll();
-            }}
-            className="rounded-lg border border-card-border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
-          >
-            {allSelected || someSelected ? 'Fjern alle' : 'Velg alle'}
-          </button>
-
-          {isExpanded ? (
-            <ChevronUp className="size-5 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="size-5 text-muted-foreground" />
-          )}
-        </div>
-      </button>
-
-      {/* Services Grid - Collapsible */}
-      {isExpanded && (
-        <div className="border-t border-card-border p-3 md:p-4">
+        <AccordionContent className="border-t border-card-border p-3 md:p-4">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 lg:grid-cols-3 lg:gap-5">
             {group.services.map((service) => (
               <ServiceCard
@@ -286,9 +263,10 @@ function ServiceGroup({
               />
             ))}
           </div>
-        </div>
-      )}
-    </section>
+        </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
   );
 }
 
@@ -352,22 +330,6 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
       } else {
         newSet.add(serviceId);
       }
-      return newSet;
-    });
-  };
-
-  const selectAllInGroup = (group: GroupedServiceGroupDto) => {
-    setSelectedServices((prev) => {
-      const newSet = new Set(prev);
-      group.services.forEach((service) => newSet.add(service.id));
-      return newSet;
-    });
-  };
-
-  const deselectAllInGroup = (group: GroupedServiceGroupDto) => {
-    setSelectedServices((prev) => {
-      const newSet = new Set(prev);
-      group.services.forEach((service) => newSet.delete(service.id));
       return newSet;
     });
   };
@@ -439,8 +401,6 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
                   group={group}
                   selectedServices={selectedServices}
                   onToggleService={toggleService}
-                  onSelectAll={() => selectAllInGroup(group)}
-                  onDeselectAll={() => deselectAllInGroup(group)}
                   onViewImages={setDialogService}
                 />
               ))
@@ -461,40 +421,19 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
         </div>
       </BookingContainer>
 
-      {/* ========================================
-          STICKY FLOATING SUMMARY - Mobile
-          ======================================== */}
       {hasSelections && (
-        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-card-border bg-background shadow-2xl md:hidden">
-          <div className="p-3">
-            {/* Summary */}
-            <div className="mb-3 rounded-lg bg-primary/5 p-3">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex size-8 items-center justify-center rounded-full bg-primary">
-                    <ShoppingBag className="size-4 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">
-                      {selectedServices.size} {selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}
-                    </p>
-                    <p className="text-sm font-bold text-card-text">
-                      {totalPrice} kr · {totalDuration} min
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedServices(new Set())}
-                  className="text-xs font-medium text-destructive hover:underline"
-                >
-                  Fjern alle
-                </button>
-              </div>
-            </div>
-
-            {/* Continue button */}
+        <BookingBottomNav
+          title="Oppsummering"
+          items={[
+            {
+              label: 'Tjenester',
+              value: `${selectedServices.size} ${selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}`,
+              icon: <ShoppingBag className="size-4" />,
+            },
+            { label: 'Varighet', value: `${totalDuration} min` },
+            { label: 'Pris', value: `${totalPrice} kr` },
+          ]}
+          primaryAction={
             <Form method="post">
               {Array.from(selectedServices).map((serviceId) => (
                 <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
@@ -511,9 +450,21 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
                 Fortsett til tidspunkt
               </BookingButton>
             </Form>
-          </div>
-        </div>
+          }
+          secondaryAction={
+            <BookingButton
+              type="button"
+              variant="outline"
+              size="md"
+              fullWidth
+              onClick={() => setSelectedServices(new Set())}
+            >
+              Fjern alle
+            </BookingButton>
+          }
+        />
       )}
+
 
       {/* ========================================
           DESKTOP SUMMARY SIDEBAR

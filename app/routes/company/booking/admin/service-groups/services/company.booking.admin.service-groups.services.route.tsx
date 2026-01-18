@@ -1,7 +1,6 @@
 import { useFetcher, useNavigate, useSearchParams } from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import type { ServiceDto, ServiceGroupDto } from 'tmp/openapi/gen/booking';
 import { Button } from '~/components/ui/button';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import { FormDialog } from '~/components/dialog/form-dialog';
@@ -11,7 +10,7 @@ import { TableCell, TableRow } from '~/components/ui/table';
 import { Badge } from '~/components/ui/badge';
 import { fileToBase64 } from '~/lib/file.utils';
 import { withAuth } from '~/api/utils/with-auth';
-import { ServiceController, ServiceGroupController } from '~/api/generated/booking';
+import { ServiceController, CompanyUserServiceGroupController, type ServiceGroupDto, type ServiceDto } from '~/api/generated/booking';
 import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import type { Route } from './+types/company.booking.admin.service-groups.services.route';
@@ -27,7 +26,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     const [serviceGroupsResponse, servicesResponse] = await withAuth(request, async () => {
       return Promise.all([
-        ServiceGroupController.getServiceGroups({
+        CompanyUserServiceGroupController.getServiceGroups({
           query: {
             page: 0,
             size: 1000,

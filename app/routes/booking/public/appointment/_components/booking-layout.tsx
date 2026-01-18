@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
-import { cn } from '~/lib/utils';
+import { type ReactNode, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+import { cn } from '@/lib/utils';
 
 /* ========================================
    BOOKING PAGE HEADER
@@ -421,4 +422,47 @@ export function BookingCard({ children, selected = false, disabled = false, onCl
       {children}
     </div>
   );
+}
+
+/* ========================================
+   BOOKING BOTTOM NAV
+   Fixed mobile summary + actions
+   ======================================== */
+
+interface BookingBottomNavProps {
+  title?: string;
+  items: Array<{ label: string; value: ReactNode; icon?: ReactNode }>;
+  primaryAction: ReactNode;
+  secondaryAction?: ReactNode;
+  className?: string;
+}
+
+export function BookingBottomNav({ title, items, primaryAction, secondaryAction, className }: BookingBottomNavProps) {
+  const mountNode = useMemo(() => (typeof document === 'undefined' ? null : document.body), []);
+
+  if (!mountNode) return null;
+
+  return createPortal(
+    <div
+      className={cn(
+        'fixed bottom-0 left-0 right-0 z-50 border-t border-card-border bg-background shadow-2xl md:hidden',
+        'pb-[env(safe-area-inset-bottom)]',
+        className,
+      )}
+    >
+      <div className="space-y-3 p-4">
+        {title && <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>}
+        <BookingMeta items={items} layout="compact" />
+        <div className="space-y-2">
+          {primaryAction}
+          {secondaryAction}
+        </div>
+      </div>
+    </div>,
+    mountNode,
+  );
+}
+
+export function BookingBottomNavSpacer({ className }: { className?: string }) {
+  return <div className={cn('h-24 md:hidden', className)} aria-hidden="true" />;
 }

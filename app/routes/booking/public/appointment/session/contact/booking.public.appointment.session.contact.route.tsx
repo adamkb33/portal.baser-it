@@ -113,6 +113,14 @@ export default function AppointmentsContactForm() {
     );
   }
 
+  const normalizeMobileNumber = (value?: string) => {
+    if (!value) return '';
+    const trimmed = value.trim();
+    if (trimmed.startsWith('+47')) return trimmed.slice(3).trim();
+    if (trimmed.startsWith('47') && trimmed.length > 2) return trimmed.slice(2).trim();
+    return trimmed;
+  };
+
   const initialValues = existingContact
     ? {
         id: existingContact.id,
@@ -120,7 +128,7 @@ export default function AppointmentsContactForm() {
         givenName: existingContact.givenName,
         familyName: existingContact.familyName,
         email: existingContact.email?.value ?? '',
-        mobileNumber: existingContact.mobileNumber?.value ?? '',
+        mobileNumber: normalizeMobileNumber(existingContact.mobileNumber?.value),
       }
     : undefined;
 
