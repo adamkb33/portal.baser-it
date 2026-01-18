@@ -7,7 +7,7 @@ import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
 } from 'react-router';
-import { CheckCircle2, Edit3, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Edit3 } from 'lucide-react';
 import type { ContactDto } from '~/api/generated/identity';
 import type { AppointmentSessionDto } from '~/api/generated/booking';
 import { SubmitContactForm } from '~/routes/booking/public/appointment/session/contact/_forms/submit-contact.form';
@@ -16,12 +16,13 @@ import { ROUTES_MAP } from '~/lib/route-tree';
 import { PublicCompanyContactController } from '~/api/generated/identity';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import {
-  BookingBottomNav,
-  BookingBottomNavSpacer,
   BookingContainer,
   BookingSection,
   BookingButton,
   BookingMeta,
+  BookingErrorBanner,
+  BookingStepHeader,
+  BookingSummary,
 } from '../../_components/booking-layout';
 import type { SubmitContactFormSchema } from './_schemas/submit-contact.form.schema';
 import { handleRouteError, type RouteData } from '~/lib/api-error';
@@ -158,29 +159,15 @@ export default function AppointmentsContactForm() {
   return (
     <>
       <BookingContainer>
-      {/* ========================================
-          ERROR BANNER - Sticky on mobile for visibility
-          ======================================== */}
-      {error && (
-        <div className="sticky top-0 z-10 border-b border-destructive/20 bg-destructive/10 md:relative md:rounded-lg md:border">
-          <div className="flex items-start gap-3 p-3 md:p-4">
-            <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-destructive md:text-base">Noe gikk galt</p>
-              <p className="mt-1 text-xs text-destructive/90 md:text-sm">{error}</p>
-            </div>
-          </div>
-        </div>
-      )}
+        {error && <BookingErrorBanner message={error} sticky />}
 
-      {/* ========================================
-          PAGE HEADER - Mobile-optimized typography
-          ======================================== */}
-      <BookingSection
-        label="Kontaktinformasjon"
-        title="Hvem skal vi registrere avtalen på?"
-        className="space-y-4 md:space-y-6"
-      >
+        <BookingStepHeader
+          label="Kontaktinformasjon"
+          title="Hvem skal vi registrere avtalen på?"
+          className="mb-4 md:mb-6"
+        />
+
+        <BookingSection className="space-y-4 md:space-y-6">
         {/* ========================================
             EXISTING CONTACT - Compact card on mobile
             ======================================== */}
@@ -197,31 +184,22 @@ export default function AppointmentsContactForm() {
             {/* Existing contact - Ultra-compact card */}
             <div className="rounded-lg border border-card-border bg-card-muted-bg p-3 md:p-4">
               {/* Contact details - Inline labels on mobile, stacked on desktop */}
-              <dl className="space-y-2 md:space-y-2.5 flex gap-6">
-                {/* Name */}
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                  <dt className="text-xs font-medium text-muted-foreground">Navn:</dt>
-                  <dd className="text-sm font-semibold text-card-text md:text-base">
-                    {existingContact.givenName} {existingContact.familyName}
-                  </dd>
-                </div>
-
-                {/* Email */}
-                {existingContact.email?.value && (
-                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                    <dt className="text-xs font-medium text-muted-foreground">E-post:</dt>
-                    <dd className="text-sm text-card-text md:text-base">{existingContact.email.value}</dd>
-                  </div>
-                )}
-
-                {/* Mobile */}
-                {existingContact.mobileNumber?.value && (
-                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                    <dt className="text-xs font-medium text-muted-foreground">Mobil:</dt>
-                    <dd className="text-sm text-card-text md:text-base">{existingContact.mobileNumber.value}</dd>
-                  </div>
-                )}
-              </dl>
+              <BookingMeta
+                layout="compact"
+                className="space-y-2 md:space-y-2.5"
+                items={[
+                  {
+                    label: 'Navn',
+                    value: `${existingContact.givenName} ${existingContact.familyName}`,
+                  },
+                  ...(existingContact.email?.value
+                    ? [{ label: 'E-post', value: existingContact.email.value }]
+                    : []),
+                  ...(existingContact.mobileNumber?.value
+                    ? [{ label: 'Mobil', value: existingContact.mobileNumber.value }]
+                    : []),
+                ]}
+              />
 
               {/* Edit hint - Minimal */}
               <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
@@ -254,34 +232,37 @@ export default function AppointmentsContactForm() {
           isSubmitting={isSubmitting}
           formId={formId}
         />
-      </BookingSection>
+        </BookingSection>
       </BookingContainer>
-      <BookingBottomNav
-      title="Neste steg"
-      items={[
-        { label: 'Steg', value: 'Kontaktinformasjon' },
-        { label: 'Neste', value: 'Velg behandler' },
-      ]}
-      primaryAction={
-        <BookingButton
-          type="submit"
-          form={formId}
-          variant="primary"
-          size="lg"
-          fullWidth
-          disabled={isSubmitting}
-          loading={isSubmitting}
-        >
-          Fortsett
-        </BookingButton>
-      }
-      secondaryAction={
-        <Link to={ROUTES_MAP['booking.public.appointment'].href}>
-          <BookingButton type="button" variant="outline" size="md" fullWidth>
-            Tilbake
-          </BookingButton>
-        </Link>
-      }
+
+      <BookingSummary
+        mobile={{
+          title: 'Neste steg',
+          items: [
+            { label: 'Steg', value: 'Kontaktinformasjon' },
+            { label: 'Neste', value: 'Velg behandler' },
+          ],
+          primaryAction: (
+            <BookingButton
+              type="submit"
+              form={formId}
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={isSubmitting}
+              loading={isSubmitting}
+            >
+              Fortsett
+            </BookingButton>
+          ),
+          secondaryAction: (
+            <Link to={ROUTES_MAP['booking.public.appointment'].href}>
+              <BookingButton type="button" variant="outline" size="md" fullWidth>
+                Tilbake
+              </BookingButton>
+            </Link>
+          ),
+        }}
       />
     </>
   );

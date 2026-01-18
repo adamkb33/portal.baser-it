@@ -7,7 +7,7 @@ import { ROUTES_MAP } from '~/lib/route-tree';
 import { formatCompactDate, formatFullDate, formatTime } from '~/lib/date.utils';
 import { appointmentSessionSelectTimeAction } from './_features/appointment.session.select-time.loader';
 import { appointmentSessionSelectTimeLoader } from './_features/appointment.session.select-time.action';
-import { BookingBottomNav, BookingBottomNavSpacer, BookingContainer, BookingPageHeader, BookingButton } from '../../_components/booking-layout';
+import { BookingContainer, BookingStepHeader, BookingButton, BookingSummary } from '../../_components/booking-layout';
 import type { RouteData } from '~/lib/api-error';
 
 export type AppointmentsSelectTimeLoaderData = RouteData<{
@@ -232,7 +232,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
   if (!loaderData.ok || !session) {
     return (
       <BookingContainer>
-        <BookingPageHeader title="Velg tidspunkt" description={loaderData.ok ? 'Ugyldig økt' : loaderData.error.message} />
+        <BookingStepHeader title="Velg tidspunkt" description={loaderData.ok ? 'Ugyldig økt' : loaderData.error.message} />
       </BookingContainer>
     );
   }
@@ -328,8 +328,9 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
         {/* ========================================
             PAGE HEADER
             ======================================== */}
-        <BookingPageHeader
-          title="Velg tidspunkt"
+        <BookingStepHeader
+          label='Velg tidspunkt'
+          title="Hva er ett tidspunkt du ønsker?"
           description={displayTime ? 'Valgt tidspunkt kan endres' : 'Velg dato og klokkeslett for avtalen'}
         />
 
@@ -549,74 +550,71 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
       </BookingContainer>
 
       {displayTime && (
-        <BookingBottomNav
-          title="Oppsummering"
-          items={[
-            { label: 'Dato', value: formatFullDate(displayTime) },
-            { label: 'Tid', value: `kl. ${formatTime(displayTime)}` },
-          ]}
-          primaryAction={
-            <BookingButton
-              variant="primary"
-              size="lg"
-              fullWidth
-              onClick={handleSubmit}
-              loading={isSubmitting}
-              disabled={isSubmitting}
-            >
-              Gå til oversikt →
-            </BookingButton>
-          }
-          secondaryAction={
-            <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>
-              <BookingButton type="button" variant="outline" size="md" fullWidth>
-                Tilbake
-              </BookingButton>
-            </Link>
-          }
-        />
-      )}
-
-      {/* ========================================
-          DESKTOP STICKY CTA
-          ======================================== */}
-      {displayTime && (
-        <div className="sticky bottom-4 hidden rounded-lg border border-primary bg-primary p-4 text-primary-foreground shadow-lg md:block">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-full bg-primary-foreground/20">
-                <Check className="size-6 text-primary-foreground" strokeWidth={3} />
-              </div>
-              <div>
-                <p className="text-xs font-medium opacity-80">Valgt tidspunkt</p>
-                <p className="text-base font-bold">
-                  {formatFullDate(displayTime)} kl. {formatTime(displayTime)}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleClearSelection}
-                className="flex items-center gap-2 rounded-lg bg-primary-foreground/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary-foreground/30"
-              >
-                <X className="size-4" />
-                Fjern
-              </button>
-
+        <BookingSummary
+          mobile={{
+            title: 'Oppsummering',
+            items: [
+              { label: 'Dato', value: formatFullDate(displayTime) },
+              { label: 'Tid', value: `kl. ${formatTime(displayTime)}` },
+            ],
+            primaryAction: (
               <BookingButton
-                variant="secondary"
-                size="md"
+                variant="primary"
+                size="lg"
+                fullWidth
                 onClick={handleSubmit}
                 loading={isSubmitting}
                 disabled={isSubmitting}
               >
                 Gå til oversikt →
               </BookingButton>
+            ),
+            secondaryAction: (
+              <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>
+                <BookingButton type="button" variant="outline" size="md" fullWidth>
+                  Tilbake
+                </BookingButton>
+              </Link>
+            ),
+          }}
+          desktopClassName="sticky bottom-4 rounded-lg border border-primary bg-primary p-4 text-primary-foreground shadow-lg"
+          desktop={
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex size-12 items-center justify-center rounded-full bg-primary-foreground/20">
+                  <Check className="size-6 text-primary-foreground" strokeWidth={3} />
+                </div>
+                <div>
+                  <p className="text-xs font-medium opacity-80">Valgt tidspunkt</p>
+                  <p className="text-base font-bold">
+                    {formatFullDate(displayTime)} kl. {formatTime(displayTime)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  className="flex items-center gap-2 rounded-lg bg-primary-foreground/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary-foreground/30"
+                >
+                  <X className="size-4" />
+                  Fjern
+                </button>
+
+                <BookingButton
+                  variant="secondary"
+                  size="md"
+                  onClick={handleSubmit}
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                >
+                  Gå til oversikt →
+                </BookingButton>
+              </div>
             </div>
-          </div>
-        </div>
+          }
+        />
       )}
 
     </>

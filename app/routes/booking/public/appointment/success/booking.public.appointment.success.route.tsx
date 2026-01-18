@@ -17,7 +17,7 @@ import { cn } from '~/lib/utils';
 import type { CompanySummaryDto } from '~/api/generated/identity';
 import { PublicCompanyController } from '~/api/generated/identity';
 import { AppointmentsController } from '~/api/generated/booking';
-import { BookingContainer, BookingPageHeader, BookingButton, BookingCard } from '../_components/booking-layout';
+import { BookingContainer, BookingStepHeader, BookingButton, BookingCard } from '../_components/booking-layout';
 import { handleRouteError, type RouteData } from '~/lib/api-error';
 
 export type BookingPublicAppointmentSessionSuccessRouteLoaderData = RouteData<{
@@ -63,7 +63,7 @@ export default function BookingPublicAppointmentSessionSuccessRoute() {
   if (!loaderData.ok) {
     return (
       <BookingContainer>
-        <BookingPageHeader title="Timen er bekreftet" description={loaderData.error.message} />
+        <BookingStepHeader title="Timen er bekreftet" description={loaderData.error.message} />
       </BookingContainer>
     );
   }

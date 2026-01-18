@@ -15,12 +15,11 @@ import {
 } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import {
-  BookingBottomNav,
   BookingContainer,
-  BookingPageHeader,
   BookingButton,
-  BookingCard,
-  BookingBottomNavSpacer,
+  BookingStepHeader,
+  SelectableCard,
+  BookingSummary,
 } from '../../_components/booking-layout';
 import { handleRouteError, type RouteData } from '~/lib/api-error';
 
@@ -93,7 +92,7 @@ function ServiceCard({ service, isSelected, onToggle, onViewImages }: ServiceCar
   const previewImage = hasImages ? service.images && service.images[0] : null;
 
   return (
-    <BookingCard
+    <SelectableCard
       selected={isSelected}
       onClick={onToggle}
       className={cn('group relative overflow-hidden transition-all', isSelected && 'ring-2 ring-primary ring-offset-2')}
@@ -193,7 +192,7 @@ function ServiceCard({ service, isSelected, onToggle, onViewImages }: ServiceCar
           )}
         </button>
       </div>
-    </BookingCard>
+    </SelectableCard>
   );
 }
 
@@ -294,7 +293,7 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
   if (!loaderData.ok || !session) {
     return (
       <BookingContainer>
-        <BookingPageHeader title="Velg tjenester" description={loaderData.ok ? 'Ugyldig økt' : loaderData.error.message} />
+        <BookingStepHeader title="Velg tjenester" description={loaderData.ok ? 'Ugyldig økt' : loaderData.error.message} />
       </BookingContainer>
     );
   }
@@ -354,8 +353,9 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
         {/* ========================================
             PAGE HEADER
             ======================================== */}
-        <BookingPageHeader
-          title="Velg tjenester"
+        <BookingStepHeader
+          label='Velg tjenester'
+          title="Hvilke tjenester ønsker du?"
           description={`Velg én eller flere tjenester fra ${totalServices} tilgjengelige tjenester.`}
         />
 
@@ -421,10 +421,11 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
         </div>
       </BookingContainer>
 
-      {hasSelections && (
-        <BookingBottomNav
-          title="Oppsummering"
-          items={[
+      <BookingSummary
+        show={hasSelections}
+        mobile={{
+          title: 'Oppsummering',
+          items: [
             {
               label: 'Tjenester',
               value: `${selectedServices.size} ${selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}`,
@@ -432,8 +433,8 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
             },
             { label: 'Varighet', value: `${totalDuration} min` },
             { label: 'Pris', value: `${totalPrice} kr` },
-          ]}
-          primaryAction={
+          ],
+          primaryAction: (
             <Form method="post">
               {Array.from(selectedServices).map((serviceId) => (
                 <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
@@ -450,108 +451,101 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
                 Fortsett til tidspunkt
               </BookingButton>
             </Form>
-          }
-          secondaryAction={
+          ),
+          secondaryAction: (
             <Link to={ROUTES_MAP['booking.public.appointment.session.employee'].href}>
               <BookingButton type="button" variant="outline" size="md" fullWidth>
                 Tilbake
               </BookingButton>
             </Link>
-          }
-        />
-      )}
-
-      {/* ========================================
-          DESKTOP SUMMARY SIDEBAR
-          ======================================== */}
-      {hasSelections && (
-        <div className="sticky top-4 hidden rounded-lg border border-card-border bg-card p-4 md:block">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-full bg-primary">
-              <ShoppingBag className="size-5 text-primary-foreground" />
+          ),
+        }}
+        desktopClassName="sticky top-4 rounded-lg border border-card-border bg-card p-4"
+        desktop={
+          <>
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-full bg-primary">
+                <ShoppingBag className="size-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-card-text">Valgte tjenester</h3>
+                <p className="text-sm text-muted-foreground">
+                  {selectedServices.size} {selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-bold text-card-text">Valgte tjenester</h3>
-              <p className="text-sm text-muted-foreground">
-                {selectedServices.size} {selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}
-              </p>
-            </div>
-          </div>
 
-          {/* Selected services list */}
-          <div className="mb-4 space-y-2">
-            {selectedServicesList.map((service) => (
-              <div
-                key={service.id}
-                className="flex items-start justify-between gap-3 rounded-lg border border-card-border bg-card-accent/5 p-2.5"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-medium text-card-text">{service.name}</p>
-                  <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock className="size-3" />
-                      {service.duration} min
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <DollarSign className="size-3" />
-                      {service.price} kr
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => toggleService(service.id)}
-                  className="shrink-0 rounded p-1 transition-colors hover:bg-destructive/10"
+            <div className="mb-4 space-y-2">
+              {selectedServicesList.map((service) => (
+                <div
+                  key={service.id}
+                  className="flex items-start justify-between gap-3 rounded-lg border border-card-border bg-card-accent/5 p-2.5"
                 >
-                  <X className="size-4 text-destructive" />
-                </button>
-              </div>
-            ))}
-          </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate text-sm font-medium text-card-text">{service.name}</p>
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="size-3" />
+                        {service.duration} min
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <DollarSign className="size-3" />
+                        {service.price} kr
+                      </span>
+                    </div>
+                  </div>
 
-          {/* Total */}
-          <div className="mb-4 rounded-lg bg-primary/5 p-3">
-            <div className="flex items-baseline justify-between">
-              <span className="text-sm font-semibold text-card-text">Totalt</span>
-              <div className="text-right">
-                <p className="text-lg font-bold text-primary">{totalPrice} kr</p>
-                <p className="text-xs text-muted-foreground">{totalDuration} min</p>
+                  <button
+                    type="button"
+                    onClick={() => toggleService(service.id)}
+                    className="shrink-0 rounded p-1 transition-colors hover:bg-destructive/10"
+                  >
+                    <X className="size-4 text-destructive" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="mb-4 rounded-lg bg-primary/5 p-3">
+              <div className="flex items-baseline justify-between">
+                <span className="text-sm font-semibold text-card-text">Totalt</span>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-primary">{totalPrice} kr</p>
+                  <p className="text-xs text-muted-foreground">{totalDuration} min</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Actions */}
-          <div className="space-y-2">
-            <Form method="post">
-              {Array.from(selectedServices).map((serviceId) => (
-                <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
-              ))}
-              <BookingButton
-                type="submit"
-                variant="primary"
-                size="md"
-                fullWidth
-                loading={isSubmitting}
-                disabled={isSubmitting}
+            <div className="space-y-2">
+              <Form method="post">
+                {Array.from(selectedServices).map((serviceId) => (
+                  <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
+                ))}
+                <BookingButton
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  fullWidth
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                >
+                  <Sparkles className="size-4" />
+                  Fortsett til tidspunkt
+                </BookingButton>
+              </Form>
+
+              <button
+                type="button"
+                onClick={() => setSelectedServices(new Set())}
+                className="w-full text-center text-sm font-medium text-destructive hover:underline"
               >
-                <Sparkles className="size-4" />
-                Fortsett til tidspunkt
-              </BookingButton>
-            </Form>
+                Fjern alle valg
+              </button>
+            </div>
+          </>
+        }
+      />
 
-            <button
-              type="button"
-              onClick={() => setSelectedServices(new Set())}
-              className="w-full text-center text-sm font-medium text-destructive hover:underline"
-            >
-              Fjern alle valg
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Spacer for mobile sticky summary */}
       {hasSelections && <div className="h-32 md:hidden" aria-hidden="true" />}
 
       {/* ========================================

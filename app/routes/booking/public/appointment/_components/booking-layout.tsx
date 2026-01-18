@@ -1,5 +1,7 @@
-import { type ReactNode, useLayoutEffect, useMemo, useRef } from 'react';
+import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Form } from 'react-router';
+import { AlertCircle, ChevronDown, ChevronUp, Edit3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /* ========================================
@@ -41,6 +43,60 @@ export function BookingPageHeader({ label, title, description, meta, className }
         {meta && <div className="shrink-0">{meta}</div>}
       </div>
     </header>
+  );
+}
+
+/* ========================================
+  BOOKING STEP HEADER
+  Consistent header across wizard steps
+  ======================================== */
+
+interface BookingStepHeaderProps {
+  label?: string;
+  title: string;
+  description?: string;
+  status?: ReactNode;
+  className?: string;
+}
+
+export function BookingStepHeader({ label, title, description, status, className }: BookingStepHeaderProps) {
+  return <BookingPageHeader label={label} title={title} description={description} meta={status} className={className} />;
+}
+
+/* ========================================
+  BOOKING ERROR BANNER
+  Standard error presentation
+  ======================================== */
+
+interface BookingErrorBannerProps {
+  message: string;
+  title?: string;
+  sticky?: boolean;
+  className?: string;
+}
+
+export function BookingErrorBanner({
+  message,
+  title = 'Noe gikk galt',
+  sticky = false,
+  className,
+}: BookingErrorBannerProps) {
+  return (
+    <div
+      className={cn(
+        'border-b border-destructive/20 bg-destructive/10 md:rounded-lg md:border md:border-destructive/20',
+        sticky && 'sticky top-0 z-10 md:relative',
+        className,
+      )}
+    >
+      <div className="flex items-start gap-3 p-3 md:p-4">
+        <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-destructive md:text-base">{title}</p>
+          <p className="mt-1 text-xs text-destructive/90 md:text-sm">{message}</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -430,11 +486,138 @@ export function BookingCard({ children, selected = false, disabled = false, onCl
 }
 
 /* ========================================
+  SELECTABLE CARD
+  Accessible, interactive card base
+  ======================================== */
+
+interface SelectableCardProps {
+  children: ReactNode;
+  selected?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  className?: string;
+  ariaLabel?: string;
+}
+
+export function SelectableCard({
+  children,
+  selected = false,
+  disabled = false,
+  onClick,
+  className,
+  ariaLabel,
+}: SelectableCardProps) {
+  const isInteractive = !!onClick && !disabled;
+
+  return (
+    <div
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      aria-selected={isInteractive ? selected : undefined}
+      aria-label={ariaLabel}
+      onClick={isInteractive ? onClick : undefined}
+      onKeyDown={
+        isInteractive
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
+      className={cn(
+        'rounded-lg border-2 p-3 transition-all md:p-4',
+        isInteractive && [
+          'cursor-pointer',
+          'hover:border-card-interactive-hover-border',
+          'hover:bg-card-interactive-hover-bg',
+          'active:bg-card-interactive-active-bg',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-card-interactive-ring',
+        ],
+        selected && ['border-primary bg-primary/5', 'shadow-sm'],
+        !selected && 'border-card-border bg-card',
+        disabled && 'cursor-not-allowed opacity-50',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ========================================
+  COLLAPSIBLE CARD
+  ======================================== */
+
+interface CollapsibleCardProps {
+  title: string;
+  icon: ReactNode;
+  children: ReactNode;
+  defaultOpen?: boolean;
+  editLink?: string;
+  badge?: ReactNode;
+  className?: string;
+}
+
+export function CollapsibleCard({
+  title,
+  icon,
+  children,
+  defaultOpen = true,
+  editLink,
+  badge,
+  className,
+}: CollapsibleCardProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <BookingCard className={cn('overflow-hidden', className)}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center justify-between gap-3 transition-colors hover:bg-card-hover-bg"
+      >
+        <div className="flex flex-1 items-center gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10">{icon}</div>
+          <div className="flex-1 text-left">
+            <h3 className="text-base font-bold text-card-text md:text-lg">{title}</h3>
+          </div>
+          {badge}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {editLink && (
+            <Form method="get" action={editLink} onClick={(e) => e.stopPropagation()}>
+              <button
+                type="submit"
+                className="flex items-center gap-1.5 rounded-lg border border-card-border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted md:text-sm"
+              >
+                <Edit3 className="size-3 md:size-3.5" />
+                <span className="hidden sm:inline">Endre</span>
+              </button>
+            </Form>
+          )}
+
+          {isOpen ? (
+            <ChevronUp className="size-5 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="size-5 text-muted-foreground" />
+          )}
+        </div>
+      </button>
+
+      {isOpen && <div className="border-t border-card-border pt-3 md:pt-4">{children}</div>}
+    </BookingCard>
+  );
+}
+
+/* ========================================
    BOOKING BOTTOM NAV
    Fixed mobile summary + actions
    ======================================== */
 
-interface BookingBottomNavProps {
+export interface BookingBottomNavProps {
   title?: string;
   items: Array<{ label: string; value: ReactNode; icon?: ReactNode }>;
   primaryAction: ReactNode;
@@ -497,5 +680,28 @@ export function BookingBottomNavSpacer({ className }: { className?: string }) {
       style={{ height: 'var(--booking-bottom-nav-height, 0px)' }}
       aria-hidden="true"
     />
+  );
+}
+
+/* ========================================
+  BOOKING SUMMARY
+  Shared mobile sticky + desktop summary
+  ======================================== */
+
+interface BookingSummaryProps {
+  show?: boolean;
+  mobile?: BookingBottomNavProps;
+  desktop?: ReactNode;
+  desktopClassName?: string;
+}
+
+export function BookingSummary({ show = true, mobile, desktop, desktopClassName }: BookingSummaryProps) {
+  if (!show) return null;
+
+  return (
+    <>
+      {mobile && <BookingBottomNav {...mobile} />}
+      {desktop && <div className={cn('hidden md:block', desktopClassName)}>{desktop}</div>}
+    </>
   );
 }
