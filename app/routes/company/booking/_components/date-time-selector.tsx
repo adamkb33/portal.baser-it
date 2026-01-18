@@ -72,7 +72,7 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
   const availableTimeSlots = currentSchedule?.timeSlots || [];
 
   return (
-    <div className="space-y-5 md:space-y-4">
+    <div className="space-y-3 md:space-y-4 rounded-md p-2">
       {/* Date Selector */}
       <div className="space-y-3">
         <Label htmlFor="date" className="flex items-center gap-2 text-sm font-medium px-1">

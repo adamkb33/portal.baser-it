@@ -17,6 +17,16 @@ const DAY_ABBREV: Record<string, string> = {
   SUNDAY: 'Søndag',
 };
 
+const DAY_ORDER: Record<string, number> = {
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
+  SUNDAY: 7,
+};
+
 export const BookingProfileCard = React.forwardRef<HTMLElement, BookingProfileCardProps>(
   ({ bookingProfile, onEditProfile }, ref) => {
     const profileName =
@@ -28,6 +38,13 @@ export const BookingProfileCard = React.forwardRef<HTMLElement, BookingProfileCa
     const hasDescription = Boolean(bookingProfile?.description?.trim());
     const hasServices = Boolean(bookingProfile?.services && bookingProfile.services.length > 0);
     const hasDailySchedule = Boolean(bookingProfile?.dailySchedule && bookingProfile.dailySchedule.length > 0);
+
+    const sortedDailySchedule = React.useMemo(() => {
+      if (!bookingProfile?.dailySchedule) return [];
+      return [...bookingProfile.dailySchedule].sort((a, b) => {
+        return DAY_ORDER[a.dayOfWeek] - DAY_ORDER[b.dayOfWeek];
+      });
+    }, [bookingProfile?.dailySchedule]);
 
     const formatTimeRange = (startTime: string, endTime: string) => {
       return `${startTime.slice(0, 5)}–${endTime.slice(0, 5)}`;
@@ -62,7 +79,7 @@ export const BookingProfileCard = React.forwardRef<HTMLElement, BookingProfileCa
             <div>
               <h3 className="text-xs font-semibold text-card-text-muted uppercase tracking-wide mb-2">Din timeplan</h3>
               <div className="bg-content-bg rounded-lg p-3 border border-content-border space-y-1.5 md:w-md">
-                {bookingProfile!.dailySchedule.map((day, idx) => (
+                {sortedDailySchedule.map((day, idx) => (
                   <div
                     key={day.id}
                     className={`flex items-center justify-between text-xs px-2 py-1.5 rounded ${

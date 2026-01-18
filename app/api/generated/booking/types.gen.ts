@@ -236,6 +236,26 @@ export type ScheduleTimeSlot = {
     endTime: string;
 };
 
+export type ScheduleUnavailabilityRangeDto = {
+    from: string;
+    to: string;
+};
+
+export type ApiResponseListScheduleUnavailabilityDto = {
+    success: boolean;
+    message: string;
+    data?: Array<ScheduleUnavailabilityDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ScheduleUnavailabilityDto = {
+    profileId: number;
+    startTime: string;
+    endTime: string;
+};
+
 export type CreateOrUpdateCompanyUserProfile = {
     imageAction?: Delete | Upload;
     dailySchedules?: Array<DailyScheduleDto>;
@@ -829,6 +849,38 @@ export type GetScheduleResponses = {
 };
 
 export type GetScheduleResponse = GetScheduleResponses[keyof GetScheduleResponses];
+
+export type CompanyUserGetUnavailabilityRangesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/company-user/schedule-unavailability';
+};
+
+export type CompanyUserGetUnavailabilityRangesResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListScheduleUnavailabilityDto;
+};
+
+export type CompanyUserGetUnavailabilityRangesResponse = CompanyUserGetUnavailabilityRangesResponses[keyof CompanyUserGetUnavailabilityRangesResponses];
+
+export type CompanyUserCreateUnavailabilityRangesData = {
+    body: Array<ScheduleUnavailabilityRangeDto>;
+    path?: never;
+    query?: never;
+    url: '/company-user/schedule-unavailability';
+};
+
+export type CompanyUserCreateUnavailabilityRangesResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListScheduleUnavailabilityDto;
+};
+
+export type CompanyUserCreateUnavailabilityRangesResponse = CompanyUserCreateUnavailabilityRangesResponses[keyof CompanyUserCreateUnavailabilityRangesResponses];
 
 export type GetBookingProfileData = {
     body?: never;

@@ -61,7 +61,7 @@ export function ContactSelector({
   const canNextPage = pagination.page < pagination.totalPages - 1;
 
   return (
-    <div className="space-y-3 md:space-y-4">
+    <div className="space-y-3 md:space-y-4 p-2">
       <Label htmlFor="date" className="flex items-center gap-2 text-sm font-medium px-1">
         <User2Icon className="h-4 w-4" />
         <span>Velg eller legg til kontakt</span>
