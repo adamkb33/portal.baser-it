@@ -12,7 +12,6 @@ import { authService, AuthenticationError } from '~/lib/auth-service';
 import { logger } from '~/lib/logger';
 import { defaultResponse, refreshAndBuildResponse, buildResponseData } from './_features/root.loader';
 import { getFlashMessage } from './company/_lib/flash-message.server';
-import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import { FlashMessageBanner } from './_components/flash-message-banner';
 import { Button } from '~/components/ui/button';
 import { Footer } from './_components/footer';
@@ -20,7 +19,6 @@ import { DashWaveBackground } from './_components/backgrounds/dash-wave-backgrou
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const auth = await getAuthPayloadFromRequest(request);
     const { message: flashMessage } = await getFlashMessage(request);
     const { accessToken, refreshToken } = await authService.getTokensFromRequest(request);
 

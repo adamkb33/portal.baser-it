@@ -8,16 +8,25 @@ interface FlashMessageProps {
 
 export function FlashMessageBanner({ message }: FlashMessageProps) {
   const [isVisible, setIsVisible] = React.useState(false);
+  const safeMessage =
+    message &&
+    typeof message === 'object' &&
+    'type' in message &&
+    typeof message.type === 'string' &&
+    'text' in message &&
+    typeof message.text === 'string'
+      ? message
+      : null;
 
   React.useEffect(() => {
-    if (message) {
+    if (safeMessage) {
       setIsVisible(true);
       const hideTimer = setTimeout(() => setIsVisible(false), 5000);
       return () => clearTimeout(hideTimer);
     }
-  }, [message]);
+  }, [safeMessage]);
 
-  if (!message || !isVisible) {
+  if (!safeMessage || !isVisible) {
     return null;
   }
 
@@ -44,13 +53,13 @@ export function FlashMessageBanner({ message }: FlashMessageProps) {
     },
   };
 
-  const { icon: Icon, bg, text } = config[message.type];
+  const { icon: Icon, bg, text } = config[safeMessage.type] ?? config.info;
 
   return (
     <div className="fixed inset-x-0 top-0 z-50 p-4">
       <div className={`mx-auto flex max-w-md items-center gap-3 ${bg} ${text} p-4`}>
         <Icon className="h-5 w-5 shrink-0" />
-        <p className="flex-1 text-sm font-medium">{message.text}</p>
+        <p className="flex-1 text-sm font-medium">{safeMessage.text}</p>
         <button onClick={() => setIsVisible(false)} className="shrink-0 opacity-70 hover:opacity-100" aria-label="Lukk">
           <X className="h-4 w-4" />
         </button>
