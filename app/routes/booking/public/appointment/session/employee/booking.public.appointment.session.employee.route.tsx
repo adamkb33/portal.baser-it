@@ -1,11 +1,8 @@
 import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData, Link } from 'react-router';
-import type { BookingProfileDto } from 'tmp/openapi/gen/booking';
-import type { ApiClientError } from '~/api/clients/http';
-import { AppointmentSessionStepId, type AppointmentSessionDto } from '~/api/clients/types';
 import { getSession } from '~/lib/appointments.server';
-import { bookingApi } from '~/lib/utils';
 import { type ActionFunctionArgs } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import { handleRouteError, type RouteData } from '~/lib/api-error';
 import {
   BookingContainer,
   BookingPageHeader,
@@ -13,84 +10,87 @@ import {
   BookingSection,
   BookingButton,
 } from '../../_components/booking-layout';
+import { PublicAppointmentSessionController, type AppointmentSessionDto, type BookingProfileDto } from '~/api/generated/booking';
 
-export type AppointmentsEmployeeLoaderData = {
+export type AppointmentsEmployeeLoaderData = RouteData<{
   session: AppointmentSessionDto;
   profiles: BookingProfileDto[];
   selectedProfileId?: number;
-  error?: string;
-};
+}>;
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   try {
-    const session = await getSession(request);
+    const session = await getSession(args.request);
 
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
     if (
-      !session.steps?.some((step) => step.appointmentSessionStepId === AppointmentSessionStepId.SELECT_PROFILE) &&
+      !session.steps?.some((step) => step.appointmentSessionStepId === 'SELECT_PROFILE') &&
       session.selectedProfileId
     ) {
       return redirect(ROUTES_MAP['booking.public.appointment.session.select-services'].href);
     }
 
     const profilesResponse =
-      await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.getAppointmentSessionProfiles(
+      await PublicAppointmentSessionController.getAppointmentSessionProfiles(
         {
-          sessionId: session.sessionId,
-        },
+          query: {
+            sessionId: session.sessionId,
+          },
+        },  
       );
 
     return data<AppointmentsEmployeeLoaderData>({
+      ok: true,
       session,
-      profiles: profilesResponse.data || [],
+      profiles: profilesResponse.data?.data || [],
       selectedProfileId: session.selectedProfileId,
     });
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-
-    if (error as ApiClientError) {
-      return { error: (error as ApiClientError).body.message };
-    }
-
-    throw error;
+    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente frisører' });
   }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action(args: ActionFunctionArgs) {
   try {
-    const session = await getSession(request);
+    const session = await getSession(args.request);
 
     if (!session) {
       return ROUTES_MAP['booking.public.appointment'].href;
     }
 
-    const formData = await request.formData();
+    const formData = await args.request.formData();
     const selectedProfileId = formData.get('selectedProfileId') as string;
 
-    await bookingApi().PublicAppointmentSessionControllerService.PublicAppointmentSessionControllerService.selectAppointmentSessionProfile(
+    await PublicAppointmentSessionController.selectAppointmentSessionProfile(
       {
-        sessionId: session.sessionId,
-        selectedProfileId: Number(selectedProfileId),
+        query: {
+          sessionId: session.sessionId,
+          selectedProfileId: Number(selectedProfileId),
+        },
       },
     );
 
     return redirect(ROUTES_MAP['booking.public.appointment.session.select-services'].href);
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
+    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke velge frisør' });
   }
 }
 
 export default function AppointmentsEmployee() {
-  const { profiles, selectedProfileId } = useLoaderData<AppointmentsEmployeeLoaderData>();
-  console.log(profiles);
+  const loaderData = useLoaderData<AppointmentsEmployeeLoaderData>();
+  const profiles = loaderData.ok ? loaderData.profiles : [];
+  const selectedProfileId = loaderData.ok ? loaderData.selectedProfileId : undefined;
+
+  if (!loaderData.ok) {
+    return (
+      <BookingContainer>
+        <BookingPageHeader title="Velg frisør" description={loaderData.error.message} />
+      </BookingContainer>
+    );
+  }
 
   return (
     <BookingContainer>
@@ -131,18 +131,27 @@ export default function AppointmentsEmployee() {
                 </div>
               </div>
 
-              {profile.services && profile.services.length > 0 && (
-                <div className="border-t border-border pt-4 space-y-2">
+              {profile.services.length > 0 && (
+                <div className="border-t border-border pt-4 space-y-3">
                   <span className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
                     Tjenester
                   </span>
-                  <div className="space-y-2">
-                    {profile.services.map((service) => (
-                      <div key={service.id} className="flex items-baseline justify-between gap-2">
-                        <span className="text-sm text-foreground">{service.name}</span>
-                        <div className="flex items-baseline gap-2 flex-shrink-0">
-                          <span className="text-xs text-muted-foreground">{service.duration} min</span>
-                          <span className="text-sm font-medium text-foreground">{service.price} kr</span>
+                  <div className="space-y-3">
+                    {profile.services.map((group) => (
+                      <div key={group.id} className="space-y-2">
+                        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                          {group.name}
+                        </div>
+                        <div className="space-y-2">
+                          {group.services.map((service) => (
+                            <div key={service.id} className="flex items-baseline justify-between gap-2">
+                              <span className="text-sm text-foreground">{service.name}</span>
+                              <div className="flex items-baseline gap-2 flex-shrink-0">
+                                <span className="text-xs text-muted-foreground">{service.duration} min</span>
+                                <span className="text-sm font-medium text-foreground">{service.price} kr</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}

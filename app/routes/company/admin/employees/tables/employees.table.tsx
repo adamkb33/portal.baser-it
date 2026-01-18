@@ -4,13 +4,13 @@ import { useSubmit, useNavigate, useSearchParams } from 'react-router';
 import { Button } from '~/components/ui/button';
 import { TableCell, TableRow } from '~/components/ui/table';
 import { Pen } from 'lucide-react';
-import { COMPANY_ROLE_LABELS } from '~/lib/constants';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { EditEmployeeForm } from '../forms/edit-employee.form-dialog';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import type { CompanyUserDto } from '~/api/generated/identity';
 import { InviteEmployeeForm } from '../forms/invite-employee.form-dialog';
+import { COMPANY_ROLE_LABELS } from '~/lib/constants';
 
 type EmployeesTableProps = {
   users: CompanyUserDto[];

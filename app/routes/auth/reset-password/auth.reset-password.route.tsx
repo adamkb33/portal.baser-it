@@ -3,18 +3,14 @@ import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.reset-password.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { OpenAPI } from '~/api/clients/base/OpenAPI';
 import { ENV } from '~/api/config/env';
-import { baseApi } from '~/lib/utils';
-import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
-import { toAuthTokens } from '../_utils/token.utils';
 import { decodeResetPasswordToken } from './_utils/auth.reset-password.utils';
-import type { ApiClientError } from '~/api/clients/http';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
 import { AuthController } from '~/api/generated/identity';
-import { authService, AuthService } from '~/lib/auth-service';
+import { authService } from '~/lib/auth-service';
+import { getRouteError, type RouteData } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -33,8 +29,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  OpenAPI.BASE = ENV.BASE_SERVICE_BASE_URL;
-
   const formData = await request.formData();
   const resetPasswordToken = String(formData.get('resetPasswordToken'));
   const password = String(formData.get('password'));
@@ -68,26 +62,22 @@ export async function action({ request }: Route.ActionArgs) {
 
     return redirect('/', { headers });
   } catch (error: any) {
-    console.error('[reset-password] Error:', error);
+    const { payload, status } = getRouteError(error, { fallbackMessage: 'Noe gikk galt. Prøv igjen.' });
+    const message = payload.message.toLowerCase();
+    const isTokenError =
+      message.includes('token') ||
+      message.includes('expired') ||
+      message.includes('invalid') ||
+      message.includes('ugyldig');
 
-    if (error as ApiClientError) {
-      const errorMessage = error.body?.message || 'Noe gikk galt. Prøv igjen.';
-      const isTokenError =
-        errorMessage.toLowerCase().includes('token') ||
-        errorMessage.toLowerCase().includes('expired') ||
-        errorMessage.toLowerCase().includes('invalid') ||
-        errorMessage.toLowerCase().includes('ugyldig');
-
-      return data(
-        {
-          error: errorMessage,
-          tokenInvalid: isTokenError,
-        },
-        { status: 400 },
-      );
-    }
-
-    throw error;
+    return data<RouteData<Record<string, never>, { tokenInvalid: boolean }>>(
+      {
+        ok: false,
+        error: payload,
+        tokenInvalid: isTokenError,
+      },
+      { status },
+    );
   }
 }
 
@@ -95,15 +85,22 @@ export default function AuthResetPassword({ loaderData, actionData }: Route.Comp
   const { resetPasswordToken, email } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
+  const actionHasOk = !!actionData && 'ok' in actionData;
+  const tokenInvalid = actionData?.tokenInvalid ?? false;
+  const errorMessage = actionHasOk
+    ? actionData.ok
+      ? undefined
+      : actionData.error.message
+    : actionData?.error;
 
   // Show token invalid state
-  if (actionData?.tokenInvalid) {
+  if (tokenInvalid) {
     return (
       <div className="mx-auto flex w-full max-w-md flex-col gap-8 py-12">
         <div className="space-y-3 rounded-md border border-destructive/20 bg-destructive/5 px-5 py-6 text-center">
           <h2 className="text-xl font-semibold">Ugyldig eller utløpt link</h2>
           <p className="text-sm text-muted-foreground">
-            {actionData.error ||
+            {errorMessage ||
               'Denne tilbakestillingslinken er ikke lenger gyldig. Vennligst be om en ny tilbakestilling av passord.'}
           </p>
           <Link to={ROUTES_MAP['auth.forgot-password'].href} className="mt-2 inline-block text-primary hover:underline">
@@ -124,7 +121,7 @@ export default function AuthResetPassword({ loaderData, actionData }: Route.Comp
     <AuthFormContainer
       title="Tilbakestill passord"
       description="Opprett et nytt passord for din konto."
-      error={actionData?.error && !actionData.tokenInvalid ? actionData.error : undefined}
+      error={errorMessage && !tokenInvalid ? errorMessage : undefined}
       secondaryAction={
         <Link to="/" className="mt-2 block text-center text-sm font-medium text-foreground hover:underline">
           Tilbake til forsiden →
