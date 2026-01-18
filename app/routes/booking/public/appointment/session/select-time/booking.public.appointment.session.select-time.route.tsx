@@ -1,4 +1,4 @@
-import { useLoaderData, useSearchParams, useSubmit, useNavigation } from 'react-router';
+import { useLoaderData, useSearchParams, useSubmit, useNavigation, Link } from 'react-router';
 import { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock, Zap, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -7,7 +7,7 @@ import { ROUTES_MAP } from '~/lib/route-tree';
 import { formatCompactDate, formatFullDate, formatTime } from '~/lib/date.utils';
 import { appointmentSessionSelectTimeAction } from './_features/appointment.session.select-time.loader';
 import { appointmentSessionSelectTimeLoader } from './_features/appointment.session.select-time.action';
-import { BookingContainer, BookingPageHeader, BookingButton } from '../../_components/booking-layout';
+import { BookingBottomNav, BookingBottomNavSpacer, BookingContainer, BookingPageHeader, BookingButton } from '../../_components/booking-layout';
 import type { RouteData } from '~/lib/api-error';
 
 export type AppointmentsSelectTimeLoaderData = RouteData<{
@@ -548,36 +548,14 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
         </div>
       </BookingContainer>
 
-      {/* ========================================
-          STICKY BOTTOM CTA - Mobile only
-          ======================================== */}
       {displayTime && (
-        <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-card-border bg-background shadow-2xl md:hidden">
-          <div className="p-4">
-            {/* Summary */}
-            <div className="mb-3 flex items-start justify-between gap-3 rounded-lg bg-primary/5 p-3">
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary">
-                  <Check className="size-5 text-primary-foreground" strokeWidth={3} />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">Valgt tidspunkt</p>
-                  <p className="text-sm font-bold text-card-text">{formatFullDate(displayTime)}</p>
-                  <p className="text-sm font-semibold text-primary">kl. {formatTime(displayTime)}</p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleClearSelection}
-                className="rounded-full p-2 transition-colors hover:bg-destructive/10"
-                aria-label="Fjern valg"
-              >
-                <X className="size-4 text-destructive" />
-              </button>
-            </div>
-
-            {/* Continue button */}
+        <BookingBottomNav
+          title="Oppsummering"
+          items={[
+            { label: 'Dato', value: formatFullDate(displayTime) },
+            { label: 'Tid', value: `kl. ${formatTime(displayTime)}` },
+          ]}
+          primaryAction={
             <BookingButton
               variant="primary"
               size="lg"
@@ -588,8 +566,15 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
             >
               Gå til oversikt →
             </BookingButton>
-          </div>
-        </div>
+          }
+          secondaryAction={
+            <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>
+              <BookingButton type="button" variant="outline" size="md" fullWidth>
+                Tilbake
+              </BookingButton>
+            </Link>
+          }
+        />
       )}
 
       {/* ========================================
@@ -634,8 +619,6 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
         </div>
       )}
 
-      {/* Spacer for mobile sticky CTA */}
-      {displayTime && <div className="h-32 md:hidden" aria-hidden="true" />}
     </>
   );
 }

@@ -15,12 +15,11 @@ import {
   ChevronUp,
   AlertCircle,
 } from 'lucide-react';
-import { cn } from '~/lib/utils';
 import { getSession } from '~/lib/appointments.server';
 import { type ActionFunctionArgs } from 'react-router';
 import { PublicAppointmentSessionController, type AppointmentSessionOverviewDto } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { BookingContainer, BookingPageHeader, BookingButton, BookingCard } from '../../_components/booking-layout';
+import { BookingBottomNav, BookingContainer, BookingPageHeader, BookingButton, BookingCard } from '../../_components/booking-layout';
 import { handleRouteError, type RouteData } from '~/lib/api-error';
 
 type BookingPublicAppointmentSessionOverviewRouteLoaderData = RouteData<{
@@ -386,29 +385,14 @@ export default function BookingPublicAppointmentSessionOverviewRoute() {
         </div>
       </BookingContainer>
 
-      {/* ========================================
-          STICKY MOBILE CTA
-          ======================================== */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-card-border bg-background shadow-2xl md:hidden">
-        <div className="p-4">
-          {/* Quick summary */}
-          <div className="mb-3 flex items-center justify-between gap-3 rounded-lg bg-primary/5 p-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="size-4 text-primary" />
-              <div className="text-left">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {dateTime.dayName} {dateTime.date}
-                </p>
-                <p className="text-sm font-bold text-card-text">{dateTime.time}</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-medium text-muted-foreground">Total</p>
-              <p className="text-lg font-bold text-primary">{totalPrice} kr</p>
-            </div>
-          </div>
-
-          {/* Confirm button */}
+      <BookingBottomNav
+        title="Oppsummering"
+        items={[
+          { label: 'Dato', value: dateTime.full },
+          { label: 'Varighet', value: `${totalDuration} min` },
+          { label: 'Pris', value: `${totalPrice} kr` },
+        ]}
+        primaryAction={
           <Form method="post">
             <BookingButton
               type="submit"
@@ -422,8 +406,15 @@ export default function BookingPublicAppointmentSessionOverviewRoute() {
               Bekreft og book time
             </BookingButton>
           </Form>
-        </div>
-      </div>
+        }
+        secondaryAction={
+          <Form method="get" action={ROUTES_MAP['booking.public.appointment.session.select-time'].href}>
+            <BookingButton type="submit" variant="outline" size="md" fullWidth>
+              Endre tidspunkt
+            </BookingButton>
+          </Form>
+        }
+      />
 
       {/* ========================================
           DESKTOP CTA
@@ -457,8 +448,6 @@ export default function BookingPublicAppointmentSessionOverviewRoute() {
         </div>
       </div>
 
-      {/* Spacer for mobile sticky CTA */}
-      <div className="h-36 md:hidden" aria-hidden="true" />
     </>
   );
 }

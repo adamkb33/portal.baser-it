@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 
@@ -110,6 +110,8 @@ export function BookingContainer({ children, className }: BookingContainerProps)
       )}
     >
       {children}
+
+      <BookingBottomNavSpacer />
     </div>
   );
 }
@@ -256,6 +258,7 @@ interface BookingButtonProps {
   loading?: boolean;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
+  form?: string;
 }
 
 export function BookingButton({
@@ -268,6 +271,7 @@ export function BookingButton({
   loading = false,
   onClick,
   type = 'button',
+  form,
 }: BookingButtonProps) {
   const isDisabled = disabled || loading;
 
@@ -276,6 +280,7 @@ export function BookingButton({
       type={type}
       disabled={isDisabled}
       onClick={onClick}
+      form={form}
       className={cn(
         // Base styles - always touch-friendly
         'inline-flex items-center justify-center gap-2',
@@ -439,11 +444,32 @@ interface BookingBottomNavProps {
 
 export function BookingBottomNav({ title, items, primaryAction, secondaryAction, className }: BookingBottomNavProps) {
   const mountNode = useMemo(() => (typeof document === 'undefined' ? null : document.body), []);
+  const navRef = useRef<HTMLDivElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (!navRef.current || typeof window === 'undefined') return;
+    const root = document.documentElement;
+
+    const updateHeight = () => {
+      const height = navRef.current?.offsetHeight ?? 0;
+      root.style.setProperty('--booking-bottom-nav-height', `${height}px`);
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(navRef.current);
+
+    return () => {
+      observer.disconnect();
+      root.style.setProperty('--booking-bottom-nav-height', '0px');
+    };
+  }, []);
 
   if (!mountNode) return null;
 
   return createPortal(
     <div
+      ref={navRef}
       className={cn(
         'fixed bottom-0 left-0 right-0 z-50 border-t border-card-border bg-background shadow-2xl md:hidden',
         'pb-[env(safe-area-inset-bottom)]',
@@ -464,5 +490,12 @@ export function BookingBottomNav({ title, items, primaryAction, secondaryAction,
 }
 
 export function BookingBottomNavSpacer({ className }: { className?: string }) {
-  return <div className={cn('h-24 md:hidden', className)} aria-hidden="true" />;
+  
+  return (
+    <div
+      className={cn('md:hidden', className)}
+      style={{ height: 'var(--booking-bottom-nav-height, 0px)' }}
+      aria-hidden="true"
+    />
+  );
 }

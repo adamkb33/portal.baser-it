@@ -4,6 +4,7 @@ import { type ActionFunctionArgs } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { handleRouteError, type RouteData } from '~/lib/api-error';
 import {
+  BookingBottomNav,
   BookingContainer,
   BookingPageHeader,
   BookingGrid,
@@ -84,6 +85,7 @@ export default function AppointmentsEmployee() {
   const loaderData = useLoaderData<AppointmentsEmployeeLoaderData>();
   const profiles = loaderData.ok ? loaderData.profiles : [];
   const selectedProfileId = loaderData.ok ? loaderData.selectedProfileId : undefined;
+  const selectedProfile = profiles.find((profile) => profile.id === selectedProfileId);
 
   if (!loaderData.ok) {
     return (
@@ -94,7 +96,8 @@ export default function AppointmentsEmployee() {
   }
 
   return (
-    <BookingContainer>
+    <>
+      <BookingContainer>
       <BookingPageHeader
         title="Velg frisør"
         description={
@@ -174,11 +177,9 @@ export default function AppointmentsEmployee() {
 
               <div className="mt-auto border-t border-border pt-4">
                 {isSelected ? (
-                  <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>
-                    <BookingButton variant="primary" fullWidth>
-                      Fortsett med {profile.givenName}
-                    </BookingButton>
-                  </Link>
+                  <BookingButton type="button" variant="outline" fullWidth disabled>
+                    Valgt
+                  </BookingButton>
                 ) : (
                   <Form method="post">
                     <input type="hidden" name="selectedProfileId" value={profile.id} />
@@ -192,6 +193,37 @@ export default function AppointmentsEmployee() {
           );
         })}
       </BookingGrid>
-    </BookingContainer>
+      </BookingContainer>
+      <BookingBottomNav
+      title="Neste steg"
+      items={[
+        {
+          label: 'Valgt frisør',
+          value: selectedProfile ? `${selectedProfile.givenName} ${selectedProfile.familyName}` : 'Ikke valgt',
+        },
+        { label: 'Neste', value: 'Velg tjenester' },
+      ]}
+      primaryAction={
+        selectedProfileId ? (
+          <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>
+            <BookingButton variant="primary" size="lg" fullWidth>
+              Fortsett
+            </BookingButton>
+          </Link>
+        ) : (
+          <BookingButton variant="primary" size="lg" fullWidth disabled>
+            Velg frisør
+          </BookingButton>
+        )
+      }
+      secondaryAction={
+        <Link to={ROUTES_MAP['booking.public.appointment.session.contact'].href}>
+          <BookingButton type="button" variant="outline" size="md" fullWidth>
+            Tilbake
+          </BookingButton>
+        </Link>
+      }
+      />
+    </>
   );
 }

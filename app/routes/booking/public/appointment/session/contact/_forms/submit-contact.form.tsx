@@ -18,6 +18,7 @@ export interface GetOrCreateContactFetcherFormProps {
   onChange?: () => void;
   initialValues?: Partial<SubmitContactFormSchema>;
   isSubmitting?: boolean;
+  formId?: string;
 }
 
 export function SubmitContactForm({
@@ -26,6 +27,7 @@ export function SubmitContactForm({
   onChange,
   initialValues,
   isSubmitting = false,
+  formId = 'booking-contact-form',
 }: GetOrCreateContactFetcherFormProps) {
   const form = useForm<SubmitContactFormSchema>({
     resolver: zodResolver(submitContactFormSchema),
@@ -55,7 +57,7 @@ export function SubmitContactForm({
 
   return (
     <Form {...form}>
-      <form className="flex flex-col" onSubmit={handleSubmit} noValidate>
+      <form id={formId} className="flex flex-col" onSubmit={handleSubmit} noValidate>
         {/* Form Fields Container - Mobile-first spacing */}
         <div className="space-y-4 md:space-y-5">
           {/* Name Fields - Single column mobile, side-by-side desktop */}
@@ -145,13 +147,13 @@ export function SubmitContactForm({
           />
         </div>
 
-        {/* Submit Button - Mobile: sticky bottom, Desktop: inline */}
-        <div className="fixed bottom-0 left-0 right-0 border-t border-form-border bg-background p-4 md:static md:mt-6 md:border-t-0 md:bg-transparent md:p-0">
+        {/* Submit Button - Desktop only */}
+        <div className="mt-6 hidden md:block">
           <Button
             variant="default"
             type="submit"
             disabled={isSubmitting}
-            className="h-12 w-full text-base font-semibold md:h-11 md:w-auto md:px-8"
+            className="h-11 px-8 text-sm font-semibold"
           >
             {isSubmitting ? (
               <>
@@ -163,9 +165,6 @@ export function SubmitContactForm({
             )}
           </Button>
         </div>
-
-        {/* Spacer for sticky button on mobile (prevents content being hidden) */}
-        <div className="h-20 md:hidden" aria-hidden="true" />
       </form>
     </Form>
   );

@@ -1,4 +1,4 @@
-import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData, useNavigation } from 'react-router';
+import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData, useNavigation, Link } from 'react-router';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { Search, X, Clock, DollarSign, Check, Image as ImageIcon, ShoppingBag, Sparkles } from 'lucide-react';
 import { getSession } from '~/lib/appointments.server';
@@ -16,11 +16,11 @@ import {
 import { ROUTES_MAP } from '~/lib/route-tree';
 import {
   BookingBottomNav,
-  BookingBottomNavSpacer,
   BookingContainer,
   BookingPageHeader,
   BookingButton,
   BookingCard,
+  BookingBottomNavSpacer,
 } from '../../_components/booking-layout';
 import { handleRouteError, type RouteData } from '~/lib/api-error';
 
@@ -452,19 +452,14 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
             </Form>
           }
           secondaryAction={
-            <BookingButton
-              type="button"
-              variant="outline"
-              size="md"
-              fullWidth
-              onClick={() => setSelectedServices(new Set())}
-            >
-              Fjern alle
-            </BookingButton>
+            <Link to={ROUTES_MAP['booking.public.appointment.session.employee'].href}>
+              <BookingButton type="button" variant="outline" size="md" fullWidth>
+                Tilbake
+              </BookingButton>
+            </Link>
           }
         />
       )}
-
 
       {/* ========================================
           DESKTOP SUMMARY SIDEBAR

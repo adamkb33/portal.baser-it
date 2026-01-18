@@ -3,6 +3,7 @@ import {
   redirect,
   useLoaderData,
   useFetcher,
+  Link,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
 } from 'react-router';
@@ -14,7 +15,14 @@ import { getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { PublicCompanyContactController } from '~/api/generated/identity';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
-import { BookingContainer, BookingSection, BookingMeta } from '../../_components/booking-layout';
+import {
+  BookingBottomNav,
+  BookingBottomNavSpacer,
+  BookingContainer,
+  BookingSection,
+  BookingButton,
+  BookingMeta,
+} from '../../_components/booking-layout';
 import type { SubmitContactFormSchema } from './_schemas/submit-contact.form.schema';
 import { handleRouteError, type RouteData } from '~/lib/api-error';
 
@@ -95,6 +103,7 @@ export default function AppointmentsContactForm() {
   const fetcher = useFetcher({ key: 'appointment-contact-form-fetcher' });
   const session = loaderData.ok ? loaderData.session : undefined;
   const existingContact = loaderData.ok ? loaderData.existingContact : undefined;
+  const formId = 'booking-contact-form';
 
   const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
   const actionError = fetcher.data && 'ok' in fetcher.data ? (fetcher.data.ok ? undefined : fetcher.data.error.message) : fetcher.data?.error;
@@ -147,7 +156,8 @@ export default function AppointmentsContactForm() {
   };
 
   return (
-    <BookingContainer>
+    <>
+      <BookingContainer>
       {/* ========================================
           ERROR BANNER - Sticky on mobile for visibility
           ======================================== */}
@@ -242,8 +252,37 @@ export default function AppointmentsContactForm() {
           initialValues={initialValues}
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
+          formId={formId}
         />
       </BookingSection>
-    </BookingContainer>
+      </BookingContainer>
+      <BookingBottomNav
+      title="Neste steg"
+      items={[
+        { label: 'Steg', value: 'Kontaktinformasjon' },
+        { label: 'Neste', value: 'Velg behandler' },
+      ]}
+      primaryAction={
+        <BookingButton
+          type="submit"
+          form={formId}
+          variant="primary"
+          size="lg"
+          fullWidth
+          disabled={isSubmitting}
+          loading={isSubmitting}
+        >
+          Fortsett
+        </BookingButton>
+      }
+      secondaryAction={
+        <Link to={ROUTES_MAP['booking.public.appointment'].href}>
+          <BookingButton type="button" variant="outline" size="md" fullWidth>
+            Tilbake
+          </BookingButton>
+        </Link>
+      }
+      />
+    </>
   );
 }
