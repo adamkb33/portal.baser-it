@@ -1,27 +1,23 @@
 import { redirect } from 'react-router';
-import type { LoaderFunctionArgs } from 'react-router';
-import type { AppointmentSessionDto } from 'tmp/openapi/gen/booking';
 import type { ApiClientError } from '~/api/clients/http';
+import { AppointmentsController } from '~/api/generated/booking';
 import { createAppointmentSession, getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { bookingApi } from '~/lib/utils';
+import type { Route } from './+types/booking.public.appointment.session.route';
 
-export type AppointmentsLayoutLoaderData = {
-  session?: AppointmentSessionDto | null;
-  error?: string;
-};
-
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
     const url = new URL(request.url);
     const companyId = url.searchParams.get('companyId');
 
     if (companyId) {
-      await bookingApi().AppointmentsControllerService.AppointmentsControllerService.validateCompanyBooking({
-        companyId: parseInt(companyId),
+      await AppointmentsController.validateCompanyBooking({
+        path: {
+          companyId: Number(companyId),
+        }
       });
 
-      const session = await createAppointmentSession(parseInt(companyId));
+      const session = await createAppointmentSession(Number(companyId));
 
       return redirect(ROUTES_MAP['booking.public.appointment.session.contact'].href, {
         headers: {
@@ -32,8 +28,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       const session = await getSession(request);
 
       if (session) {
-        await bookingApi().AppointmentsControllerService.AppointmentsControllerService.validateCompanyBooking({
-          companyId: session.companyId,
+        await AppointmentsController.validateCompanyBooking({
+          path: {
+            companyId: session.companyId,
+          },
         });
 
         return redirect(ROUTES_MAP['booking.public.appointment.session.contact'].href);

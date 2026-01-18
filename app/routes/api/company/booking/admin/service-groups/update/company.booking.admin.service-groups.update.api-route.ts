@@ -1,5 +1,5 @@
 import type { Route } from './+types/company.booking.admin.service-groups.update.api-route';
-import { ServiceGroupController } from '~/api/generated/booking';
+import { CompanyUserServiceGroupController } from '~/api/generated/booking';
 import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
@@ -11,7 +11,7 @@ export async function action({ request }: Route.ActionArgs) {
     const name = formData.get('name') as string;
 
     await withAuth(request, async () => {
-      return ServiceGroupController.updateServiceGroup({
+      return CompanyUserServiceGroupController.updateServiceGroup({
         path: {
           id,
         },

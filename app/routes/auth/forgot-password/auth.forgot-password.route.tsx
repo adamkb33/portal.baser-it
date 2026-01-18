@@ -3,7 +3,6 @@ import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.forgot-password.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
-import type { ApiClientError } from '~/api/clients/http';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
@@ -23,7 +22,7 @@ export async function action({ request }: Route.ActionArgs) {
   } catch (error: any) {
     console.error('[forgot-password] Error:', error);
 
-    if (error as ApiClientError) {
+    if (error as unknown as { body?: { message?: string } }) {
       return data(
         {
           error: error.body?.message || 'Noe gikk galt. Prøv igjen.',

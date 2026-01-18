@@ -1,4 +1,4 @@
-import { ServiceGroupController } from '~/api/generated/booking';
+import { CompanyUserServiceGroupController } from '~/api/generated/booking';
 import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import type { Route } from './+types/company.booking.admin.service-groups.delete.api-route';
@@ -10,7 +10,7 @@ export async function action({ request }: Route.ActionArgs) {
     const id = Number(formData.get('id'));
 
     await withAuth(request, async () => {
-      return ServiceGroupController.deleteServiceGroup({ path: { id } });
+      return CompanyUserServiceGroupController.deleteServiceGroup({ path: { id } });
     });
 
     return redirectWithSuccess(

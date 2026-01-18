@@ -3,10 +3,10 @@ import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '~/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
-import type { GroupedServiceDto, GroupedServiceGroupsDto, ImageDto } from '~/api/clients/types';
+import type { GroupedServiceDto, GroupedServiceGroupDto, ImageDto } from '~/api/generated/booking';
 
 export type ServicePickerProps = {
-  groupedServices: GroupedServiceGroupsDto[];
+  groupedServices: GroupedServiceGroupDto[];
   initialSelectedIds?: number[];
   onSubmit: (serviceIds: number[]) => void;
   isSubmitting?: boolean;
@@ -181,8 +181,7 @@ export function ServicePicker({
                 </DialogDescription>
               </DialogHeader>
 
-              {dialogService.images && renderServiceImagesCarousel(dialogService.images, dialogService.name)}
-            </>
+              {dialogService.images && renderServiceImagesCarousel(dialogService.images, dialogService.name)}            </>
           )}
         </DialogContent>
       </Dialog>

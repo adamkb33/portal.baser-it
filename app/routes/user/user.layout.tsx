@@ -1,10 +1,9 @@
 import { Outlet, redirect, type LoaderFunctionArgs } from 'react-router';
-import type { ApiClientError } from '~/api/clients/http';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
-
+import type { Route } from './+types/user.layout';
 // TODO: Check if user has company context
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
     const authPayload = await getAuthPayloadFromRequest(request);
 
@@ -13,7 +12,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
+    if (error as unknown as { body?: { message?: string } }) {
       return { error: error.body.message };
     }
 

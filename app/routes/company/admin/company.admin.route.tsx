@@ -1,7 +1,6 @@
 import type { Route } from './+types/company.admin.route';
 import { AdminCompanyController } from '~/api/generated/identity';
-import type { ApiClientError } from '~/api/clients/http';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import { Card, CardContent } from '~/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
 import {
   Users,
@@ -36,7 +35,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     };
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
+    if (error as unknown as { body?: { message?: string } }) {
       return { error: error.body.message };
     }
 

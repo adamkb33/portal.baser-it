@@ -4,14 +4,14 @@ import { DailyScheduleController } from '~/api/generated/booking';
 import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
-import type { DayOfWeek } from '~/routes/company/booking/profile/daily-schedule/types/daily-schedule.types';
+import type { Route } from './+types/company.booking.profile.daily-schedule.create-bulk.api-route';
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   try {
     const formData = await request.formData();
     const startTime = formData.get('startTime') as string;
     const endTime = formData.get('endTime') as string;
-    const days = (formData.get('days') as string).split(',') as DayOfWeek[];
+    const days = (formData.get('days') as string).split(',');
 
     const startTimeWithSeconds =
       startTime.includes(':') && startTime.split(':').length === 2 ? `${startTime}:00` : startTime;
@@ -25,7 +25,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
     await withAuth(request, async () => {
       await DailyScheduleController.createOrUpdateDailySchedules({
-        body: bulkSchedules,
+        body: bulkSchedules.map((schedule) => ({
+          dayOfWeek: schedule.dayOfWeek as unknown as 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY',
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+        })),
       });
     });
 
