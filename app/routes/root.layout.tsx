@@ -76,7 +76,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const hasSidebar = sidebarBranches.length > 0 && companyContext;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-screen flex-col">
       <FlashMessageBanner message={loaderData.flashMessage} />
 
       <header className="flex-shrink-0 h-20 border-b border-navbar-border bg-navbar-bg">
@@ -107,7 +107,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
       </header>
 
       {/* Main — stretches between header and footer */}
-      <main className="flex-1 min-h-0 relative lg:grid lg:grid-cols-12">
+      <main className="relative min-h-[calc(100vh-80px-64px)] lg:grid lg:grid-cols-12">
         {/* Desktop Sidebar */}
         {hasSidebar ? (
           <aside className="hidden lg:block lg:col-span-2 border-r border-sidebar-border bg-sidebar-bg p-4">
@@ -123,7 +123,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
         )}
 
         {/* Content — THIS is the scroll container */}
-        <section className="flex-1 min-h-0 overflow-auto p-4 sm:p-6 lg:col-span-8 bg-content-bg/70">
+        <section className="p-4 sm:p-6 lg:col-span-8 bg-content-bg/70">
           <Outlet
             context={{
               userNav,
@@ -138,7 +138,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
       </main>
 
       {/* Footer — fixed height */}
-      <footer className="flex-shrink-0">
+      <footer className="flex-shrink-0 h-16">
         <Footer />
       </footer>
 
