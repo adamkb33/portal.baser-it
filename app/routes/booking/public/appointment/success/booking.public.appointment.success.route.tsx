@@ -13,7 +13,6 @@ import {
   Sparkles,
   PartyPopper,
 } from 'lucide-react';
-import { cn } from '~/lib/utils';
 import type { CompanySummaryDto } from '~/api/generated/identity';
 import { PublicCompanyController } from '~/api/generated/identity';
 import { AppointmentsController, PublicAppointmentSessionController, type AppointmentSessionOverviewDto } from '~/api/generated/booking';
@@ -430,7 +429,7 @@ export default function BookingPublicAppointmentSessionSuccessRoute() {
       {/* ========================================
           FINAL CTA
           ======================================== */}
-      <div className="space-y-3">
+      <div className="flex flex-col gap-2">
         <a href="/">
           <BookingButton variant="primary" size="lg" fullWidth>
             <Home className="size-5" />
