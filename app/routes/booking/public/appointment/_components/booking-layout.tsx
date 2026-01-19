@@ -157,9 +157,7 @@ export function BookingContainer({ children, className }: BookingContainerProps)
   return (
     <div
       className={cn(
-        // Mobile: Tight spacing, no margin
-        // Desktop: More breathing room
-        'mx-auto w-full max-w-4xl space-y-4 md:space-y-5 lg:space-y-6',
+        'booking-container booking-flow w-full',
         className,
       )}
     >

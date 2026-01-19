@@ -76,15 +76,15 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const hasSidebar = sidebarBranches.length > 0 && companyContext;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="app-shell">
       <FlashMessageBanner message={loaderData.flashMessage} />
 
-      <header className="flex-shrink-0 h-20 border-b border-navbar-border bg-navbar-bg">
-        <div className="h-full lg:grid lg:grid-cols-12">
-          <div className="hidden lg:col-span-2 lg:block" />
+      <header className="app-header">
+        <div className="app-header-grid">
+          <div className="app-header-spacer" />
 
-          <nav className="lg:col-span-8 h-full">
-            <div className="flex h-full items-center gap-3 px-2">
+          <nav className="app-header-nav">
+            <div className="app-header-row">
               {hasSidebar && (
                 <Button
                   variant="ghost"
@@ -102,19 +102,19 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
             </div>
           </nav>
 
-          <div className="hidden lg:col-span-2 lg:block" />
+          <div className="app-header-spacer" />
         </div>
       </header>
 
       {/* Main — stretches between header and footer */}
-      <main className="relative min-h-[calc(100vh-80px-64px)] lg:grid lg:grid-cols-12">
+      <main className="app-main">
         {/* Desktop Sidebar */}
         {hasSidebar ? (
-          <aside className="hidden lg:block lg:col-span-2 border-r border-sidebar-border bg-sidebar-bg p-4">
+          <aside className="app-sidebar">
             <Sidebar branches={sidebarBranches} />
           </aside>
         ) : (
-          <aside className="hidden lg:block lg:col-span-2" />
+          <aside className="app-sidebar-placeholder" />
         )}
 
         {/* Mobile Sidebar Overlay */}
@@ -123,7 +123,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
         )}
 
         {/* Content — THIS is the scroll container */}
-        <section className="p-4 sm:p-6 lg:col-span-8 bg-content-bg/70">
+        <section className="app-content">
           <Outlet
             context={{
               userNav,
@@ -134,11 +134,11 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
           />
         </section>
 
-        <div className="hidden lg:block lg:col-span-2" />
+        <div className="app-sidebar-placeholder" />
       </main>
 
       {/* Footer — fixed height */}
-      <footer className="flex-shrink-0 h-16">
+      <footer className="app-footer">
         <Footer />
       </footer>
 

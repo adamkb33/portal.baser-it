@@ -34,31 +34,31 @@ export default function AppointmentsRoute() {
   return (
     <div 
       ref={componentRef} 
-      className="flex flex-col"
+      className="booking-page"
       style={{ height: `${componentHeight}px` }}
     >
       {/* Header */}
-      <header className="bg-gray-800 text-white p-4 flex-shrink-0">
-        <div className="container mx-auto">
+      <header className="booking-header">
+        <div className="booking-header-inner">
           <h1 className="text-2xl font-bold">Appointments</h1>
-          <p className="text-sm mt-2">Viewport Height: {viewportHeight}px</p>
-          <p className="text-sm">Offset from top: {offsetFromTop}px</p>
-          <p className="text-sm">Component Height: {componentHeight}px</p>
+          <p className="text-sm text-navbar-text-muted mt-2">Viewport Height: {viewportHeight}px</p>
+          <p className="text-sm text-navbar-text-muted">Offset from top: {offsetFromTop}px</p>
+          <p className="text-sm text-navbar-text-muted">Component Height: {componentHeight}px</p>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto p-4 overflow-y-auto">
-        <div className="space-y-4">
+      <main className="booking-main">
+        <div className="booking-container booking-stack">
           <h2 className="text-xl font-semibold mb-4">Upcoming Appointments</h2>
           
           {/* Sample appointment cards */}
           {Array.from({ length: 20 }, (_, i) => (
-            <div key={i} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <div key={i} className="booking-card">
               <h3 className="font-semibold text-lg">Appointment #{i + 1}</h3>
-              <p className="text-gray-600 mt-2">Date: January {(i % 28) + 1}, 2026</p>
-              <p className="text-gray-600">Time: {9 + (i % 8)}:00 AM</p>
-              <p className="text-gray-500 mt-2">
+              <p className="text-muted-foreground mt-2">Date: January {(i % 28) + 1}, 2026</p>
+              <p className="text-muted-foreground">Time: {9 + (i % 8)}:00 AM</p>
+              <p className="text-muted-foreground/80 mt-2">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
                 Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
               </p>
@@ -68,8 +68,8 @@ export default function AppointmentsRoute() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white p-4 flex-shrink-0">
-        <div className="container mx-auto text-center">
+      <footer className="booking-footer">
+        <div className="booking-footer-inner">
           <p className="text-sm">© 2026 Appointments App</p>
         </div>
       </footer>

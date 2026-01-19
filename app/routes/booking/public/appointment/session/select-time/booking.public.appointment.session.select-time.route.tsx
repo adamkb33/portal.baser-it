@@ -718,42 +718,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
             ),
           }}
           desktopClassName="sticky bottom-4 rounded-lg border border-primary bg-primary p-4 text-primary-foreground shadow-lg"
-          desktop={
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="flex size-12 items-center justify-center rounded-full bg-primary-foreground/20">
-                  <Check className="size-6 text-primary-foreground" strokeWidth={3} />
-                </div>
-                <div>
-                  <p className="text-xs font-medium opacity-80">Valgt tidspunkt</p>
-                  <p className="text-base font-bold">
-                    {formatFullDate(displayTime)} kl. {formatTime(displayTime)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleClearSelection}
-                  className="flex items-center gap-2 rounded-lg bg-primary-foreground/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-primary-foreground/30"
-                >
-                  <X className="size-4" />
-                  Fjern
-                </button>
-
-                <BookingButton
-                  variant="secondary"
-                  size="md"
-                  onClick={handleSubmit}
-                  loading={isSubmitting}
-                  disabled={isSubmitting}
-                >
-                  Gå til oversikt →
-                </BookingButton>
-              </div>
-            </div>
-          }
+      
         />
       )}
 

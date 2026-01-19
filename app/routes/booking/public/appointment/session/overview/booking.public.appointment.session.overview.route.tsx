@@ -197,7 +197,7 @@ export default function BookingPublicAppointmentSessionOverviewRoute() {
             <div className="flex items-center justify-between gap-3 rounded-lg bg-primary p-4 text-primary-foreground">
               <div className="flex items-center gap-2">
                 <DollarSign className="size-6 md:size-7" strokeWidth={2.5} />
-                <span className="text-sm font-medium md:text-base">Total pris</span>
+                <span className="text-sm font-medium md:text-base">Estimert total pris</span>
               </div>
               <p className="text-2xl font-bold md:text-3xl">{totalPrice} kr</p>
             </div>
@@ -307,19 +307,6 @@ export default function BookingPublicAppointmentSessionOverviewRoute() {
             ))}
           </div>
         </CollapsibleCard>
-
-        {/* ========================================
-            CONFIRMATION NOTE
-            ======================================== */}
-        <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 md:p-4">
-          <AlertCircle className="mt-0.5 size-5 shrink-0 text-primary" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-card-text md:text-base">Ved å bekrefte godtar du våre vilkår</p>
-            <p className="mt-1 text-xs text-muted-foreground md:text-sm">
-              Du vil motta en bekreftelse på e-post og SMS
-            </p>
-          </div>
-        </div>
       </BookingContainer>
 
       <BookingSummary

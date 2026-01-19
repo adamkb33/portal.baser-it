@@ -276,6 +276,14 @@
   --popover-foreground: var(--foreground);
 
   /* ========================================
+     LAYOUT TOKENS
+     ======================================== */
+  --layout-header-height: 5rem;
+  --layout-footer-height: 4rem;
+  --layout-content-padding: 1rem;
+  --layout-content-padding-sm: 1.5rem;
+
+  /* ========================================
      NAVBAR TOKENS
      ======================================== */
 
@@ -341,6 +349,14 @@
   --form-valid-foreground: oklch(0.98 0.003 240);
   --form-disabled: oklch(0.93 0.004 240);
   --form-disabled-foreground: oklch(0.62 0.012 240);
+
+  /* ========================================
+     BOOKING LAYOUT TOKENS
+     ======================================== */
+  --booking-max-width: 56rem;
+  --booking-content-padding: 1rem;
+  --booking-content-padding-sm: 1.5rem;
+  --booking-section-gap: 1.5rem;
 
   /* ========================================
      BUTTON TOKENS - PRIMARY
@@ -488,5 +504,135 @@
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
     font-family: var(--font-sans);
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply flex min-h-screen flex-col;
+  }
+
+  .app-header {
+    @apply flex-shrink-0 border-b border-navbar-border bg-navbar-bg;
+    height: var(--layout-header-height);
+  }
+
+  .app-header-grid {
+    @apply h-full lg:grid lg:grid-cols-12;
+  }
+
+  .app-header-spacer {
+    @apply hidden lg:block lg:col-span-2;
+  }
+
+  .app-header-nav {
+    @apply h-full lg:col-span-8;
+  }
+
+  .app-header-row {
+    @apply flex h-full items-center gap-3 px-2;
+  }
+
+  .app-main {
+    @apply relative lg:grid lg:grid-cols-12;
+    min-height: calc(100vh - var(--layout-header-height) - var(--layout-footer-height));
+  }
+
+  .app-sidebar {
+    @apply hidden lg:block lg:col-span-2 border-r border-sidebar-border bg-sidebar-bg p-4;
+  }
+
+  .app-sidebar-placeholder {
+    @apply hidden lg:block lg:col-span-2;
+  }
+
+  .app-content {
+    @apply lg:col-span-8 bg-content-bg/70;
+    padding: var(--layout-content-padding);
+  }
+
+  @media (min-width: 640px) {
+    .app-content {
+      padding: var(--layout-content-padding-sm);
+    }
+  }
+
+  .app-footer {
+    @apply flex-shrink-0;
+    height: var(--layout-footer-height);
+  }
+
+  .booking-shell {
+    @apply flex h-screen flex-col overflow-hidden bg-background text-foreground;
+  }
+
+  .booking-scroll {
+    @apply relative flex-1 overflow-y-auto;
+  }
+
+  .booking-container {
+    @apply mx-auto;
+    max-width: var(--booking-max-width);
+    padding: var(--booking-content-padding);
+  }
+
+  @media (min-width: 640px) {
+    .booking-container {
+      padding: var(--booking-content-padding-sm);
+    }
+  }
+
+  .booking-footer-spacer {
+    @apply flex-shrink-0;
+  }
+
+  .booking-session-stack {
+    @apply space-y-6;
+  }
+
+  .booking-stack {
+    @apply space-y-4;
+  }
+
+  .booking-flow {
+    @apply space-y-4 md:space-y-5 lg:space-y-6;
+  }
+
+  .booking-error-wrap {
+    @apply flex min-h-screen items-center justify-center p-4;
+  }
+
+  .booking-error-card {
+    @apply border border-border bg-background p-5 text-center;
+  }
+
+  .booking-page {
+    @apply flex flex-col;
+  }
+
+  .booking-header {
+    @apply flex-shrink-0 border-b border-navbar-border bg-navbar-bg text-navbar-text;
+  }
+
+  .booking-header-inner {
+    @apply mx-auto px-4 py-4;
+    max-width: var(--booking-max-width);
+  }
+
+  .booking-main {
+    @apply flex-1 overflow-y-auto;
+  }
+
+  .booking-footer {
+    @apply flex-shrink-0 border-t border-footer-border bg-footer-bg text-footer-text;
+  }
+
+  .booking-footer-inner {
+    @apply mx-auto px-4 py-4 text-center;
+    max-width: var(--booking-max-width);
+  }
+
+  .booking-card {
+    @apply rounded-lg border border-border bg-card p-4 shadow-sm;
   }
 }

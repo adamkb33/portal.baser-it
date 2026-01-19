@@ -35,15 +35,15 @@ export default function AppointmentsLayout() {
   return (
     <div
       ref={containerRef}
-      className="flex h-screen flex-col overflow-hidden bg-background"
+      className="booking-shell"
       style={componentHeight ? { height: `${componentHeight}px` } : undefined}
     >
-      <main ref={scrollRef} className="relative flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+      <main ref={scrollRef} className="booking-scroll">
+        <div className="booking-container">
           <Outlet />
         </div>
       </main>
-      <div id="booking-mobile-footer" className="flex-shrink-0" />
+      <div id="booking-mobile-footer" className="booking-footer-spacer" />
     </div>
   );
 }
