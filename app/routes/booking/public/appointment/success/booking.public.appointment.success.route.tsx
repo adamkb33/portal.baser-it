@@ -16,12 +16,14 @@ import {
 import { cn } from '~/lib/utils';
 import type { CompanySummaryDto } from '~/api/generated/identity';
 import { PublicCompanyController } from '~/api/generated/identity';
-import { AppointmentsController } from '~/api/generated/booking';
+import { AppointmentsController, PublicAppointmentSessionController, type AppointmentSessionOverviewDto } from '~/api/generated/booking';
+import { getSession } from '~/lib/appointments.server';
 import { BookingContainer, BookingStepHeader, BookingButton, BookingCard } from '../_components/booking-layout';
 import { handleRouteError, type RouteData } from '~/lib/api-error';
 
 export type BookingPublicAppointmentSessionSuccessRouteLoaderData = RouteData<{
   companySummary: CompanySummaryDto;
+  sessionOverview?: AppointmentSessionOverviewDto;
 }>;
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -48,9 +50,23 @@ export async function loader(args: LoaderFunctionArgs) {
       throw Error('Selskap ikke funnet');
     }
 
+    let sessionOverview: AppointmentSessionOverviewDto | undefined;
+    try {
+      const session = await getSession(args.request);
+      const sessionOverviewResponse = await PublicAppointmentSessionController.getAppointmentSessionOverview({
+        query: {
+          sessionId: session.sessionId,
+        },
+      });
+      sessionOverview = sessionOverviewResponse.data?.data ?? undefined;
+    } catch {
+      sessionOverview = undefined;
+    }
+
     return data<BookingPublicAppointmentSessionSuccessRouteLoaderData>({
       ok: true,
       companySummary: companyResponse.data.data,
+      sessionOverview,
     });
   } catch (error: any) {
     return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente bekreftelse' });
@@ -97,8 +113,65 @@ export default function BookingPublicAppointmentSessionSuccessRoute() {
   const formattedAddress = formatAddress();
   const mapsUrl = getGoogleMapsUrl();
 
+  const buildCalendarPayload = () => {
+    if (!loaderData.sessionOverview) return null;
+    const { sessionOverview } = loaderData;
+    const totalDuration = sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.duration, 0);
+    const startDate = new Date(sessionOverview.selectedStartTime);
+    const endDate = new Date(startDate.getTime() + totalDuration * 60000);
+
+    const formatIcsDate = (date: Date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const summary = `Avtale hos ${companySummary.name}`;
+    const serviceNames = sessionOverview.selectedServices.map((item) => item.services.name).filter(Boolean);
+    const descriptionParts = [
+      serviceNames.length > 0 ? `Tjenester: ${serviceNames.join(', ')}` : null,
+      formattedAddress ? `Adresse: ${formattedAddress}` : null,
+    ].filter(Boolean);
+    const description = descriptionParts.join('\\n');
+    const location = formattedAddress ?? '';
+    const uid = `${companySummary.id ?? 'company'}-${sessionOverview.selectedStartTime}`;
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Baser IT//Booking//NO',
+      'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${formatIcsDate(new Date())}`,
+      `DTSTART:${formatIcsDate(startDate)}`,
+      `DTEND:${formatIcsDate(endDate)}`,
+      `SUMMARY:${summary}`,
+      description ? `DESCRIPTION:${description.replace(/\n/g, '\\n')}` : null,
+      location ? `LOCATION:${location}` : null,
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ]
+      .filter(Boolean)
+      .join('\r\n');
+
+    const href = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
+    const filename = `${companySummary.name || 'appointment'}.ics`.replace(/\s+/g, '-').toLowerCase();
+
+    const googleDates = `${formatIcsDate(startDate)}/${formatIcsDate(endDate)}`;
+    const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+      summary,
+    )}&dates=${encodeURIComponent(googleDates)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(
+      location,
+    )}`;
+
+    return { href, filename, googleUrl };
+  };
+
+  const calendarPayload = buildCalendarPayload();
+
   return (
     <BookingContainer>
+      <BookingStepHeader
+        label="Fullført"
+        title="Timen er bekreftet"
+        description="Vi har sendt bekreftelse på e-post"
+      />
       {/* ========================================
           SUCCESS HERO - Celebratory
           ======================================== */}
@@ -167,17 +240,36 @@ export default function BookingPublicAppointmentSessionSuccessRoute() {
         </div>
 
         {/* Add to calendar CTA */}
-        <button
-          type="button"
-          onClick={() => {
-            // TODO: Generate .ics file or calendar link
-            alert('Kalenderfunksjon kommer snart');
-          }}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
-        >
-          <Calendar className="size-5" />
-          Legg til i kalender
-        </button>
+        {calendarPayload ? (
+          <div className="grid gap-2 md:grid-cols-2">
+            <a
+              href={calendarPayload.googleUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
+            >
+              <ExternalLink className="size-5" />
+              Google Kalender
+            </a>
+            <a
+              href={calendarPayload.href}
+              download={calendarPayload.filename}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
+            >
+              <Calendar className="size-5" />
+              Apple Kalender
+            </a>
+          </div>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border-2 border-primary/30 bg-primary/5 px-4 py-3 font-semibold text-primary/60"
+          >
+            <Calendar className="size-5" />
+            Legg til i kalender
+          </button>
+        )}
       </BookingCard>
 
       {/* ========================================

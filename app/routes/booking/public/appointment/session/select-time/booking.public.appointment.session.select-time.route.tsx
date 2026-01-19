@@ -1,5 +1,5 @@
 import { useLoaderData, useSearchParams, useSubmit, useNavigation, Link } from 'react-router';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock, Zap, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ScheduleDto, AppointmentSessionDto } from '~/api/generated/booking';
@@ -124,10 +124,12 @@ interface DateButtonProps {
   isSelected: boolean;
   hasSelectedTime: boolean;
   onClick: () => void;
+  variant?: 'default' | 'compact';
 }
 
-function DateButton({ schedule, isSelected, hasSelectedTime, onClick }: DateButtonProps) {
+function DateButton({ schedule, isSelected, hasSelectedTime, onClick, variant = 'default' }: DateButtonProps) {
   const { day, date, month } = formatCompactDate(schedule.date);
+  const isCompact = variant === 'compact';
 
   return (
     <button
@@ -135,7 +137,8 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick }: DateButt
       onClick={onClick}
       className={cn(
         // Base styles - mobile-first touch target
-        'relative flex min-h-16 w-full items-center justify-between gap-3 rounded-lg border-2 p-3 transition-all md:min-h-14',
+        'relative flex w-full items-center justify-between gap-3 rounded-lg border-2 transition-all',
+        isCompact ? 'min-h-11 px-3 py-2' : 'min-h-16 p-3 md:min-h-14',
 
         // Selected state
         isSelected && ['border-primary bg-primary text-primary-foreground', 'shadow-sm'],
@@ -156,7 +159,7 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick }: DateButt
           >
             {day}
           </span>
-          <span className="text-base font-bold md:text-lg">
+          <span className={cn('font-bold', isCompact ? 'text-sm' : 'text-base md:text-lg')}>
             {date}. {month}
           </span>
         </div>
@@ -181,7 +184,13 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick }: DateButt
           isSelected ? 'bg-primary-foreground/20' : 'bg-muted',
         )}
       >
-        <span className={cn('text-base font-bold', isSelected ? 'text-primary-foreground' : 'text-card-text')}>
+        <span
+          className={cn(
+            'font-bold',
+            isCompact ? 'text-sm' : 'text-base',
+            isSelected ? 'text-primary-foreground' : 'text-card-text',
+          )}
+        >
           {schedule.timeSlots.length}
         </span>
         <span className={cn('text-xs', isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground')}>
@@ -200,16 +209,20 @@ interface TimeSlotButtonProps {
   time: string;
   isSelected: boolean;
   onClick: () => void;
+  variant?: 'default' | 'compact';
 }
 
-function TimeSlotButton({ time, isSelected, onClick }: TimeSlotButtonProps) {
+function TimeSlotButton({ time, isSelected, onClick, variant = 'default' }: TimeSlotButtonProps) {
+  const isCompact = variant === 'compact';
+
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
         // Touch-friendly: 48px height on mobile
-        'flex min-h-12 items-center justify-center rounded-lg border-2 px-4 py-3 font-bold transition-all md:min-h-11',
+        'flex items-center justify-center rounded-lg border-2 font-bold transition-all',
+        isCompact ? 'min-h-10 px-3 py-2 text-xs' : 'min-h-12 px-4 py-3 text-sm md:min-h-11 md:text-base',
 
         // Selected state
         isSelected && [
@@ -225,9 +238,20 @@ function TimeSlotButton({ time, isSelected, onClick }: TimeSlotButtonProps) {
         ],
       )}
     >
-      <span className="text-sm md:text-base">{formatTime(time)}</span>
+      <span>{formatTime(time)}</span>
     </button>
   );
+}
+
+function groupTimeSlotsByHour(timeSlots: ScheduleDto['timeSlots']) {
+  return timeSlots.reduce<Record<string, ScheduleDto['timeSlots']>>((groups, slot) => {
+    const hourLabel = formatTime(slot.startTime).split(':')[0] + ':00';
+    if (!groups[hourLabel]) {
+      groups[hourLabel] = [];
+    }
+    groups[hourLabel].push(slot);
+    return groups;
+  }, {});
 }
 
 /* ========================================
@@ -257,6 +281,9 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const mobileTimeSlotsRef = useRef<HTMLDivElement>(null);
+  const weekTabsRef = useRef<HTMLDivElement>(null);
+  const activeWeekRef = useRef<HTMLButtonElement>(null);
 
   const urlSelectedTime = searchParams.get('time');
   const persistedTime = urlSelectedTime || session.selectedStartTime;
@@ -283,6 +310,16 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
       }
     }
   }, [session.selectedStartTime, urlSelectedTime, persistedTime, schedules, weekGroups, setSearchParams]);
+
+  useEffect(() => {
+    if (!selectedSchedule || !mobileTimeSlotsRef.current) return;
+    mobileTimeSlotsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [selectedSchedule]);
+
+  useEffect(() => {
+    if (!activeWeekRef.current) return;
+    activeWeekRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, [selectedWeekIndex]);
 
   const handleTimeSelect = (startTime: string) => {
     setSelectedTime(startTime);
@@ -401,6 +438,12 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
   };
 
   const totalSlots = currentWeekSchedules.reduce((sum, s) => sum + s.timeSlots.length, 0);
+  const timeSlots = selectedSchedule?.timeSlots ?? [];
+  const groupedTimeSlots = useMemo(() => groupTimeSlotsByHour(timeSlots), [timeSlots]);
+  const groupedHours = useMemo(
+    () => Object.keys(groupedTimeSlots).sort((a, b) => Number(a.split(':')[0]) - Number(b.split(':')[0])),
+    [groupedTimeSlots],
+  );
 
   return (
     <>
@@ -473,7 +516,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
 
             {/* Week indicator - Touch-friendly tabs */}
             {weekGroups.length > 1 && (
-              <div className="flex gap-1 p-2">
+              <div ref={weekTabsRef} className="flex gap-1 overflow-x-auto p-2 md:overflow-visible">
                 {weekGroups.map((week, index) => {
                   const weekLabel = getWeekLabel(week);
                   const isActive = index === selectedWeekIndex;
@@ -481,6 +524,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
                   return (
                     <button
                       key={week.key}
+                      ref={isActive ? activeWeekRef : null}
                       type="button"
                       onClick={() => {
                         setSelectedWeekIndex(index);
@@ -488,7 +532,8 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
                       }}
                       className={cn(
                         // Touch-friendly: 44px height
-                        'flex-1 min-h-11 rounded px-3 py-2 text-xs font-semibold transition-all md:text-sm',
+                        'min-h-11 shrink-0 rounded px-3 py-2 text-xs font-semibold transition-all md:text-sm md:flex-1',
+                        'min-w-[140px] md:min-w-0',
                         isActive && 'bg-primary text-primary-foreground shadow-sm',
                         !isActive && 'bg-muted text-muted-foreground hover:bg-muted/70',
                       )}
@@ -536,7 +581,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
 
           {/* Time slots */}
           {selectedSchedule && (
-            <div className="space-y-3">
+            <div ref={mobileTimeSlotsRef} className="space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Clock className="size-4 text-muted-foreground" />
@@ -545,7 +590,8 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
                 <p className="text-xs text-muted-foreground">{formatFullDate(selectedDate!)}</p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="max-h-64 overflow-y-auto pr-1">
+                <div className="grid grid-cols-3 gap-2">
                 {selectedSchedule.timeSlots.map((slot) => (
                   <TimeSlotButton
                     key={slot.startTime}
@@ -554,6 +600,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
                     onClick={() => handleTimeSelect(slot.startTime)}
                   />
                 ))}
+                </div>
               </div>
             </div>
           )}
@@ -562,27 +609,30 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
         {/* ========================================
             DESKTOP: SIDE-BY-SIDE LAYOUT
             ======================================== */}
-        <div className="hidden md:grid md:grid-cols-2 md:gap-5 lg:grid-cols-5">
+        <div className="hidden md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-5">
           {/* Date selector */}
           <div className="rounded-lg border border-card-border bg-card p-4 lg:col-span-2">
-            <div className="mb-3 flex items-center gap-2">
+            <div className="mb-2 flex items-center gap-2">
               <Calendar className="size-5 text-muted-foreground" />
               <h3 className="text-base font-bold text-card-text">Velg dato</h3>
             </div>
 
             {currentWeekSchedules.length === 0 ? (
-              <div className="flex min-h-[400px] items-center justify-center rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 p-6 text-center">
+              <div className="flex min-h-[220px] items-center justify-center rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 p-6 text-center">
                 <p className="text-sm text-muted-foreground">Ingen ledige datoer denne uken</p>
               </div>
             ) : (
-              <div className="max-h-[500px] space-y-2 overflow-y-auto">
+              <div className="space-y-2">
                 {currentWeekSchedules.map((schedule) => (
                   <DateButton
                     key={schedule.date}
                     schedule={schedule}
                     isSelected={selectedDate === schedule.date}
                     hasSelectedTime={schedule.timeSlots.some((slot) => slot.startTime === displayTime)}
-                    onClick={() => setSelectedDate(schedule.date)}
+                    onClick={() => {
+                      setSelectedDate(schedule.date);
+                    }}
+                    variant="compact"
                   />
                 ))}
               </div>
@@ -592,7 +642,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
           {/* Time slots */}
           <div className="rounded-lg border border-card-border bg-card p-4 lg:col-span-3">
             {!selectedDate ? (
-              <div className="flex min-h-[400px] flex-col items-center justify-center gap-3">
+              <div className="flex min-h-[220px] flex-col items-center justify-center gap-3">
                 <Clock className="size-12 text-muted-foreground opacity-50" />
                 <p className="text-sm font-medium text-card-text">Velg en dato først</p>
                 <p className="max-w-xs text-center text-xs text-muted-foreground">
@@ -601,7 +651,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
               </div>
             ) : (
               <>
-                <div className="mb-4 flex items-center justify-between gap-3 border-b border-card-border pb-3">
+                <div className="mb-3 flex items-center justify-between gap-3 border-b border-card-border pb-2">
                   <div className="flex items-center gap-2">
                     <Clock className="size-5 text-muted-foreground" />
                     <div>
@@ -611,15 +661,25 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
                   </div>
                 </div>
 
-                <div className="max-h-[440px] overflow-y-auto">
-                  <div className="grid grid-cols-4 gap-3 lg:grid-cols-5">
-                    {selectedSchedule?.timeSlots.map((slot) => (
-                      <TimeSlotButton
-                        key={slot.startTime}
-                        time={slot.startTime}
-                        isSelected={displayTime === slot.startTime}
-                        onClick={() => handleTimeSelect(slot.startTime)}
-                      />
+                <div>
+                  <div className="flex gap-3 overflow-x-auto pb-2">
+                    {groupedHours.map((hour) => (
+                      <div key={hour} className="min-w-[180px] shrink-0">
+                        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          {hour}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {groupedTimeSlots[hour].map((slot) => (
+                            <TimeSlotButton
+                              key={slot.startTime}
+                              time={slot.startTime}
+                              isSelected={displayTime === slot.startTime}
+                              onClick={() => handleTimeSelect(slot.startTime)}
+                              variant="compact"
+                            />
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>

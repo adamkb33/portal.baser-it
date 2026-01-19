@@ -2,9 +2,9 @@
 import { data, Outlet, redirect, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 import { getSession } from '~/lib/appointments.server';
-import { RouteAwareStepper } from './_components/route-aware-stepper';
 import type { AppointmentSessionDto } from '~/api/generated/booking';
 import { type RouteData } from '~/lib/api-error';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 export type BookingPublicAppointmentSessionLayoutLoaderData = RouteData<{
   session?: AppointmentSessionDto | null;
@@ -14,11 +14,11 @@ export async function loader(args: LoaderFunctionArgs) {
   try {
     const session = await getSession(args.request);
     if (!session) {
-      return redirect('/');
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
     return data<BookingPublicAppointmentSessionLayoutLoaderData>({ ok: true, session });
   } catch (error: any) {
-    return redirect('/');
+    return redirect(ROUTES_MAP['booking.public.appointment'].href);
   }
 }
 
@@ -37,8 +37,6 @@ export default function BookingPublicAppointmentSessionLayout() {
 
   return (
     <div className="space-y-6">
-      {data.session && <RouteAwareStepper session={data.session} />}
-
       <Outlet />
     </div>
   );

@@ -72,7 +72,6 @@ export function SubmitContactForm({
                     <Input
                       {...field}
                       autoComplete="given-name"
-                      placeholder="Ola"
                       className="h-12 bg-form-bg border-form-border text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
                     />
                   </FormControl>
@@ -91,7 +90,6 @@ export function SubmitContactForm({
                     <Input
                       {...field}
                       autoComplete="family-name"
-                      placeholder="Nordmann"
                       className="h-12 bg-form-bg border-form-border text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
                     />
                   </FormControl>
@@ -114,7 +112,6 @@ export function SubmitContactForm({
                     type="email"
                     inputMode="email"
                     autoComplete="email"
-                    placeholder="ola.nordmann@example.com"
                     className="h-12 bg-form-bg border-form-border text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
                   />
                 </FormControl>
@@ -137,7 +134,6 @@ export function SubmitContactForm({
                     inputMode="tel"
                     autoComplete="tel"
                     maxLength={8}
-                    placeholder="12345678"
                     className="h-12 bg-form-bg border-form-border text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
                   />
                 </FormControl>

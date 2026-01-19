@@ -4,7 +4,6 @@ import { Menu } from 'lucide-react';
 
 import { Navbar } from '~/components/layout/navbar';
 import { type UserNavigation, RoutePlaceMent } from '~/lib/route-tree';
-import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
 import { Sidebar } from './_components/sidebar';
 import { MobileSidebar } from './_components/mobile-sidebar';
 import type { Route } from './+types/root.layout';
@@ -16,6 +15,7 @@ import { FlashMessageBanner } from './_components/flash-message-banner';
 import { Button } from '~/components/ui/button';
 import { Footer } from './_components/footer';
 import { DashWaveBackground } from './_components/backgrounds/dash-wave-background';
+import type { CompanySummaryDto } from '~/api/generated/identity';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -76,7 +76,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const hasSidebar = sidebarBranches.length > 0 && companyContext;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col">
       <FlashMessageBanner message={loaderData.flashMessage} />
 
       <header className="flex-shrink-0 h-20 border-b border-navbar-border bg-navbar-bg">
@@ -107,7 +107,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
       </header>
 
       {/* Main — stretches between header and footer */}
-      <main className="flex-1 min-h-0 bg-content-bg relative lg:grid lg:grid-cols-12">
+      <main className="flex-1 min-h-0 relative lg:grid lg:grid-cols-12">
         {/* Desktop Sidebar */}
         {hasSidebar ? (
           <aside className="hidden lg:block lg:col-span-2 border-r border-sidebar-border bg-sidebar-bg p-4">

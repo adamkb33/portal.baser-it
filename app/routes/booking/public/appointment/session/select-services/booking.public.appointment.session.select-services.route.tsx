@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '~/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import {
   PublicAppointmentSessionController,
   type AppointmentSessionDto,
@@ -463,47 +464,66 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
         desktopClassName="sticky top-4 rounded-lg border border-card-border bg-card p-4"
         desktop={
           <>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-primary">
-                <ShoppingBag className="size-5 text-primary-foreground" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-card-text">Valgte tjenester</h3>
-                <p className="text-sm text-muted-foreground">
-                  {selectedServices.size} {selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}
-                </p>
-              </div>
-            </div>
-
-            <div className="mb-4 space-y-2">
-              {selectedServicesList.map((service) => (
-                <div
-                  key={service.id}
-                  className="flex items-start justify-between gap-3 rounded-lg border border-card-border bg-card-accent/5 p-2.5"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium text-card-text">{service.name}</p>
-                    <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Clock className="size-3" />
-                        {service.duration} min
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <DollarSign className="size-3" />
-                        {service.price} kr
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => toggleService(service.id)}
-                    className="shrink-0 rounded p-1 transition-colors hover:bg-destructive/10"
-                  >
-                    <X className="size-4 text-destructive" />
-                  </button>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-full bg-primary">
+                  <ShoppingBag className="size-5 text-primary-foreground" />
                 </div>
-              ))}
+                <div>
+                  <h3 className="text-base font-bold text-card-text">Valgte tjenester</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedServices.size} {selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}
+                  </p>
+                </div>
+              </div>
+
+              {selectedServicesList.length > 1 && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline"
+                    >
+                      Se valgte
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 rounded-lg border border-card-border bg-background p-4">
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Valgte tjenester
+                    </div>
+                    <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
+                      {selectedServicesList.map((service) => (
+                        <div
+                          key={service.id}
+                          className="flex items-start justify-between gap-3 rounded-lg border border-card-border bg-card-accent/5 p-2.5"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="truncate text-sm font-medium text-card-text">{service.name}</p>
+                            <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Clock className="size-3" />
+                                {service.duration} min
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <DollarSign className="size-3" />
+                                {service.price} kr
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => toggleService(service.id)}
+                            className="shrink-0 rounded p-1 transition-colors hover:bg-destructive/10"
+                          >
+                            <X className="size-4 text-destructive" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
             </div>
 
             <div className="mb-4 rounded-lg bg-primary/5 p-3">
@@ -545,9 +565,6 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
           </>
         }
       />
-
-      {hasSelections && <div className="h-32 md:hidden" aria-hidden="true" />}
-
       {/* ========================================
           IMAGE DIALOG - Mobile-optimized
           ======================================== */}

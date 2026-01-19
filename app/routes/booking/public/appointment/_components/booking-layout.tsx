@@ -1,4 +1,4 @@
-import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Form } from 'react-router';
 import { AlertCircle, ChevronDown, ChevronUp, Edit3 } from 'lucide-react';
@@ -21,8 +21,6 @@ export function BookingPageHeader({ label, title, description, meta, className }
   return (
     <header
       className={cn(
-        // Mobile: No border, tight spacing
-        // Desktop: Border separator
         'pb-3 md:border-b md:border-border md:pb-4',
         className,
       )}
@@ -166,8 +164,6 @@ export function BookingContainer({ children, className }: BookingContainerProps)
       )}
     >
       {children}
-
-      <BookingBottomNavSpacer />
     </div>
   );
 }
@@ -626,61 +622,37 @@ export interface BookingBottomNavProps {
 }
 
 export function BookingBottomNav({ title, items, primaryAction, secondaryAction, className }: BookingBottomNavProps) {
-  const mountNode = useMemo(() => (typeof document === 'undefined' ? null : document.body), []);
-  const navRef = useRef<HTMLDivElement | null>(null);
-
-  useLayoutEffect(() => {
-    if (!navRef.current || typeof window === 'undefined') return;
-    const root = document.documentElement;
-
-    const updateHeight = () => {
-      const height = navRef.current?.offsetHeight ?? 0;
-      root.style.setProperty('--booking-bottom-nav-height', `${height}px`);
-    };
-
-    updateHeight();
-    const observer = new ResizeObserver(updateHeight);
-    observer.observe(navRef.current);
-
-    return () => {
-      observer.disconnect();
-      root.style.setProperty('--booking-bottom-nav-height', '0px');
-    };
-  }, []);
+  const mountNode =
+    typeof document === 'undefined' ? null : document.getElementById('booking-mobile-footer');
 
   if (!mountNode) return null;
 
-  return createPortal(
-    <div
-      ref={navRef}
-      className={cn(
-        'fixed bottom-0 left-0 right-0 z-50 border-t border-card-border bg-background shadow-2xl md:hidden',
-        'pb-[env(safe-area-inset-bottom)]',
-        className,
-      )}
-    >
-      <div className="space-y-3 p-4">
-        {title && <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>}
-        <BookingMeta items={items} layout="compact" />
-        <div className="space-y-2">
-          {primaryAction}
-          {secondaryAction}
+  return (
+    createPortal(
+      <div
+        className={cn(
+          'border-t border-card-border bg-background shadow-2xl',
+          'pb-[env(safe-area-inset-bottom)]',
+          'w-full',
+          className,
+        )}
+      >
+        <div className="space-y-3 p-4">
+          {title && <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>}
+          <BookingMeta items={items} layout="compact" />
+          <div className="space-y-2">
+            <div className="w-full">{primaryAction}</div>
+            {secondaryAction && <span className="w-full">{secondaryAction}</span>}
+          </div>
         </div>
-      </div>
-    </div>,
-    mountNode,
+      </div>,
+      mountNode,
+    )
   );
 }
 
 export function BookingBottomNavSpacer({ className }: { className?: string }) {
-  
-  return (
-    <div
-      className={cn('md:hidden', className)}
-      style={{ height: 'var(--booking-bottom-nav-height, 0px)' }}
-      aria-hidden="true"
-    />
-  );
+  return <div className={cn('md:hidden', className)} aria-hidden="true" />;
 }
 
 /* ========================================

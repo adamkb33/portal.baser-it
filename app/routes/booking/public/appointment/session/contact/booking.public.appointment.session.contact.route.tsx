@@ -237,10 +237,8 @@ export default function AppointmentsContactForm() {
 
       <BookingSummary
         mobile={{
-          title: 'Neste steg',
           items: [
             { label: 'Steg', value: 'Kontaktinformasjon' },
-            { label: 'Neste steg', value: 'Velg behandler' },
           ],
           primaryAction: (
             <BookingButton
