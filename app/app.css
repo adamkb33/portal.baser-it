@@ -635,4 +635,33 @@
   .booking-card {
     @apply rounded-lg border border-border bg-card p-4 shadow-sm;
   }
+
+  .booking-panel {
+    @apply rounded-lg border border-card-border bg-card;
+  }
+
+  .booking-panel-accent {
+    @apply rounded-lg border border-card-border bg-card-accent/5;
+  }
+
+  .booking-panel-dashed {
+    @apply rounded-lg border-2 border-dashed border-card-border bg-card-accent/5;
+  }
+
+  .booking-panel-primary-dashed {
+    @apply rounded-lg border-2 border-dashed border-primary/50 bg-primary/5;
+  }
+
+  .booking-summary-card {
+    @apply rounded-lg border border-card-border bg-card p-4;
+  }
+
+  .booking-summary-primary {
+    @apply rounded-lg border border-primary bg-primary p-4 text-primary-foreground;
+  }
+
+  .booking-input {
+    @apply h-12 w-full rounded-lg border border-card-border bg-card pl-11 pr-11 text-base placeholder:text-muted-foreground;
+    @apply focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20;
+  }
 }

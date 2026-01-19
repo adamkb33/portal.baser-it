@@ -290,7 +290,7 @@ export default function BookingPublicAppointmentSessionOverviewRoute() {
             {sessionOverview.selectedServices.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between gap-3 rounded-lg border border-card-border bg-card-accent/5 p-3"
+                className="booking-panel-accent flex items-center justify-between gap-3 p-3"
               >
                 <span className="text-sm font-medium text-card-text md:text-base">{item.services.name}</span>
                 <div className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground md:text-sm">
@@ -340,7 +340,7 @@ export default function BookingPublicAppointmentSessionOverviewRoute() {
             </Form>
           ),
         }}
-        desktopClassName="sticky bottom-4 rounded-lg border-2 border-primary bg-primary p-4 text-primary-foreground shadow-xl"
+        desktopClassName="sticky bottom-4 booking-summary-primary shadow-xl"
         desktop={
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
