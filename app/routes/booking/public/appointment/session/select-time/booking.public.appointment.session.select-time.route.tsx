@@ -464,7 +464,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
           <button
             type="button"
             onClick={handleQuickBook}
-            className="booking-panel-primary-dashed flex items-center justify-between gap-3 p-4 transition-colors hover:border-primary hover:bg-primary/10"
+            className="flex items-center justify-between gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 p-4 transition-colors hover:border-primary hover:bg-primary/10"
           >
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-full bg-primary">
@@ -485,7 +485,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
             WEEK NAVIGATOR
             ======================================== */}
         {weekGroups.length > 1 && (
-          <div className="booking-panel">
+          <div className="rounded-lg border border-card-border bg-card">
             {/* Navigation controls */}
             <div className="flex items-center border-b border-card-border">
               <button
@@ -561,7 +561,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
             </div>
 
             {currentWeekSchedules.length === 0 ? (
-              <div className="booking-panel-dashed p-6 text-center">
+              <div className="rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 p-6 text-center">
                 <p className="text-sm text-muted-foreground">Ingen ledige datoer denne uken</p>
               </div>
             ) : (
@@ -611,14 +611,14 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
             ======================================== */}
         <div className="hidden md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-5">
           {/* Date selector */}
-          <div className="booking-panel p-4 lg:col-span-2">
+          <div className="rounded-lg border border-card-border bg-card p-4 lg:col-span-2">
             <div className="mb-2 flex items-center gap-2">
               <Calendar className="size-5 text-muted-foreground" />
               <h3 className="text-base font-bold text-card-text">Velg dato</h3>
             </div>
 
             {currentWeekSchedules.length === 0 ? (
-              <div className="booking-panel-dashed flex min-h-[220px] items-center justify-center p-6 text-center">
+              <div className="flex min-h-[220px] items-center justify-center rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 p-6 text-center">
                 <p className="text-sm text-muted-foreground">Ingen ledige datoer denne uken</p>
               </div>
             ) : (
@@ -640,7 +640,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
           </div>
 
           {/* Time slots */}
-          <div className="booking-panel p-4 lg:col-span-3">
+          <div className="rounded-lg border border-card-border bg-card p-4 lg:col-span-3">
             {!selectedDate ? (
               <div className="flex min-h-[220px] flex-col items-center justify-center gap-3">
                 <Clock className="size-12 text-muted-foreground opacity-50" />
@@ -717,7 +717,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute() {
               </Link>
             ),
           }}
-          desktopClassName="sticky bottom-4 booking-summary-primary shadow-lg"
+          desktopClassName="sticky bottom-4 rounded-lg border border-primary bg-primary p-4 text-primary-foreground shadow-lg"
       
         />
       )}

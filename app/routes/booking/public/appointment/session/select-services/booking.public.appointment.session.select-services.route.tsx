@@ -162,7 +162,7 @@ function ServiceCard({ service, isSelected, onToggle, onViewImages }: ServiceCar
               e.stopPropagation();
               onViewImages?.();
             }}
-            className="booking-panel-accent flex flex-1 items-center justify-center gap-2 px-3 py-2 text-sm font-medium transition-colors hover:bg-card-accent/10"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-card-border bg-card-accent/5 px-3 py-2 text-sm font-medium transition-colors hover:bg-card-accent/10"
           >
             <ImageIcon className="size-4" />
             <span className="hidden sm:inline">Vis bilder</span>
@@ -231,7 +231,7 @@ function ServiceGroup({
         type="single"
         collapsible
         onValueChange={handleAccordionChange}
-        className="booking-panel"
+        className="rounded-lg border border-card-border bg-card"
       >
         <AccordionItem value={String(group.id)} className="border-none">
           <div className="flex items-start gap-3 px-3 py-3 md:px-4 md:py-4">
@@ -374,7 +374,7 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
               placeholder="Søk etter tjenester..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="booking-input"
+              className="h-12 w-full rounded-lg border border-card-border bg-card pl-11 pr-11 text-base placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
 
             {searchQuery && (
@@ -406,7 +406,7 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
                 />
               ))
           ) : (
-            <div className="booking-panel-dashed flex flex-col items-center justify-center py-12 text-center">
+            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 py-12 text-center">
               <Search className="size-12 text-muted-foreground opacity-50" />
               <p className="mt-4 text-base font-medium text-card-text">Ingen tjenester funnet</p>
               <p className="mt-1 text-sm text-muted-foreground">Prøv et annet søkeord</p>
@@ -461,7 +461,7 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
             </Link>
           ),
         }}
-        desktopClassName="sticky top-4 booking-summary-card"
+        desktopClassName="sticky top-4 rounded-lg border border-card-border bg-card p-4"
       />
       {/* ========================================
           IMAGE DIALOG - Mobile-optimized
