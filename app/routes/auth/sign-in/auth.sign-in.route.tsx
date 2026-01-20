@@ -4,73 +4,66 @@ import type { Route } from './+types/auth.sign-in.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
-import type { ApiClientError } from '~/api/clients/http';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
 import { AuthController } from '~/api/generated/identity';
+import { ApiRouteHandler, type RouteData } from '~/lib/api-route-handler';
 
-export async function action({ request }: Route.ActionArgs) {
+const apiHandler = new ApiRouteHandler();
+
+export const action = apiHandler.action(async ({ request }, { requestApi }) => {
   const formData = await request.formData();
   const email = String(formData.get('email'));
   const password = String(formData.get('password'));
 
-  try {
-    const response = await AuthController.signIn({
+  const tokens = await requestApi(
+    AuthController.signIn({
       body: { email, password },
-    });
+    }),
+  );
 
-    const tokens = response.data?.data;
-
-    if (!tokens) {
-      return data(
-        {
-          error: 'Ugyldig e-post eller passord',
-          values: { email },
-        },
-        { status: 400 },
-      );
-    }
-
-    const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
-      expires: new Date(tokens.accessTokenExpiresAt * 1000),
-    });
-    const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
-      expires: new Date(tokens.refreshTokenExpiresAt * 1000),
-    });
-
-    return redirect('/', {
-      headers: [
-        ['Set-Cookie', accessCookie],
-        ['Set-Cookie', refreshCookie],
-      ],
-    });
-  } catch (error: any) {
-    console.error('[sign-in] Error:', error);
-
-    if (error as ApiClientError) {
-      return data(
-        {
-          error: error.body?.message || 'Noe gikk galt. Prøv igjen.',
-          values: { email },
-        },
-        { status: 400 },
-      );
-    }
-
-    throw error;
+  if (!tokens) {
+    return data<RouteData<Record<string, never>, { values: { email: string } }>>(
+      {
+        ok: false,
+        error: { message: 'Ugyldig e-post eller passord' },
+        values: { email },
+      },
+      { status: 400 },
+    );
   }
-}
+
+  const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
+    expires: new Date(tokens.accessTokenExpiresAt * 1000),
+  });
+  const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
+    expires: new Date(tokens.refreshTokenExpiresAt * 1000),
+  });
+
+  return redirect('/', {
+    headers: [
+      ['Set-Cookie', accessCookie],
+      ['Set-Cookie', refreshCookie],
+    ],
+  });
+}, { fallbackMessage: 'Kunne ikke logge inn. Prøv igjen.' });
 
 export default function AuthSignIn({ actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
+  const actionHasOk = !!actionData && 'ok' in actionData;
+  const errorMessage = actionHasOk && !actionData.ok ? actionData.error.message : undefined;
+  const actionValues =
+    actionHasOk && !actionData.ok && 'values' in actionData
+      ? (actionData as { values?: { email?: string } }).values
+      : undefined;
 
   return (
     <AuthFormContainer
       title="Logg inn"
       description="Logg inn for å administrere ditt selskap og kundeforhold."
-      error={actionData?.error}
+      error={errorMessage}
       secondaryAction={
         <div className="space-y-2 text-center">
           <p className="text-xs text-muted-foreground">Glemt passordet?</p>
@@ -91,7 +84,7 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
           type="email"
           autoComplete="email"
           placeholder="din@e-post.no"
-          defaultValue={actionData?.values?.email}
+          defaultValue={actionValues?.email}
           required
           disabled={isSubmitting}
         />

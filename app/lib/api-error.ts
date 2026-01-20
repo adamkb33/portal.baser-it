@@ -1,5 +1,4 @@
 import { data, type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router';
-import type { ApiClientError } from '~/api/clients/http';
 
 type ApiErrorItem = {
   code?: string;
@@ -32,9 +31,6 @@ const DEFAULT_MESSAGE = 'En feil oppstod';
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
-const isApiClientError = (error: unknown): error is ApiClientError & { body?: { message?: string; errors?: ApiErrorItem[] } } =>
-  isRecord(error) && ('body' in error || 'status' in error);
-
 const toFieldErrors = (errors?: ApiErrorItem[]) => {
   if (!errors || errors.length === 0) return undefined;
 
@@ -46,55 +42,6 @@ const toFieldErrors = (errors?: ApiErrorItem[]) => {
   }, {});
 };
 
-const normalizeApiError = (error: unknown, fallbackMessage = DEFAULT_MESSAGE) => {
-  if (error instanceof Response) {
-    return {
-      message: error.statusText || fallbackMessage,
-      status: error.status || 500,
-    };
-  }
-
-  if (typeof error === 'string') {
-    return { message: error || fallbackMessage };
-  }
-
-  if (isApiClientError(error)) {
-    const body = error.body ?? {};
-    const errors = Array.isArray(body.errors) ? body.errors : undefined;
-    const firstError = errors?.[0];
-
-    return {
-      message: body.message || firstError?.message || fallbackMessage,
-      code: firstError?.code,
-      details: firstError?.details,
-      fieldErrors: toFieldErrors(errors),
-      status: error.status,
-    };
-  }
-
-  if (error instanceof Error) {
-    return { message: error.message || fallbackMessage };
-  }
-
-  if (isRecord(error) && typeof error.message === 'string') {
-    return { message: error.message || fallbackMessage };
-  }
-
-  return { message: fallbackMessage };
-};
-
-export const getRouteError = (error: unknown, options: ErrorHandlingOptions = {}) => {
-  const normalized = normalizeApiError(error, options.fallbackMessage);
-  const status = options.status ?? normalized.status ?? 400;
-  const payload: RouteErrorPayload = {
-    message: normalized.message,
-    code: normalized.code,
-    details: normalized.details,
-    fieldErrors: normalized.fieldErrors,
-  };
-
-  return { payload, status };
-};
 
 export const handleRouteError = (error: unknown, args?: RouteArgs, options: ErrorHandlingOptions = {}) => {
   const { payload, status } = getRouteError(error, options);

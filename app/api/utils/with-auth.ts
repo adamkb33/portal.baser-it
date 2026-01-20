@@ -2,9 +2,9 @@ import { client as identityClient } from '~/api/generated/identity/client.gen';
 import { client as bookingClient } from '~/api/generated/booking/client.gen';
 import { accessTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 
-export async function withAuth<T>(request: Request, callback: () => Promise<T>): Promise<T> {
+export async function withAuth<T>(request: Request, callback: () => Promise<T> | T, token?: string): Promise<T> {
   const cookieHeader = request.headers.get('Cookie');
-  const accessToken = await accessTokenCookie.parse(cookieHeader);
+  const accessToken = token || (await accessTokenCookie.parse(cookieHeader));
 
   if (accessToken) {
     identityClient.setConfig({
