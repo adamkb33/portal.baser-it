@@ -3,14 +3,13 @@ import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.reset-password.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { ENV } from '~/api/config/env';
 import { decodeResetPasswordToken } from './_utils/auth.reset-password.utils';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
 import { AuthController } from '~/api/generated/identity';
 import { authService } from '~/lib/auth-service';
-import { getRouteError, type RouteData } from '~/lib/api-error';
+import { apiRouteHandler, type RouteData } from '~/lib/api-route-handler';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -28,70 +27,61 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { resetPasswordToken, email: decodedToken.email };
 }
 
-export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  const resetPasswordToken = String(formData.get('resetPasswordToken'));
-  const password = String(formData.get('password'));
-  const confirmPassword = String(formData.get('confirmPassword'));
+export const action = apiRouteHandler.action(
+  async ({ request }, { requestApi }) => {
+    const formData = await request.formData();
+    const resetPasswordToken = String(formData.get('resetPasswordToken'));
+    const password = String(formData.get('password'));
+    const confirmPassword = String(formData.get('confirmPassword'));
 
-  try {
-    const response = await AuthController.resetPassword({
-      body: {
-        resetPasswordToken,
-        password,
-        password2: confirmPassword,
-      },
-    });
+    const tokens = await requestApi(
+      AuthController.resetPassword({
+        body: {
+          resetPasswordToken,
+          password,
+          password2: confirmPassword,
+        },
+      }),
+    );
 
-    if (!response.data || !response.data.data) {
-      return data(
+    if (!tokens) {
+      return data<RouteData<Record<string, never>, { tokenInvalid: boolean }>>(
         {
-          error: 'Token er ikke gyldig',
+          ok: false,
+          error: { message: 'Token er ikke gyldig' },
           tokenInvalid: true,
         },
         { status: 400 },
       );
     }
 
-    const { headers } = await authService.processTokenRefresh({
-      accessToken: response.data.data.accessToken,
-      refreshToken: response.data.data.refreshToken,
-      accessTokenExpiresAt: response.data.data.accessTokenExpiresAt,
-      refreshTokenExpiresAt: response.data.data.refreshTokenExpiresAt,
-    });
+    const { headers } = await authService.processTokenRefresh(tokens);
 
     return redirect('/', { headers });
-  } catch (error: any) {
-    const { payload, status } = getRouteError(error, { fallbackMessage: 'Noe gikk galt. Prøv igjen.' });
-    const message = payload.message.toLowerCase();
-    const isTokenError =
-      message.includes('token') ||
-      message.includes('expired') ||
-      message.includes('invalid') ||
-      message.includes('ugyldig');
+  },
+  {
+    fallbackMessage: 'Noe gikk galt. Prøv igjen.',
+    mapError: (payload) => {
+      const message = payload.message.toLowerCase();
+      const isTokenError =
+        message.includes('token') ||
+        message.includes('expired') ||
+        message.includes('invalid') ||
+        message.includes('ugyldig');
 
-    return data<RouteData<Record<string, never>, { tokenInvalid: boolean }>>(
-      {
-        ok: false,
-        error: payload,
-        tokenInvalid: isTokenError,
-      },
-      { status },
-    );
-  }
-}
+      return { tokenInvalid: isTokenError };
+    },
+  },
+);
 
 export default function AuthResetPassword({ loaderData, actionData }: Route.ComponentProps) {
   const { resetPasswordToken, email } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   const actionHasOk = !!actionData && 'ok' in actionData;
-  const tokenInvalid = actionData?.tokenInvalid ?? false;
-  const errorMessage = actionHasOk
-    ? actionData.ok
-      ? undefined
-      : actionData.error.message
-    : actionData?.error;
+  const tokenInvalid =
+    actionHasOk && !actionData.ok && 'tokenInvalid' in actionData ? actionData.tokenInvalid ?? false : false;
+  const errorMessage = actionHasOk && !actionData.ok ? actionData.error.message : undefined;
 
   // Show token invalid state
   if (tokenInvalid) {

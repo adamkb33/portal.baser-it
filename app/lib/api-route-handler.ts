@@ -273,3 +273,5 @@ export class ApiRouteHandler {
     );
   }
 }
+
+export const apiRouteHandler = new ApiRouteHandler();

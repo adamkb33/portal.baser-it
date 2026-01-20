@@ -9,6 +9,20 @@ import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
 import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
 import { AuthController } from '~/api/generated/identity';
+import { apiRouteHandler, type RouteData } from '~/lib/api-route-handler';
+
+const withInviteValues = (error: unknown, givenName: string, familyName: string) => {
+  const values = { givenName, familyName };
+  if (typeof error === 'object' && error !== null) {
+    const record = error as Record<string, unknown>;
+    if ('error' in record) {
+      return { ...record, values };
+    }
+    return { ...record, error, values };
+  }
+
+  return { error, values };
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -21,73 +35,86 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { inviteToken };
 }
 
-export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  const inviteToken = String(formData.get('inviteToken'));
-  const givenName = String(formData.get('givenName'));
-  const familyName = String(formData.get('familyName'));
-  const password = String(formData.get('password'));
-  const confirmPassword = String(formData.get('confirmPassword'));
+export const action = apiRouteHandler.action(
+  async ({ request }, { requestApi }) => {
+    const formData = await request.formData();
+    const inviteToken = String(formData.get('inviteToken'));
+    const givenName = String(formData.get('givenName'));
+    const familyName = String(formData.get('familyName'));
+    const password = String(formData.get('password'));
+    const confirmPassword = String(formData.get('confirmPassword'));
 
-  try {
-    const response = await AuthController.acceptInvite({
-      path: {
-        inviteToken,
-      },
-      body: {
-        givenName,
-        familyName,
-        password,
-        password2: confirmPassword,
-      },
-    });
-
-    if (!response.data?.data) {
-      return data(
-        {
-          error: 'Kunne ikke opprette kontoen. Prøv igjen.',
-          values: { givenName, familyName },
-        },
-        { status: 400 },
+    try {
+      const tokens = await requestApi(
+        AuthController.acceptInvite({
+          path: {
+            inviteToken,
+          },
+          body: {
+            givenName,
+            familyName,
+            password,
+            password2: confirmPassword,
+          },
+        }),
       );
+
+      if (!tokens) {
+        return data<RouteData<Record<string, never>, { values: { givenName: string; familyName: string } }>>(
+          {
+            ok: false,
+            error: { message: 'Kunne ikke opprette kontoen. Prøv igjen.' },
+            values: { givenName, familyName },
+          },
+          { status: 400 },
+        );
+      }
+
+      const authTokens = toAuthTokens(tokens);
+
+      const accessCookie = await accessTokenCookie.serialize(authTokens.accessToken, {
+        expires: new Date(authTokens.accessTokenExpiresAt * 1000),
+      });
+      const refreshCookie = await refreshTokenCookie.serialize(authTokens.refreshToken, {
+        expires: new Date(authTokens.refreshTokenExpiresAt * 1000),
+      });
+
+      return redirectWithSuccess(request, '/', 'Kontoen din er opprettet', [
+        ['Set-Cookie', accessCookie],
+        ['Set-Cookie', refreshCookie],
+      ]);
+    } catch (error) {
+      throw withInviteValues(error, givenName, familyName);
     }
-
-    const tokens = toAuthTokens(response.data.data);
-
-    const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
-      expires: new Date(tokens.accessTokenExpiresAt * 1000),
-    });
-    const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
-      expires: new Date(tokens.refreshTokenExpiresAt * 1000),
-    });
-
-    return redirectWithSuccess(request, '/', 'Kontoen din er opprettet', [
-      ['Set-Cookie', accessCookie],
-      ['Set-Cookie', refreshCookie],
-    ]);
-  } catch (error: any) {
-    console.error('[accept-invite] Error:', error);
-
-    return data(
-      {
-        error: error?.message || 'Noe gikk galt. Prøv igjen.',
-        values: { givenName, familyName },
-      },
-      { status: 400 },
-    );
-  }
-}
+  },
+  {
+    fallbackMessage: 'Noe gikk galt. Prøv igjen.',
+    mapError: (_payload, error) => ({
+      values:
+        (error as { values?: { givenName?: string; familyName?: string } }).values ?? {
+          givenName: '',
+          familyName: '',
+        },
+    }),
+  },
+);
 
 export default function AuthAcceptInvite({ loaderData, actionData }: Route.ComponentProps) {
   const { inviteToken } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
+  const actionHasOk = !!actionData && 'ok' in actionData;
+  const errorMessage = actionHasOk && !actionData.ok ? actionData.error.message : undefined;
+  const actionValues =
+    actionHasOk && !actionData.ok && 'values' in actionData
+      ? (actionData as { values?: { givenName?: string; familyName?: string } }).values
+      : undefined;
 
   return (
     <AuthFormContainer
       title="Fullfør din konto"
       description="Opprett profilen din og sett passord for å aktivere tilgangen din."
-      error={actionData?.error}
+      error={errorMessage}
       secondaryAction={
         <Link to="/" className="mt-2 block text-center text-sm font-medium text-foreground hover:underline">
           Tilbake til forsiden →
@@ -104,7 +131,7 @@ export default function AuthAcceptInvite({ loaderData, actionData }: Route.Compo
             label="Fornavn"
             type="text"
             autoComplete="given-name"
-            defaultValue={actionData?.values?.givenName}
+            defaultValue={actionValues?.givenName}
             required
             disabled={isSubmitting}
           />
@@ -115,7 +142,7 @@ export default function AuthAcceptInvite({ loaderData, actionData }: Route.Compo
             label="Etternavn"
             type="text"
             autoComplete="family-name"
-            defaultValue={actionData?.values?.familyName}
+            defaultValue={actionValues?.familyName}
             required
             disabled={isSubmitting}
           />

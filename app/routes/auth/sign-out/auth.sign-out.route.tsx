@@ -1,12 +1,13 @@
-import { Form, Link, redirect, useNavigation } from 'react-router';
+import { Form, redirect, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.sign-out.route';
 
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { toAuthPayload } from '~/routes/auth/_utils/token-payload';
 import { useEffect, useRef } from 'react';
 import { AuthController } from '~/api/generated/identity';
+import { apiRouteHandler } from '~/lib/api-route-handler';
 
-export async function action({ request }: Route.ActionArgs) {
+export const action = apiRouteHandler.action(async ({ request }, { requestApi }) => {
   const cookieHeader = request.headers.get('Cookie');
   const accessToken = await accessTokenCookie.parse(cookieHeader);
 
@@ -27,17 +28,19 @@ export async function action({ request }: Route.ActionArgs) {
       return redirect('/auth/sign-in', { headers });
     }
 
-    await AuthController.signOut({
-      body: { userId: authPayload.id },
-    });
+    await requestApi(
+      AuthController.signOut({
+        body: { userId: authPayload.id },
+      }),
+    );
 
     return redirect('/', { headers });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[sign-out] Error:', error);
 
     return redirect('/auth/sign-in', { headers });
   }
-}
+});
 
 export default function AuthSignOut() {
   const navigation = useNavigation();

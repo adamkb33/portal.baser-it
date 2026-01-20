@@ -8,11 +8,9 @@ import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
 import { AuthController } from '~/api/generated/identity';
-import { ApiRouteHandler, type RouteData } from '~/lib/api-route-handler';
+import { apiRouteHandler,  type RouteData } from '~/lib/api-route-handler';
 
-const apiHandler = new ApiRouteHandler();
-
-export const action = apiHandler.action(async ({ request }, { requestApi }) => {
+export const action = apiRouteHandler.action(async ({ request }, { requestApi }) => {
   const formData = await request.formData();
   const email = String(formData.get('email'));
   const password = String(formData.get('password'));
