@@ -16,6 +16,7 @@ import { ROUTES_MAP } from '~/lib/route-tree';
 import type { Route } from './+types/company.booking.admin.service-groups.services.route';
 import { servicesActions } from './_features/services.feature';
 import { ImagesField, type ImageField } from '~/routes/company/_components/images-field';
+import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -65,9 +66,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         totalPages: pageData?.totalPages ?? 1,
       },
     };
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente tjenester');
     return {
       serviceGroups: [],
       services: [],
@@ -77,7 +77,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         totalElements: 0,
         totalPages: 1,
       },
-      error: error?.message || 'Kunne ikke hente tjenester',
+      error: message,
     };
   }
 }

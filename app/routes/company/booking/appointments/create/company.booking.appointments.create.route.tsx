@@ -6,8 +6,8 @@ import {
   CompanyUserBookingProfileController,
   CompanyUserScheduleController,
 } from '~/api/generated/booking/sdk.gen';
-import type { ApiClientError } from '~/api/clients/http';
 import { AppointmentBookingWizard } from './_components/appointment-create.wizard';
+import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -66,8 +66,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       contactSearch,
       serviceSearch,
     };
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente data');
     return {
       contacts: [],
       contactPagination: {
@@ -80,7 +80,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       schedules: [],
       contactSearch: '',
       serviceSearch: '',
-      error: error?.message || 'Kunne ikke hente data',
+      error: message,
     };
   }
 }
@@ -103,13 +103,9 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     return { success: true, data: response.data };
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body?.message || 'Kunne ikke opprette avtale' };
-    }
-
-    throw error;
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke opprette avtale');
+    return { error: message };
   }
 }
 

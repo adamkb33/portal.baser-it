@@ -13,6 +13,7 @@ import { CompanyUserBookingProfileController, CompanyUserServiceGroupController 
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
 import { createDailyScheduleRenderer } from '~/components/dialog/create-daily-schedule-renderer';
+import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -27,13 +28,12 @@ export async function loader({ request }: Route.LoaderArgs) {
       bookingProfile: bookingProfileResponse.data,
       groupedServiceGroups: groupedServiceGroupsResponse.data?.data ?? [],
     };
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente bookingprofil');
     return {
       bookingProfile: undefined,
       groupedServiceGroups: [],
-      error: error?.message || 'Kunne ikke hente bookingprofil',
+      error: message,
     };
   }
 }

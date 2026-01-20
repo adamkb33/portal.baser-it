@@ -1,6 +1,5 @@
 import type { Route } from './+types/company.booking.route';
 import { CompanyUserBookingController } from '~/api/generated/booking';
-import type { ApiClientError } from '~/api/clients/http';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
 import {
@@ -25,6 +24,7 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { withAuth } from '~/api/utils/with-auth';
+import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -40,12 +40,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       metrics: metricsResponse.data.data,
     };
   } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body };
-    }
-
-    throw error;
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente nøkkeltall');
+    return { error: message };
   }
 }
 

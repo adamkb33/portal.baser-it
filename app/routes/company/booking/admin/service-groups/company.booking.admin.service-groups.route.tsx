@@ -11,6 +11,7 @@ import type { Route } from './+types/company.booking.admin.service-groups.route'
 import { CompanyUserServiceGroupController, type ServiceGroupDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
+import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -41,9 +42,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         totalPages: pageData?.totalPages ?? 1,
       },
     };
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente tjenestegrupper');
     return {
       serviceGroups: [],
       pagination: {
@@ -52,7 +52,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         totalElements: 0,
         totalPages: 1,
       },
-      error: error?.message || 'Kunne ikke hente tjenestegrupper',
+      error: message,
     };
   }
 }

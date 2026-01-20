@@ -1,10 +1,11 @@
-import { type ActionFunctionArgs } from 'react-router';
 import { ServiceController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import { resolveErrorPayload } from '~/lib/api-error';
+import type { Route } from '../+types/company.booking.admin.service-groups.services.route';
 
-export async function servicesActions({ request }: ActionFunctionArgs) {
+export async function servicesActions({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const intent = formData.get('intent') as string;
 
@@ -89,13 +90,13 @@ export async function servicesActions({ request }: ActionFunctionArgs) {
       ROUTES_MAP['company.booking.admin.service-groups.services'].href,
       'Ugyldig handling',
     );
-  } catch (error: any) {
-    console.error('Service action error:', JSON.stringify(error, null, 2));
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke utføre handling');
 
     return redirectWithError(
       request,
       ROUTES_MAP['company.booking.admin.service-groups.services'].href,
-      error?.body?.message || error?.message || 'Kunne ikke utføre handling',
+      message,
     );
   }
 }

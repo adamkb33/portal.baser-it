@@ -1,4 +1,3 @@
-import type { ApiClientError } from '~/api/clients/http';
 import type { Route } from './+types/company.booking.profile.schedule-unavailability.route';
 import { CompanyUserScheduleUnavailabilityController, type ScheduleUnavailabilityDto } from '~/api/generated/booking';
 import { data, useFetcher } from 'react-router';
@@ -7,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { withAuth } from '~/api/utils/with-auth';
 import { format, isSameDay, startOfDay } from 'date-fns';
 import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
+import { resolveErrorPayload } from '~/lib/api-error';
 import {
   ScheduleUnavailabilityFormDialog,
   createEmptyRange,
@@ -26,13 +26,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       schedules: getResponse.data?.data ?? [],
       error: null as string | null,
     });
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return data({ schedules: [], error: error.body.message }, { status: 400 });
-    }
-
-    return data({ schedules: [], error: 'Kunne ikke hente fravær' }, { status: 500 });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente fravær');
+    return data({ schedules: [], error: message }, { status: status ?? 400 });
   }
 }
 
@@ -93,13 +89,9 @@ export async function action({ request }: Route.ActionArgs) {
 
     return data({ success: true });
 
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    return data({ error: error?.message || 'Kunne ikke lagre fravær' }, { status: 400 });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre fravær');
+    return data({ error: message }, { status: status ?? 400 });
   }
 }
 

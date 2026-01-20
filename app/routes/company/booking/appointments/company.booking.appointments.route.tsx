@@ -1,16 +1,16 @@
 import { useFetcher, useNavigate, useSearchParams } from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import type { AppointmentDto } from 'tmp/openapi/gen/booking';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { withAuth } from '~/api/utils/with-auth';
-import { CompanyUserAppointmentController } from '~/api/generated/booking';
+import { CompanyUserAppointmentController, type AppointmentDto } from '~/api/generated/booking';
 import type { Route } from './+types/company.booking.appointments.route';
 import { AppointmentCardRow } from './_components/appointment.card-row';
 import { AppointmentTableHeaderSlot } from './_components/appointment.table-header-slot';
 import { AppointmentTableRow } from './_components/appointment.table-row';
 import { AppointmentPaginationService } from './_services/appointment.pagination-service';
+import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -54,9 +54,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         totalPages: pageData?.totalPages ?? 1,
       },
     };
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente timebestillinger');
     return {
       appointments: [],
       pagination: {
@@ -65,7 +64,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         totalElements: 0,
         totalPages: 1,
       },
-      error: error?.message || 'Kunne ikke hente timebestillinger',
+      error: message,
     };
   }
 }
@@ -88,11 +87,11 @@ export async function action({ request }: Route.ActionArgs) {
       });
 
       return { success: true, message: 'Timebestilling slettet' };
-    } catch (error: any) {
-      console.error('Delete appointment error:', error);
+    } catch (error) {
+      const { message } = resolveErrorPayload(error, 'Kunne ikke slette timebestilling');
       return {
         success: false,
-        message: error?.body?.message || 'Kunne ikke slette timebestilling',
+        message,
       };
     }
   }
