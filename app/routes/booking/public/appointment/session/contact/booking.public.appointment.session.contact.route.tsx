@@ -1,12 +1,5 @@
-import {
-  data,
-  redirect,
-  useLoaderData,
-  useFetcher,
-  Link,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-} from 'react-router';
+import { data, redirect, useFetcher, Link } from 'react-router';
+import type { Route } from './+types/booking.public.appointment.session.contact.route';
 import { CheckCircle2, Edit3 } from 'lucide-react';
 import type { ContactDto } from '~/api/generated/identity';
 import type { AppointmentSessionDto } from '~/api/generated/booking';
@@ -25,16 +18,11 @@ import {
   BookingSummary,
 } from '../../_components/booking-layout';
 import type { SubmitContactFormSchema } from './_schemas/submit-contact.form.schema';
-import { handleRouteError, type RouteData } from '~/lib/api-error';
+import { resolveErrorPayload } from '~/lib/api-error';
 
-export type AppointmentsContactFormLoaderData = RouteData<{
-  session: AppointmentSessionDto;
-  existingContact?: ContactDto;
-}>;
-
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const session = await getSession(args.request);
+    const session = await getSession(request);
 
     if (!session) {
       return redirect('/appointments');
@@ -53,21 +41,27 @@ export async function loader(args: LoaderFunctionArgs) {
       existingContact = contactResponse.data?.data;
     }
 
-    return data<AppointmentsContactFormLoaderData>({ ok: true, session, existingContact });
-  } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente kontaktinformasjon' });
+    return data({ session, existingContact });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente kontaktinformasjon');
+    return data(
+      {
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
   }
 }
 
-export async function action(args: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   try {
-    const session = await getSession(args.request);
+    const session = await getSession(request);
 
     if (!session) {
       return redirect('/appointments');
     }
 
-    const formData = await args.request.formData();
+    const formData = await request.formData();
 
     const contactResponse = await PublicCompanyContactController.publicGetCreateOrUpdateContact({
       body: {
@@ -80,8 +74,11 @@ export async function action(args: ActionFunctionArgs) {
       },
     });
     if (!contactResponse.data?.data) {
-      return data<RouteData<Record<string, never>>>(
-        { ok: false, error: { message: 'En feil har skjedd med lagring av kontakt' } },
+      const message = contactResponse.data?.message || 'En feil har skjedd med lagring av kontakt';
+      return data(
+        {
+          error: message,
+        },
         { status: 400 },
       );
     }
@@ -94,29 +91,34 @@ export async function action(args: ActionFunctionArgs) {
     });
 
     return redirect(ROUTES_MAP['booking.public.appointment.session.employee'].href);
-  } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke lagre kontakt' });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre kontakt');
+    return data(
+      {
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
   }
 }
 
-export default function AppointmentsContactForm() {
-  const loaderData = useLoaderData<AppointmentsContactFormLoaderData>();
+export default function AppointmentsContactForm({ loaderData }: Route.ComponentProps) {
   const fetcher = useFetcher({ key: 'appointment-contact-form-fetcher' });
-  const session = loaderData.ok ? loaderData.session : undefined;
-  const existingContact = loaderData.ok ? loaderData.existingContact : undefined;
+  const session = loaderData.session;
+  const existingContact = loaderData.existingContact;
   const formId = 'booking-contact-form';
 
   const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
-  const actionError = fetcher.data && 'ok' in fetcher.data ? (fetcher.data.ok ? undefined : fetcher.data.error.message) : fetcher.data?.error;
-  const loaderError = loaderData.ok ? undefined : loaderData.error.message;
+  const actionError = fetcher.data?.error;
+  const loaderError = loaderData.error;
   const error = loaderError || actionError;
 
-  if (!loaderData.ok || !session) {
+  if (loaderData.error || !session) {
     return (
       <BookingContainer>
         <BookingSection label="Kontaktinformasjon" title="Hvem skal vi registrere avtalen på?">
           <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
-            {loaderData.ok ? 'Ugyldig økt' : loaderData.error.message}
+            {loaderData.error ?? 'Ugyldig økt'}
           </div>
         </BookingSection>
       </BookingContainer>

@@ -1,4 +1,5 @@
-import { useLoaderData, useSearchParams, useSubmit, useNavigation, Link } from 'react-router';
+import { useSearchParams, useSubmit, useNavigation, Link } from 'react-router';
+import type { Route } from './+types/booking.public.appointment.session.select-time.route';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock, Zap, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -8,12 +9,6 @@ import { formatCompactDate, formatFullDate, formatTime } from '~/lib/date.utils'
 import { appointmentSessionSelectTimeAction } from './_features/appointment.session.select-time.loader';
 import { appointmentSessionSelectTimeLoader } from './_features/appointment.session.select-time.action';
 import { BookingContainer, BookingStepHeader, BookingButton, BookingSummary } from '../../_components/booking-layout';
-import type { RouteData } from '~/lib/api-error';
-
-export type AppointmentsSelectTimeLoaderData = RouteData<{
-  session: AppointmentSessionDto;
-  schedules: ScheduleDto[];
-}>;
 
 export const loader = appointmentSessionSelectTimeLoader;
 export const action = appointmentSessionSelectTimeAction;
@@ -258,19 +253,18 @@ function groupTimeSlotsByHour(timeSlots: ScheduleDto['timeSlots']) {
    MAIN COMPONENT
    ======================================== */
 
-export default function BookingPublicAppointmentSessionSelectTimeRoute() {
-  const loaderData = useLoaderData<AppointmentsSelectTimeLoaderData>();
-  const schedules = loaderData.ok ? loaderData.schedules : [];
-  const session = loaderData.ok ? loaderData.session : undefined;
+export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderData }: Route.ComponentProps) {
+  const schedules = loaderData.schedules ?? [];
+  const session = loaderData.session;
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
-  if (!loaderData.ok || !session) {
+  if (loaderData.error || !session) {
     return (
       <BookingContainer>
-        <BookingStepHeader title="Velg tidspunkt" description={loaderData.ok ? 'Ugyldig økt' : loaderData.error.message} />
+        <BookingStepHeader title="Velg tidspunkt" description={loaderData.error ?? 'Ugyldig økt'} />
       </BookingContainer>
     );
   }

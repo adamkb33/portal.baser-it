@@ -1,4 +1,5 @@
-import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData, useNavigation } from 'react-router';
+import { data, redirect, Form, useNavigation } from 'react-router';
+import type { Route } from './+types/booking.public.appointment.session.overview.route';
 import {
   Calendar,
   Clock,
@@ -12,7 +13,6 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { getSession } from '~/lib/appointments.server';
-import { type ActionFunctionArgs } from 'react-router';
 import { PublicAppointmentSessionController, type AppointmentSessionOverviewDto } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import {
@@ -23,15 +23,11 @@ import {
   CollapsibleCard,
   BookingSummary,
 } from '../../_components/booking-layout';
-import { handleRouteError, type RouteData } from '~/lib/api-error';
+import { resolveErrorPayload } from '~/lib/api-error';
 
-type BookingPublicAppointmentSessionOverviewRouteLoaderData = RouteData<{
-  sessionOverview: AppointmentSessionOverviewDto;
-}>;
-
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const session = await getSession(args.request);
+    const session = await getSession(request);
 
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
@@ -47,18 +43,23 @@ export async function loader(args: LoaderFunctionArgs) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
-    return data<BookingPublicAppointmentSessionOverviewRouteLoaderData>({
-      ok: true,
+    return data({
       sessionOverview: response.data.data,
     });
-  } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente oversikt' });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente oversikt');
+    return data(
+      {
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
   }
 }
 
-export async function action(args: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   try {
-    const session = await getSession(args.request);
+    const session = await getSession(request);
 
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
@@ -71,8 +72,14 @@ export async function action(args: ActionFunctionArgs) {
     });
 
     return redirect(`${ROUTES_MAP['booking.public.appointment.success'].href}?companyId=${session.companyId}`);
-  } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke bekrefte timebestilling' });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke bekrefte timebestilling');
+    return data(
+      {
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
   }
 }
 
@@ -121,15 +128,14 @@ function formatNorwegianDateTime(dateTimeString: string): {
    MAIN COMPONENT
    ======================================== */
 
-export default function BookingPublicAppointmentSessionOverviewRoute() {
-  const loaderData = useLoaderData<BookingPublicAppointmentSessionOverviewRouteLoaderData>();
+export default function BookingPublicAppointmentSessionOverviewRoute({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
-  if (!loaderData.ok) {
+  if (loaderData.error || !loaderData.sessionOverview) {
     return (
       <BookingContainer>
-        <BookingStepHeader title="Bekreft timebestilling" description={loaderData.error.message} />
+        <BookingStepHeader title="Bekreft timebestilling" description={loaderData.error ?? 'Kunne ikke hente oversikt'} />
       </BookingContainer>
     );
   }

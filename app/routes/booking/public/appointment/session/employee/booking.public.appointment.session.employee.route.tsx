@@ -1,8 +1,8 @@
-import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData, Link } from 'react-router';
+import { data, redirect, Form, Link } from 'react-router';
+import type { Route } from './+types/booking.public.appointment.session.employee.route';
 import { getSession } from '~/lib/appointments.server';
-import { type ActionFunctionArgs } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { handleRouteError, type RouteData } from '~/lib/api-error';
+import { resolveErrorPayload } from '~/lib/api-error';
 import { cn } from '@/lib/utils';
 import {
   BookingContainer,
@@ -15,15 +15,9 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { PublicAppointmentSessionController, type AppointmentSessionDto, type BookingProfileDto } from '~/api/generated/booking';
 
-export type AppointmentsEmployeeLoaderData = RouteData<{
-  session: AppointmentSessionDto;
-  profiles: BookingProfileDto[];
-  selectedProfileId?: number;
-}>;
-
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const session = await getSession(args.request);
+    const session = await getSession(request);
 
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
@@ -45,26 +39,31 @@ export async function loader(args: LoaderFunctionArgs) {
         },  
       );
 
-    return data<AppointmentsEmployeeLoaderData>({
-      ok: true,
+    return data({
       session,
       profiles: profilesResponse.data?.data || [],
       selectedProfileId: session.selectedProfileId,
     });
-  } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente frisører' });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente frisører');
+    return data(
+      {
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
   }
 }
 
-export async function action(args: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   try {
-    const session = await getSession(args.request);
+    const session = await getSession(request);
 
     if (!session) {
       return ROUTES_MAP['booking.public.appointment'].href;
     }
 
-    const formData = await args.request.formData();
+    const formData = await request.formData();
     const selectedProfileId = formData.get('selectedProfileId') as string;
 
     await PublicAppointmentSessionController.selectAppointmentSessionProfile(
@@ -77,21 +76,30 @@ export async function action(args: ActionFunctionArgs) {
     );
 
     return redirect(ROUTES_MAP['booking.public.appointment.session.select-services'].href);
-  } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke velge frisør' });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke velge frisør');
+    return data(
+      {
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
   }
 }
 
-export default function AppointmentsEmployee() {
-  const loaderData = useLoaderData<AppointmentsEmployeeLoaderData>();
-  const profiles = loaderData.ok ? loaderData.profiles : [];
-  const selectedProfileId = loaderData.ok ? loaderData.selectedProfileId : undefined;
+export default function AppointmentsEmployee({ loaderData }: Route.ComponentProps) {
+  const profiles = loaderData.profiles ?? [];
+  const selectedProfileId = loaderData.selectedProfileId;
   const selectedProfile = profiles.find((profile) => profile.id === selectedProfileId);
 
-  if (!loaderData.ok) {
+  if (loaderData.error) {
     return (
       <BookingContainer>
-        <BookingStepHeader label='Velg frisør' title="Hvem skal vi bestille avtalen på?" description={loaderData.error.message} />
+        <BookingStepHeader
+          label="Velg frisør"
+          title="Hvem skal vi bestille avtalen på?"
+          description={loaderData.error}
+        />
       </BookingContainer>
     );
   }

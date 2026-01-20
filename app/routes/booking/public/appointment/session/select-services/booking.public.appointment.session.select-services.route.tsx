@@ -1,8 +1,8 @@
-import { data, redirect, type LoaderFunctionArgs, Form, useLoaderData, useNavigation, Link } from 'react-router';
+import { data, redirect, Form, useNavigation, Link } from 'react-router';
+import type { Route } from './+types/booking.public.appointment.session.select-services.route';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { Search, X, Clock, DollarSign, Check, Image as ImageIcon, ShoppingBag, Sparkles } from 'lucide-react';
 import { getSession } from '~/lib/appointments.server';
-import { type ActionFunctionArgs } from 'react-router';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '~/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
@@ -22,16 +22,11 @@ import {
   SelectableCard,
   BookingSummary,
 } from '../../_components/booking-layout';
-import { handleRouteError, type RouteData } from '~/lib/api-error';
+import { resolveErrorPayload } from '~/lib/api-error';
 
-export type AppointmentsSelectServicesLoaderData = RouteData<{
-  session: AppointmentSessionDto;
-  serviceGroups: GroupedServiceGroupDto[];
-}>;
-
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const session = await getSession(args.request);
+    const session = await getSession(request);
 
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
@@ -43,25 +38,30 @@ export async function loader(args: LoaderFunctionArgs) {
       },
     });
 
-    return data<AppointmentsSelectServicesLoaderData>({
-      ok: true,
+    return data({
       session,
       serviceGroups: serviceGroupsResponse.data?.data || [],
     });
-  } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente tjenester' });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente tjenester');
+    return data(
+      {
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
   }
 }
 
-export async function action(args: ActionFunctionArgs) {
+export async function action({ request }: Route.ActionArgs) {
   try {
-    const session = await getSession(args.request);
+    const session = await getSession(request);
 
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
-    const formData = await args.request.formData();
+    const formData = await request.formData();
     const selectedServices = formData.getAll('serviceId').map(Number);
 
     await PublicAppointmentSessionController.selectAppointmentSessionProfileServices({
@@ -72,8 +72,14 @@ export async function action(args: ActionFunctionArgs) {
     });
 
     return redirect(ROUTES_MAP['booking.public.appointment.session.select-time'].href);
-  } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke lagre tjenestevalg' });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre tjenestevalg');
+    return data(
+      {
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
   }
 }
 
@@ -274,10 +280,9 @@ function ServiceGroup({
    MAIN COMPONENT
    ======================================== */
 
-export default function BookingPublicAppointmentSessionSelectServicesRoute() {
-  const loaderData = useLoaderData<AppointmentsSelectServicesLoaderData>();
-  const serviceGroups = loaderData.ok ? loaderData.serviceGroups : [];
-  const session = loaderData.ok ? loaderData.session : undefined;
+export default function BookingPublicAppointmentSessionSelectServicesRoute({ loaderData }: Route.ComponentProps) {
+  const serviceGroups = loaderData.serviceGroups ?? [];
+  const session = loaderData.session;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
@@ -291,10 +296,10 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute() {
     }
   }, [session]);
 
-  if (!loaderData.ok || !session) {
+  if (loaderData.error || !session) {
     return (
       <BookingContainer>
-        <BookingStepHeader title="Velg tjenester" description={loaderData.ok ? 'Ugyldig økt' : loaderData.error.message} />
+        <BookingStepHeader title="Velg tjenester" description={loaderData.error ?? 'Ugyldig økt'} />
       </BookingContainer>
     );
   }

@@ -1,5 +1,5 @@
-import { data, Link, type LoaderFunctionArgs } from 'react-router';
-import { useLoaderData } from 'react-router';
+import { data, Link } from 'react-router';
+import type { Route } from './+types/booking.public.appointment.success.route';
 import {
   Check,
   MapPin,
@@ -18,16 +18,11 @@ import { PublicCompanyController } from '~/api/generated/identity';
 import { AppointmentsController, PublicAppointmentSessionController, type AppointmentSessionOverviewDto } from '~/api/generated/booking';
 import { getSession } from '~/lib/appointments.server';
 import { BookingContainer, BookingStepHeader, BookingButton, BookingCard } from '../_components/booking-layout';
-import { handleRouteError, type RouteData } from '~/lib/api-error';
+import { resolveErrorPayload } from '~/lib/api-error';
 
-export type BookingPublicAppointmentSessionSuccessRouteLoaderData = RouteData<{
-  companySummary: CompanySummaryDto;
-  sessionOverview?: AppointmentSessionOverviewDto;
-}>;
-
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const url = new URL(args.request.url);
+    const url = new URL(request.url);
     const companyId = url.searchParams.get('companyId');
     if (!companyId) {
       throw Error('Selskap ikke gjenkjent');
@@ -51,7 +46,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
     let sessionOverview: AppointmentSessionOverviewDto | undefined;
     try {
-      const session = await getSession(args.request);
+      const session = await getSession(request);
       const sessionOverviewResponse = await PublicAppointmentSessionController.getAppointmentSessionOverview({
         query: {
           sessionId: session.sessionId,
@@ -62,23 +57,26 @@ export async function loader(args: LoaderFunctionArgs) {
       sessionOverview = undefined;
     }
 
-    return data<BookingPublicAppointmentSessionSuccessRouteLoaderData>({
-      ok: true,
+    return data({
       companySummary: companyResponse.data.data,
       sessionOverview,
     });
-  } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente bekreftelse' });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente bekreftelse');
+    return data(
+      {
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
   }
 }
 
-export default function BookingPublicAppointmentSessionSuccessRoute() {
-  const loaderData = useLoaderData<BookingPublicAppointmentSessionSuccessRouteLoaderData>();
-
-  if (!loaderData.ok) {
+export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData }: Route.ComponentProps) {
+  if (loaderData.error || !loaderData.companySummary) {
     return (
       <BookingContainer>
-        <BookingStepHeader title="Timen er bekreftet" description={loaderData.error.message} />
+        <BookingStepHeader title="Timen er bekreftet" description={loaderData.error ?? 'Kunne ikke hente bekreftelse'} />
       </BookingContainer>
     );
   }
