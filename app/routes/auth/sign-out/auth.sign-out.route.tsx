@@ -5,9 +5,8 @@ import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/a
 import { toAuthPayload } from '~/routes/auth/_utils/token-payload';
 import { useEffect, useRef } from 'react';
 import { AuthController } from '~/api/generated/identity';
-import { apiRouteHandler } from '~/lib/api-route-handler';
 
-export const action = apiRouteHandler.action(async ({ request }, { requestApi }) => {
+export async function action({ request }: Route.ActionArgs) {
   const cookieHeader = request.headers.get('Cookie');
   const accessToken = await accessTokenCookie.parse(cookieHeader);
 
@@ -28,11 +27,9 @@ export const action = apiRouteHandler.action(async ({ request }, { requestApi })
       return redirect('/auth/sign-in', { headers });
     }
 
-    await requestApi(
-      AuthController.signOut({
-        body: { userId: authPayload.id },
-      }),
-    );
+    await AuthController.signOut({
+      body: { userId: authPayload.id },
+    });
 
     return redirect('/', { headers });
   } catch (error) {
@@ -40,7 +37,7 @@ export const action = apiRouteHandler.action(async ({ request }, { requestApi })
 
     return redirect('/auth/sign-in', { headers });
   }
-});
+}
 
 export default function AuthSignOut() {
   const navigation = useNavigation();

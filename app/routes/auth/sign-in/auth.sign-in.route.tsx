@@ -8,54 +8,60 @@ import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
 import { AuthController } from '~/api/generated/identity';
-import { apiRouteHandler,  type RouteData } from '~/lib/api-route-handler';
+import { resolveErrorPayload } from '~/lib/api-error';
 
-export const action = apiRouteHandler.action(async ({ request }, { requestApi }) => {
+export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const email = String(formData.get('email'));
   const password = String(formData.get('password'));
 
-  const tokens = await requestApi(
-    AuthController.signIn({
+  try {
+    const response = await AuthController.signIn({
       body: { email, password },
-    }),
-  );
+    });
+    const tokens = response.data?.data;
 
-  if (!tokens) {
-    return data<RouteData<Record<string, never>, { values: { email: string } }>>(
+    if (!tokens) {
+      const message = response.data?.message || 'Kunne ikke logge inn. Prøv igjen.';
+      return data(
+        {
+          error: message,
+          values: { email },
+        },
+        { status: 400 },
+      );
+    }
+
+    const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
+      expires: new Date(tokens.accessTokenExpiresAt * 1000),
+    });
+    const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
+      expires: new Date(tokens.refreshTokenExpiresAt * 1000),
+    });
+
+    return redirect('/', {
+      headers: [
+        ['Set-Cookie', accessCookie],
+        ['Set-Cookie', refreshCookie],
+      ],
+    });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke logge inn. Prøv igjen.');
+    return data(
       {
-        ok: false,
-        error: { message: 'Ugyldig e-post eller passord' },
+        error: message,
         values: { email },
       },
-      { status: 400 },
+      { status: status ?? 400 },
     );
   }
-
-  const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
-    expires: new Date(tokens.accessTokenExpiresAt * 1000),
-  });
-  const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
-    expires: new Date(tokens.refreshTokenExpiresAt * 1000),
-  });
-
-  return redirect('/', {
-    headers: [
-      ['Set-Cookie', accessCookie],
-      ['Set-Cookie', refreshCookie],
-    ],
-  });
-}, { fallbackMessage: 'Kunne ikke logge inn. Prøv igjen.' });
+}
 
 export default function AuthSignIn({ actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const actionHasOk = !!actionData && 'ok' in actionData;
-  const errorMessage = actionHasOk && !actionData.ok ? actionData.error.message : undefined;
-  const actionValues =
-    actionHasOk && !actionData.ok && 'values' in actionData
-      ? (actionData as { values?: { email?: string } }).values
-      : undefined;
+  const errorMessage = actionData?.error;
+  const actionValues = actionData?.values;
 
   return (
     <AuthFormContainer

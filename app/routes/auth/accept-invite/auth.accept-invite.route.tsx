@@ -9,20 +9,7 @@ import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
 import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
 import { AuthController } from '~/api/generated/identity';
-import { apiRouteHandler, type RouteData } from '~/lib/api-route-handler';
-
-const withInviteValues = (error: unknown, givenName: string, familyName: string) => {
-  const values = { givenName, familyName };
-  if (typeof error === 'object' && error !== null) {
-    const record = error as Record<string, unknown>;
-    if ('error' in record) {
-      return { ...record, values };
-    }
-    return { ...record, error, values };
-  }
-
-  return { error, values };
-};
+import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -35,80 +22,70 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { inviteToken };
 }
 
-export const action = apiRouteHandler.action(
-  async ({ request }, { requestApi }) => {
-    const formData = await request.formData();
-    const inviteToken = String(formData.get('inviteToken'));
-    const givenName = String(formData.get('givenName'));
-    const familyName = String(formData.get('familyName'));
-    const password = String(formData.get('password'));
-    const confirmPassword = String(formData.get('confirmPassword'));
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const inviteToken = String(formData.get('inviteToken'));
+  const givenName = String(formData.get('givenName'));
+  const familyName = String(formData.get('familyName'));
+  const password = String(formData.get('password'));
+  const confirmPassword = String(formData.get('confirmPassword'));
 
-    try {
-      const tokens = await requestApi(
-        AuthController.acceptInvite({
-          path: {
-            inviteToken,
-          },
-          body: {
-            givenName,
-            familyName,
-            password,
-            password2: confirmPassword,
-          },
-        }),
-      );
+  try {
+    const response = await AuthController.acceptInvite({
+      path: {
+        inviteToken,
+      },
+      body: {
+        givenName,
+        familyName,
+        password,
+        password2: confirmPassword,
+      },
+    });
+    const tokens = response.data?.data;
 
-      if (!tokens) {
-        return data<RouteData<Record<string, never>, { values: { givenName: string; familyName: string } }>>(
-          {
-            ok: false,
-            error: { message: 'Kunne ikke opprette kontoen. Prøv igjen.' },
-            values: { givenName, familyName },
-          },
-          { status: 400 },
-        );
-      }
-
-      const authTokens = toAuthTokens(tokens);
-
-      const accessCookie = await accessTokenCookie.serialize(authTokens.accessToken, {
-        expires: new Date(authTokens.accessTokenExpiresAt * 1000),
-      });
-      const refreshCookie = await refreshTokenCookie.serialize(authTokens.refreshToken, {
-        expires: new Date(authTokens.refreshTokenExpiresAt * 1000),
-      });
-
-      return redirectWithSuccess(request, '/', 'Kontoen din er opprettet', [
-        ['Set-Cookie', accessCookie],
-        ['Set-Cookie', refreshCookie],
-      ]);
-    } catch (error) {
-      throw withInviteValues(error, givenName, familyName);
-    }
-  },
-  {
-    fallbackMessage: 'Noe gikk galt. Prøv igjen.',
-    mapError: (_payload, error) => ({
-      values:
-        (error as { values?: { givenName?: string; familyName?: string } }).values ?? {
-          givenName: '',
-          familyName: '',
+    if (!tokens) {
+      const message = response.data?.message || 'Noe gikk galt. Prøv igjen.';
+      return data(
+        {
+          error: message,
+          values: { givenName, familyName },
         },
-    }),
-  },
-);
+        { status: 400 },
+      );
+    }
+
+    const authTokens = toAuthTokens(tokens);
+
+    const accessCookie = await accessTokenCookie.serialize(authTokens.accessToken, {
+      expires: new Date(authTokens.accessTokenExpiresAt * 1000),
+    });
+    const refreshCookie = await refreshTokenCookie.serialize(authTokens.refreshToken, {
+      expires: new Date(authTokens.refreshTokenExpiresAt * 1000),
+    });
+
+    return redirectWithSuccess(request, '/', 'Kontoen din er opprettet', [
+      ['Set-Cookie', accessCookie],
+      ['Set-Cookie', refreshCookie],
+    ]);
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Noe gikk galt. Prøv igjen.');
+    return data(
+      {
+        error: message,
+        values: { givenName, familyName },
+      },
+      { status: status ?? 400 },
+    );
+  }
+}
 
 export default function AuthAcceptInvite({ loaderData, actionData }: Route.ComponentProps) {
   const { inviteToken } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const actionHasOk = !!actionData && 'ok' in actionData;
-  const errorMessage = actionHasOk && !actionData.ok ? actionData.error.message : undefined;
-  const actionValues =
-    actionHasOk && !actionData.ok && 'values' in actionData
-      ? (actionData as { values?: { givenName?: string; familyName?: string } }).values
-      : undefined;
+  const errorMessage = actionData?.error;
+  const actionValues = actionData?.values;
 
   return (
     <AuthFormContainer

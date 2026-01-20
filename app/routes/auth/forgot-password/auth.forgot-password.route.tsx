@@ -1,5 +1,5 @@
 // auth.forgot-password.route.tsx (refactored)
-import { Form, Link, useNavigation } from 'react-router';
+import { Form, Link, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.forgot-password.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
@@ -8,54 +8,35 @@ import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
 import { AuthController } from '~/api/generated/identity';
 import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
-import { apiRouteHandler } from '~/lib/api-route-handler';
+import { resolveErrorPayload } from '~/lib/api-error';
 
-const withEmailValue = (error: unknown, email: string) => {
-  if (typeof error === 'object' && error !== null) {
-    const record = error as Record<string, unknown>;
-    if ('error' in record) {
-      return { ...record, values: { email } };
-    }
-    return { ...record, error, values: { email } };
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const email = String(formData.get('email'));
+
+  try {
+    await AuthController.forgotPassword({
+      body: { email },
+    });
+
+    return redirectWithInfo(request, '/', 'Vi har sendt deg en e-post');
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Noe gikk galt. Prøv igjen.');
+    return data(
+      {
+        error: message,
+        values: { email },
+      },
+      { status: status ?? 400 },
+    );
   }
-
-  return { error, values: { email } };
-};
-
-export const action = apiRouteHandler.action(
-  async ({ request }, { requestApi }) => {
-    const formData = await request.formData();
-    const email = String(formData.get('email'));
-
-    try {
-      await requestApi(
-        AuthController.forgotPassword({
-          body: { email },
-        }),
-      );
-
-      return redirectWithInfo(request, '/', 'Vi har sendt deg en e-post');
-    } catch (error) {
-      throw withEmailValue(error, email);
-    }
-  },
-  {
-    fallbackMessage: 'Noe gikk galt. Prøv igjen.',
-    mapError: (_payload, error) => ({
-      values: (error as { values?: { email: string } }).values ?? { email: '' },
-    }),
-  },
-);
+}
 
 export default function AuthForgotPassword({ actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const actionHasOk = !!actionData && 'ok' in actionData;
-  const errorMessage = actionHasOk && !actionData.ok ? actionData.error.message : undefined;
-  const actionValues =
-    actionHasOk && !actionData.ok && 'values' in actionData
-      ? (actionData as { values?: { email?: string } }).values
-      : undefined;
+  const errorMessage = actionData?.error;
+  const actionValues = actionData?.values;
 
   return (
     <AuthFormContainer
