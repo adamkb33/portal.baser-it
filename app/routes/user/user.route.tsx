@@ -1,27 +1,32 @@
-import { data, redirect, useLoaderData } from 'react-router';
+import { data, redirect } from 'react-router';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
-import { handleRouteError, type RouteData } from '~/lib/api-error';
+import { resolveErrorPayload } from '~/lib/api-error';
 import type { Route } from './+types/user.route';
 
-export async function loader(args: Route.LoaderArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const authPayload = await getAuthPayloadFromRequest(args.request);
+    const authPayload = await getAuthPayloadFromRequest(request);
 
     if (!authPayload) {
       return redirect('/');
     }
 
-    return data<RouteData<{ user: typeof authPayload }>>({
-      ok: true,
+    return data({
       user: authPayload,
     });
-  } catch (error: any) {
-    return handleRouteError(error, args, { fallbackMessage: 'Kunne ikke hente bruker' });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente bruker');
+    return data(
+      {
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
   }
 }
 
 export default function UserRoute({ loaderData }: Route.ComponentProps) {
-  const payload = loaderData.ok ? loaderData.user : loaderData.error.message;
+  const payload = 'user' in loaderData ? loaderData.user : loaderData.error;
 
-  return <div>{JSON.stringify(payload ?? 'No user data found', null, 2)}</div>;
+  return <div>{JSON.stringify(payload, null, 2)}</div>;
 }
