@@ -8,6 +8,7 @@ import { getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { PublicCompanyContactController } from '~/api/generated/identity';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import {
   BookingContainer,
   BookingSection,
@@ -32,7 +33,11 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     if (!session) {
       console.error('[booking.contact.loader] missing session');
-      return redirect('/appointments');
+      return redirectWithError(
+        request,
+        ROUTES_MAP['booking.public.appointment'].href,
+        'Mangler aktiv bookingøkt. Start på nytt.',
+      );
     }
 
     let existingContact: ContactDto | undefined = undefined;
@@ -52,6 +57,14 @@ export async function loader({ request }: Route.LoaderArgs) {
       existingContact = contactResponse.data?.data;
     }
 
+    if (session.contactId && !existingContact) {
+      return redirectWithError(
+        request,
+        ROUTES_MAP['booking.public.appointment'].href,
+        'Fant ikke kontaktinformasjon for økten. Start på nytt.',
+      );
+    }
+
     console.debug('[booking.contact.loader] loaded', {
       sessionId: session.sessionId,
       companyId: session.companyId,
@@ -66,13 +79,10 @@ export async function loader({ request }: Route.LoaderArgs) {
   } catch (error) {
     console.error('[booking.contact.loader] failed', error);
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente kontaktinformasjon');
-    return data(
-      {
-        session: null,
-        existingContact: null,
-        error: message,
-      },
-      { status: status ?? 400 },
+    return redirectWithError(
+      request,
+      ROUTES_MAP['booking.public.appointment'].href,
+      message,
     );
   }
 }
@@ -82,7 +92,11 @@ export async function action({ request }: Route.ActionArgs) {
     const session = await getSession(request);
 
     if (!session) {
-      return redirect('/appointments');
+      return redirectWithError(
+        request,
+        ROUTES_MAP['booking.public.appointment'].href,
+        'Mangler aktiv bookingøkt. Start på nytt.',
+      );
     }
 
     const formData = await request.formData();
@@ -98,12 +112,12 @@ export async function action({ request }: Route.ActionArgs) {
       },
     });
     if (!contactResponse.data?.data) {
+      console.log("contactResponse", JSON.stringify(contactResponse, null, 2));
       const message = contactResponse.data?.message || 'En feil har skjedd med lagring av kontakt';
-      return data(
-        {
-          error: message,
-        },
-        { status: 400 },
+      return redirectWithError(
+        request,
+        ROUTES_MAP['booking.public.appointment.session.contact'].href,
+        message,
       );
     }
 
@@ -117,11 +131,10 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect(ROUTES_MAP['booking.public.appointment.session.employee'].href);
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre kontakt');
-    return data(
-      {
-        error: message,
-      },
-      { status: status ?? 400 },
+    return redirectWithError(
+      request,
+      ROUTES_MAP['booking.public.appointment.session.contact'].href,
+      message,
     );
   }
 }

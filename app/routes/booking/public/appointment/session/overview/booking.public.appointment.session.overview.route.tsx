@@ -10,7 +10,6 @@ import {
   DollarSign,
   CheckCircle2,
   Sparkles,
-  AlertCircle,
 } from 'lucide-react';
 import { getSession } from '~/lib/appointments.server';
 import { PublicAppointmentSessionController, type AppointmentSessionOverviewDto } from '~/api/generated/booking';
@@ -45,6 +44,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     });
 
     if (!response.data?.data) {
+      console.log("responseOVERSIKT", JSON.stringify(response, null, 2));
       const message = response.data?.message || 'Kunne ikke hente oversikt';
       return redirectWithError(
         request,
