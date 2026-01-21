@@ -2,12 +2,12 @@
 import { useState } from 'react';
 import { useSubmit } from 'react-router';
 import { toast } from 'sonner';
-import type { InviteTokenDto } from 'tmp/openapi/gen/base';
 import { Button } from '~/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
-import { COMPANY_ROLE_LABELS } from '~/lib/constants';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
+import type { InviteTokenDto } from '~/api/generated/identity';
+import { COMPANY_ROLE_LABELS } from '~/lib/constants';
 
 type InvitesTableProps = {
   invites: InviteTokenDto[];

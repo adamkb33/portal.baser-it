@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import type { ScheduleDto, ScheduleTimeSlot } from 'tmp/openapi/gen/booking';
+import type { ScheduleDto, ScheduleTimeSlot } from '~/api/generated/booking';
 
 export type TimeSlotPickerProps = {
   schedule: ScheduleDto;

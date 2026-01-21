@@ -1,23 +1,19 @@
 import { Link, Outlet } from 'react-router';
 
-import type { ApiClientError } from '~/api/clients/http';
 import type { Route } from './+types/company.booking.layout';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { CompanyUserBookingController } from '~/api/generated/booking';
+import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const bookingInfoResponse =
       await CompanyUserBookingController.getCompanyBookingInfo();
 
-    return { bookingInfo: bookingInfoResponse.data?.data };
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as ApiClientError) {
-      return { error: error.body.message };
-    }
-
-    throw error;
+    return { bookingInfo: bookingInfoResponse.data?.data ?? null, error: null as string | null };
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente bookinginfo');
+    return { bookingInfo: null, error: message };
   }
 }
 

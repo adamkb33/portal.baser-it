@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, MapPin, ChevronRight } from 'lucide-react';
-import type { CompanySummaryDto } from '~/api/clients/types';
+import type { CompanySummaryDto } from '~/api/generated/identity';
 
 interface CompanyCardProps {
   company: CompanySummaryDto;

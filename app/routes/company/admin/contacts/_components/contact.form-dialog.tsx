@@ -1,10 +1,10 @@
 // routes/company/contacts/forms/contact.form-dialog.tsx
 import { useState, useEffect } from 'react';
 import { useSubmit } from 'react-router';
-import type { ContactDto } from 'tmp/openapi/gen/base';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { ContactFormSchema, type ContactFormData, type FieldErrors } from '../_schemas/contact.form.schema';
+import type { ContactDto } from '~/api/generated/identity';
 
 type ContactFormDialogProps = {
   trigger?: React.ReactNode;

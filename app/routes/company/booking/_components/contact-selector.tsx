@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import type { ContactDto } from 'tmp/openapi/gen/base';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
-import { CalendarIcon, Check, ChevronLeft, ChevronRight, Mail, Phone, Plus, User, User2Icon } from 'lucide-react';
+import { Check, Mail, Phone, User, User2Icon } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import { ContactFormDialog } from '../../admin/contacts/_components/contact.form-dialog';
 import { Label } from '~/components/ui/label';
+import type { ContactDto } from '~/api/generated/identity';
 
 type ContactSelectorProps = {
   contacts: ContactDto[];

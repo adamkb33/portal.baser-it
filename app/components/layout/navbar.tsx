@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import type { UserNavigation } from '~/lib/route-tree';
 import { RoutePlaceMent, BrachCategory } from '~/lib/route-tree';
-import type { CompanySummaryDto } from 'tmp/openapi/gen/base';
+import type { CompanySummaryDto } from '~/api/generated/identity';
 import CompanyHeader from './company-header';
 import { User } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';

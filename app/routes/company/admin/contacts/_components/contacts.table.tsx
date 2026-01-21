@@ -1,7 +1,6 @@
 // routes/company/contacts/tables/contacts.table.tsx
 import { useState } from 'react';
 import { useSubmit, useNavigate, useSearchParams } from 'react-router';
-import type { ContactDto } from 'tmp/openapi/gen/base';
 import { Button } from '~/components/ui/button';
 import { TableCell, TableRow } from '~/components/ui/table';
 import { Pen } from 'lucide-react';
@@ -9,6 +8,7 @@ import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import { ContactFormDialog } from './contact.form-dialog';
+import type { ContactDto } from '~/api/generated/identity';
 
 type ContactsTableProps = {
   contacts: ContactDto[];

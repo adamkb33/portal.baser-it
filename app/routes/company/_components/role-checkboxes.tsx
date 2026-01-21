@@ -1,16 +1,17 @@
 import { Checkbox } from '~/components/ui/checkbox';
+import { CompanyRole } from '~/api/clients/types';
 
 export const ROLE_OPTIONS = [
-  { value: 'ADMIN' as const, label: 'Administrator', description: 'Full tilgang til alle funksjoner' },
-  { value: 'EMPLOYEE' as const, label: 'Ansatt', description: 'Standard tilgang for medarbeidere' },
+  { value: CompanyRole.ADMIN as const, label: 'Administrator', description: 'Full tilgang til alle funksjoner' },
+  { value: CompanyRole.EMPLOYEE as const, label: 'Ansatt', description: 'Standard tilgang for medarbeidere' },
 ];
 
 export const RoleCheckboxes = ({
   value,
   onChange,
 }: {
-  value: CompanyRoles[];
-  onChange: (roles: CompanyRoles[]) => void;
+  value: CompanyRole[];
+  onChange: (roles: CompanyRole[]) => void;
 }) => (
   <div className="space-y-2">
     {ROLE_OPTIONS.map((role) => {
@@ -36,7 +37,7 @@ export const RoleCheckboxes = ({
               const currentRoles = value || [];
               const newRoles = checked
                 ? [...currentRoles, role.value]
-                : currentRoles.filter((r: CompanyRoles) => r !== role.value);
+                : currentRoles.filter((r: CompanyRole) => r !== role.value);
               onChange(newRoles);
             }}
             className="mt-0.5 shrink-0"

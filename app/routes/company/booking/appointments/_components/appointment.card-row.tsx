@@ -5,11 +5,11 @@ import { Card, CardContent } from '~/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { User, Trash2, Clock, Banknote, Info } from 'lucide-react';
 import { cn } from '~/lib/utils';
-import type { AppointmentDto } from 'tmp/openapi/gen/booking';
 import { Link } from 'react-router';
 import { parseISO, format } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import { getTotalServiceCount, getTotalDuration, getTotalPrice } from '../_utils/appointments.utils';
+import type { AppointmentDto } from '~/api/generated/booking';
 
 type AppointmentCardRowProps = {
   appointment: AppointmentDto;

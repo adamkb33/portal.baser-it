@@ -2,11 +2,11 @@
 import { TableRow, TableCell } from '~/components/ui/table';
 import { Button } from '~/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import type { AppointmentDto } from 'tmp/openapi/gen/booking';
 import { Link } from 'react-router';
 import { parseISO, format } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import { getTotalDuration, getTotalPrice, getTotalServiceCount } from '../_utils/appointments.utils';
+import type { AppointmentDto } from '~/api/generated/booking';
 
 type AppointmentTableRowProps = {
   appointment: AppointmentDto;
