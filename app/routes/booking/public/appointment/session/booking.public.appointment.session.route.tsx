@@ -4,6 +4,7 @@ import { createAppointmentSession, getSession } from '~/lib/appointments.server'
 import { AppointmentsController, type AppointmentSessionDto } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { resolveErrorPayload } from '~/lib/api-error';
 import type { Route } from './+types/booking.public.appointment.session.route';
 
 export async function loader(args: Route.LoaderArgs) {
@@ -51,9 +52,14 @@ export async function loader(args: Route.LoaderArgs) {
     }
 
     if (!session || session.companyId !== companyIdNumber) {
-      const created = await createAppointmentSession(companyIdNumber);
-      session = created.session;
-      setCookieHeader = created.setCookieHeader;
+      try {
+        const created = await createAppointmentSession(companyIdNumber);
+        session = created.session;
+        setCookieHeader = created.setCookieHeader;
+      } catch (error) {
+        const { message } = resolveErrorPayload(error, 'Kunne ikke opprette bookingøkt.');
+        return redirectWithError(args.request, ROUTES_MAP['booking.public.appointment'].href, message);
+      }
     }
 
     const search = url.search;
