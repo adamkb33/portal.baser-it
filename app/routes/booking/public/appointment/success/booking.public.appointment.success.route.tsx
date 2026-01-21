@@ -19,6 +19,7 @@ import { AppointmentsController, PublicAppointmentSessionController, type Appoin
 import { getSession } from '~/lib/appointments.server';
 import { BookingContainer, BookingStepHeader, BookingButton, BookingCard } from '../_components/booking-layout';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -438,11 +439,11 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
           </BookingButton>
         </a>
 
-        <a href="/appointments">
+        <Link to={ROUTES_MAP['booking.public.appointment.session.contact'].href}>
           <BookingButton variant="outline" size="md" fullWidth>
-            Book ny time
+            Book en ny time
           </BookingButton>
-        </a>
+        </Link>
       </div>
 
       {/* ========================================
