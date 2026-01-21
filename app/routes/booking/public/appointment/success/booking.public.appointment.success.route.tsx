@@ -60,11 +60,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     return data({
       companySummary: companyResponse.data.data,
       sessionOverview,
+      error: null as string | null,
     });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente bekreftelse');
     return data(
       {
+        companySummary: null,
+        sessionOverview: null,
         error: message,
       },
       { status: status ?? 400 },

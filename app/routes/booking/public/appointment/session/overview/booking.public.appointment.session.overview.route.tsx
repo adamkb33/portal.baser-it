@@ -45,11 +45,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     return data({
       sessionOverview: response.data.data,
+      error: null as string | null,
     });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente oversikt');
     return data(
       {
+        sessionOverview: null,
         error: message,
       },
       { status: status ?? 400 },

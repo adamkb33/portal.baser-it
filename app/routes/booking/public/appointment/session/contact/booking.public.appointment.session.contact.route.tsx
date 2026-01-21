@@ -41,11 +41,17 @@ export async function loader({ request }: Route.LoaderArgs) {
       existingContact = contactResponse.data?.data;
     }
 
-    return data({ session, existingContact });
+    return data({
+      session,
+      existingContact: existingContact ?? null,
+      error: null as string | null,
+    });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente kontaktinformasjon');
     return data(
       {
+        session: null,
+        existingContact: null,
         error: message,
       },
       { status: status ?? 400 },
@@ -104,21 +110,21 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function AppointmentsContactForm({ loaderData }: Route.ComponentProps) {
   const fetcher = useFetcher({ key: 'appointment-contact-form-fetcher' });
-  const session = loaderData.session;
-  const existingContact = loaderData.existingContact;
+  const session = loaderData.session ?? null;
+  const existingContact = loaderData.existingContact ?? null;
   const formId = 'booking-contact-form';
 
   const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
   const actionError = fetcher.data?.error;
-  const loaderError = loaderData.error;
+  const loaderError = loaderData.error ?? undefined;
   const error = loaderError || actionError;
 
-  if (loaderData.error || !session) {
+  if (loaderError || !session) {
     return (
       <BookingContainer>
         <BookingSection label="Kontaktinformasjon" title="Hvem skal vi registrere avtalen på?">
           <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
-            {loaderData.error ?? 'Ugyldig økt'}
+            {loaderError ?? 'Ugyldig økt'}
           </div>
         </BookingSection>
       </BookingContainer>

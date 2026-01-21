@@ -41,11 +41,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     return data({
       session,
       serviceGroups: serviceGroupsResponse.data?.data || [],
+      error: null as string | null,
     });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente tjenester');
     return data(
       {
+        session: null,
+        serviceGroups: [],
         error: message,
       },
       { status: status ?? 400 },

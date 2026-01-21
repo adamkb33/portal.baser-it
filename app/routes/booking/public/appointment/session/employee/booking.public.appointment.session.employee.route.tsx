@@ -43,11 +43,14 @@ export async function loader({ request }: Route.LoaderArgs) {
       session,
       profiles: profilesResponse.data?.data || [],
       selectedProfileId: session.selectedProfileId,
+      error: null as string | null,
     });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente frisører');
     return data(
       {
+        profiles: [],
+        selectedProfileId: null,
         error: message,
       },
       { status: status ?? 400 },

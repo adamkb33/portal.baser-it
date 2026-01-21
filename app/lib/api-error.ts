@@ -18,6 +18,9 @@ export type ErrorPayloadResult = {
 export const resolveErrorPayload = (error: unknown, fallbackMessage: string): ErrorPayloadResult => {
   const responseError = error as { response?: { status?: number; data?: { message?: string } } };
   const message = responseError?.response?.data?.message;
+  if (message) {
+    console.error(message);
+  }
   return {
     message: message || fallbackMessage,
     status: responseError?.response?.status,

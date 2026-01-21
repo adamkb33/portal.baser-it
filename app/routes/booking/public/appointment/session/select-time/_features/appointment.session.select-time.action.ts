@@ -24,11 +24,14 @@ export async function appointmentSessionSelectTimeLoader(args: Route.LoaderArgs)
     return data({
       session,
       schedules: schedulesResponse.data?.data || [],
+      error: null as string | null,
     });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente tilgjengelige tider');
     return data(
       {
+        session: null,
+        schedules: [],
         error: message,
       },
       { status: status ?? 400 },
