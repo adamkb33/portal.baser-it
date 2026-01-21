@@ -21,10 +21,12 @@ import type { SubmitContactFormSchema } from './_schemas/submit-contact.form.sch
 import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
+  console.error('[booking.contact.loader] start');
   try {
     const session = await getSession(request);
 
     if (!session) {
+      console.error('[booking.contact.loader] missing session');
       return redirect('/appointments');
     }
 
@@ -41,12 +43,19 @@ export async function loader({ request }: Route.LoaderArgs) {
       existingContact = contactResponse.data?.data;
     }
 
+    console.error('[booking.contact.loader] loaded', {
+      sessionId: session.sessionId,
+      companyId: session.companyId,
+      hasContactId: !!session.contactId,
+      hasExistingContact: !!existingContact,
+    });
     return data({
       session,
       existingContact: existingContact ?? null,
       error: null as string | null,
     });
   } catch (error) {
+    console.error('[booking.contact.loader] failed', error);
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente kontaktinformasjon');
     return data(
       {
