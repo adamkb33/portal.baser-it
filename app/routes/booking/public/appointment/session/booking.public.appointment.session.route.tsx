@@ -1,6 +1,6 @@
 import { redirect } from 'react-router';
 import { Loader2 } from 'lucide-react';
-import { createAppointmentSession, getSession } from '~/lib/appointments.server';
+import { appointmentSessionCookie, createAppointmentSession, getSession } from '~/lib/appointments.server';
 import { AppointmentsController, type AppointmentSessionDto } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
@@ -42,8 +42,9 @@ export async function loader(args: Route.LoaderArgs) {
       );
     }
 
-    let session: AppointmentSessionDto | null = null;
-    let setCookieHeader: string | undefined;
+  let session: AppointmentSessionDto | null = null;
+  let setCookieHeader: string | undefined;
+  let clearCookieHeader: string | undefined;
 
     try {
       session = await getSession(args.request);
@@ -51,7 +52,12 @@ export async function loader(args: Route.LoaderArgs) {
       session = null;
     }
 
-    if (!session || session.companyId !== companyIdNumber) {
+  if (session && session.companyId !== companyIdNumber) {
+    clearCookieHeader = await appointmentSessionCookie.serialize('', { maxAge: 0 });
+    session = null;
+  }
+
+  if (!session) {
       try {
         const created = await createAppointmentSession(companyIdNumber);
         session = created.session;
@@ -64,9 +70,14 @@ export async function loader(args: Route.LoaderArgs) {
 
     const search = url.search;
     const target = `${ROUTES_MAP['booking.public.appointment.session.contact'].href}${search}`;
-    if (setCookieHeader) {
+  if (setCookieHeader || clearCookieHeader) {
       const headers = new Headers();
+    if (clearCookieHeader) {
+      headers.append('Set-Cookie', clearCookieHeader);
+    }
+    if (setCookieHeader) {
       headers.append('Set-Cookie', setCookieHeader);
+    }
       return redirect(target, { headers });
     }
 
