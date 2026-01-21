@@ -21,7 +21,12 @@ import type { SubmitContactFormSchema } from './_schemas/submit-contact.form.sch
 import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
-  console.error('[booking.contact.loader] start');
+  console.debug('[booking.contact.loader] start', {
+    method: request.method,
+    url: request.url,
+    referer: request.headers.get('referer'),
+    userAgent: request.headers.get('user-agent'),
+  });
   try {
     const session = await getSession(request);
 
@@ -33,6 +38,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     let existingContact: ContactDto | undefined = undefined;
 
     if (session.contactId) {
+      console.debug('[booking.contact.loader] fetching contact', {
+        companyId: session.companyId,
+        contactId: session.contactId,
+      });
       const contactResponse = await PublicCompanyContactController.getContact({
         path: {
           companyId: session.companyId,
@@ -43,7 +52,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       existingContact = contactResponse.data?.data;
     }
 
-    console.error('[booking.contact.loader] loaded', {
+    console.debug('[booking.contact.loader] loaded', {
       sessionId: session.sessionId,
       companyId: session.companyId,
       hasContactId: !!session.contactId,
