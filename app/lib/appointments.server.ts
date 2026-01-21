@@ -71,9 +71,24 @@ export async function getSession(request: Request): Promise<AppointmentSessionDt
 
     return sessionResponse.data.data;
   } catch (error) {
+    if (error instanceof Response) {
+      let responseText = '';
+      try {
+        responseText = await error.clone().text();
+      } catch {
+        responseText = '';
+      }
+      console.error('[appointments.get-session] failed', {
+        message: responseText || error.statusText || 'Response error',
+        status: error.status,
+        url: GET_SESSION_URL,
+      });
+      throw error;
+    }
+
     console.error('[appointments.get-session] failed', {
       message: error instanceof Error ? error.message : String(error),
-      status: error instanceof Response ? error.status : undefined,
+      status: undefined,
       url: GET_SESSION_URL,
     });
     throw error;
