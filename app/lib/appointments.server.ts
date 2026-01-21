@@ -41,34 +41,43 @@ export async function createAppointmentSession(
 }
 
 export async function getSession(request: Request): Promise<AppointmentSessionDto> {
-  const cookieHeader = request.headers.get('Cookie');
-  const sessionId = await appointmentSessionCookie.parse(cookieHeader);
+  try {
+    const cookieHeader = request.headers.get('Cookie');
+    const sessionId = await appointmentSessionCookie.parse(cookieHeader);
 
-  if (!sessionId || typeof sessionId !== 'string') {
-    throw new Response('Missing appointment session', { status: 400 });
-  }
-  console.debug('[appointments.get-session] request', {
-    url: GET_SESSION_URL,
-    sessionId,
-  });
-  const sessionResponse =
-    await PublicAppointmentSessionController.getAppointmentSession(
-      {
-        query: {
-          sessionId,
+    if (!sessionId || typeof sessionId !== 'string') {
+      throw new Response('Missing appointment session', { status: 400 });
+    }
+    console.debug('[appointments.get-session] request', {
+      url: GET_SESSION_URL,
+      sessionId,
+    });
+    const sessionResponse =
+      await PublicAppointmentSessionController.getAppointmentSession(
+        {
+          query: {
+            sessionId,
+          },
         },
-      },
-    );
+      );
 
-  if (!sessionResponse.data) {
-    throw Error('Kunne ikke hente session');
+    if (!sessionResponse.data) {
+      throw Error('Kunne ikke hente session');
+    }
+
+    if (!sessionResponse.data.data) {
+      throw Error('Kunne ikke hente session');
+    }
+
+    return sessionResponse.data.data;
+  } catch (error) {
+    console.error('[appointments.get-session] failed', {
+      message: error instanceof Error ? error.message : String(error),
+      status: error instanceof Response ? error.status : undefined,
+      url: GET_SESSION_URL,
+    });
+    throw error;
   }
-
-  if (!sessionResponse.data.data) {
-    throw Error('Kunne ikke hente session');
-  }
-
-  return sessionResponse.data.data;
 }
 
 
