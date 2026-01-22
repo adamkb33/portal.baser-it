@@ -75,13 +75,24 @@ export async function action({ request }: Route.ActionArgs) {
       );
     }
 
-    await PublicAppointmentSessionController.submitAppointmentSession({
+    const submitResponse = await PublicAppointmentSessionController.submitAppointmentSession({
       query: {
         sessionId: session.sessionId,
       },
     });
 
-    return redirect(`${ROUTES_MAP['booking.public.appointment.success'].href}?companyId=${session.companyId}`);
+    const appointmentId = submitResponse.data?.data?.id;
+    if (!appointmentId) {
+      return redirectWithError(
+        request,
+        ROUTES_MAP['booking.public.appointment.session.overview'].href,
+        'Kunne ikke bekrefte timebestilling',
+      );
+    }
+
+    return redirect(
+      `${ROUTES_MAP['booking.public.appointment.success'].href}?companyId=${session.companyId}&appointmentId=${appointmentId}`,
+    );
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke bekrefte timebestilling');
     return redirectWithError(request, ROUTES_MAP['booking.public.appointment'].href, message);

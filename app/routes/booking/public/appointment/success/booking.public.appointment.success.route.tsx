@@ -1,4 +1,4 @@
-import { data, Link } from 'react-router';
+import { data, redirect, Link } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.success.route';
 import {
   Check,
@@ -25,6 +25,11 @@ export async function loader({ request }: Route.LoaderArgs) {
   try {
     const url = new URL(request.url);
     const companyId = url.searchParams.get('companyId');
+    const appointmentId = url.searchParams.get('appointmentId');
+    const parsedAppointmentId = appointmentId ? Number(appointmentId) : NaN;
+    if (!appointmentId || Number.isNaN(parsedAppointmentId)) {
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
+    }
     if (!companyId) {
       throw Error('Selskap ikke gjenkjent');
     }
@@ -45,24 +50,24 @@ export async function loader({ request }: Route.LoaderArgs) {
       throw Error('Selskap ikke funnet');
     }
 
-    let sessionOverview: AppointmentSessionOverviewDto | undefined;
     try {
-      const session = await getSession(request);
-      const sessionOverviewResponse = await PublicAppointmentSessionController.getAppointmentSessionOverview({
+      const appointmentResponse = await PublicAppointmentSessionController.getAppointmentById({
         query: {
-          sessionId: session.sessionId,
+          appointmentId: parsedAppointmentId,
         },
       });
-      sessionOverview = sessionOverviewResponse.data?.data ?? undefined;
+      return data({
+        companySummary: companyResponse.data.data,
+        appointment: appointmentResponse.data?.data ?? undefined,
+        error: null as string | null,
+      });
     } catch {
-      sessionOverview = undefined;
+      return data({
+        companySummary: companyResponse.data.data,
+        appointment: null,
+        error: 'Kunne ikke hente avtale',
+      });
     }
-
-    return data({
-      companySummary: companyResponse.data.data,
-      sessionOverview,
-      error: null as string | null,
-    });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente bekreftelse');
     return data(
@@ -115,22 +120,23 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
   const mapsUrl = getGoogleMapsUrl();
 
   const buildCalendarPayload = () => {
-    if (!loaderData.sessionOverview) return null;
-    const { sessionOverview } = loaderData;
-    const totalDuration = sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.duration, 0);
-    const startDate = new Date(sessionOverview.selectedStartTime);
-    const endDate = new Date(startDate.getTime() + totalDuration * 60000);
+    if (!loaderData.appointment) return null;
+    const { appointment } = loaderData;
+    const startDate = new Date(appointment.startTime);
+    const endDate = new Date(appointment.endTime);
 
     const formatIcsDate = (date: Date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     const summary = `Avtale hos ${companySummary.name}`;
-    const serviceNames = sessionOverview.selectedServices.map((item) => item.services.name).filter(Boolean);
+    const serviceNames = appointment.groupedServiceGroups
+      .flatMap((group) => group.services.map((service) => service.name))
+      .filter(Boolean);
     const descriptionParts = [
       serviceNames.length > 0 ? `Tjenester: ${serviceNames.join(', ')}` : null,
       formattedAddress ? `Adresse: ${formattedAddress}` : null,
     ].filter(Boolean);
     const description = descriptionParts.join('\\n');
     const location = formattedAddress ?? '';
-    const uid = `${companySummary.id ?? 'company'}-${sessionOverview.selectedStartTime}`;
+    const uid = `${companySummary.id ?? 'company'}-${appointment.startTime}`;
 
     const icsContent = [
       'BEGIN:VCALENDAR',

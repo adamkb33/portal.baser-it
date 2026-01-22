@@ -1094,6 +1094,24 @@ export type GetAppointmentSessionOverviewResponses = {
 
 export type GetAppointmentSessionOverviewResponse = GetAppointmentSessionOverviewResponses[keyof GetAppointmentSessionOverviewResponses];
 
+export type GetAppointmentByIdData = {
+    body?: never;
+    path?: never;
+    query: {
+        appointmentId: number;
+    };
+    url: '/public/appointment-session/get-appointment';
+};
+
+export type GetAppointmentByIdResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseAppointmentDto;
+};
+
+export type GetAppointmentByIdResponse = GetAppointmentByIdResponses[keyof GetAppointmentByIdResponses];
+
 export type GetGroupedServiceGroupsData = {
     body?: never;
     path?: never;
