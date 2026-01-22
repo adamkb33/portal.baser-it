@@ -641,7 +641,9 @@ export function BookingBottomNav({ title, items, primaryAction, secondaryAction,
           {title && <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>}
           <BookingMeta items={items} layout="compact" />
           <div className="space-y-2">
-            <div className="w-full">{primaryAction}</div>
+            <div className="w-full [&_button]:bg-secondary [&_button]:text-secondary-foreground [&_button]:border-secondary/40 [&_button:hover]:bg-secondary/90">
+              {primaryAction}
+            </div>
             {secondaryAction && <span className="w-full">{secondaryAction}</span>}
           </div>
         </div>

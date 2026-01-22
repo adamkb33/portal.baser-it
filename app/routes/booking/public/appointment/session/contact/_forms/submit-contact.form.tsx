@@ -161,24 +161,6 @@ export function SubmitContactForm({
             )}
           </Button>
         </div>
-        {/* Submit Button - Mobile */}
-        <div className="mt-5 md:hidden">
-          <Button
-            variant="default"
-            type="submit"
-            disabled={isSubmitting}
-            className="h-12 w-full text-sm font-semibold"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                Lagrer…
-              </>
-            ) : (
-              'Fortsett'
-            )}
-          </Button>
-        </div>
       </form>
     </Form>
   );

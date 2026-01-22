@@ -205,12 +205,12 @@ export default function BookingPublicAppointmentSessionOverviewRoute({ loaderDat
             </div>
 
             {/* Total Price - Emphasized */}
-            <div className="flex items-center justify-between gap-3 rounded-lg bg-primary p-4 text-primary-foreground">
+            <div className="flex items-center justify-between gap-3 rounded-md bg-primary px-3 py-2 text-primary-foreground">
               <div className="flex items-center gap-2">
-                <DollarSign className="size-6 md:size-7" strokeWidth={2.5} />
-                <span className="text-sm font-medium md:text-base">Estimert total pris</span>
+                <DollarSign className="size-5 md:size-6" strokeWidth={2.5} />
+                <span className="text-xs font-medium md:text-sm">Estimert total pris</span>
               </div>
-              <p className="text-2xl font-bold md:text-3xl">{totalPrice} kr</p>
+              <p className="text-lg font-bold md:text-2xl">{totalPrice} kr</p>
             </div>
           </div>
         </div>

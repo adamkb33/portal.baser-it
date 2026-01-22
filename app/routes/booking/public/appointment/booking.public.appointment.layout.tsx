@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router';
+import { AppointmentsView } from '~/components/booking/appointments-view';
 export default function AppointmentsLayout() {
-  return <Outlet />;
+  return <AppointmentsView/>;
 }
