@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Calendar } from '~/components/ui/calendar';
 import { Button } from '~/components/ui/button';
 import { Label } from '~/components/ui/label';
@@ -14,10 +14,55 @@ type DateTimeSelectorProps = {
 };
 
 export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime }: DateTimeSelectorProps) {
+  const hasInitializedDefault = useRef(false);
+  const findNearestAvailableDate = (items: ScheduleDto[]): Date | null => {
+    const now = new Date();
+    const todayKey = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+    const upcomingDates = items
+      .map((schedule) => {
+        const scheduleDate = new Date(`${schedule.date}T00:00:00`);
+        if (Number.isNaN(scheduleDate.getTime())) return null;
+        if (schedule.timeSlots.length === 0) return null;
+
+        const isToday = scheduleDate.getTime() === todayKey;
+        if (isToday) {
+          const hasFutureSlot = schedule.timeSlots.some((slot) => new Date(slot.startTime) >= now);
+          return hasFutureSlot ? scheduleDate : null;
+        }
+
+        return scheduleDate >= new Date(todayKey) ? scheduleDate : null;
+      })
+      .filter((date): date is Date => Boolean(date))
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    return upcomingDates[0] ?? null;
+  };
+
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(
-    selectedDateTime ? new Date(selectedDateTime.toDateString()) : null,
+    selectedDateTime ? new Date(selectedDateTime.toDateString()) : findNearestAvailableDate(schedules),
   );
+  const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(selectedDate ?? undefined);
+
+  useEffect(() => {
+    if (selectedDate) {
+      setCalendarMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (selectedDateTime) {
+      setSelectedDate(new Date(selectedDateTime.toDateString()));
+      hasInitializedDefault.current = true;
+      return;
+    }
+
+    if (!hasInitializedDefault.current) {
+      setSelectedDate((current) => current ?? findNearestAvailableDate(schedules));
+      hasInitializedDefault.current = true;
+    }
+  }, [selectedDateTime, schedules]);
 
   const getScheduleForDate = (date: Date): ScheduleDto | undefined => {
     const year = date.getFullYear();
@@ -92,6 +137,8 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
               selected={selectedDate || undefined}
               onSelect={handleDateSelect}
               disabled={isDateDisabled}
+              month={calendarMonth}
+              onMonthChange={setCalendarMonth}
             />
           </PopoverContent>
         </Popover>

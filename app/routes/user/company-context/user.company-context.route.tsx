@@ -69,24 +69,41 @@ export async function action({ request }: Route.ActionArgs) {
 export default function CompanyContextPage({ loaderData }: Route.ComponentProps) {
   const companies = loaderData?.companyContexts || [];
 
-  if (!companies.length) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-        <p className="text-lg font-medium">No companies found</p>
-        <p className="text-sm">You might not have access to any company contexts yet.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex gap-4 items-center justify-center">
-      {companies.map((company) => (
-        <Form key={company.id} method="post">
-          <input type="hidden" name="companyId" value={company.id} />
-          <input type="hidden" name="orgNumber" value={company.orgNumber} />
-          <CompanyContextSummaryCard company={company} />
-        </Form>
-      ))}
-    </div>
+    <section className="mx-auto w-full max-w-5xl space-y-6">
+      <header className="rounded-lg border border-card-border bg-card p-5 shadow-sm sm:p-6">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Selskapskontekst</p>
+        <h1 className="mt-2 text-2xl font-semibold text-card-text sm:text-3xl">Velg selskap</h1>
+        <p className="mt-2 text-sm text-card-text-muted sm:text-base">
+          Logg inn i riktig selskap for å administrere tjenester, ansatte og booking.
+        </p>
+      </header>
+
+      {companies.length === 0 ? (
+        <div className="rounded-lg border border-card-border bg-card-muted-bg p-6 text-center shadow-sm">
+          <p className="text-base font-semibold text-card-text">Ingen selskaper funnet</p>
+          <p className="mt-2 text-sm text-card-text-muted">
+            Du har ikke tilgang til noen selskapskontekster enda.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between rounded-lg border border-card-border bg-card p-4 text-sm text-card-text-muted">
+            <span>Tilgjengelige selskaper</span>
+            <span className="font-medium text-card-text">{companies.length}</span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {companies.map((company) => (
+              <Form key={company.id} method="post" className="h-full">
+                <input type="hidden" name="companyId" value={company.id} />
+                <input type="hidden" name="orgNumber" value={company.orgNumber} />
+                <CompanyContextSummaryCard company={company} />
+              </Form>
+            ))}
+          </div>
+        </>
+      )}
+    </section>
   );
 }

@@ -4,17 +4,30 @@ import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import type { RootOutletContext } from '../root.layout';
 import type { Route } from './+types/company.route';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import type { ApiMessage } from '~/api/generated/identity';
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const auth = await getAuthPayloadFromRequest(request);
-  console.log(auth);
+  try {
+    const auth = await getAuthPayloadFromRequest(request);
+    console.log(auth);
 
-  if (!auth) {
-    return redirect('/');
-  }
+    if (!auth) {
+      return redirect('/');
+    }
 
-  if (auth?.companyId) {
-    return redirect(ROUTES_MAP['user.company-context'].href);
+    if (!auth?.companyId) {
+      return redirect(ROUTES_MAP['user.company-context'].href);
+    }
+
+    return null;
+  } catch (error) {
+    const apiMessage = (error as { response?: { data?: { message?: ApiMessage } } })?.response?.data?.message;
+    if (apiMessage?.id === 'COMPANY_CONTEXT_REQUIRED') {
+      return redirectWithInfo(request, ROUTES_MAP['user.company-context'].href, apiMessage);
+    }
+
+    return null;
   }
 }
 

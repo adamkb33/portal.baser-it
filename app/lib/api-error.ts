@@ -17,7 +17,13 @@ export type ErrorPayloadResult = {
 
 export const resolveErrorPayload = (error: unknown, fallbackMessage: string): ErrorPayloadResult => {
   const responseError = error as { response?: { status?: number; data?: { message?: string } } };
-  const message = responseError?.response?.data?.message;
+  const rawMessage = responseError?.response?.data?.message;
+  const message =
+    typeof rawMessage === 'string'
+      ? rawMessage
+      : rawMessage && typeof rawMessage === 'object'
+        ? (rawMessage as { value?: string; id?: string }).value || (rawMessage as { id?: string }).id
+        : undefined;
   if (message) {
     console.error(message);
   }

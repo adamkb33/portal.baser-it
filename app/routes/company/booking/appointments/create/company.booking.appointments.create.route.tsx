@@ -8,6 +8,8 @@ import {
 } from '~/api/generated/booking/sdk.gen';
 import { AppointmentBookingWizard } from './_components/appointment-create.wizard';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -102,7 +104,11 @@ export async function action({ request }: Route.ActionArgs) {
       });
     });
 
-    return { success: true, data: response.data };
+    return redirectWithSuccess(
+      request,
+      ROUTES_MAP['company.booking.appointments'].href,
+      response.data?.message?.value || 'Avtalen er opprettet.',
+    );
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke opprette avtale');
     return { error: message };

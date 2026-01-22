@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import { Check, Mail, Phone, User, User2Icon } from 'lucide-react';
@@ -32,19 +32,23 @@ export function ContactSelector({
   initialSearch = '',
 }: ContactSelectorProps) {
   const [searchFilter, setSearchFilter] = useState(initialSearch);
+  const onSearchChangeRef = useRef(onSearchChange);
 
   useEffect(() => {
     setSearchFilter(initialSearch);
   }, [initialSearch]);
 
-  const handleSearchChange = (value: string) => {
-    setSearchFilter(value);
+  useEffect(() => {
+    onSearchChangeRef.current = onSearchChange;
+  }, [onSearchChange]);
+
+  useEffect(() => {
     const timeoutId = setTimeout(() => {
-      onSearchChange(value);
+      onSearchChangeRef.current(searchFilter);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  };
+  }, [searchFilter]);
 
   const formatName = (contact: ContactDto) => {
     const parts = [contact.givenName, contact.familyName].filter(Boolean);
@@ -71,9 +75,7 @@ export function ContactSelector({
           placeholder="Søk kontakt…"
           value={searchFilter}
           onChange={(e) => {
-            const value = e.target.value;
-            setSearchFilter(value);
-            handleSearchChange(value);
+            setSearchFilter(e.target.value);
           }}
           className="h-11 text-sm md:h-10 md:text-base"
         />

@@ -38,14 +38,6 @@ export function AppointmentBookingWizard({ componentProps }: AppointmentWizardPr
 
   const steps: WizardStep[] = ['contact', 'services', 'datetime', 'review'];
 
-  // ... (keep all the useEffect hooks and handlers from previous version)
-
-  useEffect(() => {
-    if (actionData?.success) {
-      navigate('/company/booking/appointments');
-    }
-  }, [actionData, navigate]);
-
   useEffect(() => {
     const sessionParam = searchParams.get('appointment-session');
     if (sessionParam && contacts.length > 0) {

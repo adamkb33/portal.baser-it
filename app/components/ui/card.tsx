@@ -12,9 +12,6 @@ const cardVariants = cva(
           'border border-card-border',
           'shadow-xs hover:shadow-sm',
           'hover:bg-card-hover-bg hover:border-card-hover-border',
-          'before:absolute before:inset-0 before:bg-gradient-to-br',
-          'before:from-card-gradient-from before:to-card-gradient-to',
-          'before:pointer-events-none before:opacity-0 hover:before:opacity-100 before:transition-opacity',
         ],
         elevated: [
           'bg-card-elevated-bg text-card-elevated-text',
@@ -67,6 +64,7 @@ const cardVariants = cva(
 const cardHeaderVariants = cva(
   [
     '@container/card-header',
+    'relative z-10',
     'grid auto-rows-min grid-rows-[auto_auto] items-start',
     'has-data-[slot=card-action]:grid-cols-[1fr_auto]',
   ],
@@ -97,7 +95,7 @@ const cardTitleVariants = cva(
     'font-semibold leading-tight',
     'text-card-header-text tracking-tight',
     'transition-colors duration-200',
-    'group-hover:text-primary',
+    'group-hover:text-card-header-text',
   ],
   {
     variants: {
@@ -140,7 +138,11 @@ const cardContentVariants = cva(['relative z-10'], {
 });
 
 const cardFooterVariants = cva(
-  ['flex flex-wrap items-center gap-2 md:gap-3', '[&_button]:w-full [&_button]:sm:w-auto'],
+  [
+    'relative z-10',
+    'flex flex-wrap items-center gap-2 md:gap-3',
+    '[&_button]:w-full [&_button]:sm:w-auto',
+  ],
   {
     variants: {
       size: {
