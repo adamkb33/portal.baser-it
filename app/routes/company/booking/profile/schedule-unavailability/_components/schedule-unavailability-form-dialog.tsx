@@ -5,7 +5,7 @@ import { Calendar } from '~/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { TimePicker } from '~/components/pickers/time-picker';
 import { cn } from '~/lib/utils';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import { Calendar as CalendarIcon, Trash2 } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
@@ -20,12 +20,15 @@ export type UnavailabilityFormData = {
   ranges: UnavailabilityRangeFormData[];
 };
 
-export const createEmptyRange = (): UnavailabilityRangeFormData => ({
-  id: String(Date.now()) + Math.random().toString(36).slice(2),
-  dateRange: undefined,
-  startTime: '',
-  endTime: '',
-});
+export const createEmptyRange = (): UnavailabilityRangeFormData => {
+  const today = startOfDay(new Date());
+  return {
+    id: String(Date.now()) + Math.random().toString(36).slice(2),
+    dateRange: { from: today, to: today },
+    startTime: '',
+    endTime: '',
+  };
+};
 
 export const emptyFormData: UnavailabilityFormData = {
   ranges: [createEmptyRange()],

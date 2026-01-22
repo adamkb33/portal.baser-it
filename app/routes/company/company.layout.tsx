@@ -3,12 +3,18 @@ import { SidebarBreadcrumbs } from '~/components/layout/sidebar-breadcrums';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import type { RootOutletContext } from '../root.layout';
 import type { Route } from './+types/company.route';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const auth = await getAuthPayloadFromRequest(request);
+  console.log(auth);
 
   if (!auth) {
     return redirect('/');
+  }
+
+  if (auth?.companyId) {
+    return redirect(ROUTES_MAP['user.company-context'].href);
   }
 }
 

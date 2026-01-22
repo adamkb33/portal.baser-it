@@ -126,7 +126,9 @@ export default function CompanyBookingLayout({ loaderData }: Route.ComponentProp
         </div>
       )}
 
+      <div className="space-y-4">
       <Outlet />
+      </div>
     </>
   );
 }

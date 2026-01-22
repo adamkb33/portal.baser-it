@@ -891,7 +891,10 @@ export type GetScheduleResponse = GetScheduleResponses[keyof GetScheduleResponse
 export type CompanyUserGetUnavailabilityRangesData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        fromDateTime?: string;
+        toDateTime?: string;
+    };
     url: '/company-user/schedule-unavailability';
 };
 

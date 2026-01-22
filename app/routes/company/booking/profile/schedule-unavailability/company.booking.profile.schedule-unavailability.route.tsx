@@ -3,13 +3,15 @@ import {
   CompanyUserScheduleUnavailabilityController,
   type ScheduleUnavailabilityDto,
 } from '~/api/generated/booking';
-import { data, useFetcher } from 'react-router';
-import { CalendarOff, Clock, Plus } from 'lucide-react';
+import { data, useFetcher, useNavigate, useSearchParams } from 'react-router';
+import { CalendarOff, Clock, Plus, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { withAuth } from '~/api/utils/with-auth';
-import { format, isSameDay, startOfDay } from 'date-fns';
+import { addDays, addMonths, endOfDay, format, isSameDay, startOfDay } from 'date-fns';
 import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import {
   ScheduleUnavailabilityFormDialog,
   createEmptyRange,
@@ -20,8 +22,31 @@ import {
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
+    const timezone = 'Europe/Oslo';
+    const url = new URL(request.url);
+    const range = url.searchParams.get('range') ?? '6m';
+    const today = startOfDay(new Date());
+    const isPastRange = range === 'prev6m';
+    const rangeStartDate = isPastRange ? addMonths(today, -6) : today;
+    const rangeEndDate = isPastRange
+      ? today
+      : range === '30d'
+        ? addDays(today, 30)
+        : range === '90d'
+          ? addDays(today, 90)
+          : range === '12m'
+            ? addMonths(today, 12)
+            : addMonths(today, 6);
+    const fromDateTime = formatInTimeZone(rangeStartDate, timezone, "yyyy-MM-dd'T'HH:mm:ssXXX");
+    const toDateTime = formatInTimeZone(endOfDay(rangeEndDate), timezone, "yyyy-MM-dd'T'HH:mm:ssXXX");
+
     const getResponse = await withAuth(request, async () => {
-      return await CompanyUserScheduleUnavailabilityController.companyUserGetUnavailabilityRanges();
+      return await CompanyUserScheduleUnavailabilityController.companyUserGetUnavailabilityRanges({
+        query: {
+          fromDateTime,
+          toDateTime,
+        },
+      });
     });
 
     return data({
@@ -100,6 +125,9 @@ export async function action({ request }: Route.ActionArgs) {
 export default function CompanyBookingProfileScheduleUnavailabilityRoute({ loaderData }: Route.ComponentProps) {
   const { schedules, error } = loaderData;
   const fetcher = useFetcher<{ success?: boolean; error?: string }>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [selectedRange, setSelectedRange] = useState(searchParams.get('range') ?? '6m');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [createFormData, setCreateFormData] = useState<UnavailabilityFormData>(emptyFormData);
   const [formErrors, setFormErrors] = useState<
@@ -127,8 +155,8 @@ export default function CompanyBookingProfileScheduleUnavailabilityRoute({ loade
     }
   }, [fetcher.data]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (value: Date | string) => {
+    const date = typeof value === 'string' ? new Date(value) : value;
     return new Intl.DateTimeFormat('nb-NO', {
       day: 'numeric',
       month: 'short',
@@ -142,6 +170,12 @@ export default function CompanyBookingProfileScheduleUnavailabilityRoute({ loade
     if (isSameDay(startDate, endDate)) return formatDate(start);
     return `${formatDate(start)} – ${formatDate(end)}`;
   };
+  const formatDateTimeRange = (start: string, end: string) => {
+    if (isSameDay(new Date(start), new Date(end))) {
+      return `${formatDate(start)} ${formatTime(start)}–${formatTime(end)}`;
+    }
+    return `${formatDate(start)} ${formatTime(start)} – ${formatDate(end)} ${formatTime(end)}`;
+  };
   const isWholeDay = (start: string, end: string) => {
     const startDate = new Date(start);
     const endDate = new Date(end);
@@ -152,6 +186,29 @@ export default function CompanyBookingProfileScheduleUnavailabilityRoute({ loade
     );
   };
 
+  const totalRanges = schedules?.length ?? 0;
+  const wholeDayRanges = schedules?.filter((range) => isWholeDay(range.startTime, range.endTime)).length ?? 0;
+  const partialRanges = Math.max(totalRanges - wholeDayRanges, 0);
+  const visibleSchedules = schedules?.slice(0, 5) ?? [];
+  const rangeOptions = [
+    { value: '30d', label: '30 dager', tone: 'future' },
+    { value: '90d', label: '90 dager', tone: 'future' },
+    { value: '6m', label: '6 måneder', tone: 'future' },
+    { value: '12m', label: '12 måneder', tone: 'future' },
+    { value: 'prev6m', label: 'Siste 6 måneder', tone: 'past' },
+  ];
+  const getRangeDates = (range: string, baseDate: Date) => {
+    if (range === 'prev6m') {
+      return { start: addMonths(baseDate, -6), end: baseDate };
+    }
+    if (range === '30d') return { start: baseDate, end: addDays(baseDate, 30) };
+    if (range === '90d') return { start: baseDate, end: addDays(baseDate, 90) };
+    if (range === '12m') return { start: baseDate, end: addMonths(baseDate, 12) };
+    return { start: baseDate, end: addMonths(baseDate, 6) };
+  };
+  const { start: rangeStartDate, end: rangeEndDate } = getRangeDates(selectedRange, today);
+  const futureOptions = rangeOptions.filter((option) => option.tone === 'future');
+  const pastOptions = rangeOptions.filter((option) => option.tone === 'past');
 
   const handleFieldChange = (rangeId: string, field: keyof UnavailabilityRangeFormData, value: any) => {
     setCreateFormData((prev) => ({
@@ -222,66 +279,164 @@ export default function CompanyBookingProfileScheduleUnavailabilityRoute({ loade
   };
 
   return (
-    <div className="bg-background p-4 md:p-8">
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-foreground mb-1">Mitt feriefravær</h1>
-          <p className="text-sm text-muted-foreground">Administrer når du er utilgjengelig</p>
-        </div>
+    <>
+        <div className="grid grid-cols-1 xl:grid-cols-[360px,1fr] gap-4">
+ 
 
-        <button
-          type="button"
-          className="w-full bg-button-primary-bg text-button-primary-text rounded-lg h-14 flex items-center justify-center gap-2 font-medium mb-6 active:bg-button-primary-active-bg"
-          onClick={() => setIsCreateDialogOpen(true)}
-        >
-          <Plus className="h-5 w-5" />
-          Legg til fravær
-        </button>
-
-        <div className="space-y-3">
-          {schedules && schedules.length > 0 ? (
-            schedules.slice(0, 5).map((schedule: ScheduleUnavailabilityDto, index: number) => {
-              const wholeDay = isWholeDay(schedule.startTime, schedule.endTime);
-              return (
-                <div key={index} className="bg-card border border-card-border rounded-xl p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-11 w-11 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                      <CalendarOff className="h-5 w-5 text-accent-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-card-text truncate">
-                        {formatDateRange(schedule.startTime, schedule.endTime)}
-                      </p>
-                      {!wholeDay && (
-                        <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          <span>
-                            {formatTime(schedule.startTime)}–{formatTime(schedule.endTime)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+          <Card variant="elevated">
+            <CardHeader className="border-b">
+              <CardTitle>Registrert fravær</CardTitle>
+              <CardDescription>De neste fraværsperiodene dine.</CardDescription>
+              <div className="space-y-3 pt-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                  <span>Periode</span>
+                  <span>
+                    {formatDate(rangeStartDate)} – {formatDate(rangeEndDate)}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  <div className="rounded-md border border-card-border bg-muted/30 px-3 py-2">
+                    <p className="text-[11px] text-muted-foreground">Totalt</p>
+                    <p className="text-sm font-medium text-foreground">{totalRanges}</p>
+                  </div>
+                  <div className="rounded-md border border-card-border bg-muted/30 px-3 py-2">
+                    <p className="text-[11px] text-muted-foreground">Heldag</p>
+                    <p className="text-sm font-medium text-foreground">{wholeDayRanges}</p>
+                  </div>
+                  <div className="rounded-md border border-card-border bg-muted/30 px-3 py-2">
+                    <p className="text-[11px] text-muted-foreground">Med klokkeslett</p>
+                    <p className="text-sm font-medium text-foreground">{partialRanges}</p>
                   </div>
                 </div>
-              );
-            })
-          ) : (
-            <div className="text-center py-12">
-              <div className="h-16 w-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-                <CalendarOff className="h-8 w-8 text-muted-foreground" />
+                <div className="space-y-2 rounded-md border border-card-border bg-muted/20 p-3">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Fremover
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {futureOptions.map((option) => (
+                      <Button
+                        key={option.value}
+                        type="button"
+                        size="sm"
+                        variant={selectedRange === option.value ? 'default' : 'outline'}
+                        onClick={() => {
+                          setSelectedRange(option.value);
+                          const nextParams = new URLSearchParams(searchParams);
+                          nextParams.set('range', option.value);
+                          navigate({ search: `?${nextParams.toString()}` });
+                        }}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Tidligere
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {pastOptions.map((option) => (
+                      <Button
+                        key={option.value}
+                        type="button"
+                        size="sm"
+                        variant={selectedRange === option.value ? 'secondary' : 'outline'}
+                        className={
+                          selectedRange === option.value
+                            ? 'bg-muted text-foreground'
+                            : 'border-muted-foreground/30 text-muted-foreground hover:bg-muted/40 hover:text-foreground'
+                        }
+                        onClick={() => {
+                          setSelectedRange(option.value);
+                          const nextParams = new URLSearchParams(searchParams);
+                          nextParams.set('range', option.value);
+                          navigate({ search: `?${nextParams.toString()}` });
+                        }}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    Viser {visibleSchedules.length} av {totalRanges}
+                  </div>
+                  <Button type="button" variant="default" size="sm" onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4" />
+                    Legg til fravær
+                  </Button>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {error || 'Ingen fraværsperioder registrert'}
-              </p>
-            </div>
-          )}
-        </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {visibleSchedules.length > 0 ? (
+                visibleSchedules.map((schedule: ScheduleUnavailabilityDto, index: number) => {
+                  const wholeDay = isWholeDay(schedule.startTime, schedule.endTime);
+                  return (
+                    <div key={index} className="flex items-center gap-3 rounded-lg border border-card-border bg-muted/30 p-3">
+                      <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                        <CalendarOff className="h-5 w-5 text-accent-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-card-text truncate">
+                          {formatDateTimeRange(schedule.startTime, schedule.endTime)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-10">
+                  <div className="h-12 w-12 rounded-full bg-muted mx-auto mb-3 flex items-center justify-center">
+                    <CalendarOff className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {error || 'Ingen fraværsperioder registrert'}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => setIsCreateDialogOpen(true)}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Legg til fravær
+                  </Button>
+                </div>
+              )}
+              {schedules && schedules.length > 5 && (
+                <Button variant="ghost" size="sm" className="w-full">
+                  Vis alle ({schedules.length})
+                </Button>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Show more affordance if needed */}
-        {schedules && schedules.length > 5 && (
-          <button className="w-full mt-4 text-sm text-primary font-medium h-11">Vis alle ({schedules.length})</button>
-        )}
-      </div>
+          <Card variant="bordered" className="h-full">
+            <CardHeader className="border-b">
+              <CardTitle>Tips</CardTitle>
+              <CardDescription>Husk å legge inn fravær i god tid.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <div className="flex items-start gap-3 rounded-lg border border-card-border bg-muted/30 p-3">
+                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-foreground font-medium">Hold kalenderen oppdatert</p>
+                  <p className="text-xs text-muted-foreground">
+                    Nye tider blir ikke booket når du er fraværende.
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-lg border border-card-border bg-muted/30 p-3">
+                <p className="text-xs text-muted-foreground">Vises her: {visibleSchedules.length} av {totalRanges}</p>
+                <p className="text-sm text-foreground font-medium mt-1">Planlegg ferie og pauser tidlig</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
       <ScheduleUnavailabilityFormDialog
         open={isCreateDialogOpen}
@@ -317,6 +472,6 @@ export default function CompanyBookingProfileScheduleUnavailabilityRoute({ loade
         setActiveTimePicker={setActiveTimePicker}
         today={today}
       />
-    </div>
+    </>
   );
 }
