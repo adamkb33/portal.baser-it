@@ -431,13 +431,15 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({ loa
       </BookingContainer>
 
       <BookingSummary
-        show={hasSelections}
+        show
         mobile={{
           title: 'Oppsummering',
           items: [
             {
               label: 'Tjenester',
-              value: `${selectedServices.size} ${selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}`,
+              value: hasSelections
+                ? `${selectedServices.size} ${selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}`
+                : 'Velg tjenester',
               icon: <ShoppingBag className="size-4" />,
             },
             { label: 'Varighet', value: `${totalDuration} min` },
@@ -454,7 +456,7 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({ loa
                 size="lg"
                 fullWidth
                 loading={isSubmitting}
-                disabled={isSubmitting}
+                disabled={!hasSelections || isSubmitting}
               >
                 <Sparkles className="size-5" />
                 Fortsett til tidspunkt

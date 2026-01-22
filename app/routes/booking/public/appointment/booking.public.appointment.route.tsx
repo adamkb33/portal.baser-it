@@ -188,6 +188,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     });
     return data({ companies: [], locations: [], error: message }, { status: status ?? 400 });
   }
+  
 }
 
 export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) {

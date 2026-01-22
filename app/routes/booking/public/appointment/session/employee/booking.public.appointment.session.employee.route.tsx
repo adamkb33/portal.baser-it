@@ -1,4 +1,4 @@
-import { data, redirect, Form, Link } from 'react-router';
+import { data, redirect, Form, Link, useNavigation } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.session.employee.route';
 import { getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
@@ -13,7 +13,7 @@ import {
   BookingSummary,
 } from '../../_components/booking-layout';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { PublicAppointmentSessionController, type AppointmentSessionDto, type BookingProfileDto } from '~/api/generated/booking';
+import { PublicAppointmentSessionController } from '~/api/generated/booking';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -94,6 +94,9 @@ export default function AppointmentsEmployee({ loaderData }: Route.ComponentProp
   const profiles = loaderData.profiles ?? [];
   const selectedProfileId = loaderData.selectedProfileId;
   const selectedProfile = profiles.find((profile) => profile.id === selectedProfileId);
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === 'submitting';
+  const submittingProfileId = navigation.formData?.get('selectedProfileId');
 
   if (loaderData.error) {
     return (
@@ -124,12 +127,18 @@ export default function AppointmentsEmployee({ loaderData }: Route.ComponentProp
         <BookingGrid cols={2}>
           {profiles.map((profile) => {
             const isSelected = selectedProfileId === profile.id;
+            const isSubmittingProfile =
+              isSubmitting && submittingProfileId !== null && String(profile.id) === String(submittingProfileId);
 
             return (
               <SelectableCard
                 key={profile.id}
                 selected={isSelected}
-                className={cn('flex h-full min-h-[260px] flex-col', isSelected && 'border-primary')}
+                className={cn(
+                  'flex h-full min-h-[260px] flex-col',
+                  isSelected && 'border-primary',
+                  isSubmittingProfile && 'border-primary bg-primary/10',
+                )}
               >
                 {isSelected && (
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Valgt frisør</p>
@@ -198,7 +207,7 @@ export default function AppointmentsEmployee({ loaderData }: Route.ComponentProp
                   ) : (
                     <Form method="post">
                       <input type="hidden" name="selectedProfileId" value={profile.id} />
-                      <BookingButton type="submit" fullWidth>
+                      <BookingButton type="submit" fullWidth loading={isSubmittingProfile} disabled={isSubmitting}>
                         Velg {profile.givenName}
                       </BookingButton>
                     </Form>
