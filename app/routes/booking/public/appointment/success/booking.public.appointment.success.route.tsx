@@ -13,10 +13,8 @@ import {
   Sparkles,
   PartyPopper,
 } from 'lucide-react';
-import type { CompanySummaryDto } from '~/api/generated/identity';
 import { PublicCompanyController } from '~/api/generated/identity';
 import { AppointmentsController, PublicAppointmentSessionController, type AppointmentSessionOverviewDto } from '~/api/generated/booking';
-import { getSession } from '~/lib/appointments.server';
 import { BookingContainer, BookingStepHeader, BookingButton, BookingCard } from '../_components/booking-layout';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
