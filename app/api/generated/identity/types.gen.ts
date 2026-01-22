@@ -12,10 +12,14 @@ export type UpdateContactDto = {
 };
 
 export type ApiError = {
-    code: string;
-    message: string;
+    message: ApiMessage;
     field?: string;
     details?: string;
+};
+
+export type ApiMessage = {
+    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
+    value: string;
 };
 
 export type ApiMeta = {
@@ -28,7 +32,7 @@ export type ApiMeta = {
 
 export type ApiResponseContactDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: ContactDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -84,7 +88,7 @@ export type EditCompanyUserDto = {
 
 export type ApiResponseUnit = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
@@ -99,7 +103,7 @@ export type InviteUserDto = {
 
 export type ApiResponseInvitedUserTokenDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: InvitedUserTokenDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -126,7 +130,7 @@ export type AddressDto = {
 
 export type ApiResponseCompanySummaryDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: CompanySummaryDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -160,7 +164,7 @@ export type CompanyRoleAssignmentDto = {
 
 export type ApiResponseAuthenticatedUserPayload = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: AuthenticatedUserPayload;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -190,7 +194,7 @@ export type GetCompanyUsersByIdDto = {
 
 export type ApiResponseListPublicCompanyUserDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<PublicCompanyUserDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -213,7 +217,7 @@ export type GetCreateOrUpdateContactDto = {
 
 export type ApiResponseBoolean = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: boolean;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -222,7 +226,7 @@ export type ApiResponseBoolean = {
 
 export type ApiResponseListUserDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<UserDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -238,7 +242,7 @@ export type UserDto = {
 
 export type ApiResponseListContactDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<ContactDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -247,7 +251,7 @@ export type ApiResponseListContactDto = {
 
 export type ApiResponseListCompanySummaryDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<CompanySummaryDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -276,7 +280,7 @@ export type SignInDto = {
 
 export type ApiResponseAuthenticationTokenDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: AuthenticationTokenDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -314,7 +318,7 @@ export type RefreshTokenRequestDto = {
 
 export type ApiResponseJwtClaims = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: JwtClaims;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -349,7 +353,7 @@ export type InviteCompanyUserDto = {
 
 export type ApiResponseSmtpDiagnosticsResponse = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: SmtpDiagnosticsResponse;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -375,7 +379,7 @@ export type SmtpDiagnosticsResponse = {
 
 export type ApiResponseUserDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: UserDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -384,7 +388,7 @@ export type ApiResponseUserDto = {
 
 export type ApiResponseListCompanyRole = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<'ADMIN' | 'EMPLOYEE'>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -393,7 +397,7 @@ export type ApiResponseListCompanyRole = {
 
 export type ApiResponseListBiTProduct = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -402,7 +406,7 @@ export type ApiResponseListBiTProduct = {
 
 export type ApiResponseCompanyUserDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: CompanyUserDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -421,7 +425,7 @@ export type CompanyUserDto = {
 
 export type ApiResponsePaginatedResponseContactDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: PaginatedResponseContactDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -440,7 +444,7 @@ export type PaginatedResponseContactDto = {
 
 export type ApiResponseCompanyDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: CompanyDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -455,7 +459,7 @@ export type CompanyDto = {
 
 export type ApiResponseInviteTokenDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: InviteTokenDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -476,7 +480,7 @@ export type InviteTokenPayload = {
 
 export type ApiResponsePaginatedResponseCompanyUserDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: PaginatedResponseCompanyUserDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -495,7 +499,7 @@ export type PaginatedResponseCompanyUserDto = {
 
 export type ApiResponseListInviteTokenDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<InviteTokenDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -504,7 +508,7 @@ export type ApiResponseListInviteTokenDto = {
 
 export type ApiResponseCompanyDashboardMetrics = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: CompanyDashboardMetrics;
     errors?: Array<ApiError>;
     meta?: ApiMeta;

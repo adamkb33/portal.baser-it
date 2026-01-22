@@ -1,5 +1,6 @@
 // lib/flash.server.ts
 import { createCookieSessionStorage, redirect } from 'react-router';
+import type { ApiMessage } from '~/api/generated/booking';
 
 const { getSession, commitSession } = createCookieSessionStorage({
   cookie: {
@@ -16,7 +17,22 @@ const { getSession, commitSession } = createCookieSessionStorage({
 export type FlashMessage = {
   type: 'success' | 'error' | 'info' | 'warning';
   text: string;
+  messageId?: ApiMessage['id'];
 };
+
+type FlashTextInput = string | ApiMessage;
+
+function normalizeFlashMessage(type: FlashMessage['type'], text: FlashTextInput): FlashMessage {
+  if (typeof text === 'string') {
+    return { type, text };
+  }
+
+  return {
+    type,
+    text: text.value || text.id,
+    messageId: text.id,
+  };
+}
 
 export async function setFlashMessage(request: Request, message: FlashMessage) {
   const session = await getSession(request.headers.get('Cookie'));
@@ -49,25 +65,25 @@ export async function redirectWithFlash(
 export async function redirectWithSuccess(
   request: Request,
   url: string,
-  text: string,
+  text: FlashTextInput,
   additionalHeaders?: HeadersInit,
 ) {
-  return redirectWithFlash(request, url, { type: 'success', text }, additionalHeaders);
+  return redirectWithFlash(request, url, normalizeFlashMessage('success', text), additionalHeaders);
 }
 
-export async function redirectWithError(request: Request, url: string, text: string, additionalHeaders?: HeadersInit) {
-  return redirectWithFlash(request, url, { type: 'error', text }, additionalHeaders);
+export async function redirectWithError(request: Request, url: string, text: FlashTextInput, additionalHeaders?: HeadersInit) {
+  return redirectWithFlash(request, url, normalizeFlashMessage('error', text), additionalHeaders);
 }
 
-export async function redirectWithInfo(request: Request, url: string, text: string, additionalHeaders?: HeadersInit) {
-  return redirectWithFlash(request, url, { type: 'info', text }, additionalHeaders);
+export async function redirectWithInfo(request: Request, url: string, text: FlashTextInput, additionalHeaders?: HeadersInit) {
+  return redirectWithFlash(request, url, normalizeFlashMessage('info', text), additionalHeaders);
 }
 
 export async function redirectWithWarning(
   request: Request,
   url: string,
-  text: string,
+  text: FlashTextInput,
   additionalHeaders?: HeadersInit,
 ) {
-  return redirectWithFlash(request, url, { type: 'warning', text }, additionalHeaders);
+  return redirectWithFlash(request, url, normalizeFlashMessage('warning', text), additionalHeaders);
 }

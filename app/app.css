@@ -213,6 +213,41 @@
   --color-card-hover-shadow: var(--card-hover-shadow);
   --color-card-header-border: var(--card-header-border);
   --color-card-footer-bg: var(--card-footer-bg);
+  --color-card-header-text: var(--card-header-text);
+  --color-card-footer-border: var(--card-footer-border);
+  --color-card-gradient-from: var(--card-gradient-from);
+  --color-card-gradient-to: var(--card-gradient-to);
+  --color-card-elevated-bg: var(--card-elevated-bg);
+  --color-card-elevated-text: var(--card-elevated-text);
+  --color-card-elevated-border: var(--card-elevated-border);
+  --color-card-flat-bg: var(--card-flat-bg);
+  --color-card-flat-text: var(--card-flat-text);
+  --color-card-flat-border: var(--card-flat-border);
+  --color-card-flat-hover-bg: var(--card-flat-hover-bg);
+  --color-card-bordered-bg: var(--card-bordered-bg);
+  --color-card-bordered-text: var(--card-bordered-text);
+  --color-card-bordered-border: var(--card-bordered-border);
+  --color-card-bordered-hover-border: var(--card-bordered-hover-border);
+  --color-card-interactive-bg: var(--card-interactive-bg);
+  --color-card-interactive-text: var(--card-interactive-text);
+  --color-card-interactive-border: var(--card-interactive-border);
+  --color-card-interactive-hover-bg: var(--card-interactive-hover-bg);
+  --color-card-interactive-hover-border: var(--card-interactive-hover-border);
+  --color-card-interactive-active-bg: var(--card-interactive-active-bg);
+  --color-card-interactive-ring: var(--card-interactive-ring);
+  --color-card-ghost-bg: var(--card-ghost-bg);
+  --color-card-ghost-text: var(--card-ghost-text);
+  --color-card-ghost-border: var(--card-ghost-border);
+  --color-card-ghost-hover-bg: var(--card-ghost-hover-bg);
+  --color-card-ghost-hover-border: var(--card-ghost-hover-border);
+  --color-card-muted-bg: var(--card-muted-bg);
+  --color-card-muted-text: var(--card-muted-text);
+  --color-card-muted-border: var(--card-muted-border);
+  --color-card-muted-hover-bg: var(--card-muted-hover-bg);
+  --color-card-accent-bg: var(--card-accent-bg);
+  --color-card-accent-text: var(--card-accent-text);
+  --color-card-accent-border: var(--card-accent-border);
+  --color-card-accent-hover-bg: var(--card-accent-hover-bg);
 
   /* ========================================
      ACCORDION TOKENS
@@ -437,6 +472,41 @@
   --card-hover-shadow: oklch(0.18 0.015 240 / 0.08);
   --card-header-border: oklch(0.85 0.006 240);
   --card-footer-bg: oklch(0.97 0.003 240);
+  --card-header-text: var(--foreground);
+  --card-footer-border: oklch(0.85 0.006 240);
+  --card-gradient-from: oklch(0.99 0.002 240);
+  --card-gradient-to: oklch(0.97 0.004 240);
+  --card-elevated-bg: oklch(0.985 0.003 240);
+  --card-elevated-text: var(--foreground);
+  --card-elevated-border: oklch(0.78 0.01 240);
+  --card-flat-bg: oklch(0.985 0.003 240);
+  --card-flat-text: var(--foreground);
+  --card-flat-border: oklch(0.9 0.004 240);
+  --card-flat-hover-bg: oklch(0.98 0.004 240);
+  --card-bordered-bg: oklch(0.995 0.002 240);
+  --card-bordered-text: var(--foreground);
+  --card-bordered-border: oklch(0.76 0.012 240);
+  --card-bordered-hover-border: oklch(0.68 0.018 240);
+  --card-interactive-bg: oklch(0.995 0.002 240);
+  --card-interactive-text: var(--foreground);
+  --card-interactive-border: oklch(0.8 0.008 240);
+  --card-interactive-hover-bg: oklch(0.97 0.004 240);
+  --card-interactive-hover-border: oklch(0.7 0.015 240);
+  --card-interactive-active-bg: oklch(0.96 0.005 240);
+  --card-interactive-ring: oklch(0.65 0.085 265);
+  --card-ghost-bg: transparent;
+  --card-ghost-text: var(--foreground);
+  --card-ghost-border: transparent;
+  --card-ghost-hover-bg: oklch(0.97 0.004 240);
+  --card-ghost-hover-border: oklch(0.85 0.006 240);
+  --card-muted-bg: oklch(0.95 0.004 240);
+  --card-muted-text: var(--foreground);
+  --card-muted-border: oklch(0.85 0.006 240);
+  --card-muted-hover-bg: oklch(0.94 0.005 240);
+  --card-accent-bg: var(--accent);
+  --card-accent-text: var(--accent-foreground);
+  --card-accent-border: oklch(0.72 0.02 240);
+  --card-accent-hover-bg: oklch(0.7 0.02 240);
 
   /* ========================================
      ACCORDION TOKENS

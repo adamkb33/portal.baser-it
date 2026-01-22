@@ -35,10 +35,14 @@ export type Upload = Omit<ImageAction, 'type'> & {
 };
 
 export type ApiError = {
-    code: string;
-    message: string;
+    message: ApiMessage;
     field?: string;
     details?: string;
+};
+
+export type ApiMessage = {
+    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
+    value: string;
 };
 
 export type ApiMeta = {
@@ -51,7 +55,7 @@ export type ApiMeta = {
 
 export type ApiResponseServiceDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: ServiceDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -107,7 +111,7 @@ export type UpdateServiceGroupDto = {
 
 export type ApiResponseServiceGroupDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: ServiceGroupDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -122,7 +126,7 @@ export type ServiceGroupDto = {
 
 export type ApiResponseAppointmentDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: AppointmentDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -174,7 +178,7 @@ export type GroupedServiceGroupDto = {
 
 export type ApiResponseAppointmentSessionDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: AppointmentSessionDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -218,7 +222,7 @@ export type GetCompanyUserScheduleDto = {
 
 export type ApiResponseListScheduleDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<ScheduleDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -243,7 +247,7 @@ export type ScheduleUnavailabilityRangeDto = {
 
 export type ApiResponseListScheduleUnavailabilityDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<ScheduleUnavailabilityDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -272,7 +276,7 @@ export type DailyScheduleDto = {
 
 export type ApiResponseBookingProfileDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: BookingProfileDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -300,7 +304,7 @@ export type CreateOrUpdateDailySchedulesDto = {
 
 export type ApiResponseListDailyScheduleDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<DailyScheduleDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -315,7 +319,7 @@ export type CompanyUserCreateAppointmentDto = {
 
 export type ApiResponseListBookingProfileDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<BookingProfileDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -324,7 +328,7 @@ export type ApiResponseListBookingProfileDto = {
 
 export type ApiResponseListGroupedServiceGroupDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<GroupedServiceGroupDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -333,7 +337,7 @@ export type ApiResponseListGroupedServiceGroupDto = {
 
 export type ApiResponseAppointmentSessionOverviewDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: AppointmentSessionOverviewDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -356,7 +360,7 @@ export type AppointmentSessionSelectedServicesDto = {
 
 export type ApiResponsePaginatedResponseServiceDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: PaginatedResponseServiceDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -375,7 +379,7 @@ export type PaginatedResponseServiceDto = {
 
 export type ApiResponsePaginatedResponseServiceGroupDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: PaginatedResponseServiceGroupDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -394,7 +398,7 @@ export type PaginatedResponseServiceGroupDto = {
 
 export type ApiResponseBookingDashboardMetrics = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: BookingDashboardMetrics;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -520,7 +524,7 @@ export type UnavailabilityPeriod = {
 
 export type ApiResponseCompanyBookingInfoDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: CompanyBookingInfoDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -537,7 +541,7 @@ export type CompanyBookingInfoDto = {
 
 export type ApiResponsePaginatedResponseAppointmentDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: PaginatedResponseAppointmentDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -556,7 +560,7 @@ export type PaginatedResponseAppointmentDto = {
 
 export type ApiResponseBoolean = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: boolean;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -575,7 +579,7 @@ export type AddressDto = {
 
 export type ApiResponseListCompanySummaryDto = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     data?: Array<CompanySummaryDto>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
@@ -604,7 +608,7 @@ export type Link = {
 
 export type ApiResponseUnit = {
     success: boolean;
-    message: string;
+    message: ApiMessage;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;

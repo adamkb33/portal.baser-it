@@ -173,7 +173,7 @@ export interface CardProps extends React.ComponentProps<'div'>, VariantProps<typ
 function Card({ className, variant, size = 'md', ...props }: CardProps) {
   return (
     <CardContext.Provider value={{ size: size ?? 'md' }}>
-      <div data-slot="card" className={cn(cardVariants({ variant, size }), className)} {...props} />
+      <div data-slot="card" className={cn(cardVariants({ variant, size }), 'bg-card-bg', className)} {...props} />
     </CardContext.Provider>
   );
 }

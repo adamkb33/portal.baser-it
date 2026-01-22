@@ -27,7 +27,7 @@ export function TableDesktopHeader({
 
   return (
     <div className="bg-card-footer-bg border-b border-card-header-border p-4">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         {/* Count indicator with icon */}
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -41,11 +41,11 @@ export function TableDesktopHeader({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3">
-          {headerSlot && <div className="flex items-center gap-2">{headerSlot}</div>}
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 md:flex-1">
+          {headerSlot && <div className="flex w-full items-center gap-2 md:flex-1">{headerSlot}</div>}
 
           {/* Page size selector */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 md:shrink-0">
             <span className="text-xs font-semibold text-muted-foreground">Rader per side</span>
             <Select value={String(size)} onValueChange={(v) => onPageSizeChange(Number(v))}>
               <SelectTrigger className="h-9 w-[100px] border-card-border bg-background hover:bg-muted transition-colors">

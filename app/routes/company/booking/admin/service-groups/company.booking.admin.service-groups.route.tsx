@@ -6,7 +6,6 @@ import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { Input } from '~/components/ui/input';
 import { TableCell, TableRow } from '~/components/ui/table';
-import { PageHeader } from '../../../_components/page-header';
 import type { Route } from './+types/company.booking.admin.service-groups.route';
 import { CompanyUserServiceGroupController, type ServiceGroupDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
@@ -162,12 +161,6 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
 
   return (
     <div className="container mx-auto py-6">
-      <PageHeader
-        title="Tjenestegrupper"
-        description="Organiser og administrer tjenester i logiske grupper. Gjør det enkelt for kunder å finne riktige tjenester."
-        actions={<Button onClick={handleAdd}>Ny tjenestegruppe</Button>}
-      />
-
       <ServerPaginatedTable<ServiceGroupDto>
         items={serviceGroups}
         pagination={pagination}
@@ -180,12 +173,20 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
           { header: 'Handlinger', className: 'text-right' },
         ]}
         headerSlot={
-          <Input
-            placeholder="Søk på navn..."
-            value={filter}
-            onChange={(event) => handleFilterChange(event.target.value)}
-            className="max-w-sm"
-          />
+          <div className="flex flex-wrap w-full items-center gap-3">
+            <Input
+              placeholder="Søk på navn..."
+              value={filter}
+              onChange={(event) => handleFilterChange(event.target.value)}
+              className="max-w-sm"
+            />
+            <Button onClick={handleAdd}>Legg til ny tjenestegruppe</Button>
+          </div>
+        }
+        mobileHeaderSlot={
+          <Button size="sm" onClick={handleAdd}>
+            Ny tjenestegruppe
+          </Button>
         }
         renderRow={(serviceGroup) => (
           <TableRow>

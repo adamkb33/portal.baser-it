@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Form } from 'react-router';
 import { AlertCircle, ChevronDown, ChevronUp, Edit3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { ApiMessage } from '~/api/generated/identity';
 
 /* ========================================
    BOOKING PAGE HEADER
@@ -67,7 +68,7 @@ export function BookingStepHeader({ label, title, description, status, className
   ======================================== */
 
 interface BookingErrorBannerProps {
-  message: string;
+  message: ApiMessage | string;
   title?: string;
   sticky?: boolean;
   className?: string;
@@ -91,7 +92,7 @@ export function BookingErrorBanner({
         <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-destructive md:text-base">{title}</p>
-          <p className="mt-1 text-xs text-destructive/90 md:text-sm">{message}</p>
+          <p className="mt-1 text-xs text-destructive/90 md:text-sm">{typeof message === 'string' ? message : message.value}</p>
         </div>
       </div>
     </div>
