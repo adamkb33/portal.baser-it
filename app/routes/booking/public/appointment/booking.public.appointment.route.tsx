@@ -1,5 +1,5 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
-import { data, Link } from 'react-router';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { data, Link, useNavigation } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.route';
 import { AppointmentsController, type CompanySummaryDto } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
@@ -11,6 +11,8 @@ import {
   BookingPageHeader,
   BookingSection,
 } from './_components/booking-layout';
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 const CompaniesMap = lazy(() => import('~/components/booking/companies-map.client'));
 
@@ -24,6 +26,19 @@ const MAX_GEOCODE = 12;
 const GEO_DELAY_MS = 150;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const buildAddressLine = (company: CompanySummaryDto): string | null => {
+  const address = company.businessAddress || company.postalAddress;
+  if (!address) return null;
+
+  const street = address.addressLines?.join(' ') || '';
+  const city = address.city || address.municipality || '';
+  const postalCode = address.postalCode || '';
+  const country = address.country ?? address.countryCode ?? '';
+  const location = [postalCode, city].filter(Boolean).join(' ');
+
+  return [street, location, country].filter(Boolean).join(', ') || null;
+};
 
 const buildCompanyQuery = (company: CompanySummaryDto): string | null => {
   const address = company.businessAddress || company.postalAddress;
@@ -175,17 +190,18 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
-function getCompanyLocation(company: CompanySummaryDto): string | null {
-  const address = company.businessAddress || company.postalAddress;
-  const parts = [address?.city, address?.municipality, address?.country].filter(Boolean);
-  return parts.length ? parts.join(', ') : null;
-}
-
 export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) {
   const companies = loaderData.companies ?? [];
   const locations = loaderData.locations ?? [];
   const error = loaderData.error ?? null;
   const [showMap, setShowMap] = useState(false);
+  const [activeCompanyId, setActiveCompanyId] = useState<number | null>(null);
+  const navigation = useNavigation();
+  const isNavigatingToSession = useMemo(() => {
+    if (navigation.state === 'idle') return false;
+    const targetPath = ROUTES_MAP['booking.public.appointment.session'].href;
+    return navigation.location?.pathname?.startsWith(targetPath) ?? false;
+  }, [navigation.location?.pathname, navigation.state]);
 
   useEffect(() => {
     setShowMap(true);
@@ -231,16 +247,62 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
             {companies.map((company) => {
               const companyName = company.name || `Selskap ${company.orgNumber}`;
               const startUrl = `${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=${company.id}`;
+              const addressLine = buildAddressLine(company);
+              const orgTypeDescription = company.organizationType?.description;
+              const isLoading = isNavigatingToSession && activeCompanyId === company.id;
 
               return (
                 <Link
                   key={company.id}
                   to={startUrl}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-button-primary-border bg-button-primary-bg px-4 py-3 text-sm font-semibold text-button-primary-text transition hover:bg-button-primary-hover-bg hover:text-button-primary-hover-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  onClick={() => setActiveCompanyId(company.id)}
+                  className="group block focus-visible:outline-none"
                   aria-label={`Start booking hos ${companyName}`}
                 >
-                  <span>{companyName}</span>
-                  <span className="text-base">→</span>
+                  <Card
+                    variant="interactive"
+                    size="md"
+                    className="h-full focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+                  >
+                    <CardHeader>
+                      <CardTitle>{companyName}</CardTitle>
+                      <CardDescription>
+                        {orgTypeDescription
+                          ? `Organisasjonsform: ${orgTypeDescription}`
+                          : 'Velg denne bedriften for å starte en ny booking.'}
+                      </CardDescription>
+                      <CardAction>
+                        <span className="text-base text-muted-foreground transition group-hover:text-foreground">→</span>
+                      </CardAction>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-1 text-xs text-muted-foreground md:text-sm">
+                        <div>
+                          <span className="font-semibold text-card-text">Org.nr:</span> {company.orgNumber}
+                        </div>
+                        {addressLine && (
+                          <div>
+                            <span className="font-semibold text-card-text">Adresse:</span> {addressLine}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                    <CardFooter className="border-t border-card-footer-border">
+                      <div className="inline-flex items-center gap-2 text-sm font-semibold text-card-text">
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin" />
+                            Starter booking...
+                          </>
+                        ) : (
+                          <>
+                            Start booking
+                            <span aria-hidden="true">→</span>
+                          </>
+                        )}
+                      </div>
+                    </CardFooter>
+                  </Card>
                 </Link>
               );
             })}

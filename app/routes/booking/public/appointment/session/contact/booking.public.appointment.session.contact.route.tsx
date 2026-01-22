@@ -4,7 +4,7 @@ import { CheckCircle2, Edit3 } from 'lucide-react';
 import type { ContactDto } from '~/api/generated/identity';
 import type { AppointmentSessionDto } from '~/api/generated/booking';
 import { SubmitContactForm } from '~/routes/booking/public/appointment/session/contact/_forms/submit-contact.form';
-import { getSession } from '~/lib/appointments.server';
+import { appointmentSessionCookie, createAppointmentSession, getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { PublicCompanyContactController } from '~/api/generated/identity';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
@@ -20,6 +20,82 @@ import {
 } from '../../_components/booking-layout';
 import type { SubmitContactFormSchema } from './_schemas/submit-contact.form.schema';
 import { resolveErrorPayload } from '~/lib/api-error';
+
+const getErrorMessageId = (error: unknown) => {
+  const responseError = error as { response?: { data?: { message?: { id?: string } } } };
+  return responseError?.response?.data?.message?.id;
+};
+
+const getCompanyIdFromRequest = (request: Request, session?: AppointmentSessionDto | null) => {
+  const url = new URL(request.url);
+  const companyIdParam = url.searchParams.get('companyId');
+  if (companyIdParam) {
+    const companyIdNumber = Number(companyIdParam);
+    if (!Number.isNaN(companyIdNumber)) {
+      return companyIdNumber;
+    }
+  }
+
+  if (session?.companyId && !Number.isNaN(session.companyId)) {
+    return session.companyId;
+  }
+
+  return null;
+};
+
+const resetAppointmentSession = async (
+  request: Request,
+  companyId: number,
+  session?: AppointmentSessionDto | null,
+) => {
+  if (session?.sessionId) {
+    try {
+      await PublicAppointmentSessionController.deleteAppointmentSession({
+        query: {
+          sessionId: session.sessionId,
+        },
+      });
+    } catch (error) {
+      console.error('[booking.contact.session-delete] failed', {
+        message: error instanceof Error ? error.message : String(error),
+        sessionId: session.sessionId,
+      });
+    }
+  }
+  const created = await createAppointmentSession(companyId);
+  const clearCookieHeader = await appointmentSessionCookie.serialize('', { maxAge: 0 });
+  const headers = new Headers();
+  headers.append('Set-Cookie', clearCookieHeader);
+  headers.append('Set-Cookie', created.setCookieHeader);
+
+  const url = new URL(request.url);
+  url.searchParams.set('companyId', String(companyId));
+  const target = `${ROUTES_MAP['booking.public.appointment.session.contact'].href}${url.search}`;
+
+  return redirect(target, { headers });
+};
+
+const handleContactNotFound = async (request: Request, session?: AppointmentSessionDto | null) => {
+  const companyId = getCompanyIdFromRequest(request, session);
+  if (!companyId) {
+    return redirectWithError(
+      request,
+      ROUTES_MAP['booking.public.appointment'].href,
+      'Selskaps-ID mangler eller er ugyldig.',
+    );
+  }
+
+  try {
+    return await resetAppointmentSession(request, companyId, session);
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke opprette ny bookingøkt.');
+    return redirectWithError(
+      request,
+      ROUTES_MAP['booking.public.appointment'].href,
+      message,
+    );
+  }
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
   console.debug('[booking.contact.loader] start', {
@@ -47,14 +123,23 @@ export async function loader({ request }: Route.LoaderArgs) {
         companyId: session.companyId,
         contactId: session.contactId,
       });
-      const contactResponse = await PublicCompanyContactController.getContact({
-        path: {
-          companyId: session.companyId,
-          contactId: session.contactId,
-        },
-      });
-
-      existingContact = contactResponse.data?.data;
+      try {
+        const contactResponse = await PublicCompanyContactController.getContact({
+          path: {
+            companyId: session.companyId,
+            contactId: session.contactId,
+          },
+        });
+        if (contactResponse.data?.message?.id === 'CONTACT_NOT_FOUND') {
+          return await handleContactNotFound(request, session);
+        }
+        existingContact = contactResponse.data?.data;
+      } catch (error) {
+        if (getErrorMessageId(error) === 'CONTACT_NOT_FOUND') {
+          return await handleContactNotFound(request, session);
+        }
+        throw error;
+      }
     }
 
     if (session.contactId && !existingContact) {
@@ -77,7 +162,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       error: null as string | null,
     });
   } catch (error) {
-    console.error('[booking.contact.loader] failed', error);
+    if (getErrorMessageId(error) === 'CONTACT_NOT_FOUND') {
+      return await handleContactNotFound(request);
+    }
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente kontaktinformasjon');
     return redirectWithError(
       request,
@@ -113,6 +200,9 @@ export async function action({ request }: Route.ActionArgs) {
         mobileNumber: formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined,
       },
     });
+    if (contactResponse.data?.message?.id === 'CONTACT_NOT_FOUND') {
+      return await handleContactNotFound(request, session);
+    }
     if (!contactResponse.data?.data) {
       console.log("contactResponse", JSON.stringify(contactResponse, null, 2));
       const message = contactResponse.data?.message || 'En feil har skjedd med lagring av kontakt';
@@ -131,13 +221,15 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     const normalizedName = `${givenName} ${familyName}`.replace(/\s+/g, ' ').trim().toLowerCase();
-    const shouldShowHearts =
-      normalizedName === 'charlotte skauen' || normalizedName === 'charlotte skaouen';
+    const shouldShowHearts = normalizedName === 'charlotte skauen';
     const nextUrl = shouldShowHearts
       ? `${ROUTES_MAP['booking.public.appointment.session.employee'].href}?hearts=1`
       : ROUTES_MAP['booking.public.appointment.session.employee'].href;
     return redirect(nextUrl);
   } catch (error) {
+    if (getErrorMessageId(error) === 'CONTACT_NOT_FOUND') {
+      return await handleContactNotFound(request);
+    }
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre kontakt');
     return redirectWithError(
       request,
@@ -195,7 +287,7 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
       .trim()
       .toLowerCase();
     if (typeof window !== 'undefined') {
-      if (normalizedName === 'charlotte skauen' || normalizedName === 'charlotte skaouen') {
+      if (normalizedName === 'charlotte skauen') {
         sessionStorage.setItem('booking:hearts', '1');
       } else {
         sessionStorage.removeItem('booking:hearts');
