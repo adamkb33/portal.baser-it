@@ -11,6 +11,10 @@ import { AuthController } from '~/api/generated/identity';
 import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function action({ request }: Route.ActionArgs) {
+  const url = new URL(request.url);
+  const returnToParam = url.searchParams.get('returnTo');
+  const returnTo =
+    returnToParam && returnToParam.startsWith('/') && !returnToParam.startsWith('//') ? returnToParam : '/';
   const formData = await request.formData();
   const email = String(formData.get('email'));
   const password = String(formData.get('password'));
@@ -39,7 +43,7 @@ export async function action({ request }: Route.ActionArgs) {
       expires: new Date(tokens.refreshTokenExpiresAt * 1000),
     });
 
-    return redirect('/', {
+    return redirect(returnTo, {
       headers: [
         ['Set-Cookie', accessCookie],
         ['Set-Cookie', refreshCookie],

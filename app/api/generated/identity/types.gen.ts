@@ -290,6 +290,18 @@ export type AuthenticationTokenDto = {
     refreshTokenExpiresAt: number;
 };
 
+export type AcceptInviteDto = {
+    givenName: string;
+    familyName: string;
+    password?: string;
+    password2?: string;
+};
+
+export type RespondToInviteDto = {
+    action: 'ACCEPT' | 'DECLINE';
+    accept?: AcceptInviteDto;
+};
+
 export type ResetPasswordDto = {
     resetPasswordToken: string;
     password: string;
@@ -323,13 +335,6 @@ export type ForgotPasswordDto = {
 
 export type CompanySignInDto = {
     companyId: number;
-};
-
-export type AcceptInviteDto = {
-    givenName: string;
-    familyName: string;
-    password?: string;
-    password2?: string;
 };
 
 export type RequestCompanyRoleDeleteDto = {
@@ -921,6 +926,24 @@ export type SignInResponses = {
 
 export type SignInResponse = SignInResponses[keyof SignInResponses];
 
+export type RespondToInviteData = {
+    body: RespondToInviteDto;
+    path: {
+        inviteToken: string;
+    };
+    query?: never;
+    url: '/auth/respond-invite/{inviteToken}';
+};
+
+export type RespondToInviteResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseAuthenticationTokenDto;
+};
+
+export type RespondToInviteResponse = RespondToInviteResponses[keyof RespondToInviteResponses];
+
 export type ResetPasswordData = {
     body: ResetPasswordDto;
     path?: never;
@@ -1002,24 +1025,6 @@ export type CompanySignInResponses = {
 };
 
 export type CompanySignInResponse = CompanySignInResponses[keyof CompanySignInResponses];
-
-export type AcceptInviteData = {
-    body: AcceptInviteDto;
-    path: {
-        inviteToken: string;
-    };
-    query?: never;
-    url: '/auth/accept-invite/{inviteToken}';
-};
-
-export type AcceptInviteResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponseAuthenticationTokenDto;
-};
-
-export type AcceptInviteResponse = AcceptInviteResponses[keyof AcceptInviteResponses];
 
 export type RequestDeleteRoleData = {
     body: RequestCompanyRoleDeleteDto;

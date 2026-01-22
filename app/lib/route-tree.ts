@@ -84,8 +84,8 @@ export const ROUTE_TREE: RouteBranch[] = [
         iconName: 'Key',
       },
       {
-        id: 'auth.accept-invite',
-        href: '/auth/accept-invite',
+        id: 'auth.respond-invite',
+        href: '/auth/respond-invite',
         label: 'Aksepter invitasjon',
         category: BrachCategory.NONE,
         accessType: Access.NOT_AUTHENTICATED,

@@ -39,7 +39,7 @@ export function AuthFormContainer({
         )}
 
         {/* Form Content */}
-        <div className="border-t border-form-border p-6 sm:p-8">{children}</div>
+        <div className="border-t border-form-border p-6 sm:p-8 space-y-4">{children}</div>
 
         {/* Secondary Action */}
         {secondaryAction && <div className="border-t border-form-border p-6 sm:p-8">{secondaryAction}</div>}

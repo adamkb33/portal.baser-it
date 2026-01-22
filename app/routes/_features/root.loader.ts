@@ -44,13 +44,21 @@ export const buildResponseData = async (request: Request, accessToken: string, f
   let company = undefined;
 
   if (authPayload) {
-    const userCompanyResponse = await CompanyUserController.getUser1({
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    try {
+      const userCompanyResponse = await CompanyUserController.getUser1({
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-    userCompany = userCompanyResponse.data?.data;
+      userCompany = userCompanyResponse.data?.data;
+    } catch (err) {
+      logger.info('User has no associated company', {
+        userId: authPayload.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      userCompany = undefined;
+    }
   }
 
   if (authPayload?.companyId) {

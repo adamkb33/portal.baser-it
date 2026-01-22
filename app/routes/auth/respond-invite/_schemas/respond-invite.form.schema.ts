@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { passwordValidator } from '~/lib/form-validators';
 
-export const acceptInviteSchema = z
+export const respondInviteSchema = z
   .object({
     inviteToken: z.string().min(1, { message: 'Kode er påkrevd' }),
     givenName: z.string().trim().min(1, { message: 'Fornavn er påkrevd' }),
@@ -19,4 +19,4 @@ export const acceptInviteSchema = z
     }
   });
 
-export type AcceptInviteSchema = z.infer<typeof acceptInviteSchema>;
+export type RespondInviteSchema = z.infer<typeof respondInviteSchema>;

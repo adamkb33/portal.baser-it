@@ -14,7 +14,6 @@ import {
   type UnavailabilityFormData,
   type UnavailabilityRangeFormData,
 } from './_components/schedule-unavailability-form-dialog';
-import { Button } from '~/components/ui/button';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
