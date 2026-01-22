@@ -4,7 +4,6 @@ import type { Route } from './+types/booking.public.appointment.route';
 import { AppointmentsController, type CompanySummaryDto } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { MapPin } from 'lucide-react';
 import {
   BookingContainer,
   BookingErrorBanner,
@@ -12,7 +11,6 @@ import {
   BookingPageHeader,
   BookingSection,
 } from './_components/booking-layout';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 
 const CompaniesMap = lazy(() => import('~/components/booking/companies-map.client'));
 
@@ -231,70 +229,19 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
         ) : (
           <BookingGrid cols={2}>
             {companies.map((company) => {
-              const location = getCompanyLocation(company);
               const companyName = company.name || `Selskap ${company.orgNumber}`;
               const startUrl = `${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=${company.id}`;
 
               return (
-                <div
+                <Link
                   key={company.id}
-                  className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-card-border bg-card p-4 transition hover:border-primary/40 hover:bg-card-muted-bg"
+                  to={startUrl}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-button-primary-border bg-button-primary-bg px-4 py-3 text-sm font-semibold text-button-primary-text transition hover:bg-button-primary-hover-bg hover:text-button-primary-hover-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  aria-label={`Start booking hos ${companyName}`}
                 >
-                  <div className="relative z-10 space-y-2">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Org.nr. {company.orgNumber}
-                    </div>
-                    <h2 className="text-base font-semibold text-card-text md:text-lg">{companyName}</h2>
-                    {company.organizationType?.description && (
-                      <p className="text-xs text-muted-foreground md:text-sm">
-                        {company.organizationType.description}
-                      </p>
-                    )}
-                    {location && (
-                      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground md:text-sm">
-                        <span>{location}</span>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button
-                              type="button"
-                              className="inline-flex size-8 items-center justify-center rounded-full border border-card-border bg-card-muted-bg text-muted-foreground transition hover:border-primary/40 hover:text-primary"
-                              aria-label="Vis detaljer"
-                            >
-                              <MapPin className="size-4" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent align="end" className="w-64 space-y-3 rounded-lg border border-card-border bg-card p-4">
-                            <div className="space-y-1">
-                              <p className="text-sm font-semibold text-card-text">{companyName}</p>
-                              <p className="text-xs text-muted-foreground">Org.nr. {company.orgNumber}</p>
-                              <p className="text-xs text-muted-foreground">{location}</p>
-                            </div>
-                            <Link
-                              to={startUrl}
-                              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-button-primary-border bg-button-primary-bg px-4 py-2 text-sm font-semibold text-button-primary-text transition hover:bg-button-primary-hover-bg hover:text-button-primary-hover-text"
-                            >
-                              Book her
-                              <span className="text-base">→</span>
-                            </Link>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pointer-events-none absolute inset-0 bg-card/95 opacity-0 transition duration-200 group-hover:opacity-100" />
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition duration-200 group-hover:opacity-100">
-                    <div className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary">
-                      <span>Start booking</span>
-                      <span className="text-base">→</span>
-                    </div>
-                  </div>
-                  <Link
-                    to={startUrl}
-                    className="absolute inset-0 z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                    aria-label={`Start booking hos ${companyName}`}
-                  />
-                </div>
+                  <span>{companyName}</span>
+                  <span className="text-base">→</span>
+                </Link>
               );
             })}
           </BookingGrid>
