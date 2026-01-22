@@ -1,11 +1,18 @@
 // routes/company/contacts/company.contacts.route.tsx
-import { data } from 'react-router';
+import { data, useNavigate, useSearchParams, useSubmit } from 'react-router';
 import { useState } from 'react';
+import { Pen } from 'lucide-react';
 import { Input } from '~/components/ui/input';
 import type { Route } from './+types/company.admin.contacts.route';
-import { ContactsTable } from './_components/contacts.table';
 import { CompanyUserContactController } from '~/api/generated/identity';
 import { withAuth } from '~/api/utils/with-auth';
+import { Button } from '~/components/ui/button';
+import { TableCell, TableRow } from '~/components/ui/table';
+import { API_ROUTES_MAP } from '~/lib/route-tree';
+import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
+import { ServerPaginatedTable } from '~/components/table/server-side-table';
+import { ContactFormDialog } from './_components/contact.form-dialog';
+import type { ContactDto } from '~/api/generated/identity';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -13,6 +20,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const page = parseInt(url.searchParams.get('page') || '0');
     const size = parseInt(url.searchParams.get('size') || '5');
     const sort = url.searchParams.get('sort') || 'id';
+    const search = url.searchParams.get('search')?.trim() || undefined;
 
     const response = await withAuth(request, async () => {
       return await CompanyUserContactController.getContacts({
@@ -20,6 +28,7 @@ export async function loader({ request }: Route.LoaderArgs) {
           page,
           size,
           sort,
+          search,
         },
       });
     });
@@ -40,7 +49,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function CompanyContactsRoute({ loaderData }: Route.ComponentProps) {
-  const [filter, setFilter] = useState('');
+  const [searchParams] = useSearchParams();
+  const [filter, setFilter] = useState(searchParams.get('search') ?? '');
+  const navigate = useNavigate();
+  const submit = useSubmit();
+  const [editingContact, setEditingContact] = useState<ContactDto | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingContactId, setDeletingContactId] = useState<number | null>(null);
 
   if ('error' in loaderData) {
     return (
@@ -52,18 +67,119 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
 
   const { contacts, pagination } = loaderData;
 
+  const formatName = (contact: ContactDto) => {
+    const parts = [contact.givenName, contact.familyName].filter(Boolean);
+    return parts.length > 0 ? parts.join(' ') : '—';
+  };
+
+  const openDeleteDialog = (id: number) => {
+    setDeletingContactId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!deletingContactId) return;
+
+    const fd = new FormData();
+    fd.append('intent', 'delete');
+    fd.append('id', String(deletingContactId));
+
+    submit(fd, { method: 'post', action: API_ROUTES_MAP['company.admin.contacts.delete'].url });
+
+    setIsDeleteDialogOpen(false);
+    setDeletingContactId(null);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', newPage.toString());
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('size', newSize.toString());
+    params.set('page', '0');
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  const handleFilterChange = (value: string) => {
+    setFilter(value);
+    const params = new URLSearchParams(searchParams);
+    if (value.trim()) {
+      params.set('search', value.trim());
+    } else {
+      params.delete('search');
+    }
+    params.set('page', '0');
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
   return (
     <>
-      <div className="flex py-2">
-        <Input
-          placeholder="Filtrer på navn, e-post eller mobil…"
-          value={filter}
-          onChange={(event) => setFilter(event.target.value)}
-          className="max-w-sm"
-        />
-      </div>
+      <ServerPaginatedTable<ContactDto>
+        items={contacts}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        getRowKey={(contact) => contact.id?.toString() ?? contact.email?.value ?? ''}
+        columns={[
+          { header: 'Navn' },
+          { header: 'E-post' },
+          { header: 'Mobil' },
+          { header: 'Handlinger', className: 'text-right' },
+        ]}
+        headerSlot={
+          <>
+            <Input
+              placeholder="Filtrer på navn, e-post eller mobil…"
+              value={filter}
+              onChange={(event) => handleFilterChange(event.target.value)}
+              className="max-w-sm"
+            />
+            <ContactFormDialog trigger={<Button>Legg til ny kontakt</Button>} />
+          </>
+        }
+        mobileHeaderSlot={
+          <div>
+            <ContactFormDialog trigger={<Button size="sm">Legg til ny kontakt</Button>} />
+          </div>
+        }
+        renderRow={(contact) => (
+          <TableRow>
+            <TableCell className="font-medium">{formatName(contact)}</TableCell>
+            <TableCell>{contact.email?.value || '—'}</TableCell>
+            <TableCell>{contact.mobileNumber?.value || '—'}</TableCell>
+            <TableCell className="text-right">
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" size="sm" onClick={() => setEditingContact(contact)}>
+                  <Pen className="h-4 w-4" />
+                  <span className="sr-only">Rediger</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-500 hover:text-red-700"
+                  disabled={contact.id == null}
+                  onClick={() => contact.id && openDeleteDialog(contact.id)}
+                >
+                  Slett
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
+      />
 
-      <ContactsTable contacts={contacts} pagination={pagination} />
+      {editingContact && <ContactFormDialog contact={editingContact} />}
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        title="Slett kontakt?"
+        description="Er du sikker på at du vil slette denne kontakten? Denne handlingen kan ikke angres."
+      />
     </>
   );
 }

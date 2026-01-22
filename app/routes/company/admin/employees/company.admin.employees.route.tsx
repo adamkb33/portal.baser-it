@@ -1,10 +1,5 @@
-import { redirect } from 'react-router';
 import { useState } from 'react';
-import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { PageHeader } from '../../_components/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import { InviteEmployeeForm } from './forms/invite-employee.form-dialog';
 import { EmployeesTable } from './tables/employees.table';
 import { InvitesTable } from './tables/invites.table';
 import type { Route } from './+types/company.admin.employees.route';
@@ -17,6 +12,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '0');
     const size = parseInt(url.searchParams.get('size') || '5');
+    const search = url.searchParams.get('search')?.trim() || undefined;
 
     const [userResponse, inviteResponse, { message }] = await withAuth(request, async () => {
       return Promise.all([
@@ -25,6 +21,7 @@ export async function loader({ request }: Route.LoaderArgs) {
             page,
             size,
             includeDeleted: false,
+            search,
           },
         }),
         AdminCompanyUserController.getInvitations(),
@@ -54,8 +51,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function CompanyAdminEmployees({ loaderData }: Route.ComponentProps) {
-  const [filter, setFilter] = useState('');
-
   if ('error' in loaderData) {
     return (
       <div className="flex items-center justify-center py-8">

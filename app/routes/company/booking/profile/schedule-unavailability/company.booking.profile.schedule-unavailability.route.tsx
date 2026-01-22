@@ -1,9 +1,7 @@
 import type { Route } from './+types/company.booking.profile.schedule-unavailability.route';
 import {
-  CompanyUserBookingProfileController,
   CompanyUserScheduleUnavailabilityController,
   type ScheduleUnavailabilityDto,
-  type ApiMessage,
 } from '~/api/generated/booking';
 import { data, useFetcher } from 'react-router';
 import { CalendarOff, Clock, Plus } from 'lucide-react';
@@ -12,8 +10,6 @@ import { withAuth } from '~/api/utils/with-auth';
 import { format, isSameDay, startOfDay } from 'date-fns';
 import { formatInTimeZone, fromZonedTime } from 'date-fns-tz';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
-import { ROUTES_MAP } from '~/lib/route-tree';
 import {
   ScheduleUnavailabilityFormDialog,
   createEmptyRange,
@@ -24,10 +20,6 @@ import {
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
-    await withAuth(request, async () => {
-      return await CompanyUserBookingProfileController.getBookingProfile();
-    });
-
     const getResponse = await withAuth(request, async () => {
       return await CompanyUserScheduleUnavailabilityController.companyUserGetUnavailabilityRanges();
     });
@@ -37,11 +29,6 @@ export async function loader({ request }: Route.LoaderArgs) {
       error: null as string | null,
     });
   } catch (error) {
-    const apiMessage = (error as { response?: { data?: { message?: ApiMessage } } })?.response?.data?.message;
-    if (apiMessage?.id === 'BOOKING_PROFILE_REQUIRED') {
-      return redirectWithInfo(request, ROUTES_MAP['company.booking.profile'].href, apiMessage);
-    }
-
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente fravær');
     return data({ schedules: [], error: message }, { status: status ?? 400 });
   }

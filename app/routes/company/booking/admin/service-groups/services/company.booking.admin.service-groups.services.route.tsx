@@ -274,12 +274,7 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
   };
 
   return (
-    <div className="container mx-auto">
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold">Tjenester</h1>
-        <Button onClick={handleAdd}>Ny tjeneste</Button>
-      </div>
-
+    <>
       <ServerPaginatedTable<ServiceDto>
         items={services}
         pagination={pagination}
@@ -295,12 +290,15 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
           { header: 'Handlinger', className: 'text-right' },
         ]}
         headerSlot={
+   <>
           <Input
             placeholder="Søk på navn eller tjenestegruppe…"
             value={filter}
             onChange={(event) => handleFilterChange(event.target.value)}
             className="max-w-sm"
           />
+          <Button onClick={handleAdd}>Legg til ny tjeneste</Button>
+          </>
         }
         renderRow={(service) => (
           <TableRow>
@@ -411,6 +409,6 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
         title="Slett tjeneste?"
         description="Er du sikker på at du vil slette denne tjenesten? Denne handlingen kan ikke angres."
       />
-    </div>
+    </>
   );
 }

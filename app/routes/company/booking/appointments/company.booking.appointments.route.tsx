@@ -18,7 +18,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const page = parseInt(url.searchParams.get('page') || '0', 10);
     const size = parseInt(url.searchParams.get('size') || '10', 10);
     const sort = url.searchParams.get('sort') || '';
-    const search = url.searchParams.get('search') || '';
+    const search = url.searchParams.get('search')?.trim() || undefined;
     const fromDateTime = url.searchParams.get('fromDateTime');
     const toDateTime = url.searchParams.get('toDateTime');
     const direction = url.searchParams.get('direction') as 'ASC' | 'DESC' | null;
@@ -34,7 +34,7 @@ export async function loader({ request }: Route.LoaderArgs) {
           page,
           size,
           ...(sort && { sort }),
-          ...(search && { search }),
+          ...(search ? { search } : {}),
           ...(effectiveFromDateTime && { fromDateTime: effectiveFromDateTime }),
           ...(effectiveToDateTime && { toDateTime: effectiveToDateTime }),
           direction: direction || undefined,

@@ -18,7 +18,7 @@ export type ApiError = {
 };
 
 export type ApiMessage = {
-    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
+    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
     value: string;
 };
 
@@ -238,6 +238,21 @@ export type UserDto = {
     givenName: string;
     familyName: string;
     email: string;
+};
+
+export type ContactSearchRequestDto = {
+    companyId: number;
+    search?: string;
+    limit?: number;
+};
+
+export type ApiResponseListLong = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<number>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
 };
 
 export type ApiResponseListContactDto = {
@@ -794,6 +809,22 @@ export type FindByIdsResponses = {
 };
 
 export type FindByIdsResponse = FindByIdsResponses[keyof FindByIdsResponses];
+
+export type SearchContactsData = {
+    body: ContactSearchRequestDto;
+    path?: never;
+    query?: never;
+    url: '/internal/contacts/search';
+};
+
+export type SearchContactsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListLong;
+};
+
+export type SearchContactsResponse = SearchContactsResponses[keyof SearchContactsResponses];
 
 export type FindByIds1Data = {
     body: Array<number>;
@@ -1411,6 +1442,7 @@ export type GetCompanyUsersData = {
         sort?: string;
         direction?: string;
         includeDeleted?: boolean;
+        search?: string;
     };
     url: '/admin/company-user/users';
 };

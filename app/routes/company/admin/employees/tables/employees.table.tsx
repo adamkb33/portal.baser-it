@@ -11,6 +11,7 @@ import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import type { CompanyUserDto } from '~/api/generated/identity';
 import { InviteEmployeeForm } from '../forms/invite-employee.form-dialog';
 import { COMPANY_ROLE_LABELS } from '~/lib/constants';
+import { Input } from '~/components/ui/input';
 
 type EmployeesTableProps = {
   users: CompanyUserDto[];
@@ -26,6 +27,7 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const submit = useSubmit();
+  const [filter, setFilter] = useState(searchParams.get('search') ?? '');
   const [editingUser, setEditingUser] = useState<CompanyUserDto | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingEmployeeId, setDeletingEmployeeId] = useState<number | null>(null);
@@ -70,6 +72,18 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
     navigate(`?${params.toString()}`, { replace: true });
   };
 
+  const handleFilterChange = (value: string) => {
+    setFilter(value);
+    const params = new URLSearchParams(searchParams);
+    if (value.trim()) {
+      params.set('search', value.trim());
+    } else {
+      params.delete('search');
+    }
+    params.set('page', '0');
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
   return (
     <>
       <ServerPaginatedTable<CompanyUserDto>
@@ -85,9 +99,15 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
           { header: 'Handlinger', className: 'text-right' },
         ]}
         headerSlot={
-          <div>
+          <>
+            <Input
+              placeholder="Filtrer på navn eller e-post…"
+              value={filter}
+              onChange={(event) => handleFilterChange(event.target.value)}
+              className="max-w-sm"
+            />
             <InviteEmployeeForm trigger={<Button>Inviter en ny ansatt</Button>} />
-          </div>
+          </>
         }
         mobileHeaderSlot={
           <div>

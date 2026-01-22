@@ -107,8 +107,9 @@ export class AppointmentPaginationService {
 
   handleSearchChange = (value: string) => {
     const params = new URLSearchParams(this.searchParams);
-    if (value) {
-      params.set('search', value);
+    const trimmed = value.trim();
+    if (trimmed) {
+      params.set('search', trimmed);
     } else {
       params.delete('search');
     }

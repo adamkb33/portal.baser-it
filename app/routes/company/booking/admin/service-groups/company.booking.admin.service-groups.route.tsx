@@ -160,7 +160,7 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
   };
 
   return (
-    <div className="container mx-auto py-6">
+    <>
       <ServerPaginatedTable<ServiceGroupDto>
         items={serviceGroups}
         pagination={pagination}
@@ -173,7 +173,7 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
           { header: 'Handlinger', className: 'text-right' },
         ]}
         headerSlot={
-          <div className="flex flex-wrap w-full items-center gap-3">
+          < >
             <Input
               placeholder="Søk på navn..."
               value={filter}
@@ -181,7 +181,7 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
               className="max-w-sm"
             />
             <Button onClick={handleAdd}>Legg til ny tjenestegruppe</Button>
-          </div>
+          </>
         }
         mobileHeaderSlot={
           <Button size="sm" onClick={handleAdd}>
@@ -255,6 +255,6 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
         title="Slett tjenestegruppe?"
         description="Er du sikker på at du vil slette denne tjenestegruppen? Denne handlingen kan ikke angres."
       />
-    </div>
+    </>
   );
 }
