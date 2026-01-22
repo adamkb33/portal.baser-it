@@ -13,3 +13,5 @@
 .env.*.local
 
 tmp
+
+.npm-cache
