@@ -119,6 +119,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const inviteToken = String(formData.get('inviteToken'));
+  const respondAction = String(formData.get('respondAction') ?? 'ACCEPT');
   const givenName = formData.get('givenName');
   const familyName = formData.get('familyName');
   const password = formData.get('password');
@@ -135,16 +136,23 @@ export async function action({ request }: Route.ActionArgs) {
         inviteToken,
       },
       body: {
-        action: 'ACCEPT',
-        accept: {
-          givenName: givenNameValue,
-          familyName: familyNameValue,
-          password: passwordValue,
-          password2: confirmPasswordValue,
-        },
+        action: respondAction === 'DECLINE' ? 'DECLINE' : 'ACCEPT',
+        accept:
+          respondAction === 'DECLINE'
+            ? undefined
+            : {
+                givenName: givenNameValue,
+                familyName: familyNameValue,
+                password: passwordValue,
+                password2: confirmPasswordValue,
+              },
       },
     });
     const tokens = response.data?.data;
+
+    if (respondAction === 'DECLINE') {
+      return redirectWithSuccess(request, '/', 'Invitasjonen er avslått.');
+    }
 
     if (!tokens) {
       const message = response.data?.message || 'Noe gikk galt. Prøv igjen.';
@@ -242,9 +250,20 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
             <input type="hidden" name="givenName" value={existingUserProfile?.givenName ?? ''} />
             <input type="hidden" name="familyName" value={existingUserProfile?.familyName ?? ''} />
 
-            <AuthFormButton isLoading={isSubmitting} loadingText="Aktiverer invitasjon…">
-              Aksepter invitasjon
-            </AuthFormButton>
+            <div className="space-y-3">
+              <AuthFormButton isLoading={isSubmitting} loadingText="Aktiverer invitasjon…">
+                Aksepter invitasjon
+              </AuthFormButton>
+              <AuthFormButton
+                name="respondAction"
+                value="DECLINE"
+                variant="outline"
+                disabled={isSubmitting}
+                formNoValidate
+              >
+                Avslå invitasjon
+              </AuthFormButton>
+            </div>
           </Form>
         ) : (
           <div className="space-y-4">
@@ -254,6 +273,12 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
             >
               Logg inn for å akseptere invitasjon
             </Link>
+            <Form method="post">
+              <input type="hidden" name="inviteToken" value={inviteToken} />
+              <AuthFormButton name="respondAction" value="DECLINE" variant="outline" formNoValidate>
+                Avslå invitasjon
+              </AuthFormButton>
+            </Form>
           </div>
         )
       ) : (
@@ -304,9 +329,20 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
             disabled={isSubmitting}
           />
 
-          <AuthFormButton isLoading={isSubmitting} loadingText="Oppretter konto…">
-            Opprett konto
-          </AuthFormButton>
+          <div className="space-y-3">
+            <AuthFormButton isLoading={isSubmitting} loadingText="Oppretter konto…">
+              Opprett konto
+            </AuthFormButton>
+            <AuthFormButton
+              name="respondAction"
+              value="DECLINE"
+              variant="outline"
+              disabled={isSubmitting}
+              formNoValidate
+            >
+              Avslå invitasjon
+            </AuthFormButton>
+          </div>
         </Form>
       )}
     </AuthFormContainer>
