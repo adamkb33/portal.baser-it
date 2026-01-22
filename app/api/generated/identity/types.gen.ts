@@ -325,11 +325,11 @@ export type CompanySignInDto = {
     companyId: number;
 };
 
-export type AcceptNewInviteDto = {
+export type AcceptInviteDto = {
     givenName: string;
     familyName: string;
-    password: string;
-    password2: string;
+    password?: string;
+    password2?: string;
 };
 
 export type RequestCompanyRoleDeleteDto = {
@@ -368,19 +368,19 @@ export type SmtpDiagnosticsResponse = {
     connectError?: string;
 };
 
-export type ApiResponseListCompanyRole = {
+export type ApiResponseUserDto = {
     success: boolean;
     message: string;
-    data?: Array<'ADMIN' | 'EMPLOYEE'>;
+    data?: UserDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
 };
 
-export type ApiResponseUserDto = {
+export type ApiResponseListCompanyRole = {
     success: boolean;
     message: string;
-    data?: UserDto;
+    data?: Array<'ADMIN' | 'EMPLOYEE'>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
@@ -448,6 +448,27 @@ export type CompanyDto = {
     products: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
 };
 
+export type ApiResponseInviteTokenDto = {
+    success: boolean;
+    message: string;
+    data?: InviteTokenDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type InviteTokenDto = {
+    id: number;
+    email: string;
+    companyId?: number;
+    payload: InviteTokenPayload;
+};
+
+export type InviteTokenPayload = {
+    roles: Array<'SYSTEM_ADMIN' | 'USER' | 'COMPANY_USER'>;
+    companyRoles: Array<'ADMIN' | 'EMPLOYEE'>;
+};
+
 export type ApiResponsePaginatedResponseCompanyUserDto = {
     success: boolean;
     message: string;
@@ -474,18 +495,6 @@ export type ApiResponseListInviteTokenDto = {
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
-};
-
-export type InviteTokenDto = {
-    id: number;
-    email: string;
-    companyId?: number;
-    payload: InviteTokenPayload;
-};
-
-export type InviteTokenPayload = {
-    roles: Array<'SYSTEM_ADMIN' | 'USER' | 'COMPANY_USER'>;
-    companyRoles: Array<'ADMIN' | 'EMPLOYEE'>;
 };
 
 export type ApiResponseCompanyDashboardMetrics = {
@@ -995,7 +1004,7 @@ export type CompanySignInResponses = {
 export type CompanySignInResponse = CompanySignInResponses[keyof CompanySignInResponses];
 
 export type AcceptInviteData = {
-    body: AcceptNewInviteDto;
+    body: AcceptInviteDto;
     path: {
         inviteToken: string;
     };
@@ -1079,6 +1088,42 @@ export type DiagnosticsResponses = {
 };
 
 export type DiagnosticsResponse = DiagnosticsResponses[keyof DiagnosticsResponses];
+
+export type GetUserByEmailData = {
+    body?: never;
+    path?: never;
+    query: {
+        email: string;
+    };
+    url: '/public/user';
+};
+
+export type GetUserByEmailResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUserDto;
+};
+
+export type GetUserByEmailResponse = GetUserByEmailResponses[keyof GetUserByEmailResponses];
+
+export type GetUserByIdData = {
+    body?: never;
+    path: {
+        userId: number;
+    };
+    query?: never;
+    url: '/public/user/{userId}';
+};
+
+export type GetUserByIdResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUserDto;
+};
+
+export type GetUserByIdResponse = GetUserByIdResponses[keyof GetUserByIdResponses];
 
 export type GetContactData = {
     body?: never;
@@ -1313,6 +1358,24 @@ export type GetCompanySummaryResponses = {
 };
 
 export type GetCompanySummaryResponse = GetCompanySummaryResponses[keyof GetCompanySummaryResponses];
+
+export type DecodeInviteData = {
+    body?: never;
+    path?: never;
+    query: {
+        token: string;
+    };
+    url: '/auth/decode-invite';
+};
+
+export type DecodeInviteResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseInviteTokenDto;
+};
+
+export type DecodeInviteResponse = DecodeInviteResponses[keyof DecodeInviteResponses];
 
 export type GetCompanyContextsData = {
     body?: never;
