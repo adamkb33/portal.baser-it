@@ -245,6 +245,15 @@ export type ApiResponseListContactDto = {
     timestamp: string;
 };
 
+export type ApiResponseListCompanySummaryDto = {
+    success: boolean;
+    message: string;
+    data?: Array<CompanySummaryDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
 export type CreateContactDto = {
     givenName: string;
     familyName: string;
@@ -333,6 +342,32 @@ export type InviteCompanyUserDto = {
     roles: Array<'ADMIN' | 'EMPLOYEE'>;
 };
 
+export type ApiResponseSmtpDiagnosticsResponse = {
+    success: boolean;
+    message: string;
+    data?: SmtpDiagnosticsResponse;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type SmtpDiagnosticsResponse = {
+    host: string;
+    port: number;
+    authEnabled: boolean;
+    usernameMasked: string;
+    startTls: boolean;
+    startTlsRequired: boolean;
+    ssl: boolean;
+    sslTrust?: string;
+    connTimeoutMs: number;
+    readTimeoutMs: number;
+    writeTimeoutMs: number;
+    resolvedAddresses: Array<string>;
+    connectOk: boolean;
+    connectError?: string;
+};
+
 export type ApiResponseListCompanyRole = {
     success: boolean;
     message: string;
@@ -411,15 +446,6 @@ export type CompanyDto = {
     id: number;
     orgNum: string;
     products: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
-};
-
-export type ApiResponseListCompanySummaryDto = {
-    success: boolean;
-    message: string;
-    data?: Array<CompanySummaryDto>;
-    errors?: Array<ApiError>;
-    meta?: ApiMeta;
-    timestamp: string;
 };
 
 export type ApiResponsePaginatedResponseCompanyUserDto = {
@@ -785,6 +811,22 @@ export type ValidateContactsResponses = {
 
 export type ValidateContactsResponse = ValidateContactsResponses[keyof ValidateContactsResponses];
 
+export type GetCompanySummaryByIdsData = {
+    body: Array<number>;
+    path?: never;
+    query?: never;
+    url: '/internal/companies/summary/by-ids';
+};
+
+export type GetCompanySummaryByIdsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListCompanySummaryDto;
+};
+
+export type GetCompanySummaryByIdsResponse = GetCompanySummaryByIdsResponses[keyof GetCompanySummaryByIdsResponses];
+
 export type GetContactsData = {
     body?: never;
     path?: never;
@@ -1021,6 +1063,22 @@ export type GetUserResponses = {
 };
 
 export type GetUserResponse = GetUserResponses[keyof GetUserResponses];
+
+export type DiagnosticsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/system-admin/smtp/diagnostics';
+};
+
+export type DiagnosticsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseSmtpDiagnosticsResponse;
+};
+
+export type DiagnosticsResponse = DiagnosticsResponses[keyof DiagnosticsResponses];
 
 export type GetContactData = {
     body?: never;
@@ -1381,6 +1439,24 @@ export type HealthResponses = {
 };
 
 export type HealthResponse = HealthResponses[keyof HealthResponses];
+
+export type RootData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/';
+};
+
+export type RootResponses = {
+    /**
+     * OK
+     */
+    200: {
+        [key: string]: string;
+    };
+};
+
+export type RootResponse = RootResponses[keyof RootResponses];
 
 export type DeleteCompanyUserData = {
     body?: never;

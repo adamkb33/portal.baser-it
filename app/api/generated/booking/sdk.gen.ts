@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CompanyUserCreateAppointmentData, CompanyUserCreateAppointmentResponses, CompanyUserCreateUnavailabilityRangesData, CompanyUserCreateUnavailabilityRangesResponses, CompanyUserGetUnavailabilityRangesData, CompanyUserGetUnavailabilityRangesResponses, CreateAppointmentSessionData, CreateAppointmentSessionResponses, CreateOrUpdateDailySchedulesData, CreateOrUpdateDailySchedulesResponses, CreateOrUpdateProfileData, CreateOrUpdateProfileResponses, CreateServiceData, CreateServiceGroupData, CreateServiceGroupResponses, CreateServiceResponses, DeleteAppointmentData, DeleteAppointmentResponses, DeleteDailyScheduleData, DeleteDailyScheduleResponses, DeleteServiceData, DeleteServiceGroupData, DeleteServiceGroupResponses, DeleteServiceResponses, GetAppointmentsData, GetAppointmentSessionData, GetAppointmentSessionOverviewData, GetAppointmentSessionOverviewResponses, GetAppointmentSessionProfilesData, GetAppointmentSessionProfileServicesData, GetAppointmentSessionProfileServicesResponses, GetAppointmentSessionProfilesResponses, GetAppointmentSessionResponses, GetAppointmentSessionSchedulesData, GetAppointmentSessionSchedulesResponses, GetAppointmentsResponses, GetBookingProfileData, GetBookingProfileResponses, GetCompanyBookingInfoData, GetCompanyBookingInfoResponses, GetCompanyBookingMetricsData, GetCompanyBookingMetricsResponses, GetDailySchedulesData, GetDailySchedulesResponses, GetGroupedServiceGroupsData, GetGroupedServiceGroupsResponses, GetScheduleData, GetScheduleResponses, GetServiceGroupsData, GetServiceGroupsResponses, GetServicesData, GetServicesResponses, HealthData, HealthResponses, InfoData, InfoResponses, LinksData, LinksResponses, SelectAppointmentSessionProfileData, SelectAppointmentSessionProfileResponses, SelectAppointmentSessionProfileServicesData, SelectAppointmentSessionProfileServicesResponses, SubmitAppointmentSessionContactData, SubmitAppointmentSessionContactResponses, SubmitAppointmentSessionData, SubmitAppointmentSessionResponses, SubmitAppointmentSessionStartTimeData, SubmitAppointmentSessionStartTimeResponses, UpdateServiceData, UpdateServiceGroupData, UpdateServiceGroupResponses, UpdateServiceResponses, ValidateCompanyBookingData, ValidateCompanyBookingResponses } from './types.gen';
+import type { CompanyUserCreateAppointmentData, CompanyUserCreateAppointmentResponses, CompanyUserCreateUnavailabilityRangesData, CompanyUserCreateUnavailabilityRangesResponses, CompanyUserGetUnavailabilityRangesData, CompanyUserGetUnavailabilityRangesResponses, CreateAppointmentSessionData, CreateAppointmentSessionResponses, CreateOrUpdateDailySchedulesData, CreateOrUpdateDailySchedulesResponses, CreateOrUpdateProfileData, CreateOrUpdateProfileResponses, CreateServiceData, CreateServiceGroupData, CreateServiceGroupResponses, CreateServiceResponses, DeleteAppointmentData, DeleteAppointmentResponses, DeleteDailyScheduleData, DeleteDailyScheduleResponses, DeleteServiceData, DeleteServiceGroupData, DeleteServiceGroupResponses, DeleteServiceResponses, GetAppointmentsData, GetAppointmentSessionData, GetAppointmentSessionOverviewData, GetAppointmentSessionOverviewResponses, GetAppointmentSessionProfilesData, GetAppointmentSessionProfileServicesData, GetAppointmentSessionProfileServicesResponses, GetAppointmentSessionProfilesResponses, GetAppointmentSessionResponses, GetAppointmentSessionSchedulesData, GetAppointmentSessionSchedulesResponses, GetAppointmentsResponses, GetBookingProfileData, GetBookingProfileResponses, GetBookingReadyCompaniesData, GetBookingReadyCompaniesResponses, GetCompanyBookingInfoData, GetCompanyBookingInfoResponses, GetCompanyBookingMetricsData, GetCompanyBookingMetricsResponses, GetDailySchedulesData, GetDailySchedulesResponses, GetGroupedServiceGroupsData, GetGroupedServiceGroupsResponses, GetScheduleData, GetScheduleResponses, GetServiceGroupsData, GetServiceGroupsResponses, GetServicesData, GetServicesResponses, HealthData, HealthResponses, InfoData, InfoResponses, LinksData, LinksResponses, RootData, RootResponses, SelectAppointmentSessionProfileData, SelectAppointmentSessionProfileResponses, SelectAppointmentSessionProfileServicesData, SelectAppointmentSessionProfileServicesResponses, SubmitAppointmentSessionContactData, SubmitAppointmentSessionContactResponses, SubmitAppointmentSessionData, SubmitAppointmentSessionResponses, SubmitAppointmentSessionStartTimeData, SubmitAppointmentSessionStartTimeResponses, UpdateServiceData, UpdateServiceGroupData, UpdateServiceGroupResponses, UpdateServiceResponses, ValidateCompanyBookingData, ValidateCompanyBookingResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -344,6 +344,14 @@ export class AppointmentsController {
             ...options
         });
     }
+    
+    public static getBookingReadyCompanies<ThrowOnError extends boolean = false>(options?: Options<GetBookingReadyCompaniesData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetBookingReadyCompaniesResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/appointments/booking-ready-companies',
+            ...options
+        });
+    }
 }
 
 export class Actuator {
@@ -379,6 +387,16 @@ export class Actuator {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/actuator/health',
+            ...options
+        });
+    }
+}
+
+export class RootController {
+    public static root<ThrowOnError extends boolean = false>(options?: Options<RootData, ThrowOnError>) {
+        return (options?.client ?? client).get<RootResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/',
             ...options
         });
     }

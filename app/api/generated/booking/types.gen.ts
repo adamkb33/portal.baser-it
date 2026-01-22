@@ -563,6 +563,40 @@ export type ApiResponseBoolean = {
     timestamp: string;
 };
 
+export type AddressDto = {
+    municipality?: string;
+    countryCode?: string;
+    postalCode?: string;
+    addressLines?: Array<string>;
+    country?: string;
+    municipalityCode?: string;
+    city?: string;
+};
+
+export type ApiResponseListCompanySummaryDto = {
+    success: boolean;
+    message: string;
+    data?: Array<CompanySummaryDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type CompanySummaryDto = {
+    id: number;
+    orgNumber: string;
+    name?: string;
+    organizationType?: OrganizationTypeDto;
+    postalAddress?: AddressDto;
+    businessAddress?: AddressDto;
+};
+
+export type OrganizationTypeDto = {
+    code?: string;
+    description?: string;
+    retiredAt?: string;
+};
+
 export type Link = {
     href?: string;
     templated?: boolean;
@@ -1142,6 +1176,22 @@ export type ValidateCompanyBookingResponses = {
 
 export type ValidateCompanyBookingResponse = ValidateCompanyBookingResponses[keyof ValidateCompanyBookingResponses];
 
+export type GetBookingReadyCompaniesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/appointments/booking-ready-companies';
+};
+
+export type GetBookingReadyCompaniesResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListCompanySummaryDto;
+};
+
+export type GetBookingReadyCompaniesResponse = GetBookingReadyCompaniesResponses[keyof GetBookingReadyCompaniesResponses];
+
 export type LinksData = {
     body?: never;
     path?: never;
@@ -1197,6 +1247,24 @@ export type HealthResponses = {
 };
 
 export type HealthResponse = HealthResponses[keyof HealthResponses];
+
+export type RootData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/';
+};
+
+export type RootResponses = {
+    /**
+     * OK
+     */
+    200: {
+        [key: string]: string;
+    };
+};
+
+export type RootResponse = RootResponses[keyof RootResponses];
 
 export type DeleteDailyScheduleData = {
     body?: never;

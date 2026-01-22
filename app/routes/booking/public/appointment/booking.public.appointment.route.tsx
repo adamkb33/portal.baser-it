@@ -1,78 +1,94 @@
-import { useState, useEffect, useRef } from 'react';
+import { data, Link } from 'react-router';
+import type { Route } from './+types/booking.public.appointment.route';
+import { AppointmentsController, type CompanySummaryDto } from '~/api/generated/booking';
+import { ROUTES_MAP } from '~/lib/route-tree';
+import { resolveErrorPayload } from '~/lib/api-error';
+import {
+  BookingContainer,
+  BookingErrorBanner,
+  BookingGrid,
+  BookingPageHeader,
+  BookingSection,
+} from './_components/booking-layout';
 
-export default function AppointmentsRoute() {
-  const [viewportHeight, setViewportHeight] = useState(0);
-  const [offsetFromTop, setOffsetFromTop] = useState(0);
-  const componentRef = useRef<HTMLDivElement>(null);
+export async function loader({ request }: Route.LoaderArgs) {
+  try {
+    const response = await AppointmentsController.getBookingReadyCompanies();
+    const companies = response.data?.data ?? [];
 
-  useEffect(() => {
-    const updateMeasurements = () => {
-      setViewportHeight(window.innerHeight);
-      
-      if (componentRef.current) {
-        const rect = componentRef.current.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const offsetTop = rect.top + scrollTop;
-        
-        setOffsetFromTop(offsetTop);
-      }
-    };
+    if (!response.data?.data) {
+      const message = response.data?.message || 'Kunne ikke hente timebestillinger';
+      return data({ companies: [], error: message }, { status: 400 });
+    }
 
-    updateMeasurements();
+    return data({ companies, error: null as string | null });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente timebestillinger');
+    return data({ companies: [], error: message }, { status: status ?? 400 });
+  }
+}
 
-    window.addEventListener('resize', updateMeasurements);
-    window.addEventListener('scroll', updateMeasurements);
+function getCompanyLocation(company: CompanySummaryDto): string | null {
+  const address = company.businessAddress || company.postalAddress;
+  const parts = [address?.city, address?.municipality, address?.country].filter(Boolean);
+  return parts.length ? parts.join(', ') : null;
+}
 
-    return () => {
-      window.removeEventListener('resize', updateMeasurements);
-      window.removeEventListener('scroll', updateMeasurements);
-    };
-  }, []);
-
-  const componentHeight = viewportHeight - offsetFromTop;
+export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) {
+  const companies = loaderData.companies ?? [];
+  const error = loaderData.error ?? null;
 
   return (
-    <div 
-      ref={componentRef} 
-      className="flex flex-col"
-      style={{ height: `${componentHeight}px` }}
-    >
-      {/* Header */}
-      <header className="bg-gray-800 text-white p-4 flex-shrink-0">
-        <div className="container mx-auto">
-          <h1 className="text-2xl font-bold">Appointments</h1>
-          <p className="text-sm mt-2">Viewport Height: {viewportHeight}px</p>
-          <p className="text-sm">Offset from top: {offsetFromTop}px</p>
-          <p className="text-sm">Component Height: {componentHeight}px</p>
-        </div>
-      </header>
+    <BookingContainer>
+      <BookingPageHeader
+        label="Bestill time"
+        title="Velg bedrift"
+        description="Velg en bedrift for å starte timebestilling."
+      />
 
-      {/* Main Content */}
-      <main className="flex-1 container mx-auto p-4 overflow-y-auto">
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold mb-4">Upcoming Appointments</h2>
-          
-          {/* Sample appointment cards */}
-          {Array.from({ length: 20 }, (_, i) => (
-            <div key={i} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-              <h3 className="font-semibold text-lg">Appointment #{i + 1}</h3>
-              <p className="text-gray-600 mt-2">Date: January {(i % 28) + 1}, 2026</p>
-              <p className="text-gray-600">Time: {9 + (i % 8)}:00 AM</p>
-              <p className="text-gray-500 mt-2">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-                Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              </p>
-            </div>
-          ))}
-        </div>
-      </main>
+      {error && <BookingErrorBanner message={error} sticky />}
 
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white p-4 flex-shrink-0">
-        <div className="container mx-auto text-center">
-          <p className="text-sm">© 2026 Appointments App</p>
-        </div>
-      </footer>
-    </div>
+      <BookingSection title="Tilgjengelige bedrifter">
+        {companies.length === 0 ? (
+          <div className="rounded-lg border border-card-border bg-card-muted-bg p-4 text-sm text-muted-foreground">
+            Ingen bedrifter er klare for booking akkurat nå.
+          </div>
+        ) : (
+          <BookingGrid cols={2}>
+            {companies.map((company) => {
+              const location = getCompanyLocation(company);
+              const companyName = company.name || `Selskap ${company.orgNumber}`;
+              const startUrl = `${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=${company.id}`;
+
+              return (
+                <Link
+                  key={company.id}
+                  to={startUrl}
+                  className="group flex h-full flex-col rounded-lg border border-card-border bg-card p-4 transition hover:border-primary/40 hover:bg-card-muted-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                >
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Org.nr. {company.orgNumber}
+                    </div>
+                    <h2 className="text-base font-semibold text-card-text md:text-lg">{companyName}</h2>
+                    {company.organizationType?.description && (
+                      <p className="text-xs text-muted-foreground md:text-sm">
+                        {company.organizationType.description}
+                      </p>
+                    )}
+                    {location && <p className="text-xs text-muted-foreground md:text-sm">{location}</p>}
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between text-sm font-semibold text-primary">
+                    <span>Start booking</span>
+                    <span className="transition group-hover:translate-x-1">→</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </BookingGrid>
+        )}
+      </BookingSection>
+    </BookingContainer>
   );
 }
