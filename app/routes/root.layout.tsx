@@ -141,8 +141,6 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
       <footer className="app-footer">
         <Footer />
       </footer>
-
-      <DashWaveBackground />
     </div>
   );
 }

@@ -1,49 +1,33 @@
-import { useEffect, useMemo, useState } from 'react';
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router';
+import Map from 'ol/Map';
+import View from 'ol/View';
+import { fromLonLat } from 'ol/proj';
+import TileLayer from 'ol/layer/Tile';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import OSM from 'ol/source/OSM';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import type { CompanySummaryDto } from '~/api/generated/booking';
-import L from 'leaflet';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import 'leaflet/dist/leaflet.css';
+import 'ol/ol.css';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
-type CompanyLocation = {
+export type CompanyLocation = {
   company: CompanySummaryDto;
   lat: number;
   lon: number;
 };
 
 type CompaniesMapProps = {
-  companies: CompanySummaryDto[];
+  locations: CompanyLocation[];
 };
 
 const DEFAULT_CENTER: [number, number] = [59.9139, 10.7522];
-const MAX_GEOCODE = 12;
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
-const buildCompanyQuery = (company: CompanySummaryDto): string | null => {
-  const address = company.businessAddress || company.postalAddress;
-
-  if (!address) {
-    return company.name ? `${company.name}, Norway` : null;
-  }
-
-  const parts = [
-    company.name,
-    ...(address.addressLines ?? []),
-    address.postalCode,
-    address.city,
-    address.municipality,
-    address.country ?? address.countryCode ?? 'Norway',
-  ].filter(Boolean);
-
-  return parts.length ? parts.join(', ') : null;
-};
+const DEFAULT_ZOOM = 6;
+const MIN_ZOOM = 4;
+const MAX_ZOOM = 16;
 
 const getCompanyLocationLabel = (company: CompanySummaryDto): string => {
   const address = company.businessAddress || company.postalAddress;
@@ -55,62 +39,11 @@ const getCompanyLocationLabel = (company: CompanySummaryDto): string => {
   return parts.length ? parts.join(', ') : 'Ukjent adresse';
 };
 
-export default function CompaniesMap({ companies }: CompaniesMapProps) {
-  const [locations, setLocations] = useState<CompanyLocation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let isActive = true;
-    const controller = new AbortController();
-
-    const loadLocations = async () => {
-      setIsLoading(true);
-      try {
-        const queries = companies
-          .slice(0, MAX_GEOCODE)
-          .map((company) => ({ company, query: buildCompanyQuery(company) }))
-          .filter((item): item is { company: CompanySummaryDto; query: string } => Boolean(item.query));
-
-        const results = await Promise.all(
-          queries.map(async ({ company, query }) => {
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=no&q=${encodeURIComponent(query)}`,
-              { signal: controller.signal, headers: { 'Accept-Language': 'no' } },
-            );
-
-            if (!response.ok) return null;
-            const data = (await response.json()) as Array<{ lat: string; lon: string }>;
-            if (!data.length) return null;
-
-            return {
-              company,
-              lat: Number(data[0].lat),
-              lon: Number(data[0].lon),
-            };
-          }),
-        );
-
-        if (isActive) {
-          setLocations(results.filter(Boolean) as CompanyLocation[]);
-        }
-      } catch {
-        if (isActive) {
-          setLocations([]);
-        }
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadLocations();
-
-    return () => {
-      isActive = false;
-      controller.abort();
-    };
-  }, [companies]);
+export default function CompaniesMap({ locations }: CompaniesMapProps) {
+  const mapElementRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<Map | null>(null);
+  const vectorSourceRef = useRef<VectorSource | null>(null);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
 
   const center = useMemo<[number, number]>(() => {
     if (!locations.length) return DEFAULT_CENTER;
@@ -125,13 +58,82 @@ export default function CompaniesMap({ companies }: CompaniesMapProps) {
     return [total.lat / locations.length, total.lon / locations.length];
   }, [locations]);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-72 items-center justify-center rounded-lg border border-card-border bg-card text-sm text-muted-foreground">
-        Laster kart...
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!mapElementRef.current || mapRef.current) {
+      return;
+    }
+
+    const vectorSource = new VectorSource();
+    vectorSourceRef.current = vectorSource;
+
+    const markerStyle = new Style({
+      image: new CircleStyle({
+        radius: 7,
+        fill: new Fill({ color: 'rgba(37, 99, 235, 0.9)' }),
+        stroke: new Stroke({ color: '#ffffff', width: 2 }),
+      }),
+    });
+
+    const vectorLayer = new VectorLayer({
+      source: vectorSource,
+      style: markerStyle,
+    });
+
+    const mapInstance = new Map({
+      target: mapElementRef.current,
+      layers: [
+        new TileLayer({
+          source: new OSM(),
+        }),
+        vectorLayer,
+      ],
+      view: new View({
+        center: fromLonLat([center[1], center[0]]),
+        zoom: DEFAULT_ZOOM,
+        minZoom: MIN_ZOOM,
+        maxZoom: MAX_ZOOM,
+      }),
+    });
+    mapRef.current = mapInstance;
+
+    mapInstance.on('click', (event) => {
+      const feature = mapInstance.forEachFeatureAtPixel(event.pixel, (feat) => feat) as Feature | undefined;
+      const companyId = feature?.get('companyId') as number | undefined;
+      setSelectedCompanyId(companyId ?? null);
+    });
+  }, [center]);
+
+  useEffect(() => {
+    if (!vectorSourceRef.current || !mapRef.current) {
+      return;
+    }
+
+    vectorSourceRef.current.clear();
+
+    const features = locations.map((item) => {
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([item.lon, item.lat])),
+        companyId: item.company.id,
+        companyName: item.company.name,
+      });
+      return feature;
+    });
+
+    vectorSourceRef.current.addFeatures(features);
+
+    if (locations.length) {
+      mapRef.current.getView().setCenter(fromLonLat([center[1], center[0]]));
+    }
+  }, [locations, center]);
+
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.setTarget(undefined);
+        mapRef.current = null;
+      }
+    };
+  }, []);
 
   if (!locations.length) {
     return (
@@ -141,24 +143,27 @@ export default function CompaniesMap({ companies }: CompaniesMapProps) {
     );
   }
 
+  const selected = locations.find((item) => item.company.id === selectedCompanyId);
+  const selectedName = selected?.company.name ?? `Selskap ${selected?.company.orgNumber ?? ''}`.trim();
+
   return (
-    <div className="overflow-hidden rounded-lg border border-card-border bg-card">
-      <MapContainer center={center} zoom={6} className="h-72 w-full">
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {locations.map((item) => (
-          <Marker key={item.company.id} position={[item.lat, item.lon]}>
-            <Popup>
-              <div className="space-y-1 text-sm">
-                <div className="font-semibold">{item.company.name ?? `Selskap ${item.company.orgNumber}`}</div>
-                <div className="text-xs text-muted-foreground">{getCompanyLocationLabel(item.company)}</div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+    <div className="relative overflow-hidden rounded-lg border border-card-border bg-card">
+      <div ref={mapElementRef} className="h-72 w-full" />
+      {selected && (
+        <div className="absolute bottom-3 left-3 right-3 max-w-sm rounded-lg border border-card-border bg-card p-4 shadow-lg">
+          <div className="space-y-1">
+            <div className="text-sm font-semibold text-card-text">{selectedName}</div>
+            <div className="text-xs text-muted-foreground">{getCompanyLocationLabel(selected.company)}</div>
+          </div>
+          <Link
+            to={`${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=${selected.company.id}`}
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-button-primary-border bg-button-primary-bg px-4 py-2 text-sm font-semibold text-button-primary-text transition hover:bg-button-primary-hover-bg hover:text-button-primary-hover-text"
+          >
+            Book time her
+            <span className="text-base">→</span>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

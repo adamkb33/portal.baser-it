@@ -539,7 +539,7 @@
   }
 
   .app-content {
-    @apply lg:col-span-8 bg-content-bg/70;
+    @apply lg:col-span-8;
     padding: var(--layout-content-padding);
   }
 
