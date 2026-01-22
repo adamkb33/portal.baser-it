@@ -101,12 +101,14 @@ export async function action({ request }: Route.ActionArgs) {
 
     const formData = await request.formData();
 
+    const givenName = String(formData.get('givenName') ?? '');
+    const familyName = String(formData.get('familyName') ?? '');
     const contactResponse = await PublicCompanyContactController.publicGetCreateOrUpdateContact({
       body: {
         ...(formData.get('id') ? { id: Number(formData.get('id')) } : {}),
         companyId: Number(formData.get('companyId')),
-        givenName: String(formData.get('givenName') ?? ''),
-        familyName: String(formData.get('familyName') ?? ''),
+        givenName,
+        familyName,
         email: formData.get('email') ? String(formData.get('email')) : undefined,
         mobileNumber: formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined,
       },
@@ -128,7 +130,13 @@ export async function action({ request }: Route.ActionArgs) {
       },
     });
 
-    return redirect(ROUTES_MAP['booking.public.appointment.session.employee'].href);
+    const normalizedName = `${givenName} ${familyName}`.replace(/\s+/g, ' ').trim().toLowerCase();
+    const shouldShowHearts =
+      normalizedName === 'charlotte skauen' || normalizedName === 'charlotte skaouen';
+    const nextUrl = shouldShowHearts
+      ? `${ROUTES_MAP['booking.public.appointment.session.employee'].href}?hearts=1`
+      : ROUTES_MAP['booking.public.appointment.session.employee'].href;
+    return redirect(nextUrl);
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre kontakt');
     return redirectWithError(
@@ -182,6 +190,18 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
     : undefined;
 
   const handleSubmit = (values: SubmitContactFormSchema) => {
+    const normalizedName = `${values.givenName} ${values.familyName}`
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+    if (typeof window !== 'undefined') {
+      if (normalizedName === 'charlotte skauen' || normalizedName === 'charlotte skaouen') {
+        sessionStorage.setItem('booking:hearts', '1');
+      } else {
+        sessionStorage.removeItem('booking:hearts');
+      }
+    }
+
     const formData = new FormData();
     if (values.id) formData.set('id', String(values.id));
     formData.set('companyId', String(values.companyId));

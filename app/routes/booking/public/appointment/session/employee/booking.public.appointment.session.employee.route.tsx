@@ -241,3 +241,4 @@ export default function AppointmentsEmployee({ loaderData }: Route.ComponentProp
     </>
   );
 }
+
