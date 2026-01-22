@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import type { UserNavigation } from '~/lib/route-tree';
-import { RoutePlaceMent, BrachCategory } from '~/lib/route-tree';
+import { RoutePlaceMent, BrachCategory, ROUTES_MAP } from '~/lib/route-tree';
 import type { CompanySummaryDto } from '~/api/generated/identity';
 import CompanyHeader from './company-header';
 import { User } from 'lucide-react';
@@ -28,6 +28,12 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
       </div>
 
       <div className="flex items-center gap-4 h-full">
+        <Link to={ROUTES_MAP['booking.public.appointment'].href}>
+          <Button className="h-10 rounded border border-button-primary-border bg-button-primary-bg px-4 text-sm font-semibold text-button-primary-text transition-all duration-200 hover:bg-button-primary-hover-bg hover:text-button-primary-hover-text">
+            Bestill time
+          </Button>
+        </Link>
+
         <div className="hidden md:flex">
           {userBranches.length > 0 && (
             <DropdownMenu modal={false}>

@@ -1,3 +1,4 @@
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { data, Link } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.route';
 import { AppointmentsController, type CompanySummaryDto } from '~/api/generated/booking';
@@ -10,6 +11,8 @@ import {
   BookingPageHeader,
   BookingSection,
 } from './_components/booking-layout';
+
+const CompaniesMap = lazy(() => import('~/components/booking/companies-map.client'));
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -37,6 +40,11 @@ function getCompanyLocation(company: CompanySummaryDto): string | null {
 export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) {
   const companies = loaderData.companies ?? [];
   const error = loaderData.error ?? null;
+  const [showMap, setShowMap] = useState(false);
+
+  useEffect(() => {
+    setShowMap(true);
+  }, []);
 
   return (
     <BookingContainer>
@@ -47,6 +55,26 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
       />
 
       {error && <BookingErrorBanner message={error} sticky />}
+
+      {companies.length > 0 && (
+        <BookingSection title="Kart">
+          {showMap ? (
+            <Suspense
+              fallback={
+                <div className="flex h-72 items-center justify-center rounded-lg border border-card-border bg-card text-sm text-muted-foreground">
+                  Laster kart...
+                </div>
+              }
+            >
+              <CompaniesMap companies={companies} />
+            </Suspense>
+          ) : (
+            <div className="flex h-72 items-center justify-center rounded-lg border border-card-border bg-card text-sm text-muted-foreground">
+              Laster kart...
+            </div>
+          )}
+        </BookingSection>
+      )}
 
       <BookingSection title="Tilgjengelige bedrifter">
         {companies.length === 0 ? (
