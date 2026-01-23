@@ -631,6 +631,28 @@ export function BookingBottomNav({
   className,
 }: BookingBottomNavProps) {
   const mountNode = typeof document === 'undefined' ? null : document.getElementById('booking-mobile-footer');
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const updateKeyboardState = () => {
+      const keyboardHeight = window.innerHeight - viewport.height;
+      // Heuristic: treat large viewport shrink as keyboard open
+      setIsKeyboardOpen(keyboardHeight > 120);
+    };
+
+    updateKeyboardState();
+    viewport.addEventListener('resize', updateKeyboardState);
+    viewport.addEventListener('scroll', updateKeyboardState);
+
+    return () => {
+      viewport.removeEventListener('resize', updateKeyboardState);
+      viewport.removeEventListener('scroll', updateKeyboardState);
+    };
+  }, []);
 
   if (!mountNode) return null;
 
@@ -640,6 +662,7 @@ export function BookingBottomNav({
         'border-t border-card-border bg-background shadow-2xl',
         'pb-[env(safe-area-inset-bottom)]',
         'w-full',
+        isKeyboardOpen && 'hidden',
         className,
       )}
     >
