@@ -814,7 +814,7 @@ export function BookingScrollHint({
       aria-hidden="true"
       className={cn(
         isAbsolute
-          ? 'absolute bottom-4 left-1/2 z-30 -translate-x-1/2'
+          ? 'absolute bottom-3 left-1/2 z-30 -translate-x-1/2'
           : anchorLeft === null
             ? 'fixed bottom-4 left-1/2 z-30 -translate-x-1/2'
             : 'fixed bottom-4 z-30',

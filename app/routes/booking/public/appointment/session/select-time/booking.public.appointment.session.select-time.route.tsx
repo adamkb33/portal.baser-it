@@ -279,7 +279,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
   const mobileTimeSlotsScrollRef = useRef<HTMLDivElement>(null);
   const weekTabsRef = useRef<HTMLDivElement>(null);
   const activeWeekRef = useRef<HTMLButtonElement>(null);
-  const [hasReachedTimeSlotsEnd, setHasReachedTimeSlotsEnd] = useState(false);
+  const [showMoreTimeHint, setShowMoreTimeHint] = useState(true);
 
   const urlSelectedTime = searchParams.get('time');
   const persistedTime = urlSelectedTime || session.selectedStartTime;
@@ -442,18 +442,12 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
   );
 
   useEffect(() => {
-    setHasReachedTimeSlotsEnd(false);
-  }, [groupedHours]);
-
-  useEffect(() => {
     const target = mobileTimeSlotsScrollRef.current;
     if (!target) return;
 
     const updateHintVisibility = () => {
       const atEnd = target.scrollLeft + target.clientWidth >= target.scrollWidth - 4;
-      if (atEnd) {
-        setHasReachedTimeSlotsEnd(true);
-      }
+      setShowMoreTimeHint(!atEnd);
     };
 
     updateHintVisibility();
@@ -612,7 +606,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
               </div>
 
               <div className="relative">
-                {!hasReachedTimeSlotsEnd && (
+                {showMoreTimeHint && (
                   <div
                     className={cn(
                       'pointer-events-none absolute inset-y-0 right-0 z-10 flex w-8 items-center justify-center',
