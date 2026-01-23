@@ -276,8 +276,10 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const mobileTimeSlotsRef = useRef<HTMLDivElement>(null);
+  const mobileTimeSlotsScrollRef = useRef<HTMLDivElement>(null);
   const weekTabsRef = useRef<HTMLDivElement>(null);
   const activeWeekRef = useRef<HTMLButtonElement>(null);
+  const [hasReachedTimeSlotsEnd, setHasReachedTimeSlotsEnd] = useState(false);
 
   const urlSelectedTime = searchParams.get('time');
   const persistedTime = urlSelectedTime || session.selectedStartTime;
@@ -439,6 +441,31 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
     [groupedTimeSlots],
   );
 
+  useEffect(() => {
+    setHasReachedTimeSlotsEnd(false);
+  }, [groupedHours]);
+
+  useEffect(() => {
+    const target = mobileTimeSlotsScrollRef.current;
+    if (!target) return;
+
+    const updateHintVisibility = () => {
+      const atEnd = target.scrollLeft + target.clientWidth >= target.scrollWidth - 4;
+      if (atEnd) {
+        setHasReachedTimeSlotsEnd(true);
+      }
+    };
+
+    updateHintVisibility();
+    target.addEventListener('scroll', updateHintVisibility, { passive: true });
+    window.addEventListener('resize', updateHintVisibility);
+
+    return () => {
+      target.removeEventListener('scroll', updateHintVisibility);
+      window.removeEventListener('resize', updateHintVisibility);
+    };
+  }, [groupedHours]);
+
   return (
     <>
       <BookingContainer>
@@ -446,7 +473,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
             PAGE HEADER
             ======================================== */}
         <BookingStepHeader
-          label='Velg tidspunkt'
+          label="Velg tidspunkt"
           title="Hva er ett tidspunkt du ønsker?"
           description={displayTime ? 'Valgt tidspunkt kan endres' : 'Velg dato og klokkeslett for avtalen'}
         />
@@ -584,26 +611,41 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                 <p className="text-xs text-muted-foreground">{formatFullDate(selectedDate!)}</p>
               </div>
 
-              <div className="overflow-x-auto pb-2">
-                <div className="flex gap-3">
-                  {groupedHours.map((hour) => (
-                    <div key={hour} className="min-w-[160px] shrink-0">
-                      <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {hour}
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {groupedTimeSlots[hour].map((slot) => (
-                          <TimeSlotButton
-                            key={slot.startTime}
-                            time={slot.startTime}
-                            isSelected={displayTime === slot.startTime}
-                            onClick={() => handleTimeSelect(slot.startTime)}
-                            variant="compact"
-                          />
-                        ))}
-                      </div>
+              <div className="relative">
+                {!hasReachedTimeSlotsEnd && (
+                  <div
+                    className={cn(
+                      'pointer-events-none absolute inset-y-0 right-0 z-10 flex w-8 items-center justify-center',
+                      'bg-gradient-to-l from-background/100 to-transparent font-semibold uppercase tracking-wider',
+                    )}
+                    aria-hidden="true"
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <ChevronRight className="size-4 text-primary animate-bounce-right" />
                     </div>
-                  ))}
+                  </div>
+                )}
+                <div ref={mobileTimeSlotsScrollRef} className="overflow-x-auto pb-2 pr-8">
+                  <div className="flex gap-3">
+                    {groupedHours.map((hour) => (
+                      <div key={hour} className="min-w-[160px] shrink-0">
+                        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          {hour}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {groupedTimeSlots[hour].map((slot) => (
+                            <TimeSlotButton
+                              key={slot.startTime}
+                              time={slot.startTime}
+                              isSelected={displayTime === slot.startTime}
+                              onClick={() => handleTimeSelect(slot.startTime)}
+                              variant="compact"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -722,10 +764,8 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
             ),
           }}
           desktopClassName="sticky bottom-4 rounded-lg border border-primary bg-primary p-4 text-primary-foreground shadow-lg"
-      
         />
       )}
-
     </>
   );
 }
