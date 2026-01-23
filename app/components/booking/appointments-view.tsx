@@ -7,7 +7,6 @@ export function AppointmentsView() {
   const [offsetFromTop, setOffsetFromTop] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,15 +37,20 @@ export function AppointmentsView() {
   return (
     <div
       ref={containerRef}
-      className="flex h-screen flex-col overflow-hidden bg-background"
+      className="relative flex h-screen flex-col overflow-hidden bg-background"
       style={componentHeight ? { height: `${componentHeight}px` } : undefined}
     >
       <main ref={scrollRef} className="flex-1 overflow-y-auto">
-        <div ref={contentRef} className="relative mx-auto max-w-4xl">
+        <div className="mx-auto max-w-4xl">
           <Outlet />
-          <BookingScrollHint containerRef={scrollRef} anchorRef={contentRef} footerRef={footerRef} className="md:hidden" />
         </div>
       </main>
+      <BookingScrollHint
+        containerRef={scrollRef}
+        bottomOffsetRef={footerRef}
+        position="absolute"
+        className="md:hidden"
+      />
       <div id="booking-mobile-footer" ref={footerRef} className="flex-shrink-0" />
     </div>
   );
