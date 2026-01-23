@@ -584,16 +584,26 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                 <p className="text-xs text-muted-foreground">{formatFullDate(selectedDate!)}</p>
               </div>
 
-              <div className="max-h-64 overflow-y-auto pr-1">
-                <div className="grid grid-cols-3 gap-2">
-                {selectedSchedule.timeSlots.map((slot) => (
-                  <TimeSlotButton
-                    key={slot.startTime}
-                    time={slot.startTime}
-                    isSelected={displayTime === slot.startTime}
-                    onClick={() => handleTimeSelect(slot.startTime)}
-                  />
-                ))}
+              <div className="overflow-x-auto pb-2">
+                <div className="flex gap-3">
+                  {groupedHours.map((hour) => (
+                    <div key={hour} className="min-w-[160px] shrink-0">
+                      <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        {hour}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {groupedTimeSlots[hour].map((slot) => (
+                          <TimeSlotButton
+                            key={slot.startTime}
+                            time={slot.startTime}
+                            isSelected={displayTime === slot.startTime}
+                            onClick={() => handleTimeSelect(slot.startTime)}
+                            variant="compact"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
