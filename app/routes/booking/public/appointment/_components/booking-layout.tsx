@@ -634,23 +634,39 @@ export function BookingBottomNav({
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const viewport = window.visualViewport;
-    if (!viewport) return;
+    if (typeof document === 'undefined') return;
 
-    const updateKeyboardState = () => {
-      const keyboardHeight = window.innerHeight - viewport.height;
-      // Heuristic: treat large viewport shrink as keyboard open
-      setIsKeyboardOpen(keyboardHeight > 120);
+    // Helper function to check if element is a keyboard-triggering input
+    const isKeyboardInput = (elem: HTMLElement) => {
+      if (elem.tagName === 'INPUT') {
+        const type = (elem as HTMLInputElement).type;
+        return !['button', 'submit', 'checkbox', 'radio', 'file', 'image'].includes(type);
+      }
+      return elem.tagName === 'TEXTAREA' || elem.hasAttribute('contenteditable');
     };
 
-    updateKeyboardState();
-    viewport.addEventListener('resize', updateKeyboardState);
-    viewport.addEventListener('scroll', updateKeyboardState);
+    const handleFocusIn = (e: FocusEvent) => {
+      if (!e.target) return;
+      const target = e.target as HTMLElement;
+      if (isKeyboardInput(target)) {
+        setIsKeyboardOpen(true);
+      }
+    };
+
+    const handleFocusOut = (e: FocusEvent) => {
+      if (!e.target) return;
+      const target = e.target as HTMLElement;
+      if (isKeyboardInput(target)) {
+        setIsKeyboardOpen(false);
+      }
+    };
+
+    document.addEventListener('focusin', handleFocusIn);
+    document.addEventListener('focusout', handleFocusOut);
 
     return () => {
-      viewport.removeEventListener('resize', updateKeyboardState);
-      viewport.removeEventListener('scroll', updateKeyboardState);
+      document.removeEventListener('focusin', handleFocusIn);
+      document.removeEventListener('focusout', handleFocusOut);
     };
   }, []);
 
