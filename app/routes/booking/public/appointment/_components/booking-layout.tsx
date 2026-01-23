@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Form } from 'react-router';
 import { AlertCircle, ChevronDown, ChevronUp, Edit3 } from 'lucide-react';
@@ -20,12 +20,7 @@ interface BookingPageHeaderProps {
 
 export function BookingPageHeader({ label, title, description, meta, className }: BookingPageHeaderProps) {
   return (
-    <header
-      className={cn(
-        'pb-3 md:border-b md:border-border md:pb-4',
-        className,
-      )}
-    >
+    <header className={cn('pb-3 md:border-b md:border-border md:pb-4', className)}>
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         {/* Title content */}
         <div className="flex-1 space-y-2 md:space-y-2.5">
@@ -59,7 +54,9 @@ interface BookingStepHeaderProps {
 }
 
 export function BookingStepHeader({ label, title, description, status, className }: BookingStepHeaderProps) {
-  return <BookingPageHeader label={label} title={title} description={description} meta={status} className={className} />;
+  return (
+    <BookingPageHeader label={label} title={title} description={description} meta={status} className={className} />
+  );
 }
 
 /* ========================================
@@ -92,7 +89,9 @@ export function BookingErrorBanner({
         <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-destructive md:text-base">{title}</p>
-          <p className="mt-1 text-xs text-destructive/90 md:text-sm">{typeof message === 'string' ? message : message.value}</p>
+          <p className="mt-1 text-xs text-destructive/90 md:text-sm">
+            {typeof message === 'string' ? message : message.value}
+          </p>
         </div>
       </div>
     </div>
@@ -623,34 +622,31 @@ export interface BookingBottomNavProps {
 }
 
 export function BookingBottomNav({ title, items, primaryAction, secondaryAction, className }: BookingBottomNavProps) {
-  const mountNode =
-    typeof document === 'undefined' ? null : document.getElementById('booking-mobile-footer');
+  const mountNode = typeof document === 'undefined' ? null : document.getElementById('booking-mobile-footer');
 
   if (!mountNode) return null;
 
-  return (
-    createPortal(
-      <div
-        className={cn(
-          'border-t border-card-border bg-background shadow-2xl',
-          'pb-[env(safe-area-inset-bottom)]',
-          'w-full',
-          className,
-        )}
-      >
-        <div className="space-y-3 p-4">
-          {title && <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>}
-          <BookingMeta items={items} layout="compact" />
-          <div className="space-y-2">
-            <div className="w-full [&_button]:bg-secondary [&_button]:text-secondary-foreground [&_button]:border-secondary/40 [&_button:hover]:bg-secondary/90">
-              {primaryAction}
-            </div>
-            {secondaryAction && <span className="w-full">{secondaryAction}</span>}
+  return createPortal(
+    <div
+      className={cn(
+        'border-t border-card-border bg-background shadow-2xl',
+        'pb-[env(safe-area-inset-bottom)]',
+        'w-full',
+        className,
+      )}
+    >
+      <div className="space-y-3 p-4">
+        {title && <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>}
+        <BookingMeta items={items} layout="compact" />
+        <div className="space-y-2">
+          <div className="w-full [&_button]:bg-secondary [&_button]:text-secondary-foreground [&_button]:border-secondary/40 [&_button:hover]:bg-secondary/90">
+            {primaryAction}
           </div>
+          {secondaryAction && <span className="w-full">{secondaryAction}</span>}
         </div>
-      </div>,
-      mountNode,
-    )
+      </div>
+    </div>,
+    mountNode,
   );
 }
 
@@ -665,6 +661,8 @@ export function BookingBottomNavSpacer({ className }: { className?: string }) {
 
 interface BookingScrollHintProps {
   containerRef?: React.RefObject<HTMLElement | null>;
+  anchorRef?: React.RefObject<HTMLElement | null>;
+  footerRef?: React.RefObject<HTMLElement | null>;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
@@ -672,17 +670,102 @@ interface BookingScrollHintProps {
 
 export function BookingScrollHint({
   containerRef,
+  anchorRef,
+  footerRef,
   variant = 'secondary',
   size = 'md',
   className,
 }: BookingScrollHintProps) {
+  const hintRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [anchorLeft, setAnchorLeft] = useState<number | null>(null);
+  const [bottomOffset, setBottomOffset] = useState<number | null>(null);
 
   useEffect(() => {
-    const getScrollTarget = () => containerRef?.current ?? document.documentElement;
+    if (!anchorRef?.current) {
+      setAnchorLeft(null);
+      return;
+    }
+
+    const updateAnchor = () => {
+      const rect = anchorRef.current?.getBoundingClientRect();
+      if (!rect) {
+        setAnchorLeft(null);
+        return;
+      }
+      setAnchorLeft(rect.left + rect.width / 2);
+    };
+
+    updateAnchor();
+
+    const onResize = () => updateAnchor();
+    const onScroll = () => updateAnchor();
+
+    window.addEventListener('resize', onResize);
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateAnchor) : null;
+    if (resizeObserver) {
+      resizeObserver.observe(anchorRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', onScroll);
+      resizeObserver?.disconnect();
+    };
+  }, [anchorRef]);
+
+  useEffect(() => {
+    if (!footerRef?.current) {
+      setBottomOffset(null);
+      return;
+    }
+
+    const updateOffset = () => {
+      const rect = footerRef.current?.getBoundingClientRect();
+      if (!rect || !rect.height) {
+        setBottomOffset(null);
+        return;
+      }
+      setBottomOffset(rect.height + 16);
+    };
+
+    updateOffset();
+
+    const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateOffset) : null;
+    if (resizeObserver) {
+      resizeObserver.observe(footerRef.current);
+    }
+
+    window.addEventListener('resize', updateOffset);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', updateOffset);
+    };
+  }, [footerRef]);
+
+  useEffect(() => {
+    const resolveScrollTarget = () => {
+      if (containerRef?.current) return containerRef.current;
+
+      let node = hintRef.current?.parentElement ?? null;
+      while (node && node !== document.body) {
+        const style = window.getComputedStyle(node);
+        const overflowY = style.overflowY;
+        const isScrollable = overflowY === 'auto' || overflowY === 'scroll';
+        if (isScrollable && node.scrollHeight > node.clientHeight) {
+          return node;
+        }
+        node = node.parentElement;
+      }
+
+      return document.documentElement;
+    };
 
     const updateVisibility = () => {
-      const target = getScrollTarget();
+      const target = resolveScrollTarget();
       if (!target) return;
 
       const scrollTop = target.scrollTop ?? 0;
@@ -694,10 +777,10 @@ export function BookingScrollHint({
       setIsVisible(hasOverflow && !atBottom);
     };
 
-    updateVisibility();
-
-    const target = getScrollTarget();
+    const target = resolveScrollTarget();
     const onScroll = () => updateVisibility();
+
+    updateVisibility();
 
     if (target && target !== document.documentElement) {
       target.addEventListener('scroll', onScroll, { passive: true });
@@ -706,6 +789,11 @@ export function BookingScrollHint({
     }
     window.addEventListener('resize', onScroll);
 
+    const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateVisibility) : null;
+    if (resizeObserver && target && target !== document.documentElement) {
+      resizeObserver.observe(target);
+    }
+
     return () => {
       if (target && target !== document.documentElement) {
         target.removeEventListener('scroll', onScroll);
@@ -713,18 +801,20 @@ export function BookingScrollHint({
         window.removeEventListener('scroll', onScroll);
       }
       window.removeEventListener('resize', onScroll);
+      resizeObserver?.disconnect();
     };
   }, [containerRef]);
 
-  if (!isVisible) return null;
-
   return (
     <div
+      ref={hintRef}
       aria-hidden="true"
       className={cn(
-        'fixed bottom-4 left-1/2 z-30 -translate-x-1/2',
+        anchorLeft === null ? 'fixed left-1/2 z-30 -translate-x-1/2' : 'fixed z-30',
+        bottomOffset === null && 'bottom-4',
         'flex items-center justify-center rounded-full border shadow-sm',
         'transition-opacity duration-200',
+        isVisible ? 'opacity-100' : 'pointer-events-none opacity-0',
         size === 'sm' && 'size-8',
         size === 'md' && 'size-10',
         size === 'lg' && 'size-12',
@@ -734,6 +824,10 @@ export function BookingScrollHint({
         variant === 'ghost' && 'border-transparent bg-muted/70 text-muted-foreground',
         className,
       )}
+      style={{
+        ...(anchorLeft === null ? undefined : { left: `${anchorLeft}px`, transform: 'translateX(-50%)' }),
+        ...(bottomOffset === null ? undefined : { bottom: `${bottomOffset}px` }),
+      }}
     >
       <ChevronDown className={cn(size === 'sm' && 'size-4', size === 'md' && 'size-5', size === 'lg' && 'size-6')} />
     </div>
