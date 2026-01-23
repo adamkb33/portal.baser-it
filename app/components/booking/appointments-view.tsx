@@ -47,8 +47,6 @@ export function AppointmentsView() {
       </main>
       <BookingScrollHint
         containerRef={scrollRef}
-        bottomOffsetRef={footerRef}
-        position="absolute"
         className="md:hidden"
       />
       <div id="booking-mobile-footer" ref={footerRef} className="flex-shrink-0" />

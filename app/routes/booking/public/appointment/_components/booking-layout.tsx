@@ -661,72 +661,17 @@ export function BookingBottomNavSpacer({ className }: { className?: string }) {
 
 interface BookingScrollHintProps {
   containerRef?: React.RefObject<HTMLElement | null>;
-  anchorRef?: React.RefObject<HTMLElement | null>;
-  bottomOffsetRef?: React.RefObject<HTMLElement | null>;
-  position?: 'fixed' | 'absolute';
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
-export function BookingScrollHint({
-  containerRef,
-  anchorRef,
-  bottomOffsetRef,
-  position = 'fixed',
-  variant = 'secondary',
-  size = 'md',
-  className,
-}: BookingScrollHintProps) {
+export function BookingScrollHint({ containerRef, className }: BookingScrollHintProps) {
   const hintRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [anchorLeft, setAnchorLeft] = useState<number | null>(null);
   const [bottomOffset, setBottomOffset] = useState<number | null>(null);
-  const isAbsolute = position === 'absolute';
 
   useEffect(() => {
-    if (!anchorRef?.current) {
-      setAnchorLeft(null);
-      return;
-    }
-
-    const updateAnchor = () => {
-      const rect = anchorRef.current?.getBoundingClientRect();
-      if (!rect) {
-        setAnchorLeft(null);
-        return;
-      }
-      setAnchorLeft(rect.left + rect.width / 2);
-    };
-
-    updateAnchor();
-
-    const onResize = () => updateAnchor();
-    const onScroll = () => updateAnchor();
-
-    window.addEventListener('resize', onResize);
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateAnchor) : null;
-    if (resizeObserver) {
-      resizeObserver.observe(anchorRef.current);
-    }
-
-    return () => {
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('scroll', onScroll);
-      resizeObserver?.disconnect();
-    };
-  }, [anchorRef]);
-
-  useEffect(() => {
-    const resolveOffsetTarget = () => {
-      if (bottomOffsetRef?.current) return bottomOffsetRef.current;
-      if (typeof document === 'undefined') return null;
-      return document.getElementById('booking-mobile-footer');
-    };
-
-    const target = resolveOffsetTarget();
+    if (typeof document === 'undefined') return;
+    const target = document.getElementById('booking-mobile-footer');
     if (!target) {
       setBottomOffset(null);
       return;
@@ -747,7 +692,7 @@ export function BookingScrollHint({
     return () => {
       resizeObserver?.disconnect();
     };
-  }, [bottomOffsetRef]);
+  }, []);
 
   useEffect(() => {
     const resolveScrollTarget = () => {
@@ -813,36 +758,24 @@ export function BookingScrollHint({
       ref={hintRef}
       aria-hidden="true"
       className={cn(
-        isAbsolute
-          ? 'absolute bottom-3 left-1/2 z-30 -translate-x-1/2'
-          : anchorLeft === null
-            ? 'fixed bottom-4 left-1/2 z-30 -translate-x-1/2'
-            : 'fixed bottom-4 z-30',
-        'flex items-center justify-center rounded-full border shadow-sm',
+        'absolute left-1/2 z-30 -translate-x-1/2 rounded-full border shadow-sm',
+        'flex items-center justify-center',
         'transition-opacity duration-200',
         isVisible ? 'opacity-100' : 'pointer-events-none opacity-0',
-        size === 'sm' && 'size-8',
-        size === 'md' && 'size-10',
-        size === 'lg' && 'size-12',
-        variant === 'primary' && 'border-primary/40 bg-primary text-primary-foreground',
-        variant === 'secondary' && 'border-secondary/40 bg-secondary text-secondary-foreground',
-        variant === 'outline' && 'border-card-border bg-background text-card-text',
-        variant === 'ghost' && 'border-transparent bg-muted/70 text-muted-foreground',
+        'size-10 border-secondary/40 bg-secondary text-secondary-foreground',
         className,
       )}
       style={
-        isAbsolute
+        bottomOffset === null
           ? {
-              bottom: bottomOffset === null ? undefined : `${bottomOffset + 16}px`,
+              bottom: '1rem',
             }
           : {
-              left: anchorLeft === null ? undefined : `${anchorLeft}px`,
-              transform: anchorLeft === null ? undefined : 'translateX(-50%)',
-              bottom: bottomOffset === null ? undefined : `${bottomOffset + 16}px`,
+              bottom: `${bottomOffset + 16}px`,
             }
       }
     >
-      <ChevronDown className={cn(size === 'sm' && 'size-4', size === 'md' && 'size-5', size === 'lg' && 'size-6')} />
+      <ChevronDown className="size-5" />
     </div>
   );
 }
