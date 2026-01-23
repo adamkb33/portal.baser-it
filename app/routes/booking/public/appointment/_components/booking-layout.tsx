@@ -618,10 +618,18 @@ export interface BookingBottomNavProps {
   items: Array<{ label: string; value: ReactNode; icon?: ReactNode }>;
   primaryAction: ReactNode;
   secondaryAction?: ReactNode;
+  primaryActionClassName?: string;
   className?: string;
 }
 
-export function BookingBottomNav({ title, items, primaryAction, secondaryAction, className }: BookingBottomNavProps) {
+export function BookingBottomNav({
+  title,
+  items,
+  primaryAction,
+  secondaryAction,
+  primaryActionClassName,
+  className,
+}: BookingBottomNavProps) {
   const mountNode = typeof document === 'undefined' ? null : document.getElementById('booking-mobile-footer');
 
   if (!mountNode) return null;
@@ -639,7 +647,13 @@ export function BookingBottomNav({ title, items, primaryAction, secondaryAction,
         {title && <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>}
         <BookingMeta items={items} layout="compact" />
         <div className="space-y-2">
-          <div className="w-full [&_button]:bg-secondary [&_button]:text-secondary-foreground [&_button]:border-secondary/40 [&_button:hover]:bg-secondary/90">
+          <div
+            className={cn(
+              'w-full',
+              primaryActionClassName ??
+                '[&_button]:bg-secondary [&_button]:text-secondary-foreground [&_button]:border-secondary/40 [&_button:hover]:bg-secondary/90',
+            )}
+          >
             {primaryAction}
           </div>
           {secondaryAction && <span className="w-full">{secondaryAction}</span>}
@@ -767,7 +781,7 @@ export function BookingScrollHint({ containerRef, className }: BookingScrollHint
         'flex items-center justify-center',
         'transition-opacity duration-200',
         isVisible ? 'opacity-100' : 'pointer-events-none opacity-0',
-        'size-10 border-primary/40 bg-primary text-secondary-foreground',
+        'size-10 border-primary/20 bg-primary/60 text-secondary-foreground',
         className,
       )}
       style={

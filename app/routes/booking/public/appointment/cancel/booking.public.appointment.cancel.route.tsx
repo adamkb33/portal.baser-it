@@ -1,4 +1,5 @@
 import { data, Form, useActionData, useNavigation, useLoaderData } from 'react-router';
+import { useState } from 'react';
 import type { Route } from './+types/booking.public.appointment.cancel.route';
 import {
   BookingContainer,
@@ -8,62 +9,58 @@ import {
   BookingMeta,
   BookingButton,
 } from '../_components/booking-layout';
+import { BookingDeleteModal } from '../_components/booking-delete-modal';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 import { Calendar, Clock, User, Mail, Phone, Sparkles, XCircle } from 'lucide-react';
+import { decodeCancelAppointmentToken } from '~/routes/booking/public/_utils/cancel-appointment-token';
 
 type CancelActionData = { success: true; message: string } | { success: false; error: string };
 
-const toNumberOrNull = (value: unknown): number | null => {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string' && value.trim() !== '') {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-};
-
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
-  const appointmentId = toNumberOrNull(url.searchParams.get('appointmentId'));
-  const expiresAt = toNumberOrNull(url.searchParams.get('expiresAt'));
-  const token = url.searchParams.get('token');
+  const cancelToken = url.searchParams.get('token');
 
-  if (!appointmentId) {
-    return data(
-      {
-        error: 'Mangler avtale-ID i lenken.',
-        appointment: null,
-        appointmentId: null,
-        expiresAt,
-        token: token ?? null,
-      },
-      { status: 400 },
-    );
-  }
-
-  if (!expiresAt) {
-    return data(
-      {
-        error: 'Mangler utløpstid i lenken.',
-        appointment: null,
-        appointmentId,
-        expiresAt: null,
-        token: token ?? null,
-      },
-      { status: 400 },
-    );
-  }
-
-  if (!token) {
+  if (!cancelToken) {
     return data(
       {
         error: 'Mangler avbestillingstoken i lenken.',
         appointment: null,
-        appointmentId,
-        expiresAt,
+        appointmentId: null,
+        expiresAt: null,
         token: null,
+        cancelToken: null,
+      },
+      { status: 400 },
+    );
+  }
+
+  const claims = decodeCancelAppointmentToken(cancelToken);
+  if (!claims) {
+    return data(
+      {
+        error: 'Ugyldig avbestillingstoken.',
+        appointment: null,
+        appointmentId: null,
+        expiresAt: null,
+        token: null,
+        cancelToken,
+      },
+      { status: 400 },
+    );
+  }
+
+  const { appointmentId, expiresAt, token } = claims;
+  if (!token) {
+    return data(
+      {
+        error: 'Ugyldig avbestillingstoken.',
+        appointment: null,
+        appointmentId: null,
+        expiresAt: null,
+        token: null,
+        cancelToken,
       },
       { status: 400 },
     );
@@ -76,7 +73,8 @@ export async function loader({ request }: Route.LoaderArgs) {
         appointment: null,
         appointmentId,
         expiresAt,
-        token,
+        token: token ?? null,
+        cancelToken,
       },
       { status: 400 },
     );
@@ -95,7 +93,8 @@ export async function loader({ request }: Route.LoaderArgs) {
           appointment: null,
           appointmentId,
           expiresAt,
-          token,
+          token: token ?? null,
+          cancelToken,
         },
         { status: 404 },
       );
@@ -106,7 +105,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       appointment,
       appointmentId,
       expiresAt,
-      token,
+      token: token ?? null,
+      cancelToken,
     });
   } catch (err) {
     const { message, status } = resolveErrorPayload(err, 'Kunne ikke hente avtalen.');
@@ -117,6 +117,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         appointmentId,
         expiresAt,
         token: token ?? null,
+        cancelToken,
       },
       { status: status ?? 400 },
     );
@@ -125,25 +126,35 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
-  const appointmentId = String(formData.get('appointmentId') ?? '');
-  const expiresAt = String(formData.get('expiresAt') ?? '');
-  const token = String(formData.get('token') ?? '');
+  const cancelToken = String(formData.get('token') ?? '');
 
-  if (!appointmentId) {
+  if (!cancelToken) {
     return data<CancelActionData>(
       {
         success: false,
-        error: 'Appointment-ID mangler.',
+        error: 'Mangler avbestillingstoken.',
       },
       { status: 400 },
     );
   }
 
-  if (!expiresAt || !token) {
+  const claims = decodeCancelAppointmentToken(cancelToken);
+  if (!claims) {
     return data<CancelActionData>(
       {
         success: false,
-        error: 'Mangler data i avbestillingslenken.',
+        error: 'Ugyldig avbestillingstoken.',
+      },
+      { status: 400 },
+    );
+  }
+
+  const { appointmentId, expiresAt, token } = claims;
+  if (!token) {
+    return data<CancelActionData>(
+      {
+        success: false,
+        error: 'Ugyldig avbestillingstoken.',
       },
       { status: 400 },
     );
@@ -152,8 +163,8 @@ export async function action({ request }: Route.ActionArgs) {
   try {
     await PublicAppointmentSessionController.cancelAppointment({
       query: {
-        appointmentId: Number(appointmentId),
-        expiresAt: Number(expiresAt),
+        appointmentId,
+        expiresAt,
         token,
       },
     });
@@ -247,12 +258,13 @@ export default function BookingPublicAppointmentCancelRoute() {
   const appointment = loaderData?.appointment ?? null;
   const appointmentId = loaderData?.appointmentId ?? null;
   const expiresAt = loaderData?.expiresAt ?? null;
-  const token = loaderData?.token ?? null;
+  const cancelToken = loaderData?.cancelToken ?? null;
   const actionData = useActionData<CancelActionData>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   const isExpired = expiresAt ? expiresAt * 1000 < Date.now() : false;
   const canCancel = Boolean(appointmentId && appointment && !error && !isExpired);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const expiresAtLabel = formatEpochSeconds(expiresAt);
   const dateTime = appointment?.startTime ? formatNorwegianDateTime(appointment.startTime) : null;
@@ -277,12 +289,6 @@ export default function BookingPublicAppointmentCancelRoute() {
   return (
     <>
       <BookingContainer>
-        <BookingStepHeader
-          label="Avbestilling"
-          title="Avbestill time"
-          description="Se detaljer om avtalen og avbestill om ønskelig."
-        />
-
         {appointment && !error ? (
           <div className="relative overflow-hidden rounded-lg border-2 border-destructive/20 bg-gradient-to-br from-destructive/10 via-destructive/5 to-transparent p-4 shadow-sm md:p-6">
             <div className="absolute right-0 top-0 size-32 translate-x-8 -translate-y-8 rounded-full bg-destructive/10 blur-3xl" />
@@ -452,64 +458,52 @@ export default function BookingPublicAppointmentCancelRoute() {
             items: [
               { label: 'Dato', value: dateTime?.full ?? appointment?.startTime },
               {
-                label: 'Kontakt',
+                label: 'Kontaktinformasjon',
                 value:
                   `${appointment?.contact?.givenName ?? ''} ${appointment?.contact?.familyName ?? ''}`.trim() || '—',
               },
             ],
             primaryAction: (
-              <Form method="post">
-                <input type="hidden" name="appointmentId" value={appointmentId ?? ''} />
-                <input type="hidden" name="expiresAt" value={expiresAt ?? ''} />
-                <input type="hidden" name="token" value={token ?? ''} />
-                <BookingButton
-                  type="submit"
-                  variant="destructive"
-                  size="lg"
-                  fullWidth
-                  loading={isSubmitting}
-                  disabled={!canCancel || isSubmitting}
-                >
-                  Slett avtale
-                </BookingButton>
-              </Form>
+              <BookingButton
+                type="button"
+                variant="destructive"
+                size="lg"
+                fullWidth
+                disabled={!canCancel || isSubmitting}
+                onClick={() => setIsDeleteOpen(true)}
+              >
+                Avbestill
+              </BookingButton>
             ),
+            primaryActionClassName: 'w-full',
             className: 'border-t border-destructive/20 bg-destructive/5',
           }}
           desktopClassName="sticky bottom-4 rounded-lg border-2 border-destructive/30 bg-destructive/10 p-4 text-foreground shadow-xl"
-          desktop={
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="flex size-14 items-center justify-center rounded-full bg-destructive/15 text-destructive">
-                  <XCircle className="size-7" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">Avbestill time</p>
-                  <p className="text-lg font-bold">{dateTime?.full ?? appointment?.startTime ?? '—'}</p>
-                  <p className="text-sm font-medium opacity-90">Total: {totalPrice ? `${totalPrice} kr` : '—'}</p>
-                </div>
-              </div>
-
-              <Form method="post">
-                <input type="hidden" name="appointmentId" value={appointmentId ?? ''} />
-                <input type="hidden" name="expiresAt" value={expiresAt ?? ''} />
-                <input type="hidden" name="token" value={token ?? ''} />
-                <BookingButton
-                  type="submit"
-                  variant="secondary"
-                  size="lg"
-                  loading={isSubmitting}
-                  disabled={!canCancel || isSubmitting}
-                  className="min-w-[200px]"
-                >
-                  <XCircle className="size-5" strokeWidth={2.5} />
-                  Avbestill time
-                </BookingButton>
-              </Form>
-            </div>
-          }
         />
       ) : null}
+
+      <BookingDeleteModal
+        title="Avbestill time"
+        description="Er du sikker på at du vil avbestille timen? Avbestillingen kan ikke angres."
+        cancelLabel="Avbryt"
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        confirmAction={
+          <Form method="post" className="w-full sm:w-auto">
+            <input type="hidden" name="token" value={cancelToken ?? ''} />
+            <BookingButton
+              type="submit"
+              variant="destructive"
+              size="md"
+              fullWidth
+              loading={isSubmitting}
+              disabled={!canCancel || isSubmitting}
+            >
+              Ja, avbestill
+            </BookingButton>
+          </Form>
+        }
+      />
     </>
   );
 }
