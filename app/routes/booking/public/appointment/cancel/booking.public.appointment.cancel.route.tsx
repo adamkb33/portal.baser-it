@@ -149,7 +149,7 @@ export async function action({ request }: Route.ActionArgs) {
     );
   }
 
-  const { appointmentId, expiresAt, token } = claims;
+  const { token } = claims;
   if (!token) {
     return data<CancelActionData>(
       {
@@ -163,8 +163,6 @@ export async function action({ request }: Route.ActionArgs) {
   try {
     await PublicAppointmentSessionController.cancelAppointment({
       query: {
-        appointmentId,
-        expiresAt,
         token,
       },
     });
@@ -368,20 +366,20 @@ export default function BookingPublicAppointmentCancelRoute() {
                       `${appointment.contact?.givenName ?? ''} ${appointment.contact?.familyName ?? ''}`.trim() || '—',
                     icon: <User className="size-4 text-muted-foreground" />,
                   },
-                  ...(appointment.contact?.email?.value
+                  ...(appointment.contact?.email
                     ? [
                         {
                           label: 'E-post',
-                          value: appointment.contact.email.value,
+                          value: appointment.contact.email,
                           icon: <Mail className="size-4 text-muted-foreground" />,
                         },
                       ]
                     : []),
-                  ...(appointment.contact?.mobileNumber?.value
+                  ...(appointment.contact?.mobileNumber
                     ? [
                         {
                           label: 'Mobilnummer',
-                          value: appointment.contact.mobileNumber.value,
+                          value: appointment.contact.mobileNumber,
                           icon: <Phone className="size-4 text-muted-foreground" />,
                         },
                       ]

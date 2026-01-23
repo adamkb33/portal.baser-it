@@ -68,7 +68,7 @@ export function ContactPicker({ value, onChange, contacts }: ContactPickerProps)
               {contacts.map((c: ContactDto) => (
                 <SelectItem key={c.id} value={String(c.id)}>
                   {c.givenName} {c.familyName}
-                  {c.email?.value ? ` · ${c.email.value}` : ''}
+                  {c.email ? ` · ${c.email}` : ''}
                 </SelectItem>
               ))}
             </SelectContent>

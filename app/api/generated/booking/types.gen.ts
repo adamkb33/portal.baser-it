@@ -147,18 +147,8 @@ export type ContactDto = {
     companyId: number;
     givenName: string;
     familyName: string;
-    email?: ContactEmailDto;
-    mobileNumber?: ContactMobileNumberDto;
-};
-
-export type ContactEmailDto = {
-    id?: number;
-    value?: string;
-};
-
-export type ContactMobileNumberDto = {
-    id: number;
-    value: string;
+    email?: string;
+    mobileNumber?: string;
 };
 
 export type GroupedServiceDto = {
@@ -1313,8 +1303,6 @@ export type CancelAppointmentData = {
     body?: never;
     path?: never;
     query: {
-        appointmentId: number;
-        expiresAt: number;
         token: string;
     };
     url: '/public/appointment-session/cancel-appointment';

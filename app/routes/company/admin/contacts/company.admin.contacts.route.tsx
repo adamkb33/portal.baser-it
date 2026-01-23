@@ -122,7 +122,7 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
         pagination={pagination}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
-        getRowKey={(contact) => contact.id?.toString() ?? contact.email?.value ?? ''}
+        getRowKey={(contact) => contact.id?.toString() ?? contact.email ?? ''}
         columns={[
           { header: 'Navn' },
           { header: 'E-post' },
@@ -148,8 +148,8 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
         renderRow={(contact) => (
           <TableRow>
             <TableCell className="font-medium">{formatName(contact)}</TableCell>
-            <TableCell>{contact.email?.value || '—'}</TableCell>
-            <TableCell>{contact.mobileNumber?.value || '—'}</TableCell>
+            <TableCell>{contact.email || '—'}</TableCell>
+            <TableCell>{contact.mobileNumber || '—'}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
                 <Button variant="outline" size="sm" onClick={() => setEditingContact(contact)}>

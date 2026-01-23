@@ -46,25 +46,25 @@ export function AppointmentTableRow({ appointment, onDelete, isDeleting = false 
                     <span className="font-medium">{appointment.contact.familyName}</span>
                   </div>
                 )}
-                {appointment.contact.email?.value && (
+                {appointment.contact.email && (
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">E-post:</span>
                     <Link
-                      to={`mailto:${appointment.contact.email.value}`}
+                      to={`mailto:${appointment.contact.email}`}
                       className="font-medium text-primary hover:underline break-all"
                     >
-                      {appointment.contact.email.value}
+                      {appointment.contact.email}
                     </Link>
                   </div>
                 )}
-                {appointment.contact.mobileNumber?.value && (
+                {appointment.contact.mobileNumber && (
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">Telefon:</span>
                     <Link
-                      to={`tel:${appointment.contact.mobileNumber.value}`}
+                      to={`tel:${appointment.contact.mobileNumber}`}
                       className="font-medium text-primary hover:underline"
                     >
-                      {appointment.contact.mobileNumber.value}
+                      {appointment.contact.mobileNumber}
                     </Link>
                   </div>
                 )}

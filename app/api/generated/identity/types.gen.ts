@@ -44,18 +44,8 @@ export type ContactDto = {
     companyId: number;
     givenName: string;
     familyName: string;
-    email?: ContactEmailDto;
-    mobileNumber?: ContactMobileNumberDto;
-};
-
-export type ContactEmailDto = {
-    id?: number;
-    value?: string;
-};
-
-export type ContactMobileNumberDto = {
-    id: number;
-    value: string;
+    email?: string;
+    mobileNumber?: string;
 };
 
 export type FilteringMeta = {

@@ -173,26 +173,26 @@ export function AppointmentCardRow({ appointment, onDelete, isDeleting = false }
                       </span>
                     </div>
 
-                    {appointment.contact.email?.value && (
+                    {appointment.contact.email && (
                       <div className="flex items-start justify-between gap-4">
                         <span className="text-xs text-muted-foreground uppercase tracking-wide shrink-0">E-post</span>
                         <Link
-                          to={`mailto:${appointment.contact.email.value}`}
+                          to={`mailto:${appointment.contact.email}`}
                           className="text-sm font-medium text-primary hover:underline text-right break-all"
                         >
-                          {appointment.contact.email.value}
+                          {appointment.contact.email}
                         </Link>
                       </div>
                     )}
 
-                    {appointment.contact.mobileNumber?.value && (
+                    {appointment.contact.mobileNumber && (
                       <div className="flex items-start justify-between gap-4">
                         <span className="text-xs text-muted-foreground uppercase tracking-wide shrink-0">Telefon</span>
                         <Link
-                          to={`tel:${appointment.contact.mobileNumber.value}`}
+                          to={`tel:${appointment.contact.mobileNumber}`}
                           className="text-sm font-medium text-primary hover:underline text-right"
                         >
-                          {appointment.contact.mobileNumber.value}
+                          {appointment.contact.mobileNumber}
                         </Link>
                       </div>
                     )}

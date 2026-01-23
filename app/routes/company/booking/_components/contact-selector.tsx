@@ -132,19 +132,19 @@ export function ContactSelector({
                     <div className="font-semibold text-sm md:text-xs truncate">{formatName(contact)}</div>
 
                     <div className="space-y-1 md:space-y-0.5">
-                      {contact.email?.value && (
+                      {contact.email && (
                         <div className="flex items-center gap-2 md:gap-1.5 text-xs md:text-[10px] text-muted-foreground">
                           <Mail className="h-3.5 w-3.5 md:h-2.5 md:w-2.5 flex-shrink-0" />
-                          <span className="truncate">{contact.email.value}</span>
+                          <span className="truncate">{contact.email}</span>
                         </div>
                       )}
-                      {contact.mobileNumber?.value && (
+                      {contact.mobileNumber && (
                         <div className="flex items-center gap-2 md:gap-1.5 text-xs md:text-[10px] text-muted-foreground">
                           <Phone className="h-3.5 w-3.5 md:h-2.5 md:w-2.5 flex-shrink-0" />
-                          <span className="truncate">{contact.mobileNumber.value}</span>
+                          <span className="truncate">{contact.mobileNumber}</span>
                         </div>
                       )}
-                      {!contact.email?.value && !contact.mobileNumber?.value && (
+                      {!contact.email && !contact.mobileNumber && (
                         <div className="text-xs md:text-[10px] text-muted-foreground italic">Ingen kontaktinfo</div>
                       )}
                     </div>

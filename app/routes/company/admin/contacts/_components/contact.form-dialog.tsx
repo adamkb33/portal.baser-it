@@ -28,8 +28,8 @@ export function ContactFormDialog({ trigger, contact }: ContactFormDialogProps) 
         id: contact.id,
         givenName: contact.givenName ?? '',
         familyName: contact.familyName ?? '',
-        email: contact.email?.value ?? '',
-        mobileNumber: contact.mobileNumber?.value ?? '',
+        email: contact.email ?? '',
+        mobileNumber: contact.mobileNumber ?? '',
       });
       setIsOpen(true);
     }

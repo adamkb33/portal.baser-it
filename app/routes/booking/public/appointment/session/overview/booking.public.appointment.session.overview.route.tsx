@@ -245,20 +245,20 @@ export default function BookingPublicAppointmentSessionOverviewRoute({ loaderDat
                 value: `${sessionOverview.contact.givenName} ${sessionOverview.contact.familyName}`,
                 icon: <User className="size-4 text-muted-foreground" />,
               },
-              ...(sessionOverview.contact.email?.value
+              ...(sessionOverview.contact.email
                 ? [
                     {
                       label: 'E-post',
-                      value: sessionOverview.contact.email.value,
+                      value: sessionOverview.contact.email,
                       icon: <Mail className="size-4 text-muted-foreground" />,
                     },
                   ]
                 : []),
-              ...(sessionOverview.contact.mobileNumber?.value
+              ...(sessionOverview.contact.mobileNumber
                 ? [
                     {
                       label: 'Mobilnummer',
-                      value: sessionOverview.contact.mobileNumber.value,
+                      value: sessionOverview.contact.mobileNumber,
                       icon: <Phone className="size-4 text-muted-foreground" />,
                     },
                   ]

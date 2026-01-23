@@ -258,8 +258,8 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
         companyId: session.companyId,
         givenName: existingContact.givenName,
         familyName: existingContact.familyName,
-        email: existingContact.email?.value ?? '',
-        mobileNumber: normalizeMobileNumber(existingContact.mobileNumber?.value),
+        email: existingContact.email ?? '',
+        mobileNumber: normalizeMobileNumber(existingContact.mobileNumber),
       }
     : undefined;
 
@@ -322,9 +322,9 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
                       label: 'Navn',
                       value: `${existingContact.givenName} ${existingContact.familyName}`,
                     },
-                    ...(existingContact.email?.value ? [{ label: 'E-post', value: existingContact.email.value }] : []),
-                    ...(existingContact.mobileNumber?.value
-                      ? [{ label: 'Mobil', value: existingContact.mobileNumber.value }]
+                    ...(existingContact.email ? [{ label: 'E-post', value: existingContact.email }] : []),
+                    ...(existingContact.mobileNumber
+                      ? [{ label: 'Mobil', value: existingContact.mobileNumber }]
                       : []),
                   ]}
                 />
