@@ -1,4 +1,5 @@
 import { data, redirect, useFetcher, Link } from 'react-router';
+import { useState } from 'react';
 import type { Route } from './+types/booking.public.appointment.session.contact.route';
 import { CheckCircle2, Edit3 } from 'lucide-react';
 import type { ContactDto } from '~/api/generated/identity';
@@ -43,11 +44,7 @@ const getCompanyIdFromRequest = (request: Request, session?: AppointmentSessionD
   return null;
 };
 
-const resetAppointmentSession = async (
-  request: Request,
-  companyId: number,
-  session?: AppointmentSessionDto | null,
-) => {
+const resetAppointmentSession = async (request: Request, companyId: number, session?: AppointmentSessionDto | null) => {
   if (session?.sessionId) {
     try {
       await PublicAppointmentSessionController.deleteAppointmentSession({
@@ -89,11 +86,7 @@ const handleContactNotFound = async (request: Request, session?: AppointmentSess
     return await resetAppointmentSession(request, companyId, session);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke opprette ny bookingøkt.');
-    return redirectWithError(
-      request,
-      ROUTES_MAP['booking.public.appointment'].href,
-      message,
-    );
+    return redirectWithError(request, ROUTES_MAP['booking.public.appointment'].href, message);
   }
 };
 
@@ -166,11 +159,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       return await handleContactNotFound(request);
     }
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente kontaktinformasjon');
-    return redirectWithError(
-      request,
-      ROUTES_MAP['booking.public.appointment'].href,
-      message,
-    );
+    return redirectWithError(request, ROUTES_MAP['booking.public.appointment'].href, message);
   }
 }
 
@@ -204,13 +193,9 @@ export async function action({ request }: Route.ActionArgs) {
       return await handleContactNotFound(request, session);
     }
     if (!contactResponse.data?.data) {
-      console.log("contactResponse", JSON.stringify(contactResponse, null, 2));
+      console.log('contactResponse', JSON.stringify(contactResponse, null, 2));
       const message = contactResponse.data?.message || 'En feil har skjedd med lagring av kontakt';
-      return redirectWithError(
-        request,
-        ROUTES_MAP['booking.public.appointment.session.contact'].href,
-        message,
-      );
+      return redirectWithError(request, ROUTES_MAP['booking.public.appointment.session.contact'].href, message);
     }
 
     await PublicAppointmentSessionController.submitAppointmentSessionContact({
@@ -231,11 +216,7 @@ export async function action({ request }: Route.ActionArgs) {
       return await handleContactNotFound(request);
     }
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre kontakt');
-    return redirectWithError(
-      request,
-      ROUTES_MAP['booking.public.appointment.session.contact'].href,
-      message,
-    );
+    return redirectWithError(request, ROUTES_MAP['booking.public.appointment.session.contact'].href, message);
   }
 }
 
@@ -244,6 +225,7 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
   const session = loaderData.session ?? null;
   const existingContact = loaderData.existingContact ?? null;
   const formId = 'booking-contact-form';
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
   const actionError = fetcher.data?.error;
@@ -282,10 +264,7 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
     : undefined;
 
   const handleSubmit = (values: SubmitContactFormSchema) => {
-    const normalizedName = `${values.givenName} ${values.familyName}`
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
+    const normalizedName = `${values.givenName} ${values.familyName}`.replace(/\s+/g, ' ').trim().toLowerCase();
     if (typeof window !== 'undefined') {
       if (normalizedName === 'charlotte skauen') {
         sessionStorage.setItem('booking:hearts', '1');
@@ -319,78 +298,75 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
         />
 
         <BookingSection className="space-y-4 md:space-y-6">
-        {/* ========================================
+          {/* ========================================
             EXISTING CONTACT - Compact card on mobile
             ======================================== */}
-        {existingContact && (
-          <div className="space-y-3 md:space-y-4">
-            {/* Visual separator with label */}
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="size-4 text-secondary md:size-5" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground md:text-sm">
-                Eksisterende kontakt
-              </span>
-            </div>
-
-            {/* Existing contact - Ultra-compact card */}
-            <div className="rounded-lg border border-card-border bg-card-muted-bg p-3 md:p-4">
-              {/* Contact details - Inline labels on mobile, stacked on desktop */}
-              <BookingMeta
-                layout="compact"
-                className="space-y-2 md:space-y-2.5"
-                items={[
-                  {
-                    label: 'Navn',
-                    value: `${existingContact.givenName} ${existingContact.familyName}`,
-                  },
-                  ...(existingContact.email?.value
-                    ? [{ label: 'E-post', value: existingContact.email.value }]
-                    : []),
-                  ...(existingContact.mobileNumber?.value
-                    ? [{ label: 'Mobil', value: existingContact.mobileNumber.value }]
-                    : []),
-                ]}
-              />
-
-              {/* Edit hint - Minimal */}
-              <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                <Edit3 className="size-3 shrink-0" />
-                <p>Kan oppdateres under</p>
-              </div>
-            </div>
-
-            {/* Visual divider */}
-            <div className="relative py-3 md:py-4">
-              <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-background px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground md:text-sm">
-                  {existingContact ? 'Oppdater informasjon' : 'Fyll ut informasjon'}
+          {existingContact && (
+            <div className="space-y-3 md:space-y-4">
+              {/* Visual separator with label */}
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="size-4 text-secondary md:size-5" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground md:text-sm">
+                  Eksisterende kontakt
                 </span>
               </div>
-            </div>
-          </div>
-        )}
 
-        {/* ========================================
+              {/* Existing contact - Ultra-compact card */}
+              <div className="rounded-lg border border-card-border bg-card-muted-bg p-3 md:p-4">
+                {/* Contact details - Inline labels on mobile, stacked on desktop */}
+                <BookingMeta
+                  layout="compact"
+                  className="space-y-2 md:space-y-2.5"
+                  items={[
+                    {
+                      label: 'Navn',
+                      value: `${existingContact.givenName} ${existingContact.familyName}`,
+                    },
+                    ...(existingContact.email?.value ? [{ label: 'E-post', value: existingContact.email.value }] : []),
+                    ...(existingContact.mobileNumber?.value
+                      ? [{ label: 'Mobil', value: existingContact.mobileNumber.value }]
+                      : []),
+                  ]}
+                />
+
+                {/* Edit hint - Minimal */}
+                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Edit3 className="size-3 shrink-0" />
+                  <p>Kan oppdateres under</p>
+                </div>
+              </div>
+
+              {/* Visual divider */}
+              <div className="relative py-3 md:py-4">
+                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-background px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground md:text-sm">
+                    {existingContact ? 'Oppdater informasjon' : 'Fyll ut informasjon'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================
             CONTACT FORM
             ======================================== */}
-        <SubmitContactForm
-          companyId={session.companyId}
-          initialValues={initialValues}
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
-          formId={formId}
-        />
+          <SubmitContactForm
+            companyId={session.companyId}
+            initialValues={initialValues}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            formId={formId}
+            onValidityChange={setIsFormValid}
+          />
         </BookingSection>
       </BookingContainer>
 
       <BookingSummary
         mobile={{
-          items: [
-            { label: 'Steg', value: 'Kontaktinformasjon' },
-          ],
+          items: [],
           primaryAction: (
             <BookingButton
               type="submit"
@@ -398,7 +374,7 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
               variant="primary"
               size="lg"
               fullWidth
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isFormValid}
               loading={isSubmitting}
             >
               Fortsett

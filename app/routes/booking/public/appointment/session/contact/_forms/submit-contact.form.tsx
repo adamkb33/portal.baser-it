@@ -16,6 +16,7 @@ export interface GetOrCreateContactFetcherFormProps {
   companyId: number;
   onSubmit: (values: SubmitContactFormSchema) => void;
   onChange?: () => void;
+  onValidityChange?: (isValid: boolean) => void;
   initialValues?: Partial<SubmitContactFormSchema>;
   isSubmitting?: boolean;
   formId?: string;
@@ -25,12 +26,15 @@ export function SubmitContactForm({
   companyId,
   onSubmit,
   onChange,
+  onValidityChange,
   initialValues,
   isSubmitting = false,
   formId = 'booking-contact-form',
 }: GetOrCreateContactFetcherFormProps) {
   const form = useForm<SubmitContactFormSchema>({
     resolver: zodResolver(submitContactFormSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       companyId,
       givenName: '',
@@ -50,6 +54,11 @@ export function SubmitContactForm({
 
     return () => subscription.unsubscribe();
   }, [form, onChange]);
+
+  React.useEffect(() => {
+    if (!onValidityChange) return;
+    onValidityChange(form.formState.isValid);
+  }, [form.formState.isValid, onValidityChange]);
 
   const handleSubmit = form.handleSubmit((values) => {
     onSubmit(values);
@@ -145,12 +154,7 @@ export function SubmitContactForm({
 
         {/* Submit Button - Desktop */}
         <div className="mt-6 hidden md:block">
-          <Button
-            variant="default"
-            type="submit"
-            disabled={isSubmitting}
-            className="h-11 px-8 text-sm font-semibold"
-          >
+          <Button variant="default" type="submit" disabled={isSubmitting} className="h-11 px-8 text-sm font-semibold">
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
