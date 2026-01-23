@@ -14,8 +14,19 @@ import {
   PartyPopper,
 } from 'lucide-react';
 import { PublicCompanyController } from '~/api/generated/identity';
-import { AppointmentsController, PublicAppointmentSessionController, type AppointmentSessionOverviewDto } from '~/api/generated/booking';
-import { BookingContainer, BookingStepHeader, BookingButton, BookingCard } from '../_components/booking-layout';
+import {
+  AppointmentsController,
+  PublicAppointmentSessionController,
+  type AppointmentSessionOverviewDto,
+} from '~/api/generated/booking';
+import {
+  BookingContainer,
+  BookingStepHeader,
+  BookingButton,
+  BookingCard,
+  BookingSummary,
+  BookingBottomNavSpacer,
+} from '../_components/booking-layout';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
 
@@ -83,7 +94,10 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
   if (loaderData.error || !loaderData.companySummary) {
     return (
       <BookingContainer>
-        <BookingStepHeader title="Timen er bekreftet" description={loaderData.error ?? 'Kunne ikke hente bekreftelse'} />
+        <BookingStepHeader
+          title="Timen er bekreftet"
+          description={loaderData.error ?? 'Kunne ikke hente bekreftelse'}
+        />
       </BookingContainer>
     );
   }
@@ -171,58 +185,59 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
   const calendarPayload = buildCalendarPayload();
 
   return (
-    <BookingContainer>
-      <div className="relative overflow-hidden rounded-lg border-2 border-secondary bg-gradient-to-br from-secondary/20 via-secondary/10 to-transparent p-6 shadow-lg md:p-8">
-        {/* Decorative elements - confetti feel */}
-        <div className="absolute -right-8 -top-8 size-32 rounded-full bg-secondary/20 blur-3xl" />
-        <div className="absolute -bottom-8 -left-8 size-32 rounded-full bg-primary/10 blur-3xl" />
+    <>
+      <BookingContainer>
+        <div className="relative overflow-hidden rounded-lg border-2 border-secondary bg-gradient-to-br from-secondary/20 via-secondary/10 to-transparent p-6 shadow-lg md:p-8">
+          {/* Decorative elements - confetti feel */}
+          <div className="absolute -right-8 -top-8 size-32 rounded-full bg-secondary/20 blur-3xl" />
+          <div className="absolute -bottom-8 -left-8 size-32 rounded-full bg-primary/10 blur-3xl" />
 
-        <div className="relative space-y-4">
-          {/* Success icon */}
-          <div className="flex items-center justify-center">
-            <div className="relative">
-              <div className="flex size-20 items-center justify-center rounded-full bg-secondary shadow-lg md:size-24">
-                <Check className="size-10 text-secondary-foreground md:size-12" strokeWidth={3} />
-              </div>
-              {/* Sparkle decoration */}
-              <div className="absolute -right-1 -top-1">
-                <Sparkles className="size-6 text-primary md:size-8" fill="currentColor" />
+          <div className="relative space-y-4">
+            {/* Success icon */}
+            <div className="flex items-center justify-center">
+              <div className="relative">
+                <div className="flex size-20 items-center justify-center rounded-full bg-secondary shadow-lg md:size-24">
+                  <Check className="size-10 text-secondary-foreground md:size-12" strokeWidth={3} />
+                </div>
+                {/* Sparkle decoration */}
+                <div className="absolute -right-1 -top-1">
+                  <Sparkles className="size-6 text-primary md:size-8" fill="currentColor" />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Success message */}
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-card-text md:text-3xl lg:text-4xl">Timen er bekreftet! 🎉</h1>
-            <p className="mt-2 text-base text-muted-foreground md:text-lg">Vi gleder oss til å se deg</p>
-          </div>
+            {/* Success message */}
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-card-text md:text-3xl lg:text-4xl">Timen er bekreftet! 🎉</h1>
+              <p className="mt-2 text-base text-muted-foreground md:text-lg">Vi gleder oss til å se deg</p>
+            </div>
 
-          {/* Confirmation number (if available) */}
-          <div className="flex justify-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-secondary/30 bg-secondary/10 px-4 py-2">
-              <PartyPopper className="size-4 text-secondary" />
-              <span className="text-sm font-semibold text-card-text">Bekreftelse sendt til e-post</span>
+            {/* Confirmation number (if available) */}
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-secondary/30 bg-secondary/10 px-4 py-2">
+                <PartyPopper className="size-4 text-secondary" />
+                <span className="text-sm font-semibold text-card-text">Bekreftelse sendt til e-post</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ========================================
+        {/* ========================================
           APPOINTMENT DETAILS CARD
           ======================================== */}
-      <BookingCard className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
-            <Calendar className="size-5 text-primary" />
+        <BookingCard className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
+              <Calendar className="size-5 text-primary" />
+            </div>
+            <h2 className="text-lg font-bold text-card-text md:text-xl">Din time hos {companySummary.name}</h2>
           </div>
-          <h2 className="text-lg font-bold text-card-text md:text-xl">Din time hos {companySummary.name}</h2>
-        </div>
 
-        {/* TODO: Add actual booking details if available in response */}
-        {/* This would come from session data or query params */}
-        <div className="space-y-3 rounded-lg bg-muted/50 p-4">
-          <p className="text-sm font-medium text-muted-foreground">Du vil motta alle detaljer på e-post</p>
-          {/* If we had booking details:
+          {/* TODO: Add actual booking details if available in response */}
+          {/* This would come from session data or query params */}
+          <div className="space-y-3 rounded-lg bg-muted/50 p-4">
+            <p className="text-sm font-medium text-muted-foreground">Du vil motta alle detaljer på e-post</p>
+            {/* If we had booking details:
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Calendar className="size-4 text-muted-foreground" />
@@ -234,225 +249,230 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
             </div>
           </div>
           */}
-        </div>
+          </div>
 
-        {/* Add to calendar CTA */}
-        {calendarPayload ? (
-          <div className="grid gap-2 md:grid-cols-2">
-            <a
-              href={calendarPayload.googleUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
-            >
-              <ExternalLink className="size-5" />
-              Google Kalender
-            </a>
-            <a
-              href={calendarPayload.href}
-              download={calendarPayload.filename}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
+          {/* Add to calendar CTA */}
+          {calendarPayload ? (
+            <div className="grid gap-2 md:grid-cols-2">
+              <a
+                href={calendarPayload.googleUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
+              >
+                <ExternalLink className="size-5" />
+                Google Kalender
+              </a>
+              <a
+                href={calendarPayload.href}
+                download={calendarPayload.filename}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
+              >
+                <Calendar className="size-5" />
+                Apple Kalender
+              </a>
+            </div>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border-2 border-primary/30 bg-primary/5 px-4 py-3 font-semibold text-primary/60"
             >
               <Calendar className="size-5" />
-              Apple Kalender
-            </a>
-          </div>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border-2 border-primary/30 bg-primary/5 px-4 py-3 font-semibold text-primary/60"
-          >
-            <Calendar className="size-5" />
-            Legg til i kalender
-          </button>
-        )}
-      </BookingCard>
+              Legg til i kalender
+            </button>
+          )}
+        </BookingCard>
 
-      {/* ========================================
+        {/* ========================================
           LOCATION CARD - Prominent
           ======================================== */}
-      <BookingCard className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
-            <MapPin className="size-5 text-primary" />
-          </div>
-          <h2 className="text-lg font-bold text-card-text md:text-xl">Møtested</h2>
-        </div>
-
-        {/* Company name */}
-        <div>
-          <h3 className="text-base font-bold text-card-text md:text-lg">{companySummary.name || 'Ukjent selskap'}</h3>
-          {formattedAddress && <p className="mt-1 text-sm text-muted-foreground md:text-base">{formattedAddress}</p>}
-        </div>
-
-        {/* Map CTA - Prominent */}
-        {mapsUrl && (
-          <Link
-            to={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-card-border bg-card-accent/10 px-6 py-4 font-semibold text-card-text transition-all hover:border-primary hover:bg-card-accent/20"
-          >
-            <MapPin className="size-5" />
-            <span>Åpne i Google Maps</span>
-            <ExternalLink className="size-4" />
-          </Link>
-        )}
-
-        {/* Detailed address - Collapsed */}
-        {companySummary.businessAddress && (
-          <details className="group">
-            <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground hover:text-card-text">
-              <span>Vis full adresse</span>
-              <svg
-                className="size-4 transition-transform group-open:rotate-180"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </summary>
-            <div className="mt-3 space-y-1 rounded-lg bg-muted/50 p-3">
-              {companySummary.businessAddress.addressLines?.map((line, idx) => (
-                <p key={idx} className="text-sm text-card-text">
-                  {line}
-                </p>
-              ))}
-              {(companySummary.businessAddress.postalCode || companySummary.businessAddress.city) && (
-                <p className="text-sm text-card-text">
-                  {[companySummary.businessAddress.postalCode, companySummary.businessAddress.city]
-                    .filter(Boolean)
-                    .join(' ')}
-                </p>
-              )}
-              {companySummary.businessAddress.country && (
-                <p className="text-sm text-card-text">{companySummary.businessAddress.country}</p>
-              )}
+        <BookingCard className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
+              <MapPin className="size-5 text-primary" />
             </div>
-          </details>
-        )}
-      </BookingCard>
+            <h2 className="text-lg font-bold text-card-text md:text-xl">Møtested</h2>
+          </div>
 
-      {/* ========================================
+          {/* Company name */}
+          <div>
+            <h3 className="text-base font-bold text-card-text md:text-lg">{companySummary.name || 'Ukjent selskap'}</h3>
+            {formattedAddress && <p className="mt-1 text-sm text-muted-foreground md:text-base">{formattedAddress}</p>}
+          </div>
+
+          {/* Map CTA - Prominent */}
+          {mapsUrl && (
+            <Link
+              to={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-card-border bg-card-accent/10 px-6 py-4 font-semibold text-card-text transition-all hover:border-primary hover:bg-card-accent/20"
+            >
+              <MapPin className="size-5" />
+              <span>Åpne i Google Maps</span>
+              <ExternalLink className="size-4" />
+            </Link>
+          )}
+
+          {/* Detailed address - Collapsed */}
+          {companySummary.businessAddress && (
+            <details className="group">
+              <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground hover:text-card-text">
+                <span>Vis full adresse</span>
+                <svg
+                  className="size-4 transition-transform group-open:rotate-180"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <div className="mt-3 space-y-1 rounded-lg bg-muted/50 p-3">
+                {companySummary.businessAddress.addressLines?.map((line, idx) => (
+                  <p key={idx} className="text-sm text-card-text">
+                    {line}
+                  </p>
+                ))}
+                {(companySummary.businessAddress.postalCode || companySummary.businessAddress.city) && (
+                  <p className="text-sm text-card-text">
+                    {[companySummary.businessAddress.postalCode, companySummary.businessAddress.city]
+                      .filter(Boolean)
+                      .join(' ')}
+                  </p>
+                )}
+                {companySummary.businessAddress.country && (
+                  <p className="text-sm text-card-text">{companySummary.businessAddress.country}</p>
+                )}
+              </div>
+            </details>
+          )}
+        </BookingCard>
+
+        {/* ========================================
           WHAT'S NEXT - Timeline
           ======================================== */}
-      <BookingCard className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
-            <Clock className="size-5 text-primary" />
+        <BookingCard className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
+              <Clock className="size-5 text-primary" />
+            </div>
+            <h2 className="text-lg font-bold text-card-text md:text-xl">Hva skjer nå?</h2>
           </div>
-          <h2 className="text-lg font-bold text-card-text md:text-xl">Hva skjer nå?</h2>
-        </div>
 
-        {/* Timeline */}
-        <ol className="space-y-4">
-          {/* Step 1 */}
-          <li className="flex gap-4">
-            <div className="flex flex-col items-center">
-              <div className="flex size-10 items-center justify-center rounded-full bg-secondary">
-                <Mail className="size-5 text-secondary-foreground" />
+          {/* Timeline */}
+          <ol className="space-y-4">
+            {/* Step 1 */}
+            <li className="flex gap-4">
+              <div className="flex flex-col items-center">
+                <div className="flex size-10 items-center justify-center rounded-full bg-secondary">
+                  <Mail className="size-5 text-secondary-foreground" />
+                </div>
+                <div className="mt-2 h-full w-0.5 bg-card-border" />
               </div>
-              <div className="mt-2 h-full w-0.5 bg-card-border" />
-            </div>
-            <div className="flex-1 pb-4">
-              <h3 className="text-base font-bold text-card-text">Du mottar en bekreftelse</h3>
-              <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                Vi sender deg en e-post med alle detaljer om timen din innen få minutter
-              </p>
-            </div>
-          </li>
-
-          {/* Step 2 */}
-          <li className="flex gap-4">
-            <div className="flex flex-col items-center">
-              <div className="flex size-10 items-center justify-center rounded-full bg-primary/20">
-                <Bell className="size-5 text-primary" />
+              <div className="flex-1 pb-4">
+                <h3 className="text-base font-bold text-card-text">Du mottar en bekreftelse</h3>
+                <p className="mt-1 text-sm text-muted-foreground md:text-base">
+                  Vi sender deg en e-post med alle detaljer om timen din innen få minutter
+                </p>
               </div>
-              <div className="mt-2 h-full w-0.5 bg-card-border" />
-            </div>
-            <div className="flex-1 pb-4">
-              <h3 className="text-base font-bold text-card-text">Du får en påminnelse</h3>
-              <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                Vi sender deg en påminnelse dagen før timen din
-              </p>
-            </div>
-          </li>
+            </li>
 
-          {/* Step 3 */}
-          <li className="flex gap-4">
-            <div className="flex flex-col items-center">
-              <div className="flex size-10 items-center justify-center rounded-full bg-primary">
-                <Check className="size-5 text-primary-foreground" strokeWidth={3} />
+            {/* Step 2 */}
+            <li className="flex gap-4">
+              <div className="flex flex-col items-center">
+                <div className="flex size-10 items-center justify-center rounded-full bg-primary/20">
+                  <Bell className="size-5 text-primary" />
+                </div>
+                <div className="mt-2 h-full w-0.5 bg-card-border" />
               </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-base font-bold text-card-text">Møt opp til avtalt tid</h3>
-              <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                Husk å møte opp i god tid på angitt adresse. Vi gleder oss til å se deg!
-              </p>
-            </div>
-          </li>
-        </ol>
-      </BookingCard>
+              <div className="flex-1 pb-4">
+                <h3 className="text-base font-bold text-card-text">Du får en påminnelse</h3>
+                <p className="mt-1 text-sm text-muted-foreground md:text-base">
+                  Vi sender deg en påminnelse dagen før timen din
+                </p>
+              </div>
+            </li>
 
-      {/* ========================================
+            {/* Step 3 */}
+            <li className="flex gap-4">
+              <div className="flex flex-col items-center">
+                <div className="flex size-10 items-center justify-center rounded-full bg-primary">
+                  <Check className="size-5 text-primary-foreground" strokeWidth={3} />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-bold text-card-text">Møt opp til avtalt tid</h3>
+                <p className="mt-1 text-sm text-muted-foreground md:text-base">
+                  Husk å møte opp i god tid på angitt adresse. Vi gleder oss til å se deg!
+                </p>
+              </div>
+            </li>
+          </ol>
+        </BookingCard>
+
+        {/* ========================================
           SOCIAL SHARING (Optional but powerful)
           ======================================== */}
-      <div className="flex items-center gap-3 rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 p-4">
-        <Share2 className="size-5 shrink-0 text-muted-foreground" />
-        <div className="flex-1">
-          <p className="text-sm font-medium text-card-text">Liker du {companySummary.name}?</p>
-          <p className="text-xs text-muted-foreground">Del gjerne dine erfaringer med andre</p>
+        <div className="flex items-center gap-3 rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 p-4">
+          <Share2 className="size-5 shrink-0 text-muted-foreground" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-card-text">Liker du {companySummary.name}?</p>
+            <p className="text-xs text-muted-foreground">Del gjerne dine erfaringer med andre</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              // TODO: Social sharing logic
+              if (navigator.share) {
+                navigator.share({
+                  title: `Book time hos ${companySummary.name}`,
+                  text: 'Jeg har nettopp booket time!',
+                  url: window.location.origin,
+                });
+              }
+            }}
+            className="shrink-0 text-sm font-medium text-primary hover:underline"
+          >
+            Del
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            // TODO: Social sharing logic
-            if (navigator.share) {
-              navigator.share({
-                title: `Book time hos ${companySummary.name}`,
-                text: 'Jeg har nettopp booket time!',
-                url: window.location.origin,
-              });
-            }
-          }}
-          className="shrink-0 text-sm font-medium text-primary hover:underline"
-        >
-          Del
-        </button>
-      </div>
 
-      {/* ========================================
-          FINAL CTA
-          ======================================== */}
-      <div className="flex flex-col gap-2">
-        <a href="/">
-          <BookingButton variant="primary" size="lg" fullWidth>
-            <Home className="size-5" />
-            Tilbake til forsiden
-          </BookingButton>
-        </a>
-
-        <Link to={ROUTES_MAP['booking.public.appointment.session.contact'].href}>
-          <BookingButton variant="outline" size="md" fullWidth>
-            Book en ny time
-          </BookingButton>
-        </Link>
-      </div>
-
-      {/* ========================================
+        {/* ========================================
           HELP/SUPPORT FOOTER
           ======================================== */}
-      <div className="rounded-lg border border-card-border bg-muted/30 p-4 text-center">
-        <p className="text-sm text-muted-foreground">
-          Trenger du å endre eller avbestille timen?{' '}
-          <a href="/support" className="font-medium text-primary hover:underline">
-            Kontakt oss
-          </a>
-        </p>
-      </div>
-    </BookingContainer>
+        <div className="rounded-lg border border-card-border bg-muted/30 p-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            Trenger du å endre eller avbestille timen?{' '}
+            <a href="/support" className="font-medium text-primary hover:underline">
+              Kontakt oss
+            </a>
+          </p>
+        </div>
+
+        <BookingBottomNavSpacer className="h-28" />
+      </BookingContainer>
+      <BookingSummary
+        mobile={{
+          items: [],
+          primaryAction: (
+            <a href="/">
+              <BookingButton variant="primary" size="lg" fullWidth>
+                <Home className="size-5" />
+                Tilbake til forsiden
+              </BookingButton>
+            </a>
+          ),
+          secondaryAction: (
+            <Link to={ROUTES_MAP['booking.public.appointment.session.contact'].href}>
+              <BookingButton variant="outline" size="md" fullWidth>
+                Book en ny time
+              </BookingButton>
+            </Link>
+          ),
+        }}
+      />
+    </>
   );
 }
