@@ -275,6 +275,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [isDateListCollapsed, setIsDateListCollapsed] = useState(false);
   const mobileTimeSlotsRef = useRef<HTMLDivElement>(null);
   const mobileTimeSlotsScrollRef = useRef<HTMLDivElement>(null);
   const weekTabsRef = useRef<HTMLDivElement>(null);
@@ -288,6 +289,10 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
   const currentWeek = weekGroups[selectedWeekIndex];
   const currentWeekSchedules = currentWeek?.schedules || [];
   const selectedSchedule = currentWeekSchedules.find((s) => s.date === selectedDate);
+  const visibleSchedules =
+    isDateListCollapsed && selectedDate
+      ? currentWeekSchedules.filter((schedule) => schedule.date === selectedDate)
+      : currentWeekSchedules;
 
   // Initialize: find week with selected time or default to first week
   useEffect(() => {
@@ -302,6 +307,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
         if (weekIndex !== -1) {
           setSelectedWeekIndex(weekIndex);
           setSelectedDate(scheduleDate);
+          setIsDateListCollapsed(true);
         }
       }
     }
@@ -330,6 +336,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
         if (weekIndex !== -1) {
           setSelectedWeekIndex(weekIndex);
           setSelectedDate(scheduleDate);
+          setIsDateListCollapsed(true);
         }
       }
     }
@@ -417,12 +424,14 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
   const handleClearSelection = () => {
     setSelectedTime(null);
     setSelectedDate(null);
+    setIsDateListCollapsed(false);
   };
 
   const handlePrevWeek = () => {
     if (selectedWeekIndex > 0) {
       setSelectedWeekIndex(selectedWeekIndex - 1);
       setSelectedDate(null);
+      setIsDateListCollapsed(false);
     }
   };
 
@@ -430,6 +439,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
     if (selectedWeekIndex < weekGroups.length - 1) {
       setSelectedWeekIndex(selectedWeekIndex + 1);
       setSelectedDate(null);
+      setIsDateListCollapsed(false);
     }
   };
 
@@ -544,6 +554,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                       onClick={() => {
                         setSelectedWeekIndex(index);
                         setSelectedDate(null);
+                        setIsDateListCollapsed(false);
                       }}
                       className={cn(
                         // Touch-friendly: 44px height
@@ -573,6 +584,15 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
             <div className="flex items-center gap-2">
               <Calendar className="size-4 text-muted-foreground" />
               <h3 className="text-sm font-bold text-card-text">Velg dato</h3>
+              {selectedDate && isDateListCollapsed && (
+                <button
+                  type="button"
+                  onClick={() => setIsDateListCollapsed(false)}
+                  className="ml-auto rounded-md border border-primary px-2.5 py-1 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                >
+                  Endre dato
+                </button>
+              )}
             </div>
 
             {currentWeekSchedules.length === 0 ? (
@@ -581,13 +601,16 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
               </div>
             ) : (
               <div className="space-y-2">
-                {currentWeekSchedules.map((schedule) => (
+                {visibleSchedules.map((schedule) => (
                   <DateButton
                     key={schedule.date}
                     schedule={schedule}
                     isSelected={selectedDate === schedule.date}
                     hasSelectedTime={schedule.timeSlots.some((slot) => slot.startTime === displayTime)}
-                    onClick={() => setSelectedDate(schedule.date)}
+                    onClick={() => {
+                      setSelectedDate(schedule.date);
+                      setIsDateListCollapsed(true);
+                    }}
                   />
                 ))}
               </div>
@@ -655,6 +678,15 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
             <div className="mb-2 flex items-center gap-2">
               <Calendar className="size-5 text-muted-foreground" />
               <h3 className="text-base font-bold text-card-text">Velg dato</h3>
+              {selectedDate && isDateListCollapsed && (
+                <button
+                  type="button"
+                  onClick={() => setIsDateListCollapsed(false)}
+                  className="ml-auto rounded-md border border-primary px-2.5 py-1 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                >
+                  Endre dato
+                </button>
+              )}
             </div>
 
             {currentWeekSchedules.length === 0 ? (
@@ -663,7 +695,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
               </div>
             ) : (
               <div className="space-y-2">
-                {currentWeekSchedules.map((schedule) => (
+                {visibleSchedules.map((schedule) => (
                   <DateButton
                     key={schedule.date}
                     schedule={schedule}
@@ -671,6 +703,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                     hasSelectedTime={schedule.timeSlots.some((slot) => slot.startTime === displayTime)}
                     onClick={() => {
                       setSelectedDate(schedule.date);
+                      setIsDateListCollapsed(true);
                     }}
                     variant="compact"
                   />

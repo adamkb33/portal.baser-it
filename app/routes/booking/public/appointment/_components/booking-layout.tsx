@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Form } from 'react-router';
+import { Form, useLocation } from 'react-router';
 import { AlertCircle, ChevronDown, ChevronUp, Edit3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ApiMessage } from '~/api/generated/identity';
@@ -668,6 +668,11 @@ export function BookingScrollHint({ containerRef, className }: BookingScrollHint
   const hintRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [bottomOffset, setBottomOffset] = useState<number | null>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    setIsVisible(false);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -751,7 +756,7 @@ export function BookingScrollHint({ containerRef, className }: BookingScrollHint
       window.removeEventListener('resize', onScroll);
       resizeObserver?.disconnect();
     };
-  }, [containerRef]);
+  }, [containerRef, location.pathname, location.search]);
 
   return (
     <div
@@ -762,7 +767,7 @@ export function BookingScrollHint({ containerRef, className }: BookingScrollHint
         'flex items-center justify-center',
         'transition-opacity duration-200',
         isVisible ? 'opacity-100' : 'pointer-events-none opacity-0',
-        'size-10 border-secondary/40 bg-secondary text-secondary-foreground',
+        'size-10 border-primary/40 bg-primary text-secondary-foreground',
         className,
       )}
       style={

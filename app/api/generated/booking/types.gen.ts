@@ -1309,6 +1309,26 @@ export type DeleteAppointmentSessionResponses = {
 
 export type DeleteAppointmentSessionResponse = DeleteAppointmentSessionResponses[keyof DeleteAppointmentSessionResponses];
 
+export type CancelAppointmentData = {
+    body?: never;
+    path?: never;
+    query: {
+        appointmentId: number;
+        expiresAt: number;
+        token: string;
+    };
+    url: '/public/appointment-session/cancel-appointment';
+};
+
+export type CancelAppointmentResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUnit;
+};
+
+export type CancelAppointmentResponse = CancelAppointmentResponses[keyof CancelAppointmentResponses];
+
 export type DeleteDailyScheduleData = {
     body?: never;
     path: {
