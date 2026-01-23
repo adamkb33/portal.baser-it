@@ -458,7 +458,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
           <button
             type="button"
             onClick={handleQuickBook}
-            className="flex items-center justify-between gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 p-4 transition-colors hover:border-primary hover:bg-primary/10"
+            className="flex items-center justify-between gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 p-4 transition-colors hover:border-primary hover:bg-primary/10 w-full"
           >
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-full bg-primary">

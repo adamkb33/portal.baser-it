@@ -434,17 +434,23 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({ loa
         show
         mobile={{
           title: 'Oppsummering',
-          items: [
-            {
-              label: 'Tjenester',
-              value: hasSelections
-                ? `${selectedServices.size} ${selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}`
-                : 'Velg tjenester',
-              icon: <ShoppingBag className="size-4" />,
-            },
-            { label: 'Varighet', value: `${totalDuration} min` },
-            { label: 'Pris', value: `${totalPrice} kr` },
-          ],
+          items: hasSelections
+            ? [
+                {
+                  label: 'Tjenester',
+                  value: `${selectedServices.size} ${selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}`,
+                  icon: <ShoppingBag className="size-4" />,
+                },
+                { label: 'Varighet', value: `${totalDuration} min` },
+                { label: 'Pris', value: `${totalPrice} kr` },
+              ]
+            : [
+                {
+                  label: 'Tjenester',
+                  value: 'Velg tjenester',
+                  icon: <ShoppingBag className="size-4" />,
+                },
+              ],
           primaryAction: (
             <Form method="post">
               {Array.from(selectedServices).map((serviceId) => (

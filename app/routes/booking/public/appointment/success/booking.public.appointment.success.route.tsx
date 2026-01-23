@@ -172,14 +172,6 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
 
   return (
     <BookingContainer>
-      <BookingStepHeader
-        label="Fullført"
-        title="Timen er bekreftet"
-        description="Vi har sendt bekreftelse på e-post"
-      />
-      {/* ========================================
-          SUCCESS HERO - Celebratory
-          ======================================== */}
       <div className="relative overflow-hidden rounded-lg border-2 border-secondary bg-gradient-to-br from-secondary/20 via-secondary/10 to-transparent p-6 shadow-lg md:p-8">
         {/* Decorative elements - confetti feel */}
         <div className="absolute -right-8 -top-8 size-32 rounded-full bg-secondary/20 blur-3xl" />
