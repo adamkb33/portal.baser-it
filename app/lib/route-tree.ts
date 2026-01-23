@@ -365,6 +365,13 @@ export const ROUTE_TREE: RouteBranch[] = [
                 accessType: Access.PUBLIC,
                 hidden: true,
               },
+          {
+            id: 'booking.public.appointment.cancel',
+            href: '/booking/public/appointment/cancel',
+            category: BrachCategory.NONE,
+            accessType: Access.PUBLIC,
+            hidden: true,
+          },
             ],
           },
         ],

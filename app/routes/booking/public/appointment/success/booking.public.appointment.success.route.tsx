@@ -450,8 +450,6 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
             </a>
           </p>
         </div>
-
-        <BookingBottomNavSpacer className="h-28" />
       </BookingContainer>
       <BookingSummary
         mobile={{

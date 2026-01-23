@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Form } from 'react-router';
 import { AlertCircle, ChevronDown, ChevronUp, Edit3 } from 'lucide-react';
@@ -656,6 +656,88 @@ export function BookingBottomNav({ title, items, primaryAction, secondaryAction,
 
 export function BookingBottomNavSpacer({ className }: { className?: string }) {
   return <div className={cn('md:hidden', className)} aria-hidden="true" />;
+}
+
+/* ========================================
+  SCROLL HINT
+  Subtle indicator for more content
+  ======================================== */
+
+interface BookingScrollHintProps {
+  containerRef?: React.RefObject<HTMLElement | null>;
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+}
+
+export function BookingScrollHint({
+  containerRef,
+  variant = 'secondary',
+  size = 'md',
+  className,
+}: BookingScrollHintProps) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const getScrollTarget = () => containerRef?.current ?? document.documentElement;
+
+    const updateVisibility = () => {
+      const target = getScrollTarget();
+      if (!target) return;
+
+      const scrollTop = target.scrollTop ?? 0;
+      const clientHeight = target.clientHeight ?? 0;
+      const scrollHeight = target.scrollHeight ?? 0;
+      const hasOverflow = scrollHeight - clientHeight > 4;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 4;
+
+      setIsVisible(hasOverflow && !atBottom);
+    };
+
+    updateVisibility();
+
+    const target = getScrollTarget();
+    const onScroll = () => updateVisibility();
+
+    if (target && target !== document.documentElement) {
+      target.addEventListener('scroll', onScroll, { passive: true });
+    } else {
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
+    window.addEventListener('resize', onScroll);
+
+    return () => {
+      if (target && target !== document.documentElement) {
+        target.removeEventListener('scroll', onScroll);
+      } else {
+        window.removeEventListener('scroll', onScroll);
+      }
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [containerRef]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div
+      aria-hidden="true"
+      className={cn(
+        'fixed bottom-4 left-1/2 z-30 -translate-x-1/2',
+        'flex items-center justify-center rounded-full border shadow-sm',
+        'transition-opacity duration-200',
+        size === 'sm' && 'size-8',
+        size === 'md' && 'size-10',
+        size === 'lg' && 'size-12',
+        variant === 'primary' && 'border-primary/40 bg-primary text-primary-foreground',
+        variant === 'secondary' && 'border-secondary/40 bg-secondary text-secondary-foreground',
+        variant === 'outline' && 'border-card-border bg-background text-card-text',
+        variant === 'ghost' && 'border-transparent bg-muted/70 text-muted-foreground',
+        className,
+      )}
+    >
+      <ChevronDown className={cn(size === 'sm' && 'size-4', size === 'md' && 'size-5', size === 'lg' && 'size-6')} />
+    </div>
+  );
 }
 
 /* ========================================
