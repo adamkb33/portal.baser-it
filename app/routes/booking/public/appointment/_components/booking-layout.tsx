@@ -634,9 +634,12 @@ export function BookingBottomNav({
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof document === 'undefined') return;
+    if (typeof window === 'undefined') return;
 
-    // Helper function to check if element is a keyboard-triggering input
+    // Check if mobile device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (!isMobile) return;
+
     const isKeyboardInput = (elem: HTMLElement) => {
       if (elem.tagName === 'INPUT') {
         const type = (elem as HTMLInputElement).type;
@@ -657,7 +660,7 @@ export function BookingBottomNav({
       if (!e.target) return;
       const target = e.target as HTMLElement;
       if (isKeyboardInput(target)) {
-        setIsKeyboardOpen(false);
+        setTimeout(() => setIsKeyboardOpen(false), 100);
       }
     };
 
@@ -701,10 +704,6 @@ export function BookingBottomNav({
     </div>,
     mountNode,
   );
-}
-
-export function BookingBottomNavSpacer({ className }: { className?: string }) {
-  return <div className={cn('md:hidden', className)} aria-hidden="true" />;
 }
 
 /* ========================================

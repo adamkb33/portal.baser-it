@@ -14,18 +14,13 @@ import {
   PartyPopper,
 } from 'lucide-react';
 import { PublicCompanyController } from '~/api/generated/identity';
-import {
-  AppointmentsController,
-  PublicAppointmentSessionController,
-  type AppointmentSessionOverviewDto,
-} from '~/api/generated/booking';
+import { AppointmentsController, PublicAppointmentSessionController } from '~/api/generated/booking';
 import {
   BookingContainer,
   BookingStepHeader,
   BookingButton,
   BookingCard,
   BookingSummary,
-  BookingBottomNavSpacer,
 } from '../_components/booking-layout';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
