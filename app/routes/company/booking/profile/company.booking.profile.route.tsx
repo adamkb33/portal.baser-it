@@ -212,17 +212,17 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
 
   return (
     <>
-      <div className="flex justify-end">
-        <Button onClick={handleEditBookingProfile}>
-          {bookingProfile ? 'Rediger bookingprofil' : 'Legg til bookingprofil'}
-        </Button>
-      </div>
       <div className="grid grid-cols-1 xl:grid-cols-[320px,1fr] gap-4">
         <div className="space-y-4">
           <Card variant="elevated">
             <CardHeader className="border-b">
               <CardTitle>Profilforhåndsvisning</CardTitle>
               <CardDescription>Slik ser profilen ut for kunder.</CardDescription>
+              <div className="flex justify-end">
+                <Button onClick={handleEditBookingProfile}>
+                  {bookingProfile ? 'Rediger bookingprofil' : 'Legg til bookingprofil'}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-4">
