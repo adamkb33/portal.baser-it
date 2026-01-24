@@ -136,19 +136,10 @@ export type ApiResponseAppointmentDto = {
 export type AppointmentDto = {
     id: number;
     profileId: number;
-    contact: ContactDto;
+    userId: number;
     startTime: string;
     endTime: string;
     groupedServiceGroups: Array<GroupedServiceGroupDto>;
-};
-
-export type ContactDto = {
-    id: number;
-    companyId: number;
-    givenName: string;
-    familyName: string;
-    email?: string;
-    mobileNumber?: string;
 };
 
 export type GroupedServiceDto = {
@@ -178,7 +169,7 @@ export type ApiResponseAppointmentSessionDto = {
 export type AppointmentSessionDto = {
     sessionId: string;
     companyId: number;
-    contactId?: number;
+    userId?: number;
     selectedServices?: Array<number>;
     selectedProfileId?: number;
     selectedStartTime?: string;
@@ -186,7 +177,7 @@ export type AppointmentSessionDto = {
 };
 
 export type AppointmentSessionStepDto = {
-    appointmentSessionStepId: 'ADD_CONTACT' | 'SELECT_SERVICES' | 'SELECT_PROFILE' | 'SELECT_START_TIME' | 'OVERVIEW';
+    appointmentSessionStepId: 'ADD_USER' | 'SELECT_SERVICES' | 'SELECT_PROFILE' | 'SELECT_START_TIME' | 'OVERVIEW';
     order: number;
     name: string;
     isComplete: boolean;
@@ -302,7 +293,7 @@ export type ApiResponseListDailyScheduleDto = {
 };
 
 export type CompanyUserCreateAppointmentDto = {
-    contactId: number;
+    userId: number;
     serviceIds: Array<number>;
     startTime: string;
 };
@@ -337,7 +328,7 @@ export type ApiResponseAppointmentSessionOverviewDto = {
 export type AppointmentSessionOverviewDto = {
     sessionId: string;
     companyId: number;
-    contact: ContactDto;
+    user: UserDto;
     selectedProfile: BookingProfileDto;
     selectedServices: Array<AppointmentSessionSelectedServicesDto>;
     selectedStartTime: string;
@@ -346,6 +337,13 @@ export type AppointmentSessionOverviewDto = {
 export type AppointmentSessionSelectedServicesDto = {
     serviceGroup: ServiceGroupDto;
     services: ServiceDto;
+};
+
+export type UserDto = {
+    id: number;
+    givenName: string;
+    familyName: string;
+    email: string;
 };
 
 export type ApiResponsePaginatedResponseServiceDto = {
@@ -694,6 +692,25 @@ export type SubmitAppointmentSessionResponses = {
 
 export type SubmitAppointmentSessionResponse = SubmitAppointmentSessionResponses[keyof SubmitAppointmentSessionResponses];
 
+export type SubmitAppointmentSessionUserData = {
+    body?: never;
+    path?: never;
+    query: {
+        sessionId: string;
+        userId: number;
+    };
+    url: '/public/appointment-session/submit-user';
+};
+
+export type SubmitAppointmentSessionUserResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseAppointmentSessionDto;
+};
+
+export type SubmitAppointmentSessionUserResponse = SubmitAppointmentSessionUserResponses[keyof SubmitAppointmentSessionUserResponses];
+
 export type SubmitAppointmentSessionStartTimeData = {
     body?: never;
     path?: never;
@@ -712,25 +729,6 @@ export type SubmitAppointmentSessionStartTimeResponses = {
 };
 
 export type SubmitAppointmentSessionStartTimeResponse = SubmitAppointmentSessionStartTimeResponses[keyof SubmitAppointmentSessionStartTimeResponses];
-
-export type SubmitAppointmentSessionContactData = {
-    body?: never;
-    path?: never;
-    query: {
-        sessionId: string;
-        contactId: number;
-    };
-    url: '/public/appointment-session/submit-contact';
-};
-
-export type SubmitAppointmentSessionContactResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponseAppointmentSessionDto;
-};
-
-export type SubmitAppointmentSessionContactResponse = SubmitAppointmentSessionContactResponses[keyof SubmitAppointmentSessionContactResponses];
 
 export type SelectAppointmentSessionProfileData = {
     body?: never;
