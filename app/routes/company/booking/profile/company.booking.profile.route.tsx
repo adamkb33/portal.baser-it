@@ -170,8 +170,7 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
   const hasServices = Boolean(bookingProfile?.services && bookingProfile.services.length > 0);
   const hasDailySchedule = Boolean(bookingProfile?.dailySchedule && bookingProfile.dailySchedule.length > 0);
 
-  const totalServices =
-    bookingProfile?.services?.reduce((acc, group) => acc + (group.services?.length ?? 0), 0) ?? 0;
+  const totalServices = bookingProfile?.services?.reduce((acc, group) => acc + (group.services?.length ?? 0), 0) ?? 0;
   const totalServiceGroups = bookingProfile?.services?.length ?? 0;
   const scheduleSlots = bookingProfile?.dailySchedule?.length ?? 0;
   const availabilityDays = new Set(bookingProfile?.dailySchedule?.map((day) => day.dayOfWeek) ?? []).size;
@@ -213,199 +212,204 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
 
   return (
     <>
-        <div className="grid grid-cols-1 xl:grid-cols-[320px,1fr] gap-4">
-          <div className="space-y-4">
-            <Card variant="elevated">
-              <CardHeader className="border-b">
-                <CardTitle>Profilforhåndsvisning</CardTitle>
-                <CardDescription>Slik ser profilen ut for kunder.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-4">
-                  {hasProfileImage ? (
-                    <img
-                      src={bookingProfile?.image?.url ?? ''}
-                      alt={profileName}
-                      className="h-14 w-14 rounded-full object-cover border border-primary/30"
-                    />
-                  ) : (
-                    <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                      <span className="text-xl font-semibold text-primary">{profileName.charAt(0)}</span>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{profileName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {totalServices} tjenester · {availabilityDays} tilgjengelige dager
-                    </p>
-                  </div>
-                </div>
-
-                {hasDescription ? (
-                  <p className="text-sm text-muted-foreground leading-relaxed">{bookingProfile?.description}</p>
+      <div className="flex justify-end">
+        <Button onClick={handleEditBookingProfile}>
+          {bookingProfile ? 'Rediger bookingprofil' : 'Legg til bookingprofil'}
+        </Button>
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-[320px,1fr] gap-4">
+        <div className="space-y-4">
+          <Card variant="elevated">
+            <CardHeader className="border-b">
+              <CardTitle>Profilforhåndsvisning</CardTitle>
+              <CardDescription>Slik ser profilen ut for kunder.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-4">
+                {hasProfileImage ? (
+                  <img
+                    src={bookingProfile?.image?.url ?? ''}
+                    alt={profileName}
+                    className="h-14 w-14 rounded-full object-cover border border-primary/30"
+                  />
                 ) : (
-                  <div className="rounded-lg border border-muted/50 bg-muted/30 p-3 text-xs text-muted-foreground">
-                    Legg til en beskrivelse for å gjøre profilen mer personlig.
+                  <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <span className="text-xl font-semibold text-primary">{profileName.charAt(0)}</span>
                   </div>
                 )}
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="rounded-lg bg-muted/30 p-2.5">
-                    <p className="text-xs text-muted-foreground">Tjenestegrupper</p>
-                    <p className="text-base font-semibold text-foreground">{totalServiceGroups}</p>
-                  </div>
-                  <div className="rounded-lg bg-muted/30 p-2.5">
-                    <p className="text-xs text-muted-foreground">Tidsluker</p>
-                    <p className="text-base font-semibold text-foreground">{scheduleSlots}</p>
-                  </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{profileName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {totalServices} tjenester · {availabilityDays} tilgjengelige dager
+                  </p>
                 </div>
+              </div>
 
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <ImageIcon className="h-4 w-4" />
-                  {hasProfileImage ? 'Profilbilde er lagt til.' : 'Ingen profilbilde enda.'}
+              {hasDescription ? (
+                <p className="text-sm text-muted-foreground leading-relaxed">{bookingProfile?.description}</p>
+              ) : (
+                <div className="rounded-lg border border-muted/50 bg-muted/30 p-3 text-xs text-muted-foreground">
+                  Legg til en beskrivelse for å gjøre profilen mer personlig.
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              )}
 
-          <div className="space-y-4">
-            <Card variant="elevated">
-              <CardHeader className="border-b">
-                <CardTitle>Oversikt</CardTitle>
-                <CardDescription>En rask oppsummering av profilen.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  <div className="rounded-lg bg-muted/30 p-2.5">
-                    <p className="text-xs text-muted-foreground">Tjenester</p>
-                    <p className="text-lg font-semibold text-foreground">{totalServices}</p>
-                  </div>
-                  <div className="rounded-lg bg-muted/30 p-2.5">
-                    <p className="text-xs text-muted-foreground">Tjenestegrupper</p>
-                    <p className="text-lg font-semibold text-foreground">{totalServiceGroups}</p>
-                  </div>
-                  <div className="rounded-lg bg-muted/30 p-2.5">
-                    <p className="text-xs text-muted-foreground">Dager tilgjengelig</p>
-                    <p className="text-lg font-semibold text-foreground">{availabilityDays}</p>
-                  </div>
-                  <div className="rounded-lg bg-muted/30 p-2.5">
-                    <p className="text-xs text-muted-foreground">Tidsluker</p>
-                    <p className="text-lg font-semibold text-foreground">{scheduleSlots}</p>
-                  </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-muted/30 p-2.5">
+                  <p className="text-xs text-muted-foreground">Tjenestegrupper</p>
+                  <p className="text-base font-semibold text-foreground">{totalServiceGroups}</p>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="rounded-lg bg-muted/30 p-2.5">
+                  <p className="text-xs text-muted-foreground">Tidsluker</p>
+                  <p className="text-base font-semibold text-foreground">{scheduleSlots}</p>
+                </div>
+              </div>
 
-            <Accordion type="multiple" className="space-y-3">
-              <AccordionItem value="description" className="bg-accordion-bg">
-                <Card variant="bordered">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <User className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="text-left">
-                        <h3 className="text-lg font-semibold text-foreground">Om deg</h3>
-                        <p className="text-sm text-muted-foreground">Gi kundene et inntrykk av profilen.</p>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    {hasDescription ? (
-                      <div className="rounded-lg bg-muted/30 p-3 text-sm text-foreground leading-relaxed">
-                        {bookingProfile?.description}
-                      </div>
-                    ) : (
-                      <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-sm text-muted-foreground">
-                        Legg til en beskrivelse for å øke tillit og konvertering.
-                      </div>
-                    )}
-                  </AccordionContent>
-                </Card>
-              </AccordionItem>
-
-              <AccordionItem value="services" className="bg-accordion-bg">
-                <Card variant="bordered">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                        <Briefcase className="h-5 w-5 text-secondary" />
-                      </div>
-                      <div className="text-left">
-                        <h3 className="text-lg font-semibold text-foreground">Tjenester</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {totalServices} tjenester fordelt på {totalServiceGroups} grupper.
-                        </p>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    {hasServices ? (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                        {bookingProfile?.services?.map((group) => (
-                          <div key={group.id} className="rounded-lg border border-card-border bg-muted/30 p-3">
-                            <p className="text-sm font-semibold text-foreground">{group.name}</p>
-                            <div className="mt-2 space-y-2">
-                              {group.services.map((service) => (
-                                <div key={service.id} className="flex items-center justify-between text-xs">
-                                  <span className="text-foreground">{service.name}</span>
-                                  <span className="text-muted-foreground">
-                                    {service.duration} min · <span className="font-semibold">kr {service.price}</span>
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="rounded-lg border border-muted/50 bg-muted/30 p-3 text-sm text-muted-foreground">
-                        Legg til tjenester slik at kundene vet hva de kan bestille.
-                      </div>
-                    )}
-                  </AccordionContent>
-                </Card>
-              </AccordionItem>
-
-              <AccordionItem value="schedule" className="bg-accordion-bg">
-                <Card variant="bordered">
-                  <AccordionTrigger>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-chart-3/10 flex items-center justify-center">
-                        <CalendarDays className="h-5 w-5 text-chart-3" />
-                      </div>
-                      <div className="text-left">
-                        <h3 className="text-lg font-semibold text-foreground">Arbeidstider</h3>
-                        <p className="text-sm text-muted-foreground">Vis når du er tilgjengelig.</p>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    {hasDailySchedule ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {sortedDailySchedule.map((day) => (
-                          <div
-                            key={day.id}
-                            className="flex items-center justify-between rounded-lg border border-card-border bg-muted/30 px-3 py-2.5"
-                          >
-                            <span className="text-sm font-medium text-foreground">{DAY_ABBREV[day.dayOfWeek]}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {formatTimeRange(day.startTime, day.endTime)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="rounded-lg border border-muted/50 bg-muted/30 p-3 text-sm text-muted-foreground">
-                        Sett opp arbeidstider for å la kunder booke tider.
-                      </div>
-                    )}
-                  </AccordionContent>
-                </Card>
-              </AccordionItem>
-            </Accordion>
-          </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <ImageIcon className="h-4 w-4" />
+                {hasProfileImage ? 'Profilbilde er lagt til.' : 'Ingen profilbilde enda.'}
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        <div className="space-y-4">
+          <Card variant="elevated">
+            <CardHeader className="border-b">
+              <CardTitle>Oversikt</CardTitle>
+              <CardDescription>En rask oppsummering av profilen.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="rounded-lg bg-muted/30 p-2.5">
+                  <p className="text-xs text-muted-foreground">Tjenester</p>
+                  <p className="text-lg font-semibold text-foreground">{totalServices}</p>
+                </div>
+                <div className="rounded-lg bg-muted/30 p-2.5">
+                  <p className="text-xs text-muted-foreground">Tjenestegrupper</p>
+                  <p className="text-lg font-semibold text-foreground">{totalServiceGroups}</p>
+                </div>
+                <div className="rounded-lg bg-muted/30 p-2.5">
+                  <p className="text-xs text-muted-foreground">Dager tilgjengelig</p>
+                  <p className="text-lg font-semibold text-foreground">{availabilityDays}</p>
+                </div>
+                <div className="rounded-lg bg-muted/30 p-2.5">
+                  <p className="text-xs text-muted-foreground">Tidsluker</p>
+                  <p className="text-lg font-semibold text-foreground">{scheduleSlots}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Accordion type="multiple" className="space-y-3">
+            <AccordionItem value="description" className="bg-accordion-bg">
+              <Card variant="bordered">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-lg font-semibold text-foreground">Om deg</h3>
+                      <p className="text-sm text-muted-foreground">Gi kundene et inntrykk av profilen.</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {hasDescription ? (
+                    <div className="rounded-lg bg-muted/30 p-3 text-sm text-foreground leading-relaxed">
+                      {bookingProfile?.description}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-sm text-muted-foreground">
+                      Legg til en beskrivelse for å øke tillit og konvertering.
+                    </div>
+                  )}
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+
+            <AccordionItem value="services" className="bg-accordion-bg">
+              <Card variant="bordered">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                      <Briefcase className="h-5 w-5 text-secondary" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-lg font-semibold text-foreground">Tjenester</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {totalServices} tjenester fordelt på {totalServiceGroups} grupper.
+                      </p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {hasServices ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                      {bookingProfile?.services?.map((group) => (
+                        <div key={group.id} className="rounded-lg border border-card-border bg-muted/30 p-3">
+                          <p className="text-sm font-semibold text-foreground">{group.name}</p>
+                          <div className="mt-2 space-y-2">
+                            {group.services.map((service) => (
+                              <div key={service.id} className="flex items-center justify-between text-xs">
+                                <span className="text-foreground">{service.name}</span>
+                                <span className="text-muted-foreground">
+                                  {service.duration} min · <span className="font-semibold">kr {service.price}</span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-muted/50 bg-muted/30 p-3 text-sm text-muted-foreground">
+                      Legg til tjenester slik at kundene vet hva de kan bestille.
+                    </div>
+                  )}
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+
+            <AccordionItem value="schedule" className="bg-accordion-bg">
+              <Card variant="bordered">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-chart-3/10 flex items-center justify-center">
+                      <CalendarDays className="h-5 w-5 text-chart-3" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-lg font-semibold text-foreground">Arbeidstider</h3>
+                      <p className="text-sm text-muted-foreground">Vis når du er tilgjengelig.</p>
+                    </div>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {hasDailySchedule ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {sortedDailySchedule.map((day) => (
+                        <div
+                          key={day.id}
+                          className="flex items-center justify-between rounded-lg border border-card-border bg-muted/30 px-3 py-2.5"
+                        >
+                          <span className="text-sm font-medium text-foreground">{DAY_ABBREV[day.dayOfWeek]}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatTimeRange(day.startTime, day.endTime)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-muted/50 bg-muted/30 p-3 text-sm text-muted-foreground">
+                      Sett opp arbeidstider for å la kunder booke tider.
+                    </div>
+                  )}
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </div>
 
       <FormDialog
         open={createOrUpdateDialogOpen}
