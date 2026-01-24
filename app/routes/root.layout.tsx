@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Outlet, useLoaderData, useLocation } from 'react-router';
+import { Outlet, useLoaderData, useLocation, useRouteError, isRouteErrorResponse } from 'react-router';
 import { Menu } from 'lucide-react';
 
 import { Navbar } from '~/components/layout/navbar';
@@ -141,6 +141,39 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
       <footer className="app-footer">
         <Footer />
       </footer>
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  logger.error('Route error boundary', { error });
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div className="app-shell">
+        <main className="app-main">
+          <section className="app-content p-6">
+            <h1 className="text-xl font-semibold">Noe gikk galt</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {error.status} {error.statusText}
+            </p>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
+  const message = error instanceof Error ? error.message : 'Ukjent feil';
+  return (
+    <div className="app-shell">
+      <main className="app-main">
+        <section className="app-content p-6">
+          <h1 className="text-xl font-semibold">Noe gikk galt</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{message}</p>
+        </section>
+      </main>
     </div>
   );
 }

@@ -13,6 +13,17 @@ export const buildRoutesNested = (routeTree: RouteBranch[], parentPath = ''): Ro
     const hasChildren = !!branch.children && branch.children.length > 0;
     const absolutePath = parentPath ? `${parentPath}/${branch.href}`.replace(/\/+/g, '/') : branch.href;
 
+    const childRoutes = hasChildren ? buildRoutesNested(branch.children as RouteBranch[], absolutePath) : [];
+
+    if (branch.excludeLayout) {
+      routes.push({
+        path,
+        file: `routes/${folderPath}/${fileName}.route.tsx`,
+        ...(childRoutes.length > 0 && { children: childRoutes }),
+      });
+      continue;
+    }
+
     routes.push({
       path,
       file: `routes/${folderPath}/${fileName}.layout.tsx`,
@@ -21,7 +32,7 @@ export const buildRoutesNested = (routeTree: RouteBranch[], parentPath = ''): Ro
           index: true,
           file: `routes/${folderPath}/${fileName}.route.tsx`,
         },
-        ...(hasChildren ? buildRoutesNested(branch.children as RouteBranch[], absolutePath) : []),
+        ...childRoutes,
       ],
     });
   }

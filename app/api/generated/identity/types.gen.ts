@@ -279,8 +279,11 @@ export type SignOutDto = {
 };
 
 export type SignInDto = {
-    email: string;
-    password: string;
+    email?: string;
+    password?: string;
+    provider: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
+    providerUserId?: string;
+    idToken?: string;
 };
 
 export type ApiResponseAuthenticationTokenDto = {
@@ -336,6 +339,26 @@ export type JwtClaims = {
     companyId?: number;
     exp?: number;
     iat?: number;
+};
+
+export type GoogleVerifyTokenDto = {
+    idToken: string;
+};
+
+export type ApiResponseGoogleIdTokenPayload = {
+    success: boolean;
+    message: ApiMessage;
+    data?: GoogleIdTokenPayload;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type GoogleIdTokenPayload = {
+    subject: string;
+    email?: string;
+    givenName?: string;
+    familyName?: string;
 };
 
 export type ForgotPasswordDto = {
@@ -1018,6 +1041,22 @@ export type JwtClaimsResponses = {
 };
 
 export type JwtClaimsResponse = JwtClaimsResponses[keyof JwtClaimsResponses];
+
+export type VerifyGoogleTokenData = {
+    body: GoogleVerifyTokenDto;
+    path?: never;
+    query?: never;
+    url: '/auth/google/verify';
+};
+
+export type VerifyGoogleTokenResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseGoogleIdTokenPayload;
+};
+
+export type VerifyGoogleTokenResponse = VerifyGoogleTokenResponses[keyof VerifyGoogleTokenResponses];
 
 export type ForgotPasswordData = {
     body: ForgotPasswordDto;

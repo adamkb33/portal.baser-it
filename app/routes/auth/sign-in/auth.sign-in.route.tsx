@@ -1,5 +1,6 @@
 // auth.sign-in.route.tsx
-import { Form, Link, redirect, data, useNavigation } from 'react-router';
+import * as React from 'react';
+import { Form, Link, redirect, data, useFetcher, useLocation, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.sign-in.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
@@ -7,21 +8,58 @@ import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
+import { GoogleSignInButton } from './_components/google-sign-in-button';
 import { AuthController } from '~/api/generated/identity';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { ENV } from '~/api/config/env';
+
+const googleClientId = ENV.GOOGLE_CLIENT_ID;
+
+function getReturnTo(url: URL) {
+  const returnToParam = url.searchParams.get('returnTo');
+  return returnToParam && returnToParam.startsWith('/') && !returnToParam.startsWith('//') ? returnToParam : '/';
+}
+
+function getErrorMessage(rawError: unknown) {
+  if (typeof rawError === 'string') {
+    return rawError;
+  }
+  if (!rawError || typeof rawError !== 'object') {
+    return undefined;
+  }
+  const error = rawError as { value?: string; id?: string };
+  if (typeof error.value === 'string') {
+    return error.value;
+  }
+  if (typeof error.id === 'string') {
+    return error.id;
+  }
+  return undefined;
+}
 
 export async function action({ request }: Route.ActionArgs) {
   const url = new URL(request.url);
-  const returnToParam = url.searchParams.get('returnTo');
-  const returnTo =
-    returnToParam && returnToParam.startsWith('/') && !returnToParam.startsWith('//') ? returnToParam : '/';
+  const returnTo = getReturnTo(url);
   const formData = await request.formData();
+  const provider = String(formData.get('provider') || 'LOCAL');
+  const idToken = String(formData.get('idToken') || '');
   const email = String(formData.get('email'));
   const password = String(formData.get('password'));
+  const isGoogleLogin = provider === 'GOOGLE';
+
+  if (isGoogleLogin && !idToken) {
+    return data(
+      {
+        error: 'Kunne ikke logge inn med Google. Prøv igjen.',
+        values: { email },
+      },
+      { status: 400 },
+    );
+  }
 
   try {
     const response = await AuthController.signIn({
-      body: { email, password },
+      body: isGoogleLogin ? { provider: 'GOOGLE', idToken } : { provider: 'LOCAL', email, password },
     });
     const tokens = response.data?.data;
 
@@ -62,10 +100,26 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function AuthSignIn({ actionData }: Route.ComponentProps) {
+  const fetcher = useFetcher<typeof actionData>();
+  const location = useLocation();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const errorMessage = actionData?.error;
+  const isGoogleSubmitting = fetcher.state === 'submitting';
+  const rawError = fetcher.data?.error ?? actionData?.error;
+  const errorMessage = getErrorMessage(rawError);
   const actionValues = actionData?.values;
+  const submitGoogleToken = React.useCallback(
+    (token: string) => {
+      const formData = new FormData();
+      formData.append('provider', 'GOOGLE');
+      formData.append('idToken', token);
+      fetcher.submit(formData, {
+        method: 'post',
+        action: `${location.pathname}${location.search}`,
+      });
+    },
+    [fetcher, location.pathname, location.search],
+  );
 
   return (
     <AuthFormContainer
@@ -84,6 +138,16 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
         </div>
       }
     >
+      {googleClientId ? (
+        <>
+          <GoogleSignInButton onCredential={submitGoogleToken} disabled={isSubmitting || isGoogleSubmitting} />
+          <div className="flex items-center gap-3 py-2">
+            <span className="h-px flex-1 bg-form-border" />
+            <span className="text-xs font-medium uppercase tracking-wide text-form-text-muted">Eller</span>
+            <span className="h-px flex-1 bg-form-border" />
+          </div>
+        </>
+      ) : null}
       <Form method="post" className="space-y-4 md:space-y-6" aria-busy={isSubmitting}>
         <AuthFormField
           id="email"

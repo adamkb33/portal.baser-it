@@ -46,6 +46,7 @@ export type RouteBranch = {
   companyRoles?: CompanyRole[];
   iconName?: IconName;
   children?: RouteBranch[];
+  excludeLayout?: boolean;
 };
 
 export const ROUTE_TREE: RouteBranch[] = [
@@ -66,6 +67,7 @@ export const ROUTE_TREE: RouteBranch[] = [
         placement: RoutePlaceMent.NAVIGATION,
         accessType: Access.NOT_AUTHENTICATED,
         iconName: 'LogIn',
+        excludeLayout: true,
       },
       {
         id: 'auth.forgot-password',
@@ -365,13 +367,13 @@ export const ROUTE_TREE: RouteBranch[] = [
                 accessType: Access.PUBLIC,
                 hidden: true,
               },
-          {
-            id: 'booking.public.appointment.cancel',
-            href: '/booking/public/appointment/cancel',
-            category: BrachCategory.NONE,
-            accessType: Access.PUBLIC,
-            hidden: true,
-          },
+              {
+                id: 'booking.public.appointment.cancel',
+                href: '/booking/public/appointment/cancel',
+                category: BrachCategory.NONE,
+                accessType: Access.PUBLIC,
+                hidden: true,
+              },
             ],
           },
         ],
