@@ -5,7 +5,6 @@ import {
   Clock,
   User,
   Mail,
-  Phone,
   Scissors,
   DollarSign,
   CheckCircle2,
@@ -232,7 +231,7 @@ export default function BookingPublicAppointmentSessionOverviewRoute({ loaderDat
 
         {/* Contact Info */}
         <CollapsibleCard
-          title="Kontaktinformasjon"
+          title="Bruker"
           icon={<User className="size-5 text-primary" />}
           editLink={ROUTES_MAP['booking.public.appointment.session.contact'].href}
           defaultOpen={false}
@@ -242,24 +241,15 @@ export default function BookingPublicAppointmentSessionOverviewRoute({ loaderDat
             items={[
               {
                 label: 'Navn',
-                value: `${sessionOverview.contact.givenName} ${sessionOverview.contact.familyName}`,
+                value: `${sessionOverview.user.givenName} ${sessionOverview.user.familyName}`,
                 icon: <User className="size-4 text-muted-foreground" />,
               },
-              ...(sessionOverview.contact.email
+              ...(sessionOverview.user.email
                 ? [
                     {
                       label: 'E-post',
-                      value: sessionOverview.contact.email,
+                      value: sessionOverview.user.email,
                       icon: <Mail className="size-4 text-muted-foreground" />,
-                    },
-                  ]
-                : []),
-              ...(sessionOverview.contact.mobileNumber
-                ? [
-                    {
-                      label: 'Mobilnummer',
-                      value: sessionOverview.contact.mobileNumber,
-                      icon: <Phone className="size-4 text-muted-foreground" />,
                     },
                   ]
                 : []),

@@ -76,8 +76,8 @@ export const BOOKING_STEPS: BookingStep[] = [
     routeId: 'booking.public.appointment.session.contact',
     routePath: 'contact',
     order: 1,
-    name: 'Kontaktinformasjon',
-    description: 'Oppgi dine kontaktopplysninger',
+    name: 'Bruker',
+    description: 'Logg inn for å fortsette',
     isRequired: true,
   },
   {
@@ -209,8 +209,8 @@ export function canProceedToNextStep(
   // Validation rules per step
   const validations: Record<string, () => { canProceed: boolean; reason?: string }> = {
     contact: () => ({
-      canProceed: !!session.contactId,
-      reason: !session.contactId ? 'Kontaktinformasjon mangler' : undefined,
+      canProceed: !!session.userId,
+      reason: !session.userId ? 'Bruker mangler' : undefined,
     }),
 
     employee: () => ({

@@ -316,7 +316,7 @@ export const ROUTE_TREE: RouteBranch[] = [
                   {
                     id: 'booking.public.appointment.session.contact',
                     href: '/booking/public/appointment/session/contact',
-                    label: 'Kontaktinformasjon',
+                    label: 'Bruker',
                     category: BrachCategory.NONE,
                     accessType: Access.PUBLIC,
                     hidden: true,

@@ -43,6 +43,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     });
 
     const apiResponse = appointmentsResponse.data;
+    console.log(JSON.stringify(apiResponse?.data, null, 2));
     const pageData = apiResponse?.data;
 
     return {

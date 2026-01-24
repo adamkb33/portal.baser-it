@@ -1,13 +1,11 @@
-import { data, redirect, useFetcher, Link } from 'react-router';
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { data, redirect, useFetcher, Form, Link, useNavigate } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.session.contact.route';
-import { CheckCircle2, Edit3 } from 'lucide-react';
-import type { ContactDto } from '~/api/generated/identity';
-import type { AppointmentSessionDto } from '~/api/generated/booking';
-import { SubmitContactForm } from '~/routes/booking/public/appointment/session/contact/_forms/submit-contact.form';
-import { appointmentSessionCookie, createAppointmentSession, getSession } from '~/lib/appointments.server';
+import { CheckCircle2, User } from 'lucide-react';
+import type { UserDto } from '~/api/generated/identity';
+import { getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { PublicCompanyContactController } from '~/api/generated/identity';
+import { AuthController, PublicUserController } from '~/api/generated/identity';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import {
@@ -19,79 +17,20 @@ import {
   BookingStepHeader,
   BookingSummary,
 } from '../../_components/booking-layout';
-import type { SubmitContactFormSchema } from './_schemas/submit-contact.form.schema';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { authService, AuthenticationError } from '~/lib/auth-service';
+import { withAuth } from '~/api/utils/with-auth';
+import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
+import { GoogleSignInButton } from '~/routes/auth/sign-in/_components/google-sign-in-button';
+import { ENV } from '~/api/config/env';
 
 const getErrorMessageId = (error: unknown) => {
   const responseError = error as { response?: { data?: { message?: { id?: string } } } };
   return responseError?.response?.data?.message?.id;
 };
 
-const getCompanyIdFromRequest = (request: Request, session?: AppointmentSessionDto | null) => {
-  const url = new URL(request.url);
-  const companyIdParam = url.searchParams.get('companyId');
-  if (companyIdParam) {
-    const companyIdNumber = Number(companyIdParam);
-    if (!Number.isNaN(companyIdNumber)) {
-      return companyIdNumber;
-    }
-  }
-
-  if (session?.companyId && !Number.isNaN(session.companyId)) {
-    return session.companyId;
-  }
-
-  return null;
-};
-
-const resetAppointmentSession = async (request: Request, companyId: number, session?: AppointmentSessionDto | null) => {
-  if (session?.sessionId) {
-    try {
-      await PublicAppointmentSessionController.deleteAppointmentSession({
-        query: {
-          sessionId: session.sessionId,
-        },
-      });
-    } catch (error) {
-      console.error('[booking.contact.session-delete] failed', {
-        message: error instanceof Error ? error.message : String(error),
-        sessionId: session.sessionId,
-      });
-    }
-  }
-  const created = await createAppointmentSession(companyId);
-  const clearCookieHeader = await appointmentSessionCookie.serialize('', { maxAge: 0 });
-  const headers = new Headers();
-  headers.append('Set-Cookie', clearCookieHeader);
-  headers.append('Set-Cookie', created.setCookieHeader);
-
-  const url = new URL(request.url);
-  url.searchParams.set('companyId', String(companyId));
-  const target = `${ROUTES_MAP['booking.public.appointment.session.contact'].href}${url.search}`;
-
-  return redirect(target, { headers });
-};
-
-const handleContactNotFound = async (request: Request, session?: AppointmentSessionDto | null) => {
-  const companyId = getCompanyIdFromRequest(request, session);
-  if (!companyId) {
-    return redirectWithError(
-      request,
-      ROUTES_MAP['booking.public.appointment'].href,
-      'Selskaps-ID mangler eller er ugyldig.',
-    );
-  }
-
-  try {
-    return await resetAppointmentSession(request, companyId, session);
-  } catch (error) {
-    const { message } = resolveErrorPayload(error, 'Kunne ikke opprette ny bookingøkt.');
-    return redirectWithError(request, ROUTES_MAP['booking.public.appointment'].href, message);
-  }
-};
-
 export async function loader({ request }: Route.LoaderArgs) {
-  console.debug('[booking.contact.loader] start', {
+  console.debug('[booking.user.loader] start', {
     method: request.method,
     url: request.url,
     referer: request.headers.get('referer'),
@@ -101,7 +40,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const session = await getSession(request);
 
     if (!session) {
-      console.error('[booking.contact.loader] missing session');
+      console.error('[booking.user.loader] missing session');
       return redirectWithError(
         request,
         ROUTES_MAP['booking.public.appointment'].href,
@@ -109,61 +48,71 @@ export async function loader({ request }: Route.LoaderArgs) {
       );
     }
 
-    let existingContact: ContactDto | undefined = undefined;
+    let authUser: { id: number; email: string } | null = null;
+    let accessToken: string | null = null;
+    let user: UserDto | null = null;
+    let error: string | null = null;
 
-    if (session.contactId) {
-      console.debug('[booking.contact.loader] fetching contact', {
-        companyId: session.companyId,
-        contactId: session.contactId,
-      });
-      try {
-        const contactResponse = await PublicCompanyContactController.getContact({
-          path: {
-            companyId: session.companyId,
-            contactId: session.contactId,
-          },
-        });
-        if (contactResponse.data?.message?.id === 'CONTACT_NOT_FOUND') {
-          return await handleContactNotFound(request, session);
-        }
-        existingContact = contactResponse.data?.data;
-      } catch (error) {
-        if (getErrorMessageId(error) === 'CONTACT_NOT_FOUND') {
-          return await handleContactNotFound(request, session);
-        }
+    try {
+      const userSession = await authService.getUserSession(request);
+      authUser = userSession.user;
+      accessToken = userSession.accessToken;
+    } catch (error) {
+      if (!(error instanceof AuthenticationError)) {
         throw error;
       }
     }
 
-    if (session.contactId && !existingContact) {
-      return redirectWithError(
-        request,
-        ROUTES_MAP['booking.public.appointment'].href,
-        'Fant ikke kontaktinformasjon for økten. Start på nytt.',
-      );
+    if (authUser && accessToken) {
+      try {
+        user = await withAuth(
+          request,
+          async () => {
+            const userResponse = await PublicUserController.getUserById({
+              path: {
+                userId: authUser.id,
+              },
+            });
+            return userResponse.data?.data ?? null;
+          },
+          accessToken,
+        );
+      } catch (error) {
+        console.warn('[booking.user.loader] failed to load user profile', {
+          message: error instanceof Error ? error.message : String(error),
+          userId: authUser.id,
+        });
+      }
     }
 
-    console.debug('[booking.contact.loader] loaded', {
+    if (session.userId && !authUser) {
+      error = 'Logg inn for å fortsette bookingen.';
+    }
+
+    if (session.userId && authUser && session.userId !== authUser.id) {
+      error = 'Du er logget inn som en annen bruker enn den som er valgt for denne bookingen.';
+    }
+
+    console.debug('[booking.user.loader] loaded', {
       sessionId: session.sessionId,
       companyId: session.companyId,
-      hasContactId: !!session.contactId,
-      hasExistingContact: !!existingContact,
+      hasUserId: !!session.userId,
+      hasAuthUser: !!authUser,
     });
     return data({
       session,
-      existingContact: existingContact ?? null,
-      error: null as string | null,
+      user,
+      authUser,
+      error,
     });
   } catch (error) {
-    if (getErrorMessageId(error) === 'CONTACT_NOT_FOUND') {
-      return await handleContactNotFound(request);
-    }
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente kontaktinformasjon');
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente brukerdata.');
     return redirectWithError(request, ROUTES_MAP['booking.public.appointment'].href, message);
   }
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  const headers = new Headers();
   try {
     const session = await getSession(request);
 
@@ -176,66 +125,106 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     const formData = await request.formData();
+    const idToken = String(formData.get('idToken') || '');
+    const isGoogleSignIn = Boolean(idToken);
+    let accessToken: string | null = null;
+    let userId: number | null = null;
 
-    const givenName = String(formData.get('givenName') ?? '');
-    const familyName = String(formData.get('familyName') ?? '');
-    const contactResponse = await PublicCompanyContactController.publicGetCreateOrUpdateContact({
-      body: {
-        ...(formData.get('id') ? { id: Number(formData.get('id')) } : {}),
-        companyId: Number(formData.get('companyId')),
-        givenName,
-        familyName,
-        email: formData.get('email') ? String(formData.get('email')) : undefined,
-        mobileNumber: formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined,
-      },
-    });
-    if (contactResponse.data?.message?.id === 'CONTACT_NOT_FOUND') {
-      return await handleContactNotFound(request, session);
+    if (idToken) {
+      const signInResponse = await AuthController.signIn({
+        body: {
+          provider: 'GOOGLE',
+          idToken,
+        },
+      });
+      const tokens = signInResponse.data?.data;
+      if (!tokens) {
+        const message = signInResponse.data?.message || 'Kunne ikke logge inn med Google.';
+        return data({ error: message }, { status: 400, headers });
+      }
+
+      accessToken = tokens.accessToken;
+      const authPayload = authService.verifyAndDecodeToken(tokens.accessToken);
+      userId = authPayload.id;
+
+      const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
+        expires: new Date(tokens.accessTokenExpiresAt * 1000),
+      });
+      const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
+        expires: new Date(tokens.refreshTokenExpiresAt * 1000),
+      });
+      headers.append('Set-Cookie', accessCookie);
+      headers.append('Set-Cookie', refreshCookie);
+    } else {
+      try {
+        const userSession = await authService.getUserSession(request);
+        accessToken = userSession.accessToken;
+        userId = userSession.user.id;
+      } catch (error) {
+        if (error instanceof AuthenticationError) {
+          return data({ error: 'Logg inn med Google for å fortsette.' }, { status: 401, headers });
+        }
+        throw error;
+      }
     }
-    if (!contactResponse.data?.data) {
-      console.log('contactResponse', JSON.stringify(contactResponse, null, 2));
-      const message = contactResponse.data?.message || 'En feil har skjedd med lagring av kontakt';
-      return redirectWithError(request, ROUTES_MAP['booking.public.appointment.session.contact'].href, message);
+
+    if (!accessToken || !userId) {
+      return data({ error: 'Kunne ikke bekrefte bruker.' }, { status: 400, headers });
     }
 
-    await PublicAppointmentSessionController.submitAppointmentSessionContact({
-      query: {
-        sessionId: session.sessionId,
-        contactId: contactResponse.data.data.id,
-      },
-    });
+    await withAuth(
+      request,
+      () =>
+        PublicAppointmentSessionController.submitAppointmentSessionUser({
+          query: {
+            sessionId: session.sessionId,
+            userId,
+          },
+        }),
+      accessToken,
+    );
 
-    const normalizedName = `${givenName} ${familyName}`.replace(/\s+/g, ' ').trim().toLowerCase();
-    const shouldShowHearts = normalizedName === 'charlotte skauen';
-    const nextUrl = shouldShowHearts
-      ? `${ROUTES_MAP['booking.public.appointment.session.employee'].href}?hearts=1`
-      : ROUTES_MAP['booking.public.appointment.session.employee'].href;
-    return redirect(nextUrl);
+    const nextUrl = ROUTES_MAP['booking.public.appointment.session.employee'].href;
+    if (isGoogleSignIn) {
+      return data({ redirectTo: nextUrl }, { headers });
+    }
+    return redirect(nextUrl, { headers });
   } catch (error) {
-    if (getErrorMessageId(error) === 'CONTACT_NOT_FOUND') {
-      return await handleContactNotFound(request);
+    const errorId = getErrorMessageId(error);
+    if (errorId === 'INVALID_USER_ID' || errorId === 'NOT_FOUND' || errorId === 'USER_NOT_FOUND') {
+      return data({ error: 'Bruker mangler. Logg inn på nytt.' }, { status: 400, headers });
     }
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre kontakt');
-    return redirectWithError(request, ROUTES_MAP['booking.public.appointment.session.contact'].href, message);
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre bruker');
+    return data({ error: message }, { status: status ?? 400, headers });
   }
 }
 
-export default function AppointmentsContactForm({ loaderData }: Route.ComponentProps) {
-  const fetcher = useFetcher({ key: 'appointment-contact-form-fetcher' });
+export default function AppointmentsContactForm({ loaderData, actionData }: Route.ComponentProps) {
+  const fetcher = useFetcher({ key: 'appointment-user-auth-fetcher' });
+  const navigate = useNavigate();
   const session = loaderData.session ?? null;
-  const existingContact = loaderData.existingContact ?? null;
-  const formId = 'booking-contact-form';
-  const [isFormValid, setIsFormValid] = useState(false);
-
-  const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
-  const actionError = fetcher.data?.error;
+  const user = loaderData.user ?? null;
+  const authUser = loaderData.authUser ?? null;
+  const actionError =
+    fetcher.data?.error ?? (actionData && 'error' in actionData ? actionData.error : undefined);
   const loaderError = loaderData.error ?? undefined;
   const error = loaderError || actionError;
+  const isAuthenticated = !!authUser;
+  const isSubmitting = fetcher.state === 'submitting' || fetcher.state === 'loading';
+  const googleClientId = ENV.GOOGLE_CLIENT_ID;
+  const canSubmit = isAuthenticated && (!session?.userId || session.userId === authUser?.id);
+
+  useEffect(() => {
+    const redirectTo = fetcher.data?.redirectTo;
+    if (redirectTo) {
+      navigate(redirectTo);
+    }
+  }, [fetcher.data, navigate]);
 
   if (loaderError || !session) {
     return (
       <BookingContainer>
-        <BookingSection label="Kontaktinformasjon" title="Hvem skal vi registrere avtalen på?">
+        <BookingSection label="Bruker" title="Logg inn for å fortsette">
           <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
             {loaderError ?? 'Ugyldig økt'}
           </div>
@@ -244,47 +233,20 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
     );
   }
 
-  const normalizeMobileNumber = (value?: string) => {
-    if (!value) return '';
-    const trimmed = value.trim();
-    if (trimmed.startsWith('+47')) return trimmed.slice(3).trim();
-    if (trimmed.startsWith('47') && trimmed.length > 2) return trimmed.slice(2).trim();
-    return trimmed;
-  };
-
-  const initialValues = existingContact
-    ? {
-        id: existingContact.id,
-        companyId: session.companyId,
-        givenName: existingContact.givenName,
-        familyName: existingContact.familyName,
-        email: existingContact.email ?? '',
-        mobileNumber: normalizeMobileNumber(existingContact.mobileNumber),
-      }
-    : undefined;
-
-  const handleSubmit = (values: SubmitContactFormSchema) => {
-    const normalizedName = `${values.givenName} ${values.familyName}`.replace(/\s+/g, ' ').trim().toLowerCase();
-    if (typeof window !== 'undefined') {
-      if (normalizedName === 'charlotte skauen') {
-        sessionStorage.setItem('booking:hearts', '1');
-      } else {
-        sessionStorage.removeItem('booking:hearts');
-      }
-    }
-
+  const handleGoogleCredential = (token: string) => {
     const formData = new FormData();
-    if (values.id) formData.set('id', String(values.id));
-    formData.set('companyId', String(values.companyId));
-    formData.set('givenName', values.givenName);
-    formData.set('familyName', values.familyName);
-    if (values.email) formData.set('email', values.email);
-    if (values.mobileNumber) formData.set('mobileNumber', values.mobileNumber);
-
+    formData.set('idToken', token);
     fetcher.submit(formData, {
       method: 'post',
     });
   };
+
+  const displayName =
+    user?.givenName && user?.familyName
+      ? `${user.givenName} ${user.familyName}`
+      : authUser?.email
+        ? authUser.email
+        : 'Innlogget bruker';
 
   return (
     <>
@@ -292,75 +254,69 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
         {error && <BookingErrorBanner message={error} sticky />}
 
         <BookingStepHeader
-          label="Kontaktinformasjon"
-          title="Hvem skal vi registrere avtalen på?"
+          label="Bruker"
+          title="Logg inn for å fortsette"
           className="mb-4 md:mb-6"
         />
 
         <BookingSection className="space-y-4 md:space-y-6">
-          {/* ========================================
-            EXISTING CONTACT - Compact card on mobile
-            ======================================== */}
-          {existingContact && (
-            <div className="space-y-3 md:space-y-4">
-              {/* Visual separator with label */}
+          {isAuthenticated ? (
+            <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="size-4 text-secondary md:size-5" />
                 <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground md:text-sm">
-                  Eksisterende kontakt
+                  Innlogget bruker
                 </span>
               </div>
 
-              {/* Existing contact - Ultra-compact card */}
               <div className="rounded-lg border border-card-border bg-card-muted-bg p-3 md:p-4">
-                {/* Contact details - Inline labels on mobile, stacked on desktop */}
                 <BookingMeta
                   layout="compact"
                   className="space-y-2 md:space-y-2.5"
                   items={[
                     {
                       label: 'Navn',
-                      value: `${existingContact.givenName} ${existingContact.familyName}`,
+                      value: displayName,
                     },
-                    ...(existingContact.email ? [{ label: 'E-post', value: existingContact.email }] : []),
-                    ...(existingContact.mobileNumber
-                      ? [{ label: 'Mobil', value: existingContact.mobileNumber }]
+                    ...(user?.email
+                      ? [
+                          {
+                            label: 'E-post',
+                            value: user.email,
+                          },
+                        ]
                       : []),
                   ]}
                 />
+              </div>
 
-                {/* Edit hint - Minimal */}
-                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                  <Edit3 className="size-3 shrink-0" />
-                  <p>Kan oppdateres under</p>
+              <Form method="post" className="hidden md:block">
+                <BookingButton type="submit" variant="primary" size="lg" disabled={!canSubmit} loading={isSubmitting}>
+                  Fortsett
+                </BookingButton>
+              </Form>
+            </div>
+          ) : (
+            <div className="space-y-4 rounded-lg border border-card-border bg-card-muted-bg p-4 md:p-6">
+              <div className="flex items-center gap-3">
+                <User className="size-4 text-muted-foreground md:size-5" />
+                <div>
+                  <p className="text-sm font-semibold text-card-text">Logg inn for å fortsette</p>
+                  <p className="text-xs text-muted-foreground">
+                    Vi trenger en bruker før vi kan knytte bookingen til en avtale.
+                  </p>
                 </div>
               </div>
 
-              {/* Visual divider */}
-              <div className="relative py-3 md:py-4">
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-background px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground md:text-sm">
-                    {existingContact ? 'Oppdater informasjon' : 'Fyll ut informasjon'}
-                  </span>
-                </div>
-              </div>
+              {googleClientId ? (
+                <GoogleSignInButton onCredential={handleGoogleCredential} disabled={isSubmitting} />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Google-innlogging er ikke tilgjengelig akkurat nå.
+                </p>
+              )}
             </div>
           )}
-
-          {/* ========================================
-            CONTACT FORM
-            ======================================== */}
-          <SubmitContactForm
-            companyId={session.companyId}
-            initialValues={initialValues}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-            formId={formId}
-            onValidityChange={setIsFormValid}
-          />
         </BookingSection>
       </BookingContainer>
 
@@ -368,17 +324,18 @@ export default function AppointmentsContactForm({ loaderData }: Route.ComponentP
         mobile={{
           items: [],
           primaryAction: (
-            <BookingButton
-              type="submit"
-              form={formId}
-              variant="primary"
-              size="lg"
-              fullWidth
-              disabled={isSubmitting || !isFormValid}
-              loading={isSubmitting}
-            >
-              Fortsett
-            </BookingButton>
+            <Form method="post">
+              <BookingButton
+                type="submit"
+                variant="primary"
+                size="lg"
+                fullWidth
+                disabled={!canSubmit || isSubmitting}
+                loading={isSubmitting}
+              >
+                Fortsett
+              </BookingButton>
+            </Form>
           ),
           secondaryAction: (
             <Link to={ROUTES_MAP['booking.public.appointment'].href}>
