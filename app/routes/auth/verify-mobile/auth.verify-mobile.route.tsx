@@ -1,5 +1,5 @@
 // auth.verify-mobile.route.tsx
-import { Form, Link, data, useNavigation } from 'react-router';
+import { Form, Link, data, redirect, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.verify-mobile.route';
 
 import { AuthController } from '~/api/generated/identity';
@@ -10,22 +10,55 @@ import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
 
 type VerifyMobileLoaderData = {
-  verificationSessionToken: string | null;
-  emailSent: boolean;
-  mobileSent: boolean;
+  verificationSessionToken: string;
+  status?: {
+    emailVerified: boolean;
+    mobileRequired: boolean;
+    mobileVerified: boolean;
+    emailSent: boolean;
+    mobileSent: boolean;
+    nextStep: 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'SIGN_IN';
+  };
+  error?: string | null;
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const verificationSessionToken = url.searchParams.get('verificationSessionToken');
-  const emailSent = url.searchParams.get('emailSent') === 'true';
-  const mobileSent = url.searchParams.get('mobileSent') === 'true';
+  if (!verificationSessionToken) {
+    return redirect(ROUTES_MAP['auth.sign-in'].href);
+  }
 
-  return data({
-    verificationSessionToken,
-    emailSent,
-    mobileSent,
-  } satisfies VerifyMobileLoaderData);
+  try {
+    const response = await AuthController.verificationStatus({
+      query: { verificationSessionToken },
+    });
+    const status = response.data?.data;
+    if (!status) {
+      return data(
+        {
+          verificationSessionToken,
+          error: 'Kunne ikke hente verifiseringsstatus. Prøv igjen.',
+        },
+        { status: 400 },
+      );
+    }
+
+    return data({
+      verificationSessionToken,
+      status,
+      error: null,
+    } satisfies VerifyMobileLoaderData);
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente verifiseringsstatus. Prøv igjen.');
+    return data(
+      {
+        verificationSessionToken,
+        error: message,
+      },
+      { status: status ?? 400 },
+    );
+  }
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -43,14 +76,14 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   try {
-    await AuthController.verifyMobile({
+    const response = await AuthController.verifyMobile({
       body: {
         verificationSessionToken,
         code,
       },
     });
 
-    return data({ success: true });
+    return data({ success: true, nextStep: response.data?.data?.nextStep ?? 'SIGN_IN' });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke bekrefte mobilnummer. Prøv igjen.');
     return data(
@@ -66,14 +99,21 @@ export default function AuthVerifyMobile({ loaderData, actionData }: Route.Compo
   const dataValues = loaderData as VerifyMobileLoaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const errorMessage = actionData?.error;
+  const errorMessage = actionData?.error ?? dataValues.error;
   const isMobileVerified = actionData?.success === true;
-  const canVerifyMobile = dataValues.mobileSent && dataValues.verificationSessionToken && !isMobileVerified;
+  const status = dataValues.status;
+  const canVerifyMobile =
+    status?.emailVerified && status?.mobileRequired && !status.mobileVerified && !isMobileVerified;
+  const description = !status?.emailVerified
+    ? 'Bekreft e-posten din før du verifiserer mobilnummer.'
+    : status?.mobileRequired
+      ? 'E-posten din er bekreftet. Skriv inn engangskoden fra SMS for å fullføre registreringen.'
+      : 'Du trenger ikke verifisere mobilnummer. Du kan gå videre til innlogging.';
 
   return (
     <AuthFormContainer
-      title="Bekreft kontoen din"
-      description="Bekreft e-postadressen din før du logger inn. Har du lagt til mobilnummer, kan du også bekrefte det her."
+      title="Bekreft mobilnummer"
+      description={description}
       error={errorMessage}
       secondaryAction={
         <div className="space-y-2 text-center">
@@ -90,22 +130,21 @@ export default function AuthVerifyMobile({ loaderData, actionData }: Route.Compo
       }
     >
       <div className="space-y-4">
-        <div className="space-y-2 text-sm text-form-text-muted">
-          <p>
-            {dataValues.emailSent
-              ? 'Vi har sendt en bekreftelseslenke til e-posten din.'
-              : 'Vi klarte ikke å sende e-post. Prøv å registrere deg på nytt eller kontakt support.'}
-          </p>
-          <p>
-            {dataValues.mobileSent
-              ? 'Skriv inn engangskoden fra SMS for å bekrefte mobilnummeret ditt.'
-              : 'Du oppga ikke mobilnummer, så ingen SMS-verifisering er nødvendig.'}
-          </p>
-        </div>
+        {!status?.emailVerified ? (
+          <div className="rounded-md border border-form-border bg-form-accent/30 px-4 py-3 text-sm text-form-text">
+            Du må bekrefte e-posten din før mobilnummeret kan verifiseres.
+          </div>
+        ) : null}
+
+        {status && !status.mobileRequired ? (
+          <div className="rounded-md border border-form-border bg-form-accent/30 px-4 py-3 text-sm text-form-text">
+            Du la ikke til et mobilnummer. Du kan gå videre til innlogging.
+          </div>
+        ) : null}
 
         {isMobileVerified ? (
           <div className="rounded-md border border-form-border bg-form-accent/30 px-4 py-3 text-sm text-form-text">
-            Mobilnummeret ditt er bekreftet. Du kan logge inn når e-posten også er verifisert.
+            Mobilnummeret ditt er bekreftet. Du kan gå videre til innlogging.
           </div>
         ) : null}
 
@@ -128,6 +167,12 @@ export default function AuthVerifyMobile({ loaderData, actionData }: Route.Compo
             </AuthFormButton>
           </Form>
         ) : null}
+
+        {(status?.mobileVerified || isMobileVerified || !status?.mobileRequired) && (
+          <AuthFormButton asChild variant="secondary">
+            <Link to={ROUTES_MAP['auth.sign-in'].href}>Gå til innlogging</Link>
+          </AuthFormButton>
+        )}
       </div>
     </AuthFormContainer>
   );

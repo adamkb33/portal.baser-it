@@ -78,6 +78,14 @@ export const ROUTE_TREE: RouteBranch[] = [
         iconName: 'UserPlus',
       },
       {
+        id: 'auth.check-email',
+        href: '/auth/check-email',
+        label: 'Sjekk e-post',
+        category: BrachCategory.AUTH,
+        accessType: Access.NOT_AUTHENTICATED,
+        hidden: true,
+      },
+      {
         id: 'auth.forgot-password',
         href: '/auth/forgot-password',
         label: 'Glemt passord',

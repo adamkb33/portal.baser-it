@@ -50,12 +50,11 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     const params = new URLSearchParams({
-      verificationSessionToken: signUpPayload.verificationSessionToken,
       emailSent: signUpPayload.emailSent ? 'true' : 'false',
       mobileSent: signUpPayload.mobileSent ? 'true' : 'false',
     });
 
-    return redirect(`${ROUTES_MAP['auth.verify-mobile'].href}?${params.toString()}`);
+    return redirect(`${ROUTES_MAP['auth.check-email'].href}?${params.toString()}`);
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke opprette konto. Prøv igjen.');
     return data(
@@ -71,8 +70,9 @@ export async function action({ request }: Route.ActionArgs) {
 export default function AuthSignUp({ actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const errorMessage = actionData?.error;
-  const actionValues = actionData?.values as SignUpActionValues | undefined;
+  const actionState = actionData as { error?: string; values?: SignUpActionValues } | undefined;
+  const errorMessage = actionState?.error;
+  const actionValues = actionState?.values;
 
   return (
     <AuthFormContainer
