@@ -137,6 +137,7 @@ export type AppointmentDto = {
     id: number;
     profileId: number;
     userId: number;
+    user: UserDto;
     startTime: string;
     endTime: string;
     groupedServiceGroups: Array<GroupedServiceGroupDto>;
@@ -155,6 +156,14 @@ export type GroupedServiceGroupDto = {
     companyId: number;
     name: string;
     services: Array<GroupedServiceDto>;
+};
+
+export type UserDto = {
+    id: number;
+    givenName: string;
+    familyName: string;
+    email: string;
+    mobileNumber?: string;
 };
 
 export type ApiResponseAppointmentSessionDto = {
@@ -337,13 +346,6 @@ export type AppointmentSessionOverviewDto = {
 export type AppointmentSessionSelectedServicesDto = {
     serviceGroup: ServiceGroupDto;
     services: ServiceDto;
-};
-
-export type UserDto = {
-    id: number;
-    givenName: string;
-    familyName: string;
-    email: string;
 };
 
 export type ApiResponsePaginatedResponseServiceDto = {

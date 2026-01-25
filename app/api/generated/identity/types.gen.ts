@@ -86,7 +86,7 @@ export type ApiResponseUnit = {
 
 export type InviteUserDto = {
     email: string;
-    userRoles: Array<'SYSTEM_ADMIN' | 'USER' | 'COMPANY_USER'>;
+    userRoles: Array<'SYSTEM_ADMIN'>;
     companyId?: number;
     companyRoles: Array<'ADMIN' | 'EMPLOYEE'>;
 };
@@ -214,6 +214,20 @@ export type ApiResponseBoolean = {
     timestamp: string;
 };
 
+export type UserSearchRequestDto = {
+    search?: string;
+    limit?: number;
+};
+
+export type ApiResponseListLong = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<number>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
 export type ApiResponseListUserDto = {
     success: boolean;
     message: ApiMessage;
@@ -228,21 +242,13 @@ export type UserDto = {
     givenName: string;
     familyName: string;
     email: string;
+    mobileNumber?: string;
 };
 
 export type ContactSearchRequestDto = {
     companyId: number;
     search?: string;
     limit?: number;
-};
-
-export type ApiResponseListLong = {
-    success: boolean;
-    message: ApiMessage;
-    data?: Array<number>;
-    errors?: Array<ApiError>;
-    meta?: ApiMeta;
-    timestamp: string;
 };
 
 export type ApiResponseListContactDto = {
@@ -272,6 +278,19 @@ export type CreateContactDto = {
 
 export type GetContactsByIdsDto = {
     contactIds: Array<number>;
+};
+
+export type UpdateUserMobileDto = {
+    mobileNumber: string;
+};
+
+export type ApiResponseUserDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: UserDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
 };
 
 export type SignOutDto = {
@@ -405,15 +424,6 @@ export type SmtpDiagnosticsResponse = {
     connectError?: string;
 };
 
-export type ApiResponseUserDto = {
-    success: boolean;
-    message: ApiMessage;
-    data?: UserDto;
-    errors?: Array<ApiError>;
-    meta?: ApiMeta;
-    timestamp: string;
-};
-
 export type ApiResponseListCompanyRole = {
     success: boolean;
     message: ApiMessage;
@@ -446,7 +456,7 @@ export type CompanyUserDto = {
     familyName: string;
     userId: number;
     email: string;
-    userRoles: Array<'SYSTEM_ADMIN' | 'USER' | 'COMPANY_USER'>;
+    userRoles: Array<'SYSTEM_ADMIN'>;
     companyRoles: Array<'ADMIN' | 'EMPLOYEE'>;
     deletedAt?: string;
 };
@@ -502,7 +512,7 @@ export type InviteTokenDto = {
 };
 
 export type InviteTokenPayload = {
-    roles: Array<'SYSTEM_ADMIN' | 'USER' | 'COMPANY_USER'>;
+    roles: Array<'SYSTEM_ADMIN'>;
     companyRoles: Array<'ADMIN' | 'EMPLOYEE'>;
 };
 
@@ -807,6 +817,22 @@ export type ValidateCompanyUsersResponses = {
 
 export type ValidateCompanyUsersResponse = ValidateCompanyUsersResponses[keyof ValidateCompanyUsersResponses];
 
+export type SearchUsersData = {
+    body: UserSearchRequestDto;
+    path?: never;
+    query?: never;
+    url: '/internal/internal/users/search';
+};
+
+export type SearchUsersResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListLong;
+};
+
+export type SearchUsersResponse = SearchUsersResponses[keyof SearchUsersResponses];
+
 export type FindByIdsData = {
     body: Array<number>;
     path?: never;
@@ -941,6 +967,24 @@ export type GetContactsByIdsResponses = {
 };
 
 export type GetContactsByIdsResponse = GetContactsByIdsResponses[keyof GetContactsByIdsResponses];
+
+export type UpdateMobileData = {
+    body: UpdateUserMobileDto;
+    path?: never;
+    query: {
+        companyId: number;
+    };
+    url: '/company-user/contact-info/mobile';
+};
+
+export type UpdateMobileResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUserDto;
+};
+
+export type UpdateMobileResponse = UpdateMobileResponses[keyof UpdateMobileResponses];
 
 export type SignOutData = {
     body: SignOutDto;

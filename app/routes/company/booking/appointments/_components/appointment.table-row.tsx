@@ -27,44 +27,33 @@ export function AppointmentTableRow({ appointment, onDelete, isDeleting = false 
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="link" size="sm" className="h-7 px-0">
-              {appointment.contact.givenName} {appointment.contact.familyName}
+              {appointment.user.givenName} {appointment.user.familyName}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80" align="start">
             <div className="space-y-3">
-              <h4 className="font-semibold text-sm border-b border-border pb-2">Kundeinformasjon</h4>
+              <h4 className="font-semibold text-sm border-b border-border pb-2">Brukerinformasjon</h4>
               <div className="space-y-2 text-sm">
-                {appointment.contact.givenName && (
+                {appointment.user.givenName && (
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">Fornavn:</span>
-                    <span className="font-medium">{appointment.contact.givenName}</span>
+                    <span className="font-medium">{appointment.user.givenName}</span>
                   </div>
                 )}
-                {appointment.contact.familyName && (
+                {appointment.user.familyName && (
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">Etternavn:</span>
-                    <span className="font-medium">{appointment.contact.familyName}</span>
+                    <span className="font-medium">{appointment.user.familyName}</span>
                   </div>
                 )}
-                {appointment.contact.email && (
+                {appointment.user.email && (
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">E-post:</span>
                     <Link
-                      to={`mailto:${appointment.contact.email}`}
+                      to={`mailto:${appointment.user.email}`}
                       className="font-medium text-primary hover:underline break-all"
                     >
-                      {appointment.contact.email}
-                    </Link>
-                  </div>
-                )}
-                {appointment.contact.mobileNumber && (
-                  <div className="flex justify-between gap-4">
-                    <span className="text-muted-foreground">Telefon:</span>
-                    <Link
-                      to={`tel:${appointment.contact.mobileNumber}`}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {appointment.contact.mobileNumber}
+                      {appointment.user.email}
                     </Link>
                   </div>
                 )}

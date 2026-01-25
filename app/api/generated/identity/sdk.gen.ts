@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCompanyRoleData, AddCompanyRoleResponses, AddProductsToCompanyData, AddProductsToCompanyResponses, CancelCompanyUserInviteData, CancelCompanyUserInviteResponses, CompanySignInData, CompanySignInResponses, CreateCompanyData, CreateCompanyResponses, CreateContactData, CreateContactResponses, DecodeInviteData, DecodeInviteResponses, DeleteCompanyUserData, DeleteCompanyUserResponses, DeleteContactData, DeleteContactResponses, DiagnosticsData, DiagnosticsResponses, EditCompanyUserData, EditCompanyUserResponses, FindById1Data, FindById1Responses, FindByIdData, FindByIdResponses, FindByIds1Data, FindByIds1Responses, FindByIdsData, FindByIdsResponses, ForgotPasswordData, ForgotPasswordResponses, GetCompanyContextsData, GetCompanyContextsResponses, GetCompanyData, GetCompanyProductsData, GetCompanyProductsResponses, GetCompanyResponses, GetCompanyRoleData, GetCompanyRoleResponses, GetCompanySummaryByIdsData, GetCompanySummaryByIdsResponses, GetCompanySummaryData, GetCompanySummaryResponses, GetCompanyUserData, GetCompanyUserResponses, GetCompanyUsersByIdsData, GetCompanyUsersByIdsResponses, GetCompanyUsersData, GetCompanyUsersResponses, GetContactData, GetContactResponses, GetContactsByIdsData, GetContactsByIdsResponses, GetContactsData, GetContactsResponses, GetDashboardMetricsData, GetDashboardMetricsResponses, GetInvitationsData, GetInvitationsResponses, GetUser1Data, GetUser1Responses, GetUserByEmailData, GetUserByEmailResponses, GetUserByIdData, GetUserByIdResponses, GetUserData, GetUserResponses, HealthData, HealthResponses, InfoData, InfoResponses, InviteCompanyUserData, InviteCompanyUserResponses, InviteUserData, InviteUserResponses, JwtClaimsData, JwtClaimsResponses, LinksData, LinksResponses, PublicGetCompanyByIdData, PublicGetCompanyByIdResponses, PublicGetCreateOrUpdateContactData, PublicGetCreateOrUpdateContactResponses, RefreshData, RefreshResponses, RequestDeleteRoleData, RequestDeleteRoleResponses, ResetPasswordData, ResetPasswordResponses, RespondToInviteData, RespondToInviteResponses, RootData, RootResponses, SearchContactsData, SearchContactsResponses, SignInData, SignInResponses, SignOutData, SignOutResponses, UpdateContactData, UpdateContactResponses, ValidateCompanyData, ValidateCompanyResponses, ValidateCompanyUserData, ValidateCompanyUserResponses, ValidateCompanyUsersData, ValidateCompanyUsersResponses, ValidateContactData, ValidateContactResponses, ValidateContactsData, ValidateContactsResponses, ValidateProductData, ValidateProductResponses, VerifyGoogleTokenData, VerifyGoogleTokenResponses } from './types.gen';
+import type { AddCompanyRoleData, AddCompanyRoleResponses, AddProductsToCompanyData, AddProductsToCompanyResponses, CancelCompanyUserInviteData, CancelCompanyUserInviteResponses, CompanySignInData, CompanySignInResponses, CreateCompanyData, CreateCompanyResponses, CreateContactData, CreateContactResponses, DecodeInviteData, DecodeInviteResponses, DeleteCompanyUserData, DeleteCompanyUserResponses, DeleteContactData, DeleteContactResponses, DiagnosticsData, DiagnosticsResponses, EditCompanyUserData, EditCompanyUserResponses, FindById1Data, FindById1Responses, FindByIdData, FindByIdResponses, FindByIds1Data, FindByIds1Responses, FindByIdsData, FindByIdsResponses, ForgotPasswordData, ForgotPasswordResponses, GetCompanyContextsData, GetCompanyContextsResponses, GetCompanyData, GetCompanyProductsData, GetCompanyProductsResponses, GetCompanyResponses, GetCompanyRoleData, GetCompanyRoleResponses, GetCompanySummaryByIdsData, GetCompanySummaryByIdsResponses, GetCompanySummaryData, GetCompanySummaryResponses, GetCompanyUserData, GetCompanyUserResponses, GetCompanyUsersByIdsData, GetCompanyUsersByIdsResponses, GetCompanyUsersData, GetCompanyUsersResponses, GetContactData, GetContactResponses, GetContactsByIdsData, GetContactsByIdsResponses, GetContactsData, GetContactsResponses, GetDashboardMetricsData, GetDashboardMetricsResponses, GetInvitationsData, GetInvitationsResponses, GetUser1Data, GetUser1Responses, GetUserByEmailData, GetUserByEmailResponses, GetUserByIdData, GetUserByIdResponses, GetUserData, GetUserResponses, HealthData, HealthResponses, InfoData, InfoResponses, InviteCompanyUserData, InviteCompanyUserResponses, InviteUserData, InviteUserResponses, JwtClaimsData, JwtClaimsResponses, LinksData, LinksResponses, PublicGetCompanyByIdData, PublicGetCompanyByIdResponses, PublicGetCreateOrUpdateContactData, PublicGetCreateOrUpdateContactResponses, RefreshData, RefreshResponses, RequestDeleteRoleData, RequestDeleteRoleResponses, ResetPasswordData, ResetPasswordResponses, RespondToInviteData, RespondToInviteResponses, RootData, RootResponses, SearchContactsData, SearchContactsResponses, SearchUsersData, SearchUsersResponses, SignInData, SignInResponses, SignOutData, SignOutResponses, UpdateContactData, UpdateContactResponses, UpdateMobileData, UpdateMobileResponses, ValidateCompanyData, ValidateCompanyResponses, ValidateCompanyUserData, ValidateCompanyUserResponses, ValidateCompanyUsersData, ValidateCompanyUsersResponses, ValidateContactData, ValidateContactResponses, ValidateContactsData, ValidateContactsResponses, ValidateProductData, ValidateProductResponses, VerifyGoogleTokenData, VerifyGoogleTokenResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -317,6 +317,18 @@ export class InternalCompanyController {
 }
 
 export class InternalUserController {
+    public static searchUsers<ThrowOnError extends boolean = false>(options: Options<SearchUsersData, ThrowOnError>) {
+        return (options.client ?? client).post<SearchUsersResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/internal/internal/users/search',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
     public static findByIds<ThrowOnError extends boolean = false>(options: Options<FindByIdsData, ThrowOnError>) {
         return (options.client ?? client).post<FindByIdsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
@@ -367,6 +379,52 @@ export class InternalContactController {
         return (options.client ?? client).get<FindById1Responses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/internal/contacts/{contactId}',
+            ...options
+        });
+    }
+}
+
+export class CompanyUserController {
+    public static updateMobile<ThrowOnError extends boolean = false>(options: Options<UpdateMobileData, ThrowOnError>) {
+        return (options.client ?? client).post<UpdateMobileResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/company-user/contact-info/mobile',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    public static getCompanyUser<ThrowOnError extends boolean = false>(options: Options<GetCompanyUserData, ThrowOnError>) {
+        return (options.client ?? client).get<GetCompanyUserResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/company-user/user',
+            ...options
+        });
+    }
+    
+    public static getUser1<ThrowOnError extends boolean = false>(options?: Options<GetUser1Data, ThrowOnError>) {
+        return (options?.client ?? client).get<GetUser1Responses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/company-user/self',
+            ...options
+        });
+    }
+    
+    public static getCompany<ThrowOnError extends boolean = false>(options?: Options<GetCompanyData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetCompanyResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/company-user/company',
+            ...options
+        });
+    }
+    
+    public static getCompanySummary<ThrowOnError extends boolean = false>(options?: Options<GetCompanySummaryData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetCompanySummaryResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/company-user/company-summary',
             ...options
         });
     }
@@ -517,40 +575,6 @@ export class PublicUserController {
         return (options.client ?? client).get<GetUserByIdResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/public/user/{userId}',
-            ...options
-        });
-    }
-}
-
-export class CompanyUserController {
-    public static getCompanyUser<ThrowOnError extends boolean = false>(options: Options<GetCompanyUserData, ThrowOnError>) {
-        return (options.client ?? client).get<GetCompanyUserResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/user',
-            ...options
-        });
-    }
-    
-    public static getUser1<ThrowOnError extends boolean = false>(options?: Options<GetUser1Data, ThrowOnError>) {
-        return (options?.client ?? client).get<GetUser1Responses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/self',
-            ...options
-        });
-    }
-    
-    public static getCompany<ThrowOnError extends boolean = false>(options?: Options<GetCompanyData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetCompanyResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/company',
-            ...options
-        });
-    }
-    
-    public static getCompanySummary<ThrowOnError extends boolean = false>(options?: Options<GetCompanySummaryData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetCompanySummaryResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/company-summary',
             ...options
         });
     }

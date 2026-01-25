@@ -42,7 +42,7 @@ export function AppointmentCardRow({ appointment, onDelete, isDeleting = false }
             <p className="text-sm text-muted-foreground flex items-center gap-1.5">
               <User className="h-3.5 w-3.5" />
               <span>
-                {appointment.contact.givenName} {appointment.contact.familyName}
+                {appointment.user.givenName} {appointment.user.familyName}
               </span>
             </p>
           </div>
@@ -157,42 +157,30 @@ export function AppointmentCardRow({ appointment, onDelete, isDeleting = false }
                   className="h-10 md:h-8 w-full justify-start px-3 md:px-2 text-sm md:text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
                   <Info className="h-3.5 w-3.5 mr-1.5 shrink-0" />
-                  Se kontaktinformasjon
+                  Se brukerinformasjon
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80 p-4" align="start">
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold text-foreground border-b border-border pb-2">
-                    Kundeinformasjon
+                    Brukerinformasjon
                   </h4>
                   <div className="space-y-2.5">
                     <div className="flex items-start justify-between gap-4">
                       <span className="text-xs text-muted-foreground uppercase tracking-wide shrink-0">Navn</span>
                       <span className="text-sm font-medium text-right">
-                        {appointment.contact.givenName} {appointment.contact.familyName}
+                        {appointment.user.givenName} {appointment.user.familyName}
                       </span>
                     </div>
 
-                    {appointment.contact.email && (
+                    {appointment.user.email && (
                       <div className="flex items-start justify-between gap-4">
                         <span className="text-xs text-muted-foreground uppercase tracking-wide shrink-0">E-post</span>
                         <Link
-                          to={`mailto:${appointment.contact.email}`}
+                          to={`mailto:${appointment.user.email}`}
                           className="text-sm font-medium text-primary hover:underline text-right break-all"
                         >
-                          {appointment.contact.email}
-                        </Link>
-                      </div>
-                    )}
-
-                    {appointment.contact.mobileNumber && (
-                      <div className="flex items-start justify-between gap-4">
-                        <span className="text-xs text-muted-foreground uppercase tracking-wide shrink-0">Telefon</span>
-                        <Link
-                          to={`tel:${appointment.contact.mobileNumber}`}
-                          className="text-sm font-medium text-primary hover:underline text-right"
-                        >
-                          {appointment.contact.mobileNumber}
+                          {appointment.user.email}
                         </Link>
                       </div>
                     )}
