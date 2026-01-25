@@ -70,6 +70,14 @@ export const ROUTE_TREE: RouteBranch[] = [
         excludeLayout: true,
       },
       {
+        id: 'auth.sign-up',
+        href: '/auth/sign-up',
+        label: 'Opprett konto',
+        category: BrachCategory.AUTH,
+        accessType: Access.NOT_AUTHENTICATED,
+        iconName: 'UserPlus',
+      },
+      {
         id: 'auth.forgot-password',
         href: '/auth/forgot-password',
         label: 'Glemt passord',
@@ -84,6 +92,22 @@ export const ROUTE_TREE: RouteBranch[] = [
         category: BrachCategory.AUTH,
         accessType: Access.NOT_AUTHENTICATED,
         iconName: 'Key',
+      },
+      {
+        id: 'auth.verify-email',
+        href: '/auth/verify-email',
+        label: 'Bekreft e-post',
+        category: BrachCategory.AUTH,
+        accessType: Access.NOT_AUTHENTICATED,
+        hidden: true,
+      },
+      {
+        id: 'auth.verify-mobile',
+        href: '/auth/verify-mobile',
+        label: 'Bekreft mobil',
+        category: BrachCategory.AUTH,
+        accessType: Access.NOT_AUTHENTICATED,
+        hidden: true,
       },
       {
         id: 'auth.respond-invite',

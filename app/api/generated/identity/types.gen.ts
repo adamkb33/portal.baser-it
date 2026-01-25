@@ -18,7 +18,7 @@ export type ApiError = {
 };
 
 export type ApiMessage = {
-    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'CONTACT_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
+    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'AUTH_PROVIDER_MISMATCH_LOCAL' | 'AUTH_PROVIDER_MISMATCH_GOOGLE' | 'AUTH_PROVIDER_MISMATCH_FACEBOOK' | 'EMAIL_VERIFICATION_INVALID' | 'EMAIL_VERIFICATION_EXPIRED' | 'SIGNUP_SESSION_INVALID' | 'SIGNUP_SESSION_EXPIRED' | 'MOBILE_OTP_INVALID' | 'MOBILE_OTP_EXPIRED' | 'MOBILE_OTP_TOO_MANY_ATTEMPTS' | 'EMAIL_NOT_VERIFIED' | 'MOBILE_NOT_VERIFIED' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'CONTACT_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
     value: string;
 };
 
@@ -293,6 +293,35 @@ export type ApiResponseUserDto = {
     timestamp: string;
 };
 
+export type VerifyMobileDto = {
+    verificationSessionToken: string;
+    code: string;
+};
+
+export type SignUpDto = {
+    givenName: string;
+    familyName: string;
+    email: string;
+    password: string;
+    password2: string;
+    mobileNumber?: string;
+};
+
+export type ApiResponseSignUpResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: SignUpResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type SignUpResponseDto = {
+    verificationSessionToken: string;
+    emailSent: boolean;
+    mobileSent: boolean;
+};
+
 export type SignOutDto = {
     userId: number;
 };
@@ -326,6 +355,7 @@ export type AcceptInviteDto = {
     familyName: string;
     password?: string;
     password2?: string;
+    mobileNumber?: string;
 };
 
 export type RespondToInviteDto = {
@@ -986,6 +1016,38 @@ export type UpdateMobileResponses = {
 
 export type UpdateMobileResponse = UpdateMobileResponses[keyof UpdateMobileResponses];
 
+export type VerifyMobileData = {
+    body: VerifyMobileDto;
+    path?: never;
+    query?: never;
+    url: '/auth/verify-mobile';
+};
+
+export type VerifyMobileResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUnit;
+};
+
+export type VerifyMobileResponse = VerifyMobileResponses[keyof VerifyMobileResponses];
+
+export type SignUpData = {
+    body: SignUpDto;
+    path?: never;
+    query?: never;
+    url: '/auth/sign-up';
+};
+
+export type SignUpResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseSignUpResponseDto;
+};
+
+export type SignUpResponse = SignUpResponses[keyof SignUpResponses];
+
 export type SignOutData = {
     body: SignOutDto;
     path?: never;
@@ -1471,6 +1533,24 @@ export type GetCompanySummaryResponses = {
 };
 
 export type GetCompanySummaryResponse = GetCompanySummaryResponses[keyof GetCompanySummaryResponses];
+
+export type VerifyEmailData = {
+    body?: never;
+    path?: never;
+    query: {
+        token: string;
+    };
+    url: '/auth/verify-email';
+};
+
+export type VerifyEmailResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUnit;
+};
+
+export type VerifyEmailResponse = VerifyEmailResponses[keyof VerifyEmailResponses];
 
 export type DecodeInviteData = {
     body?: never;

@@ -127,7 +127,16 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
       description="Logg inn for å administrere ditt selskap og kundeforhold."
       error={errorMessage}
       secondaryAction={
-        <div className="space-y-2 text-center">
+        <div className="space-y-3 text-center">
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">Ny bruker?</p>
+            <Link
+              to={ROUTES_MAP['auth.sign-up'].href}
+              className="inline-block text-sm font-medium text-foreground hover:underline"
+            >
+              Opprett konto →
+            </Link>
+          </div>
           <p className="text-xs text-muted-foreground">Glemt passordet?</p>
           <Link
             to={ROUTES_MAP['auth.forgot-password'].href}
