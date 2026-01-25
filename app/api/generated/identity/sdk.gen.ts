@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCompanyRoleData, AddCompanyRoleResponses, AddProductsToCompanyData, AddProductsToCompanyResponses, CancelCompanyUserInviteData, CancelCompanyUserInviteResponses, CompanySignInData, CompanySignInResponses, CreateCompanyData, CreateCompanyResponses, CreateContactData, CreateContactResponses, DecodeInviteData, DecodeInviteResponses, DeleteCompanyUserData, DeleteCompanyUserResponses, DeleteContactData, DeleteContactResponses, DiagnosticsData, DiagnosticsResponses, EditCompanyUserData, EditCompanyUserResponses, FindById1Data, FindById1Responses, FindByIdData, FindByIdResponses, FindByIds1Data, FindByIds1Responses, FindByIdsData, FindByIdsResponses, ForgotPasswordData, ForgotPasswordResponses, GetCompanyContextsData, GetCompanyContextsResponses, GetCompanyData, GetCompanyProductsData, GetCompanyProductsResponses, GetCompanyResponses, GetCompanyRoleData, GetCompanyRoleResponses, GetCompanySummaryByIdsData, GetCompanySummaryByIdsResponses, GetCompanySummaryData, GetCompanySummaryResponses, GetCompanyUserData, GetCompanyUserResponses, GetCompanyUsersByIdsData, GetCompanyUsersByIdsResponses, GetCompanyUsersData, GetCompanyUsersResponses, GetContactData, GetContactResponses, GetContactsByIdsData, GetContactsByIdsResponses, GetContactsData, GetContactsResponses, GetDashboardMetricsData, GetDashboardMetricsResponses, GetInvitationsData, GetInvitationsResponses, GetUser1Data, GetUser1Responses, GetUserByEmailData, GetUserByEmailResponses, GetUserByIdData, GetUserByIdResponses, GetUserData, GetUserResponses, HealthData, HealthResponses, InfoData, InfoResponses, InviteCompanyUserData, InviteCompanyUserResponses, InviteUserData, InviteUserResponses, JwtClaimsData, JwtClaimsResponses, LinksData, LinksResponses, PublicGetCompanyByIdData, PublicGetCompanyByIdResponses, PublicGetCreateOrUpdateContactData, PublicGetCreateOrUpdateContactResponses, RefreshData, RefreshResponses, RequestDeleteRoleData, RequestDeleteRoleResponses, ResetPasswordData, ResetPasswordResponses, RespondToInviteData, RespondToInviteResponses, RootData, RootResponses, SearchContactsData, SearchContactsResponses, SearchUsersData, SearchUsersResponses, SignInData, SignInResponses, SignOutData, SignOutResponses, SignUpData, SignUpResponses, UpdateContactData, UpdateContactResponses, UpdateMobileData, UpdateMobileResponses, ValidateCompanyData, ValidateCompanyResponses, ValidateCompanyUserData, ValidateCompanyUserResponses, ValidateCompanyUsersData, ValidateCompanyUsersResponses, ValidateContactData, ValidateContactResponses, ValidateContactsData, ValidateContactsResponses, ValidateProductData, ValidateProductResponses, VerifyEmailData, VerifyEmailResponses, VerifyGoogleTokenData, VerifyGoogleTokenResponses, VerifyMobileData, VerifyMobileResponses } from './types.gen';
+import type { AddCompanyRoleData, AddCompanyRoleResponses, AddProductsToCompanyData, AddProductsToCompanyResponses, CancelCompanyUserInviteData, CancelCompanyUserInviteResponses, CompanySignInData, CompanySignInResponses, CreateCompanyData, CreateCompanyResponses, CreateContactData, CreateContactResponses, DecodeInviteData, DecodeInviteResponses, DeleteCompanyUserData, DeleteCompanyUserResponses, DeleteContactData, DeleteContactResponses, DiagnosticsData, DiagnosticsResponses, EditCompanyUserData, EditCompanyUserResponses, FindById1Data, FindById1Responses, FindByIdData, FindByIdResponses, FindByIds1Data, FindByIds1Responses, FindByIdsData, FindByIdsResponses, ForgotPasswordData, ForgotPasswordResponses, GetCompanyContextsData, GetCompanyContextsResponses, GetCompanyData, GetCompanyProductsData, GetCompanyProductsResponses, GetCompanyResponses, GetCompanyRoleData, GetCompanyRoleResponses, GetCompanySummaryByIdsData, GetCompanySummaryByIdsResponses, GetCompanySummaryData, GetCompanySummaryResponses, GetCompanyUserData, GetCompanyUserResponses, GetCompanyUsersByIdsData, GetCompanyUsersByIdsResponses, GetCompanyUsersData, GetCompanyUsersResponses, GetContactData, GetContactResponses, GetContactsByIdsData, GetContactsByIdsResponses, GetContactsData, GetContactsResponses, GetDashboardMetricsData, GetDashboardMetricsResponses, GetInvitationsData, GetInvitationsResponses, GetUser1Data, GetUser1Responses, GetUserByEmailData, GetUserByEmailResponses, GetUserByIdData, GetUserByIdResponses, GetUserData, GetUserResponses, HealthData, HealthResponses, InfoData, InfoResponses, InviteCompanyUserData, InviteCompanyUserResponses, InviteUserData, InviteUserResponses, JwtClaimsData, JwtClaimsResponses, LinksData, LinksResponses, PublicGetCompanyByIdData, PublicGetCompanyByIdResponses, PublicGetCreateOrUpdateContactData, PublicGetCreateOrUpdateContactResponses, RefreshData, RefreshResponses, RequestDeleteRoleData, RequestDeleteRoleResponses, ResendVerificationData, ResendVerificationResponses, ResetPasswordData, ResetPasswordResponses, RespondToInviteData, RespondToInviteResponses, RootData, RootResponses, SearchContactsData, SearchContactsResponses, SearchUsersData, SearchUsersResponses, SignInData, SignInResponses, SignOutData, SignOutResponses, SignUpData, SignUpResponses, UpdateContactData, UpdateContactResponses, UpdateMobileData, UpdateMobileResponses, ValidateCompanyData, ValidateCompanyResponses, ValidateCompanyUserData, ValidateCompanyUserResponses, ValidateCompanyUsersData, ValidateCompanyUsersResponses, ValidateContactData, ValidateContactResponses, ValidateContactsData, ValidateContactsResponses, ValidateProductData, ValidateProductResponses, VerificationStatusData, VerificationStatusResponses, VerifyEmailData, VerifyEmailResponses, VerifyGoogleTokenData, VerifyGoogleTokenResponses, VerifyMobileData, VerifyMobileResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -503,6 +503,18 @@ export class AuthController {
         });
     }
     
+    public static resendVerification<ThrowOnError extends boolean = false>(options: Options<ResendVerificationData, ThrowOnError>) {
+        return (options.client ?? client).post<ResendVerificationResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/auth/resend-verification',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
     public static refresh<ThrowOnError extends boolean = false>(options: Options<RefreshData, ThrowOnError>) {
         return (options.client ?? client).post<RefreshResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
@@ -563,6 +575,14 @@ export class AuthController {
         return (options.client ?? client).get<VerifyEmailResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/auth/verify-email',
+            ...options
+        });
+    }
+    
+    public static verificationStatus<ThrowOnError extends boolean = false>(options: Options<VerificationStatusData, ThrowOnError>) {
+        return (options.client ?? client).get<VerificationStatusResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/auth/verification-status',
             ...options
         });
     }

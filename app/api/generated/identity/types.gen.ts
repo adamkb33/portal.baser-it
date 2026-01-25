@@ -18,7 +18,7 @@ export type ApiError = {
 };
 
 export type ApiMessage = {
-    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'AUTH_PROVIDER_MISMATCH_LOCAL' | 'AUTH_PROVIDER_MISMATCH_GOOGLE' | 'AUTH_PROVIDER_MISMATCH_FACEBOOK' | 'EMAIL_VERIFICATION_INVALID' | 'EMAIL_VERIFICATION_EXPIRED' | 'SIGNUP_SESSION_INVALID' | 'SIGNUP_SESSION_EXPIRED' | 'MOBILE_OTP_INVALID' | 'MOBILE_OTP_EXPIRED' | 'MOBILE_OTP_TOO_MANY_ATTEMPTS' | 'EMAIL_NOT_VERIFIED' | 'MOBILE_NOT_VERIFIED' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'CONTACT_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
+    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'AUTH_PROVIDER_MISMATCH_LOCAL' | 'AUTH_PROVIDER_MISMATCH_GOOGLE' | 'AUTH_PROVIDER_MISMATCH_FACEBOOK' | 'SIGNUP_OK' | 'EMAIL_VERIFIED' | 'MOBILE_VERIFIED' | 'VERIFICATION_STATUS' | 'VERIFICATION_RESENT' | 'INVALID_TOKEN' | 'TOKEN_EXPIRED' | 'OTP_INVALID' | 'OTP_EXPIRED' | 'MOBILE_OTP_TOO_MANY_ATTEMPTS' | 'EMAIL_NOT_VERIFIED' | 'MOBILE_NOT_VERIFIED' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'CONTACT_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
     value: string;
 };
 
@@ -298,6 +298,19 @@ export type VerifyMobileDto = {
     code: string;
 };
 
+export type ApiResponseVerifyMobileResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: VerifyMobileResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type VerifyMobileResponseDto = {
+    nextStep: 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'SIGN_IN';
+};
+
 export type SignUpDto = {
     givenName: string;
     familyName: string;
@@ -320,6 +333,7 @@ export type SignUpResponseDto = {
     verificationSessionToken: string;
     emailSent: boolean;
     mobileSent: boolean;
+    nextStep: 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'SIGN_IN';
 };
 
 export type SignOutDto = {
@@ -367,6 +381,25 @@ export type ResetPasswordDto = {
     resetPasswordToken: string;
     password: string;
     password2: string;
+};
+
+export type ResendVerificationDto = {
+    email?: string;
+    verificationSessionToken?: string;
+};
+
+export type ApiResponseResendVerificationResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: ResendVerificationResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ResendVerificationResponseDto = {
+    emailSent: boolean;
+    mobileSent: boolean;
 };
 
 export type RefreshTokenRequestDto = {
@@ -523,6 +556,40 @@ export type CompanyDto = {
     id: number;
     orgNum: string;
     products: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+};
+
+export type ApiResponseVerifyEmailResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: VerifyEmailResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type VerifyEmailResponseDto = {
+    verificationSessionToken?: string;
+    mobileRequired: boolean;
+    mobileVerified: boolean;
+    nextStep: 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'SIGN_IN';
+};
+
+export type ApiResponseVerificationStatusResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: VerificationStatusResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type VerificationStatusResponseDto = {
+    emailVerified: boolean;
+    mobileRequired: boolean;
+    mobileVerified: boolean;
+    emailSent: boolean;
+    mobileSent: boolean;
+    nextStep: 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'SIGN_IN';
 };
 
 export type ApiResponseInviteTokenDto = {
@@ -1027,7 +1094,7 @@ export type VerifyMobileResponses = {
     /**
      * OK
      */
-    200: ApiResponseUnit;
+    200: ApiResponseVerifyMobileResponseDto;
 };
 
 export type VerifyMobileResponse = VerifyMobileResponses[keyof VerifyMobileResponses];
@@ -1113,6 +1180,22 @@ export type ResetPasswordResponses = {
 };
 
 export type ResetPasswordResponse = ResetPasswordResponses[keyof ResetPasswordResponses];
+
+export type ResendVerificationData = {
+    body: ResendVerificationDto;
+    path?: never;
+    query?: never;
+    url: '/auth/resend-verification';
+};
+
+export type ResendVerificationResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseResendVerificationResponseDto;
+};
+
+export type ResendVerificationResponse = ResendVerificationResponses[keyof ResendVerificationResponses];
 
 export type RefreshData = {
     body: RefreshTokenRequestDto;
@@ -1547,10 +1630,28 @@ export type VerifyEmailResponses = {
     /**
      * OK
      */
-    200: ApiResponseUnit;
+    200: ApiResponseVerifyEmailResponseDto;
 };
 
 export type VerifyEmailResponse = VerifyEmailResponses[keyof VerifyEmailResponses];
+
+export type VerificationStatusData = {
+    body?: never;
+    path?: never;
+    query: {
+        verificationSessionToken: string;
+    };
+    url: '/auth/verification-status';
+};
+
+export type VerificationStatusResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseVerificationStatusResponseDto;
+};
+
+export type VerificationStatusResponse = VerificationStatusResponses[keyof VerificationStatusResponses];
 
 export type DecodeInviteData = {
     body?: never;
