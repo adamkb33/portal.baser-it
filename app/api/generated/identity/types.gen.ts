@@ -18,7 +18,7 @@ export type ApiError = {
 };
 
 export type ApiMessage = {
-    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'AUTH_PROVIDER_MISMATCH_LOCAL' | 'AUTH_PROVIDER_MISMATCH_GOOGLE' | 'AUTH_PROVIDER_MISMATCH_FACEBOOK' | 'SIGNUP_OK' | 'EMAIL_VERIFIED' | 'MOBILE_VERIFIED' | 'VERIFICATION_STATUS' | 'VERIFICATION_RESENT' | 'INVALID_TOKEN' | 'TOKEN_EXPIRED' | 'OTP_INVALID' | 'OTP_EXPIRED' | 'MOBILE_OTP_TOO_MANY_ATTEMPTS' | 'EMAIL_NOT_VERIFIED' | 'MOBILE_NOT_VERIFIED' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'CONTACT_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
+    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'AUTH_PROVIDER_MISMATCH_LOCAL' | 'AUTH_PROVIDER_MISMATCH_GOOGLE' | 'AUTH_PROVIDER_MISMATCH_FACEBOOK' | 'SIGNUP_OK' | 'SIGNIN_OK' | 'EMAIL_VERIFIED' | 'MOBILE_VERIFIED' | 'VERIFICATION_STATUS' | 'VERIFICATION_RESENT' | 'PROFILE_UPDATED' | 'SESSION_USER_ATTACHED' | 'SESSION_REQUIREMENTS' | 'INVALID_PROVIDER_TOKEN' | 'EMAIL_REQUIRED' | 'MOBILE_REQUIRED' | 'USER_NOT_FOUND' | 'INVALID_TOKEN' | 'TOKEN_EXPIRED' | 'OTP_INVALID' | 'OTP_EXPIRED' | 'MOBILE_OTP_TOO_MANY_ATTEMPTS' | 'EMAIL_NOT_VERIFIED' | 'MOBILE_NOT_VERIFIED' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'CONTACT_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
     value: string;
 };
 
@@ -163,7 +163,7 @@ export type ApiResponseAuthenticatedUserPayload = {
 
 export type AuthenticatedUserPayload = {
     id: number;
-    email: string;
+    email?: string;
     companyId?: number;
     companyRoles?: Array<'ADMIN' | 'EMPLOYEE'>;
     companyProducts?: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
@@ -241,8 +241,10 @@ export type UserDto = {
     id: number;
     givenName: string;
     familyName: string;
-    email: string;
+    email?: string;
+    emailVerified: boolean;
     mobileNumber?: string;
+    mobileVerified: boolean;
 };
 
 export type ContactSearchRequestDto = {
@@ -348,6 +350,39 @@ export type SignInDto = {
     idToken?: string;
 };
 
+export type ApiResponseSignInResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: SignInResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type SignInResponseDto = {
+    accessToken: string;
+    accessTokenExpiresAt: number;
+    refreshToken: string;
+    refreshTokenExpiresAt: number;
+    userId: number;
+    email?: string;
+    mobileNumber?: string;
+    nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'ATTACH_SESSION' | 'DONE';
+};
+
+export type AcceptInviteDto = {
+    givenName: string;
+    familyName: string;
+    password?: string;
+    password2?: string;
+    mobileNumber?: string;
+};
+
+export type RespondToInviteDto = {
+    action: 'ACCEPT' | 'DECLINE';
+    accept?: AcceptInviteDto;
+};
+
 export type ApiResponseAuthenticationTokenDto = {
     success: boolean;
     message: ApiMessage;
@@ -362,19 +397,6 @@ export type AuthenticationTokenDto = {
     accessTokenExpiresAt: number;
     refreshToken: string;
     refreshTokenExpiresAt: number;
-};
-
-export type AcceptInviteDto = {
-    givenName: string;
-    familyName: string;
-    password?: string;
-    password2?: string;
-    mobileNumber?: string;
-};
-
-export type RespondToInviteDto = {
-    action: 'ACCEPT' | 'DECLINE';
-    accept?: AcceptInviteDto;
 };
 
 export type ResetPasswordDto = {
@@ -404,6 +426,28 @@ export type ResendVerificationResponseDto = {
 
 export type RefreshTokenRequestDto = {
     refreshToken: string;
+};
+
+export type ProviderCompleteProfileDto = {
+    userId: number;
+    email?: string;
+    mobileNumber?: string;
+};
+
+export type ApiResponseProviderCompleteProfileResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: ProviderCompleteProfileResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ProviderCompleteProfileResponseDto = {
+    userId: number;
+    email?: string;
+    mobileNumber?: string;
+    nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'ATTACH_SESSION' | 'DONE';
 };
 
 export type ApiResponseJwtClaims = {
@@ -1142,7 +1186,7 @@ export type SignInResponses = {
     /**
      * OK
      */
-    200: ApiResponseAuthenticationTokenDto;
+    200: ApiResponseSignInResponseDto;
 };
 
 export type SignInResponse = SignInResponses[keyof SignInResponses];
@@ -1214,6 +1258,22 @@ export type RefreshResponses = {
 };
 
 export type RefreshResponse = RefreshResponses[keyof RefreshResponses];
+
+export type ProviderCompleteProfileData = {
+    body: ProviderCompleteProfileDto;
+    path?: never;
+    query?: never;
+    url: '/auth/provider/complete-profile';
+};
+
+export type ProviderCompleteProfileResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseProviderCompleteProfileResponseDto;
+};
+
+export type ProviderCompleteProfileResponse = ProviderCompleteProfileResponses[keyof ProviderCompleteProfileResponses];
 
 export type JwtClaimsData = {
     body?: never;

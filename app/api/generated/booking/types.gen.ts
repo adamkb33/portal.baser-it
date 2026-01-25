@@ -41,7 +41,7 @@ export type ApiError = {
 };
 
 export type ApiMessage = {
-    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'AUTH_PROVIDER_MISMATCH_LOCAL' | 'AUTH_PROVIDER_MISMATCH_GOOGLE' | 'AUTH_PROVIDER_MISMATCH_FACEBOOK' | 'SIGNUP_OK' | 'EMAIL_VERIFIED' | 'MOBILE_VERIFIED' | 'VERIFICATION_STATUS' | 'VERIFICATION_RESENT' | 'INVALID_TOKEN' | 'TOKEN_EXPIRED' | 'OTP_INVALID' | 'OTP_EXPIRED' | 'MOBILE_OTP_TOO_MANY_ATTEMPTS' | 'EMAIL_NOT_VERIFIED' | 'MOBILE_NOT_VERIFIED' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'CONTACT_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
+    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'AUTH_PROVIDER_MISMATCH_LOCAL' | 'AUTH_PROVIDER_MISMATCH_GOOGLE' | 'AUTH_PROVIDER_MISMATCH_FACEBOOK' | 'SIGNUP_OK' | 'SIGNIN_OK' | 'EMAIL_VERIFIED' | 'MOBILE_VERIFIED' | 'VERIFICATION_STATUS' | 'VERIFICATION_RESENT' | 'PROFILE_UPDATED' | 'SESSION_USER_ATTACHED' | 'SESSION_REQUIREMENTS' | 'INVALID_PROVIDER_TOKEN' | 'EMAIL_REQUIRED' | 'MOBILE_REQUIRED' | 'USER_NOT_FOUND' | 'INVALID_TOKEN' | 'TOKEN_EXPIRED' | 'OTP_INVALID' | 'OTP_EXPIRED' | 'MOBILE_OTP_TOO_MANY_ATTEMPTS' | 'EMAIL_NOT_VERIFIED' | 'MOBILE_NOT_VERIFIED' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'CONTACT_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
     value: string;
 };
 
@@ -124,6 +124,20 @@ export type ServiceGroupDto = {
     name: string;
 };
 
+export type ApiResponsePublicAttachSessionResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PublicAttachSessionResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PublicAttachSessionResponseDto = {
+    sessionId: string;
+    nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'ATTACH_SESSION' | 'DONE';
+};
+
 export type ApiResponseAppointmentDto = {
     success: boolean;
     message: ApiMessage;
@@ -162,8 +176,10 @@ export type UserDto = {
     id: number;
     givenName: string;
     familyName: string;
-    email: string;
+    email?: string;
+    emailVerified: boolean;
     mobileNumber?: string;
+    mobileVerified: boolean;
 };
 
 export type ApiResponseAppointmentSessionDto = {
@@ -305,6 +321,22 @@ export type CompanyUserCreateAppointmentDto = {
     userId: number;
     serviceIds: Array<number>;
     startTime: string;
+};
+
+export type ApiResponsePublicSessionRequirementsDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PublicSessionRequirementsDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PublicSessionRequirementsDto = {
+    needsUser: boolean;
+    needsEmail: boolean;
+    needsMobile: boolean;
+    nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'ATTACH_SESSION' | 'DONE';
 };
 
 export type ApiResponseListBookingProfileDto = {
@@ -676,6 +708,26 @@ export type UpdateServiceGroupResponses = {
 
 export type UpdateServiceGroupResponse = UpdateServiceGroupResponses[keyof UpdateServiceGroupResponses];
 
+export type AttachAppointmentSessionUserData = {
+    body?: never;
+    path: {
+        sessionId: string;
+    };
+    query: {
+        userId: number;
+    };
+    url: '/public/appointment-session/{sessionId}/attach-user';
+};
+
+export type AttachAppointmentSessionUserResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponsePublicAttachSessionResponseDto;
+};
+
+export type AttachAppointmentSessionUserResponse = AttachAppointmentSessionUserResponses[keyof AttachAppointmentSessionUserResponses];
+
 export type SubmitAppointmentSessionData = {
     body?: never;
     path?: never;
@@ -1000,6 +1052,24 @@ export type CompanyUserCreateAppointmentResponses = {
 };
 
 export type CompanyUserCreateAppointmentResponse = CompanyUserCreateAppointmentResponses[keyof CompanyUserCreateAppointmentResponses];
+
+export type GetAppointmentSessionRequirementsData = {
+    body?: never;
+    path: {
+        sessionId: string;
+    };
+    query?: never;
+    url: '/public/appointment-session/{sessionId}/requirements';
+};
+
+export type GetAppointmentSessionRequirementsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponsePublicSessionRequirementsDto;
+};
+
+export type GetAppointmentSessionRequirementsResponse = GetAppointmentSessionRequirementsResponses[keyof GetAppointmentSessionRequirementsResponses];
 
 export type GetAppointmentSessionData = {
     body?: never;
