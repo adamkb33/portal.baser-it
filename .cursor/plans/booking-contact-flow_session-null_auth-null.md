@@ -11,14 +11,12 @@ This flow describes the booking contact route behavior when there is an empty se
 
 ## Loader
 
-1. Loader runs for the booking contact route.
-2. `getSession(request)` returns a session without `userId`.
-3. `authService.getUserSession(request)` fails with `AuthenticationError`.
-4. Loader returns `{ session, authSession: null }`.
-
 ## Actions
 
-- No actions run.
+- Sign-in (provider):
+  - Use `auth.signin` route with a `fetcher` id.
+- Sign-up:
+  - Use the `auth` sign-up route with a `fetcher` id.
 
 ## UI
 
