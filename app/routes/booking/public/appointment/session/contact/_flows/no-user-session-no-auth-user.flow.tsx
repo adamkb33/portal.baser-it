@@ -16,6 +16,38 @@ import {
 const VIEW_MENU = 'menu';
 const VIEW_SIGN_IN = 'sign-in';
 const VIEW_SIGN_UP = 'sign-up';
+const SIGN_IN_STORAGE_KEY = 'booking-contact:sign-in';
+const SIGN_UP_STORAGE_KEY = 'booking-contact:sign-up';
+const VIEW_STORAGE_KEY = 'booking-contact:view';
+
+type SignInDraft = {
+  email: string;
+};
+
+type SignUpDraft = {
+  givenName: string;
+  familyName: string;
+  email: string;
+  mobileNumber: string;
+};
+
+const readSessionStorage = <T,>(key: string, fallback: T): T => {
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const writeSessionStorage = (key: string, value: unknown) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`[booking-contact] failed to write session storage: ${key}`, error);
+  }
+};
 
 export function NoUserSessionNoAuthUserFlow() {
   const providerFetcher = useFetcher({ key: CONTACT_PROVIDER_SIGN_IN_FETCHER_KEY });
@@ -23,7 +55,15 @@ export function NoUserSessionNoAuthUserFlow() {
   const returnTo = `${location.pathname}${location.search}`;
   const isProviderSubmitting = providerFetcher.state === 'submitting';
   const [view, setView] = React.useState<typeof VIEW_MENU | typeof VIEW_SIGN_IN | typeof VIEW_SIGN_UP>(VIEW_MENU);
+  const [signInDraft, setSignInDraft] = React.useState<SignInDraft>({ email: '' });
+  const [signUpDraft, setSignUpDraft] = React.useState<SignUpDraft>({
+    givenName: '',
+    familyName: '',
+    email: '',
+    mobileNumber: '',
+  });
   const clickIndexRef = React.useRef(0);
+  const hasHydratedRef = React.useRef(false);
 
   const logClick = React.useCallback((label: string) => {
     clickIndexRef.current += 1;
@@ -31,8 +71,37 @@ export function NoUserSessionNoAuthUserFlow() {
   }, []);
 
   React.useEffect(() => {
+    if (!hasHydratedRef.current) {
+      setView(readSessionStorage(VIEW_STORAGE_KEY, VIEW_MENU));
+      setSignInDraft(readSessionStorage(SIGN_IN_STORAGE_KEY, { email: '' }));
+      setSignUpDraft(
+        readSessionStorage(SIGN_UP_STORAGE_KEY, { givenName: '', familyName: '', email: '', mobileNumber: '' }),
+      );
+      hasHydratedRef.current = true;
+      return;
+    }
+
     console.log(`[booking-contact] view: ${view}`);
+    writeSessionStorage(VIEW_STORAGE_KEY, view);
   }, [view]);
+
+  React.useEffect(() => {
+    if (!hasHydratedRef.current) return;
+    writeSessionStorage(SIGN_IN_STORAGE_KEY, signInDraft);
+  }, [signInDraft]);
+
+  React.useEffect(() => {
+    if (!hasHydratedRef.current) return;
+    writeSessionStorage(SIGN_UP_STORAGE_KEY, signUpDraft);
+  }, [signUpDraft]);
+
+  const updateSignInDraft = React.useCallback((next: SignInDraft) => {
+    setSignInDraft(next);
+  }, []);
+
+  const updateSignUpDraft = React.useCallback((next: SignUpDraft) => {
+    setSignUpDraft(next);
+  }, []);
 
   const submitGoogleToken = React.useCallback(
     (token: string) => {
@@ -102,7 +171,15 @@ export function NoUserSessionNoAuthUserFlow() {
                 <label className="text-sm font-medium text-form-text" htmlFor="contact-signin-email">
                   E-post
                 </label>
-                <Input id="contact-signin-email" name="email" type="email" autoComplete="email" required />
+                <Input
+                  id="contact-signin-email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={signInDraft.email}
+                  onChange={(event) => updateSignInDraft({ email: event.target.value })}
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-form-text" htmlFor="contact-signin-password">
@@ -156,25 +233,54 @@ export function NoUserSessionNoAuthUserFlow() {
             <label className="text-sm font-medium text-form-text" htmlFor="contact-signup-given-name">
               Fornavn
             </label>
-            <Input id="contact-signup-given-name" name="givenName" autoComplete="given-name" required />
+            <Input
+              id="contact-signup-given-name"
+              name="givenName"
+              autoComplete="given-name"
+              required
+              value={signUpDraft.givenName}
+              onChange={(event) => updateSignUpDraft({ ...signUpDraft, givenName: event.target.value })}
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-form-text" htmlFor="contact-signup-family-name">
               Etternavn
             </label>
-            <Input id="contact-signup-family-name" name="familyName" autoComplete="family-name" required />
+            <Input
+              id="contact-signup-family-name"
+              name="familyName"
+              autoComplete="family-name"
+              required
+              value={signUpDraft.familyName}
+              onChange={(event) => updateSignUpDraft({ ...signUpDraft, familyName: event.target.value })}
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-form-text" htmlFor="contact-signup-email">
               E-post
             </label>
-            <Input id="contact-signup-email" name="email" type="email" autoComplete="email" required />
+            <Input
+              id="contact-signup-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={signUpDraft.email}
+              onChange={(event) => updateSignUpDraft({ ...signUpDraft, email: event.target.value })}
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-form-text" htmlFor="contact-signup-mobile">
               Mobilnummer
             </label>
-            <Input id="contact-signup-mobile" name="mobileNumber" type="tel" autoComplete="tel" />
+            <Input
+              id="contact-signup-mobile"
+              name="mobileNumber"
+              type="tel"
+              autoComplete="tel"
+              value={signUpDraft.mobileNumber}
+              onChange={(event) => updateSignUpDraft({ ...signUpDraft, mobileNumber: event.target.value })}
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-form-text" htmlFor="contact-signup-password">
@@ -186,7 +292,13 @@ export function NoUserSessionNoAuthUserFlow() {
             <label className="text-sm font-medium text-form-text" htmlFor="contact-signup-password2">
               Bekreft passord
             </label>
-            <Input id="contact-signup-password2" name="password2" type="password" autoComplete="new-password" required />
+            <Input
+              id="contact-signup-password2"
+              name="password2"
+              type="password"
+              autoComplete="new-password"
+              required
+            />
           </div>
           <div className="flex items-center justify-between gap-2">
             <Button
