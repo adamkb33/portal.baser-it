@@ -1159,24 +1159,6 @@ export type GetAppointmentSessionRequirementsResponses = {
 
 export type GetAppointmentSessionRequirementsResponse = GetAppointmentSessionRequirementsResponses[keyof GetAppointmentSessionRequirementsResponses];
 
-export type ClearPendingAppointmentSessionUserData = {
-    body?: never;
-    path: {
-        sessionId: string;
-    };
-    query?: never;
-    url: '/public/appointment-session/{sessionId}/pending-user';
-};
-
-export type ClearPendingAppointmentSessionUserResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponsePublicPendingUserClearedResponseDto;
-};
-
-export type ClearPendingAppointmentSessionUserResponse = ClearPendingAppointmentSessionUserResponses[keyof ClearPendingAppointmentSessionUserResponses];
-
 export type GetPendingAppointmentSessionUserData = {
     body?: never;
     path: {
@@ -1481,7 +1463,7 @@ export type ClearAppointmentSessionUserData = {
         sessionId: string;
     };
     query?: never;
-    url: '/public/appointment-session/{sessionId}/attached-user';
+    url: '/public/appointment-session/{sessionId}/user';
 };
 
 export type ClearAppointmentSessionUserResponses = {
