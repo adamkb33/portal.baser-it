@@ -630,8 +630,13 @@ export function BookingBottomNav({
   primaryActionClassName,
   className,
 }: BookingBottomNavProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const mountNode = typeof document === 'undefined' ? null : document.getElementById('booking-mobile-footer');
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -673,7 +678,7 @@ export function BookingBottomNav({
     };
   }, []);
 
-  if (!mountNode) return null;
+  if (!isMounted || !mountNode) return null;
 
   return createPortal(
     <div

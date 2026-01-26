@@ -22,8 +22,6 @@ export enum RoutePlaceMent {
 
 export enum UserRole {
   SYSTEM_ADMIN = 'SYSTEM_ADMIN',
-  USER = 'USER',
-  COMPANY_USER = 'COMPANY_USER',
 }
 
 export enum CompanyRole {

@@ -30,14 +30,11 @@ export async function loader({ request }: Route.LoaderArgs) {
       return redirect(ROUTES_MAP['booking.public.appointment.session.select-services'].href);
     }
 
-    const profilesResponse =
-      await PublicAppointmentSessionController.getAppointmentSessionProfiles(
-        {
-          query: {
-            sessionId: session.sessionId,
-          },
-        },  
-      );
+    const profilesResponse = await PublicAppointmentSessionController.getAppointmentSessionProfiles({
+      query: {
+        sessionId: session.sessionId,
+      },
+    });
 
     return data({
       session,
@@ -69,14 +66,12 @@ export async function action({ request }: Route.ActionArgs) {
     const formData = await request.formData();
     const selectedProfileId = formData.get('selectedProfileId') as string;
 
-    await PublicAppointmentSessionController.selectAppointmentSessionProfile(
-      {
-        query: {
-          sessionId: session.sessionId,
-          selectedProfileId: Number(selectedProfileId),
-        },
+    await PublicAppointmentSessionController.selectAppointmentSessionProfile({
+      query: {
+        sessionId: session.sessionId,
+        selectedProfileId: Number(selectedProfileId),
       },
-    );
+    });
 
     return redirect(ROUTES_MAP['booking.public.appointment.session.select-services'].href);
   } catch (error) {
@@ -114,7 +109,7 @@ export default function AppointmentsEmployee({ loaderData }: Route.ComponentProp
     <>
       <BookingContainer>
         <BookingStepHeader
-          label='Velg behandler'
+          label="Velg behandler"
           title="Hvem skal vi bestille avtalen på?"
           description={
             selectedProfileId
@@ -250,4 +245,3 @@ export default function AppointmentsEmployee({ loaderData }: Route.ComponentProp
     </>
   );
 }
-
