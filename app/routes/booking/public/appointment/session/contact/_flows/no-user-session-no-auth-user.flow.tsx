@@ -12,6 +12,7 @@ import {
   CONTACT_SIGN_IN_FETCHER_KEY,
   CONTACT_SIGN_UP_FETCHER_KEY,
 } from '../_forms/fetcher-keys';
+import { ACTION_INTENT } from '../booking.public.appointment.session.contact.route';
 
 const VIEW_MENU = 'menu';
 const VIEW_SIGN_IN = 'sign-in';
@@ -32,6 +33,7 @@ type SignUpDraft = {
 };
 
 const readSessionStorage = <T,>(key: string, fallback: T): T => {
+  if (typeof window === 'undefined') return fallback;
   try {
     const raw = window.sessionStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
@@ -44,8 +46,8 @@ const writeSessionStorage = (key: string, value: unknown) => {
   if (typeof window === 'undefined') return;
   try {
     window.sessionStorage.setItem(key, JSON.stringify(value));
-  } catch (error) {
-    console.error(`[booking-contact] failed to write session storage: ${key}`, error);
+  } catch {
+    // ignore write failures
   }
 };
 
@@ -229,6 +231,7 @@ export function NoUserSessionNoAuthUserFlow() {
       />
       <BookingSection title="Opprett konto" variant="elevated">
         <AuthSignUpFetcherForm fetcherId={CONTACT_SIGN_UP_FETCHER_KEY} className="space-y-4">
+          <input type="hidden" name="intent" value={ACTION_INTENT.SIGN_UP_LOCAL} />
           <div className="space-y-2">
             <label className="text-sm font-medium text-form-text" htmlFor="contact-signup-given-name">
               Fornavn

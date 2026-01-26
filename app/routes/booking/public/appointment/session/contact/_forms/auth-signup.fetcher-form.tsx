@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { useFetcher } from 'react-router';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { useFetcher, useLocation } from 'react-router';
 
 type AuthSignUpFetcherFormProps = {
   fetcherId: string;
@@ -10,8 +9,9 @@ type AuthSignUpFetcherFormProps = {
 
 export function AuthSignUpFetcherForm({ fetcherId, className, children }: AuthSignUpFetcherFormProps) {
   const fetcher = useFetcher({ key: fetcherId });
-  const returnToValue = ROUTES_MAP['booking.public.appointment.session.contact'].href;
-  const action = `${ROUTES_MAP['auth.sign-up'].href}?index&returnTo=${encodeURIComponent(returnToValue)}`;
+  const location = useLocation();
+  const separator = location.search ? '&' : '?';
+  const action = `${location.pathname}${location.search}${separator}index`;
 
   return (
     <fetcher.Form method="post" action={action} className={className}>

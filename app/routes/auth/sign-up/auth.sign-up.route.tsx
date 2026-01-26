@@ -2,19 +2,12 @@
 import { Form, Link, data, redirect, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.sign-up.route';
 
-import { AuthController } from '~/api/generated/identity';
+import { handleSignUp, type SignUpActionValues } from '../_features/sign-up.handler';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
-
-type SignUpActionValues = {
-  givenName?: string;
-  familyName?: string;
-  email?: string;
-  mobileNumber?: string;
-};
 
 function getReturnTo(url: URL) {
   const returnToParam = url.searchParams.get('returnTo');
@@ -25,59 +18,31 @@ export async function action({ request }: Route.ActionArgs) {
   const url = new URL(request.url);
   const returnTo = getReturnTo(url);
   const formData = await request.formData();
-  const givenName = String(formData.get('givenName') || '');
-  const familyName = String(formData.get('familyName') || '');
-  const email = String(formData.get('email') || '');
-  const mobileNumberValue = String(formData.get('mobileNumber') || '').trim();
-  const password = String(formData.get('password') || '');
-  const password2 = String(formData.get('password2') || '');
+  const result = await handleSignUp(formData);
 
-  try {
-    const response = await AuthController.signUp({
-      body: {
-        givenName,
-        familyName,
-        email,
-        password,
-        password2,
-        ...(mobileNumberValue ? { mobileNumber: mobileNumberValue } : {}),
-      },
-    });
-
-    const signUpPayload = response.data?.data;
-    if (!signUpPayload) {
-      const message = response.data?.message || 'Kunne ikke opprette konto. Prøv igjen.';
-      return data(
-        {
-          error: message,
-          values: { givenName, familyName, email, mobileNumber: mobileNumberValue },
-        },
-        { status: 400 },
-      );
-    }
-
-    const params = new URLSearchParams({
-      emailSent: signUpPayload.emailSent ? 'true' : 'false',
-      mobileSent: signUpPayload.mobileSent ? 'true' : 'false',
-    });
-
-    if (returnTo) {
-      const returnUrl = new URL(returnTo, url.origin);
-      params.forEach((value, key) => returnUrl.searchParams.set(key, value));
-      return redirect(`${returnUrl.pathname}${returnUrl.search}`);
-    }
-
-    return redirect(`${ROUTES_MAP['auth.check-email'].href}?${params.toString()}`);
-  } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke opprette konto. Prøv igjen.');
+  if (!result.ok) {
     return data(
       {
-        error: message,
-        values: { givenName, familyName, email, mobileNumber: mobileNumberValue },
+        error: result.error,
+        values: result.values,
       },
-      { status: status ?? 400 },
+      { status: result.status },
     );
   }
+
+  const signUpPayload = result.signUp as { emailSent?: boolean; mobileSent?: boolean };
+  const params = new URLSearchParams({
+    emailSent: signUpPayload.emailSent ? 'true' : 'false',
+    mobileSent: signUpPayload.mobileSent ? 'true' : 'false',
+  });
+
+  if (returnTo) {
+    const returnUrl = new URL(returnTo, url.origin);
+    params.forEach((value, key) => returnUrl.searchParams.set(key, value));
+    return redirect(`${returnUrl.pathname}${returnUrl.search}`);
+  }
+
+  return redirect(`${ROUTES_MAP['auth.check-email'].href}?${params.toString()}`);
 }
 
 export default function AuthSignUp({ actionData }: Route.ComponentProps) {

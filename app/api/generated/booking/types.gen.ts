@@ -124,10 +124,6 @@ export type ServiceGroupDto = {
     name: string;
 };
 
-export type SetPendingUserRequestDto = {
-    userId: number;
-};
-
 export type ApiResponsePublicPendingUserResponseDto = {
     success: boolean;
     message: ApiMessage;
@@ -140,20 +136,6 @@ export type ApiResponsePublicPendingUserResponseDto = {
 export type PublicPendingUserResponseDto = {
     sessionId: string;
     userId?: number;
-    nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'ATTACH_SESSION' | 'DONE';
-};
-
-export type ApiResponsePublicAttachSessionResponseDto = {
-    success: boolean;
-    message: ApiMessage;
-    data?: PublicAttachSessionResponseDto;
-    errors?: Array<ApiError>;
-    meta?: ApiMeta;
-    timestamp: string;
-};
-
-export type PublicAttachSessionResponseDto = {
-    sessionId: string;
     nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'ATTACH_SESSION' | 'DONE';
 };
 
@@ -760,13 +742,33 @@ export type UpdateServiceGroupResponses = {
 
 export type UpdateServiceGroupResponse = UpdateServiceGroupResponses[keyof UpdateServiceGroupResponses];
 
-export type SetPendingAppointmentSessionUserData = {
-    body: SetPendingUserRequestDto;
+export type ClearAppointmentSessionUserData = {
+    body?: never;
     path: {
         sessionId: string;
     };
     query?: never;
-    url: '/public/appointment-session/{sessionId}/set-pending-user';
+    url: '/public/appointment-session/{sessionId}/user';
+};
+
+export type ClearAppointmentSessionUserResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponsePublicPendingUserClearedResponseDto;
+};
+
+export type ClearAppointmentSessionUserResponse = ClearAppointmentSessionUserResponses[keyof ClearAppointmentSessionUserResponses];
+
+export type SetPendingAppointmentSessionUserData = {
+    body?: never;
+    path: {
+        sessionId: string;
+    };
+    query: {
+        userId: number;
+    };
+    url: '/public/appointment-session/{sessionId}/user';
 };
 
 export type SetPendingAppointmentSessionUserResponses = {
@@ -777,26 +779,6 @@ export type SetPendingAppointmentSessionUserResponses = {
 };
 
 export type SetPendingAppointmentSessionUserResponse = SetPendingAppointmentSessionUserResponses[keyof SetPendingAppointmentSessionUserResponses];
-
-export type AttachAppointmentSessionUserData = {
-    body?: never;
-    path: {
-        sessionId: string;
-    };
-    query: {
-        userId: number;
-    };
-    url: '/public/appointment-session/{sessionId}/attach-user';
-};
-
-export type AttachAppointmentSessionUserResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponsePublicAttachSessionResponseDto;
-};
-
-export type AttachAppointmentSessionUserResponse = AttachAppointmentSessionUserResponses[keyof AttachAppointmentSessionUserResponses];
 
 export type SubmitAppointmentSessionData = {
     body?: never;
@@ -815,25 +797,6 @@ export type SubmitAppointmentSessionResponses = {
 };
 
 export type SubmitAppointmentSessionResponse = SubmitAppointmentSessionResponses[keyof SubmitAppointmentSessionResponses];
-
-export type SubmitAppointmentSessionUserData = {
-    body?: never;
-    path?: never;
-    query: {
-        sessionId: string;
-        userId: number;
-    };
-    url: '/public/appointment-session/submit-user';
-};
-
-export type SubmitAppointmentSessionUserResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponseAppointmentSessionDto;
-};
-
-export type SubmitAppointmentSessionUserResponse = SubmitAppointmentSessionUserResponses[keyof SubmitAppointmentSessionUserResponses];
 
 export type SubmitAppointmentSessionStartTimeData = {
     body?: never;
@@ -1456,24 +1419,6 @@ export type RootResponses = {
 };
 
 export type RootResponse = RootResponses[keyof RootResponses];
-
-export type ClearAppointmentSessionUserData = {
-    body?: never;
-    path: {
-        sessionId: string;
-    };
-    query?: never;
-    url: '/public/appointment-session/{sessionId}/user';
-};
-
-export type ClearAppointmentSessionUserResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponsePublicPendingUserClearedResponseDto;
-};
-
-export type ClearAppointmentSessionUserResponse = ClearAppointmentSessionUserResponses[keyof ClearAppointmentSessionUserResponses];
 
 export type DeleteAppointmentSessionData = {
     body?: never;

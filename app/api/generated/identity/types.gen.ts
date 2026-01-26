@@ -333,6 +333,7 @@ export type ApiResponseSignUpResponseDto = {
 };
 
 export type SignUpResponseDto = {
+    userId: number;
     verificationSessionToken: string;
     emailSent: boolean;
     mobileSent: boolean;
