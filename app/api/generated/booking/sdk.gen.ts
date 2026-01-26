@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AttachAppointmentSessionUserData, AttachAppointmentSessionUserResponses, CancelAppointmentData, CancelAppointmentResponses, CompanyUserCreateAppointmentData, CompanyUserCreateAppointmentResponses, CompanyUserCreateUnavailabilityRangesData, CompanyUserCreateUnavailabilityRangesResponses, CompanyUserGetUnavailabilityRangesData, CompanyUserGetUnavailabilityRangesResponses, CreateAppointmentSessionData, CreateAppointmentSessionResponses, CreateOrUpdateDailySchedulesData, CreateOrUpdateDailySchedulesResponses, CreateOrUpdateProfileData, CreateOrUpdateProfileResponses, CreateServiceData, CreateServiceGroupData, CreateServiceGroupResponses, CreateServiceResponses, DeleteAppointmentData, DeleteAppointmentResponses, DeleteAppointmentSessionData, DeleteAppointmentSessionResponses, DeleteDailyScheduleData, DeleteDailyScheduleResponses, DeleteServiceData, DeleteServiceGroupData, DeleteServiceGroupResponses, DeleteServiceResponses, GetAppointmentByIdData, GetAppointmentByIdResponses, GetAppointmentsData, GetAppointmentSessionData, GetAppointmentSessionOverviewData, GetAppointmentSessionOverviewResponses, GetAppointmentSessionProfilesData, GetAppointmentSessionProfileServicesData, GetAppointmentSessionProfileServicesResponses, GetAppointmentSessionProfilesResponses, GetAppointmentSessionRequirementsData, GetAppointmentSessionRequirementsResponses, GetAppointmentSessionResponses, GetAppointmentSessionSchedulesData, GetAppointmentSessionSchedulesResponses, GetAppointmentsResponses, GetBookingProfileData, GetBookingProfileResponses, GetBookingReadyCompaniesData, GetBookingReadyCompaniesResponses, GetCompanyBookingInfoData, GetCompanyBookingInfoResponses, GetCompanyBookingMetricsData, GetCompanyBookingMetricsResponses, GetDailySchedulesData, GetDailySchedulesResponses, GetGroupedServiceGroupsData, GetGroupedServiceGroupsResponses, GetScheduleData, GetScheduleResponses, GetServiceGroupsData, GetServiceGroupsResponses, GetServicesData, GetServicesResponses, HealthData, HealthResponses, InfoData, InfoResponses, LinksData, LinksResponses, RootData, RootResponses, SelectAppointmentSessionProfileData, SelectAppointmentSessionProfileResponses, SelectAppointmentSessionProfileServicesData, SelectAppointmentSessionProfileServicesResponses, SubmitAppointmentSessionData, SubmitAppointmentSessionResponses, SubmitAppointmentSessionStartTimeData, SubmitAppointmentSessionStartTimeResponses, SubmitAppointmentSessionUserData, SubmitAppointmentSessionUserResponses, UpdateServiceData, UpdateServiceGroupData, UpdateServiceGroupResponses, UpdateServiceResponses, ValidateCompanyBookingData, ValidateCompanyBookingResponses } from './types.gen';
+import type { AttachAppointmentSessionUserData, AttachAppointmentSessionUserResponses, CancelAppointmentData, CancelAppointmentResponses, ClearAppointmentSessionUserData, ClearAppointmentSessionUserResponses, ClearPendingAppointmentSessionUserData, ClearPendingAppointmentSessionUserResponses, CompanyUserCreateAppointmentData, CompanyUserCreateAppointmentResponses, CompanyUserCreateUnavailabilityRangesData, CompanyUserCreateUnavailabilityRangesResponses, CompanyUserGetUnavailabilityRangesData, CompanyUserGetUnavailabilityRangesResponses, CreateAppointmentSessionData, CreateAppointmentSessionResponses, CreateOrUpdateDailySchedulesData, CreateOrUpdateDailySchedulesResponses, CreateOrUpdateProfileData, CreateOrUpdateProfileResponses, CreateServiceData, CreateServiceGroupData, CreateServiceGroupResponses, CreateServiceResponses, DeleteAppointmentData, DeleteAppointmentResponses, DeleteAppointmentSessionData, DeleteAppointmentSessionResponses, DeleteDailyScheduleData, DeleteDailyScheduleResponses, DeleteServiceData, DeleteServiceGroupData, DeleteServiceGroupResponses, DeleteServiceResponses, GetAppointmentByIdData, GetAppointmentByIdResponses, GetAppointmentsData, GetAppointmentSessionData, GetAppointmentSessionOverviewData, GetAppointmentSessionOverviewResponses, GetAppointmentSessionProfilesData, GetAppointmentSessionProfileServicesData, GetAppointmentSessionProfileServicesResponses, GetAppointmentSessionProfilesResponses, GetAppointmentSessionRequirementsData, GetAppointmentSessionRequirementsResponses, GetAppointmentSessionResponses, GetAppointmentSessionSchedulesData, GetAppointmentSessionSchedulesResponses, GetAppointmentSessionUserStatusData, GetAppointmentSessionUserStatusResponses, GetAppointmentsResponses, GetBookingProfileData, GetBookingProfileResponses, GetBookingReadyCompaniesData, GetBookingReadyCompaniesResponses, GetCompanyBookingInfoData, GetCompanyBookingInfoResponses, GetCompanyBookingMetricsData, GetCompanyBookingMetricsResponses, GetDailySchedulesData, GetDailySchedulesResponses, GetGroupedServiceGroupsData, GetGroupedServiceGroupsResponses, GetPendingAppointmentSessionUserData, GetPendingAppointmentSessionUserResponses, GetScheduleData, GetScheduleResponses, GetServiceGroupsData, GetServiceGroupsResponses, GetServicesData, GetServicesResponses, HealthData, HealthResponses, InfoData, InfoResponses, LinksData, LinksResponses, RootData, RootResponses, SelectAppointmentSessionProfileData, SelectAppointmentSessionProfileResponses, SelectAppointmentSessionProfileServicesData, SelectAppointmentSessionProfileServicesResponses, SetPendingAppointmentSessionUserData, SetPendingAppointmentSessionUserResponses, SubmitAppointmentSessionData, SubmitAppointmentSessionResponses, SubmitAppointmentSessionStartTimeData, SubmitAppointmentSessionStartTimeResponses, SubmitAppointmentSessionUserData, SubmitAppointmentSessionUserResponses, UpdateServiceData, UpdateServiceGroupData, UpdateServiceGroupResponses, UpdateServiceResponses, ValidateCompanyBookingData, ValidateCompanyBookingResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -111,6 +111,18 @@ export class CompanyUserServiceGroupController {
 }
 
 export class PublicAppointmentSessionController {
+    public static setPendingAppointmentSessionUser<ThrowOnError extends boolean = false>(options: Options<SetPendingAppointmentSessionUserData, ThrowOnError>) {
+        return (options.client ?? client).post<SetPendingAppointmentSessionUserResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/public/appointment-session/{sessionId}/set-pending-user',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
     public static attachAppointmentSessionUser<ThrowOnError extends boolean = false>(options: Options<AttachAppointmentSessionUserData, ThrowOnError>) {
         return (options.client ?? client).post<AttachAppointmentSessionUserResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
@@ -167,10 +179,34 @@ export class PublicAppointmentSessionController {
         });
     }
     
+    public static getAppointmentSessionUserStatus<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionUserStatusData, ThrowOnError>) {
+        return (options.client ?? client).get<GetAppointmentSessionUserStatusResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/public/appointment-session/{sessionId}/user-status',
+            ...options
+        });
+    }
+    
     public static getAppointmentSessionRequirements<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionRequirementsData, ThrowOnError>) {
         return (options.client ?? client).get<GetAppointmentSessionRequirementsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/public/appointment-session/{sessionId}/requirements',
+            ...options
+        });
+    }
+    
+    public static clearPendingAppointmentSessionUser<ThrowOnError extends boolean = false>(options: Options<ClearPendingAppointmentSessionUserData, ThrowOnError>) {
+        return (options.client ?? client).delete<ClearPendingAppointmentSessionUserResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/public/appointment-session/{sessionId}/pending-user',
+            ...options
+        });
+    }
+    
+    public static getPendingAppointmentSessionUser<ThrowOnError extends boolean = false>(options: Options<GetPendingAppointmentSessionUserData, ThrowOnError>) {
+        return (options.client ?? client).get<GetPendingAppointmentSessionUserResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/public/appointment-session/{sessionId}/pending-user',
             ...options
         });
     }
@@ -219,6 +255,14 @@ export class PublicAppointmentSessionController {
         return (options.client ?? client).get<GetAppointmentByIdResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/public/appointment-session/get-appointment',
+            ...options
+        });
+    }
+    
+    public static clearAppointmentSessionUser<ThrowOnError extends boolean = false>(options: Options<ClearAppointmentSessionUserData, ThrowOnError>) {
+        return (options.client ?? client).delete<ClearAppointmentSessionUserResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/public/appointment-session/{sessionId}/attached-user',
             ...options
         });
     }
