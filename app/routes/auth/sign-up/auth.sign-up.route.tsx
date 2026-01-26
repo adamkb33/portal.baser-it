@@ -16,7 +16,14 @@ type SignUpActionValues = {
   mobileNumber?: string;
 };
 
+function getReturnTo(url: URL) {
+  const returnToParam = url.searchParams.get('returnTo');
+  return returnToParam && returnToParam.startsWith('/') && !returnToParam.startsWith('//') ? returnToParam : null;
+}
+
 export async function action({ request }: Route.ActionArgs) {
+  const url = new URL(request.url);
+  const returnTo = getReturnTo(url);
   const formData = await request.formData();
   const givenName = String(formData.get('givenName') || '');
   const familyName = String(formData.get('familyName') || '');
@@ -53,6 +60,12 @@ export async function action({ request }: Route.ActionArgs) {
       emailSent: signUpPayload.emailSent ? 'true' : 'false',
       mobileSent: signUpPayload.mobileSent ? 'true' : 'false',
     });
+
+    if (returnTo) {
+      const returnUrl = new URL(returnTo, url.origin);
+      params.forEach((value, key) => returnUrl.searchParams.set(key, value));
+      return redirect(`${returnUrl.pathname}${returnUrl.search}`);
+    }
 
     return redirect(`${ROUTES_MAP['auth.check-email'].href}?${params.toString()}`);
   } catch (error) {

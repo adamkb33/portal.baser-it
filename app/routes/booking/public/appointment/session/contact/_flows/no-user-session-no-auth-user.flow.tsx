@@ -42,7 +42,7 @@ export function NoUserSessionNoAuthUserFlow() {
       formData.append('idToken', token);
       providerFetcher.submit(formData, {
         method: 'post',
-        action: `${ROUTES_MAP['auth.sign-in'].href}?returnTo=${encodeURIComponent(returnTo)}`,
+        action: `${ROUTES_MAP['auth.sign-in'].href}?index&returnTo=${encodeURIComponent(returnTo)}`,
       });
     },
     [providerFetcher, returnTo],
@@ -152,7 +152,6 @@ export function NoUserSessionNoAuthUserFlow() {
       />
       <BookingSection title="Opprett konto" variant="elevated">
         <AuthSignUpFetcherForm fetcherId={CONTACT_SIGN_UP_FETCHER_KEY} className="space-y-4">
-          <input type="hidden" name="intent" value="sign-up" />
           <div className="space-y-2">
             <label className="text-sm font-medium text-form-text" htmlFor="contact-signup-given-name">
               Fornavn
