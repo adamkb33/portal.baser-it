@@ -46,6 +46,7 @@ This document covers the booking contact step only, using the embedded signup fl
    - Store `verificationSessionToken` from the response.
    - Stay on contact page and show next-step panel.
    - Allow resend via `resendVerification` using `verificationSessionToken` (no auth).
+   - Update stored token if `resendVerification` returns a new `verificationSessionToken`.
 5. If `nextStep` = `COLLECT_*`:
    - Stay on contact page and show next-step panel.
    - Prompt user to sign in if collection requires auth.

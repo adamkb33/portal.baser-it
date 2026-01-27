@@ -420,6 +420,20 @@ export type ApiRoute = {
 
 export const API_ROUTES_TREE = [
   {
+    id: 'auth',
+    url: '/api/auth',
+    children: [
+      {
+        id: 'auth.verify-mobile',
+        url: '/api/auth/verify-mobile',
+      },
+      {
+        id: 'auth.resend-verification',
+        url: '/api/auth/resend-verification',
+      },
+    ],
+  },
+  {
     id: 'company',
     url: '/company',
     children: [

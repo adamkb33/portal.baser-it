@@ -135,8 +135,19 @@ export type ApiResponsePublicPendingUserResponseDto = {
 
 export type PublicPendingUserResponseDto = {
     sessionId: string;
-    userId?: number;
+    userDto?: UserDto;
     nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'ATTACH_SESSION' | 'DONE';
+};
+
+export type UserDto = {
+    id: number;
+    givenName: string;
+    familyName: string;
+    email?: string;
+    emailVerified: boolean;
+    mobileNumber?: string;
+    mobileVerified: boolean;
+    provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
 };
 
 export type ApiResponseAppointmentDto = {
@@ -171,17 +182,6 @@ export type GroupedServiceGroupDto = {
     companyId: number;
     name: string;
     services: Array<GroupedServiceDto>;
-};
-
-export type UserDto = {
-    id: number;
-    givenName: string;
-    familyName: string;
-    email?: string;
-    emailVerified: boolean;
-    mobileNumber?: string;
-    mobileVerified: boolean;
-    provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
 };
 
 export type ApiResponseAppointmentSessionDto = {

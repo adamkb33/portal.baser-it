@@ -424,6 +424,7 @@ export type ApiResponseResendVerificationResponseDto = {
 export type ResendVerificationResponseDto = {
     emailSent: boolean;
     mobileSent: boolean;
+    verificationSessionToken: string;
 };
 
 export type RefreshTokenRequestDto = {
