@@ -4,6 +4,7 @@ import type { Route } from './+types/booking.public.appointment.route';
 import { AppointmentsController, type CompanySummaryDto } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { encodeCompanyIdToken } from '~/lib/company-id-token.server';
 import {
   BookingContainer,
   BookingErrorBanner,
@@ -16,8 +17,12 @@ import { Loader2 } from 'lucide-react';
 
 const CompaniesMap = lazy(() => import('~/components/booking/companies-map.client'));
 
+type CompanySummaryWithToken = CompanySummaryDto & {
+  encodedCompanyId: string;
+};
+
 type CompanyLocation = {
-  company: CompanySummaryDto;
+  company: CompanySummaryWithToken;
   lat: number;
   lon: number;
 };
@@ -59,7 +64,7 @@ const buildCompanyQuery = (company: CompanySummaryDto): string | null => {
   return [street, postalcode, city, country].filter(Boolean).join(', ');
 };
 
-async function geocodeCompanies(companies: CompanySummaryDto[]): Promise<CompanyLocation[]> {
+async function geocodeCompanies(companies: CompanySummaryWithToken[]): Promise<CompanyLocation[]> {
   const limitedCompanies = companies.slice(0, MAX_GEOCODE);
   if (companies.length > MAX_GEOCODE) {
     console.debug('[companies-map] geocode limit reached', {
@@ -153,7 +158,10 @@ async function geocodeCompanies(companies: CompanySummaryDto[]): Promise<Company
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const response = await AppointmentsController.getBookingReadyCompanies();
-    const companies = response.data?.data ?? [];
+    const companies = (response.data?.data ?? []).map((company) => ({
+      ...company,
+      encodedCompanyId: encodeCompanyIdToken(company.id),
+    }));
     console.debug('[companies-map] booking-ready companies', {
       count: companies.length,
       sample: companies.slice(0, 5).map((company) => ({
@@ -192,7 +200,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) {
-  const companies = loaderData.companies ?? [];
+  const companies = (loaderData.companies ?? []) as CompanySummaryWithToken[];
   const locations = loaderData.locations ?? [];
   const error = loaderData.error ?? null;
   const [showMap, setShowMap] = useState(false);
@@ -247,7 +255,7 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
           <BookingGrid cols={2}>
             {companies.map((company) => {
               const companyName = company.name || `Selskap ${company.orgNumber}`;
-              const startUrl = `${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=${company.id}`;
+              const startUrl = `${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=${company.encodedCompanyId}`;
               const addressLine = buildAddressLine(company);
               const orgTypeDescription = company.organizationType?.description;
               const isLoading = isNavigatingToSession && activeCompanyId === company.id;

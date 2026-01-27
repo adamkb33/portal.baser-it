@@ -6,26 +6,24 @@ import { ROUTES_MAP } from '~/lib/route-tree';
 import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { Route } from './+types/booking.public.appointment.session.route';
+import { decodeFromRequest, ensureEncodedCompanyIdRedirect } from '~/lib/company-id-url.server';
 
 export async function loader(args: Route.LoaderArgs) {
   try {
     const url = new URL(args.request.url);
-    const companyId = url.searchParams.get('companyId');
-    if (!companyId) {
-      return redirectWithError(
-        args.request,
-        ROUTES_MAP['booking.public.appointment'].href,
-        'Selskaps-ID mangler.',
-      );
+    const companyIdParam = url.searchParams.get('companyId');
+    if (!companyIdParam) {
+      return redirectWithError(args.request, ROUTES_MAP['booking.public.appointment'].href, 'Selskaps-ID mangler.');
     }
 
-    const companyIdNumber = Number(companyId);
-    if (Number.isNaN(companyIdNumber)) {
-      return redirectWithError(
-        args.request,
-        ROUTES_MAP['booking.public.appointment'].href,
-        'Selskaps-ID er ugyldig.',
-      );
+    const companyIdNumber = decodeFromRequest(args.request);
+    if (companyIdNumber === null) {
+      return redirectWithError(args.request, ROUTES_MAP['booking.public.appointment'].href, 'Selskaps-ID er ugyldig.');
+    }
+
+    const redirectResponse = ensureEncodedCompanyIdRedirect(args.request, companyIdNumber);
+    if (redirectResponse) {
+      return redirectResponse;
     }
 
     try {
@@ -42,22 +40,18 @@ export async function loader(args: Route.LoaderArgs) {
       );
     }
 
-  let session: AppointmentSessionDto | null = null;
-  let setCookieHeader: string | undefined;
-  let clearCookieHeader: string | undefined;
+    let session: AppointmentSessionDto | null = null;
+    let setCookieHeader: string | undefined;
+    let clearCookieHeader: string | undefined;
 
-    try {
-      session = await getSession(args.request);
-    } catch {
+    session = await getSession(args.request);
+
+    if (session && session.companyId !== companyIdNumber) {
+      clearCookieHeader = await appointmentSessionCookie.serialize('', { maxAge: 0 });
       session = null;
     }
 
-  if (session && session.companyId !== companyIdNumber) {
-    clearCookieHeader = await appointmentSessionCookie.serialize('', { maxAge: 0 });
-    session = null;
-  }
-
-  if (!session) {
+    if (!session) {
       try {
         const created = await createAppointmentSession(companyIdNumber);
         session = created.session;
@@ -70,19 +64,22 @@ export async function loader(args: Route.LoaderArgs) {
 
     const search = url.search;
     const target = `${ROUTES_MAP['booking.public.appointment.session.contact'].href}${search}`;
-  if (setCookieHeader || clearCookieHeader) {
+    if (setCookieHeader || clearCookieHeader) {
       const headers = new Headers();
-    if (clearCookieHeader) {
-      headers.append('Set-Cookie', clearCookieHeader);
-    }
-    if (setCookieHeader) {
-      headers.append('Set-Cookie', setCookieHeader);
-    }
+      if (clearCookieHeader) {
+        headers.append('Set-Cookie', clearCookieHeader);
+      }
+      if (setCookieHeader) {
+        headers.append('Set-Cookie', setCookieHeader);
+      }
       return redirect(target, { headers });
     }
 
     return redirect(target);
   } catch (error: any) {
+    if (error instanceof Response) {
+      throw error;
+    }
     return redirect(ROUTES_MAP['booking.public.appointment'].href);
   }
 }

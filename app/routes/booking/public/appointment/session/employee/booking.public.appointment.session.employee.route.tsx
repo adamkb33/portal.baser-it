@@ -18,7 +18,6 @@ import { PublicAppointmentSessionController } from '~/api/generated/booking';
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const session = await getSession(request);
-
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
@@ -58,9 +57,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 export async function action({ request }: Route.ActionArgs) {
   try {
     const session = await getSession(request);
-
     if (!session) {
-      return ROUTES_MAP['booking.public.appointment'].href;
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
 
     const formData = await request.formData();

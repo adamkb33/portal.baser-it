@@ -27,7 +27,6 @@ import { resolveErrorPayload } from '~/lib/api-error';
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const session = await getSession(request);
-
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }
@@ -59,7 +58,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 export async function action({ request }: Route.ActionArgs) {
   try {
     const session = await getSession(request);
-
     if (!session) {
       return redirect(ROUTES_MAP['booking.public.appointment'].href);
     }

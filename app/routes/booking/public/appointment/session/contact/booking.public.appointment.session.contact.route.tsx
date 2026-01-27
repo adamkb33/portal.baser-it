@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { data, useFetcher } from 'react-router';
+import { data, redirect, useFetcher } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.session.contact.route';
 import { getSession } from '~/lib/appointments.server';
 import { authService, AuthenticationError } from '~/lib/auth-service';
@@ -12,6 +12,8 @@ import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { VerifyEmailFlow } from './_flows/verify-email.flow';
 import { VerifyMobileFlow } from './_flows/verify-mobile.flow';
 import { CONTACT_VERIFICATION_TOKEN_STORAGE_KEY } from './_forms/session-keys';
+import { decodeFromRequest, ensureEncodedCompanyIdRedirect } from '~/lib/company-id-url.server';
+import { ROUTES_MAP } from '~/lib/route-tree';
 
 export const ACTION_INTENT = {
   SIGN_UP_LOCAL: 'sign_up_local',
@@ -20,9 +22,15 @@ export const ACTION_INTENT = {
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
+    const companyIdFromUrl = decodeFromRequest(request);
+
     let authSession: Awaited<ReturnType<typeof authService.getUserSession>> | null = null;
     let accessToken: string | null = null;
-    let session = null;
+
+    const session = await getSession(request);
+    if (!session) {
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
+    }
 
     try {
       const userSession = await authService.getUserSession(request);
@@ -32,12 +40,6 @@ export async function loader({ request }: Route.LoaderArgs) {
       if (!(error instanceof AuthenticationError)) {
         throw error;
       }
-    }
-
-    try {
-      session = await getSession(request);
-    } catch {
-      session = null;
     }
 
     let sessionUser = null;
@@ -63,6 +65,13 @@ export async function loader({ request }: Route.LoaderArgs) {
       } catch {
         sessionUser = null;
       }
+    }
+
+    const ensuredCompanyId = session?.companyId ?? companyIdFromUrl;
+
+    const redirectResponse = ensureEncodedCompanyIdRedirect(request, ensuredCompanyId);
+    if (redirectResponse) {
+      return redirectResponse;
     }
 
     return data({
@@ -103,6 +112,9 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     const session = await getSession(request);
+    if (!session) {
+      return redirect(ROUTES_MAP['booking.public.appointment'].href);
+    }
     const userId = result.signUp.userId;
 
     if (session?.sessionId && userId) {
@@ -121,6 +133,9 @@ export async function action({ request }: Route.ActionArgs) {
   if (intent === ACTION_INTENT.CLEAR_SESSION) {
     try {
       const session = await getSession(request);
+      if (!session) {
+        return redirect(ROUTES_MAP['booking.public.appointment'].href);
+      }
       if (session?.sessionId) {
         await PublicAppointmentSessionController.clearAppointmentSessionUser({
           path: { sessionId: session.sessionId },
@@ -142,7 +157,7 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
   const [signUpResponse, setSignUpResponse] = React.useState<unknown | null>(null);
 
   React.useEffect(() => {
-    console.log('[booking-contact] session details', { session, authSession });
+    console.log('[booking-contact] session details', { session, authSession, sessionUser });
   }, [session, authSession]);
 
   React.useEffect(() => {

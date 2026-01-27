@@ -1,9 +1,8 @@
-
 import { createCookie } from 'react-router';
 import { PublicAppointmentSessionController, type AppointmentSessionDto } from '~/api/generated/booking';
+import { ROUTES_MAP } from './route-tree';
 
-const BOOKING_BASE_URL =
-  process.env.VITE_API_BOOKING_SERVICE_URL || 'http://localhost:8080/booking-service';
+const BOOKING_BASE_URL = process.env.VITE_API_BOOKING_SERVICE_URL || 'http://localhost:8080/booking-service';
 const CREATE_SESSION_URL = `${BOOKING_BASE_URL}/public/appointment-session/create-session`;
 const GET_SESSION_URL = `${BOOKING_BASE_URL}/public/appointment-session/get-session`;
 
@@ -22,14 +21,11 @@ export async function createAppointmentSession(
     url: CREATE_SESSION_URL,
     companyId,
   });
-  const sessionResponse =
-    await PublicAppointmentSessionController.createAppointmentSession(
-      {
-        query: {
-          companyId,
-        },
-      },
-    );
+  const sessionResponse = await PublicAppointmentSessionController.createAppointmentSession({
+    query: {
+      companyId,
+    },
+  });
 
   if (!sessionResponse.data?.data) {
     throw Error('Kunne ikke hente session');
@@ -40,26 +36,28 @@ export async function createAppointmentSession(
   return { session: sessionResponse.data.data, setCookieHeader };
 }
 
-export async function getSession(request: Request): Promise<AppointmentSessionDto> {
+export async function getSession(request: Request): Promise<AppointmentSessionDto | null> {
   try {
     const cookieHeader = request.headers.get('Cookie');
     const sessionId = await appointmentSessionCookie.parse(cookieHeader);
 
     if (!sessionId || typeof sessionId !== 'string') {
-      throw new Response('Missing appointment session', { status: 400 });
+      console.error('[appointments.get-session] no session id', {
+        cookieHeader,
+        sessionId,
+      });
+      return null;
     }
+
     console.debug('[appointments.get-session] request', {
       url: GET_SESSION_URL,
       sessionId,
     });
-    const sessionResponse =
-      await PublicAppointmentSessionController.getAppointmentSession(
-        {
-          query: {
-            sessionId,
-          },
-        },
-      );
+    const sessionResponse = await PublicAppointmentSessionController.getAppointmentSession({
+      query: {
+        sessionId,
+      },
+    });
 
     if (!sessionResponse.data) {
       throw Error('Kunne ikke hente session');
@@ -83,7 +81,7 @@ export async function getSession(request: Request): Promise<AppointmentSessionDt
         status: error.status,
         url: GET_SESSION_URL,
       });
-      throw error;
+      return null;
     }
 
     console.error('[appointments.get-session] failed', {
@@ -91,8 +89,6 @@ export async function getSession(request: Request): Promise<AppointmentSessionDt
       status: undefined,
       url: GET_SESSION_URL,
     });
-    throw error;
+    return null;
   }
 }
-
-
