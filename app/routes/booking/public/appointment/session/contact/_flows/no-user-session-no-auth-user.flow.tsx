@@ -129,6 +129,8 @@ export function NoUserSessionNoAuthUserFlow() {
         />
         <BookingSection title="Velg hvordan du vil fortsette" variant="elevated">
           <div className="space-y-3">
+            <GoogleSignInButton onCredential={submitGoogleToken} disabled={isProviderSubmitting} />
+
             <Button
               type="button"
               variant="outline"
@@ -167,7 +169,6 @@ export function NoUserSessionNoAuthUserFlow() {
         />
         <BookingSection title="Logg inn" variant="elevated">
           <div className="space-y-6">
-            <GoogleSignInButton onCredential={submitGoogleToken} disabled={isProviderSubmitting} />
             <AuthSignInFetcherForm fetcherId={CONTACT_SIGN_IN_FETCHER_KEY} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-form-text" htmlFor="contact-signin-email">
