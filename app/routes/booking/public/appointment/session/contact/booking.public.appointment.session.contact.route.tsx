@@ -175,7 +175,7 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
   }
 
   if (session && session.userId && sessionUser?.userDto && sessionUser.nextStep === 'VERIFY_EMAIL') {
-    return <VerifyEmailFlow />;
+    return <VerifyEmailFlow email={sessionUser.userDto.email ?? ''} />;
   }
 
   if (session && session.userId && sessionUser?.userDto && sessionUser.nextStep === 'VERIFY_MOBILE') {
