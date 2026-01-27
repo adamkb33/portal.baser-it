@@ -41,7 +41,7 @@ export function AppointmentsView() {
       style={componentHeight ? { height: `${componentHeight}px` } : undefined}
     >
       <main ref={scrollRef} className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-4xl">
+        <div className="px-4 py-6 md:py-8">
           <Outlet />
         </div>
       </main>

@@ -21,6 +21,7 @@ import {
   BookingStepHeader,
   SelectableCard,
   BookingSummary,
+  BookingSection,
 } from '../../_components/booking-layout';
 import { resolveErrorPayload } from '~/lib/api-error';
 
@@ -366,66 +367,68 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({ loa
           description={`Velg én eller flere tjenester fra ${totalServices} tilgjengelige tjenester.`}
         />
 
-        {/* ========================================
-            SEARCH BAR - For many services
-            ======================================== */}
-        {totalServices > 6 && (
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2">
-              <Search className="size-5 text-muted-foreground" />
-            </div>
+        <BookingSection>
+          {/* ========================================
+              SEARCH BAR - For many services
+              ======================================== */}
+          {totalServices > 6 && (
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                <Search className="size-5 text-muted-foreground" />
+              </div>
 
-            <input
-              type="text"
-              placeholder="Søk etter tjenester..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-12 w-full rounded-lg border border-card-border bg-card pl-11 pr-11 text-base placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
+              <input
+                type="text"
+                placeholder="Søk etter tjenester..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-12 w-full rounded-lg border border-card-border bg-card pl-11 pr-11 text-base placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
 
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-muted"
-              >
-                <X className="size-4 text-muted-foreground" />
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* ========================================
-            SERVICE GROUPS
-            ======================================== */}
-        <div className="space-y-4 md:space-y-5">
-          {filteredGroups.length > 0 ? (
-            filteredGroups
-              .filter((group) => group.services.length > 0)
-              .map((group) => (
-                <ServiceGroup
-                  key={group.id}
-                  group={group}
-                  selectedServices={selectedServices}
-                  onToggleService={toggleService}
-                  onViewImages={setDialogService}
-                />
-              ))
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 py-12 text-center">
-              <Search className="size-12 text-muted-foreground opacity-50" />
-              <p className="mt-4 text-base font-medium text-card-text">Ingen tjenester funnet</p>
-              <p className="mt-1 text-sm text-muted-foreground">Prøv et annet søkeord</p>
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="mt-4 text-sm font-medium text-primary hover:underline"
-              >
-                Tilbakestill søk
-              </button>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-muted"
+                >
+                  <X className="size-4 text-muted-foreground" />
+                </button>
+              )}
             </div>
           )}
-        </div>
+
+          {/* ========================================
+              SERVICE GROUPS
+              ======================================== */}
+          <div className="space-y-4 md:space-y-5">
+            {filteredGroups.length > 0 ? (
+              filteredGroups
+                .filter((group) => group.services.length > 0)
+                .map((group) => (
+                  <ServiceGroup
+                    key={group.id}
+                    group={group}
+                    selectedServices={selectedServices}
+                    onToggleService={toggleService}
+                    onViewImages={setDialogService}
+                  />
+                ))
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 py-12 text-center">
+                <Search className="size-12 text-muted-foreground opacity-50" />
+                <p className="mt-4 text-base font-medium text-card-text">Ingen tjenester funnet</p>
+                <p className="mt-1 text-sm text-muted-foreground">Prøv et annet søkeord</p>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="mt-4 text-sm font-medium text-primary hover:underline"
+                >
+                  Tilbakestill søk
+                </button>
+              </div>
+            )}
+          </div>
+        </BookingSection>
       </BookingContainer>
 
       <BookingSummary

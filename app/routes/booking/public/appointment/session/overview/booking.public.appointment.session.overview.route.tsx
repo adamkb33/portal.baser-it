@@ -21,6 +21,7 @@ import {
   BookingMeta,
   CollapsibleCard,
   BookingSummary,
+  BookingCard,
 } from '../../_components/booking-layout';
 import { resolveErrorPayload } from '~/lib/api-error';
 
@@ -170,7 +171,7 @@ export default function BookingPublicAppointmentSessionOverviewRoute({ loaderDat
         {/* ========================================
             APPOINTMENT HERO CARD
             ======================================== */}
-        <div className=" overflow-hidden rounded-lg border-2 border-primary bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 shadow-sm md:p-6">
+        <BookingCard className="relative overflow-hidden border-primary bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 shadow-sm md:p-6">
           {/* Decorative element */}
           <div className="absolute right-0 top-0 size-32 translate-x-8 -translate-y-8 rounded-full bg-primary/10 blur-3xl" />
 
@@ -221,7 +222,7 @@ export default function BookingPublicAppointmentSessionOverviewRoute({ loaderDat
               <p className="text-lg font-bold md:text-2xl">{totalPrice} kr</p>
             </div>
           </div>
-        </div>
+        </BookingCard>
 
         {/* ========================================
             COLLAPSIBLE DETAILS SECTIONS

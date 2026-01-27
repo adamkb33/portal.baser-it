@@ -8,7 +8,7 @@ import { ROUTES_MAP } from '~/lib/route-tree';
 import { formatCompactDate, formatFullDate, formatTime } from '~/lib/date.utils';
 import { appointmentSessionSelectTimeAction } from './_features/appointment.session.select-time.loader';
 import { appointmentSessionSelectTimeLoader } from './_features/appointment.session.select-time.action';
-import { BookingContainer, BookingStepHeader, BookingButton, BookingSummary } from '../../_components/booking-layout';
+import { BookingContainer, BookingStepHeader, BookingButton, BookingSummary, BookingSection } from '../../_components/booking-layout';
 
 export const loader = appointmentSessionSelectTimeLoader;
 export const action = appointmentSessionSelectTimeAction;
@@ -486,31 +486,33 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
             QUICK BOOK - First available slot
             ======================================== */}
         {earliestSlot && !displayTime && (
-          <button
-            type="button"
-            onClick={handleQuickBook}
-            className="flex items-center justify-between gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 p-4 transition-colors hover:border-primary hover:bg-primary/10 w-full"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-primary">
-                <Zap className="size-5 text-primary-foreground" />
+          <BookingSection>
+            <button
+              type="button"
+              onClick={handleQuickBook}
+              className="flex w-full items-center justify-between gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 p-4 transition-colors hover:border-primary hover:bg-primary/10"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-full bg-primary">
+                  <Zap className="size-5 text-primary-foreground" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-card-text md:text-base">Raskeste tiden</p>
+                  <p className="text-xs text-muted-foreground md:text-sm">
+                    {formatFullDate(earliestSlot.date)} kl. {formatTime(earliestSlot.time)}
+                  </p>
+                </div>
               </div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-card-text md:text-base">Raskeste tiden</p>
-                <p className="text-xs text-muted-foreground md:text-sm">
-                  {formatFullDate(earliestSlot.date)} kl. {formatTime(earliestSlot.time)}
-                </p>
-              </div>
-            </div>
-            <span className="text-xs font-medium text-primary">Velg →</span>
-          </button>
+              <span className="text-xs font-medium text-primary">Velg →</span>
+            </button>
+          </BookingSection>
         )}
 
         {/* ========================================
             WEEK NAVIGATOR
             ======================================== */}
         {weekGroups.length > 1 && (
-          <div className="rounded-lg border border-card-border bg-card">
+          <BookingSection className="p-0">
             {/* Navigation controls */}
             <div className="flex items-center border-b border-card-border">
               <button
@@ -572,7 +574,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                 })}
               </div>
             )}
-          </div>
+          </BookingSection>
         )}
 
         {/* ========================================
@@ -580,7 +582,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
             ======================================== */}
         <div className="space-y-4 md:hidden">
           {/* Date selector */}
-          <div className="space-y-3">
+          <BookingSection>
             <div className="flex items-center gap-2">
               <Calendar className="size-4 text-muted-foreground" />
               <h3 className="text-sm font-bold text-card-text">Velg dato</h3>
@@ -615,57 +617,59 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                 ))}
               </div>
             )}
-          </div>
+          </BookingSection>
 
           {/* Time slots */}
           {selectedSchedule && (
-            <div ref={mobileTimeSlotsRef} className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Clock className="size-4 text-muted-foreground" />
-                  <h3 className="text-sm font-bold text-card-text">Velg tid</h3>
+            <BookingSection>
+              <div ref={mobileTimeSlotsRef} className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="size-4 text-muted-foreground" />
+                    <h3 className="text-sm font-bold text-card-text">Velg tid</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{formatFullDate(selectedDate!)}</p>
                 </div>
-                <p className="text-xs text-muted-foreground">{formatFullDate(selectedDate!)}</p>
-              </div>
 
-              <div className="relative">
-                {showMoreTimeHint && (
-                  <div
-                    className={cn(
-                      'pointer-events-none absolute inset-y-0 right-0 z-10 flex w-8 items-center justify-center',
-                      'bg-gradient-to-l from-background/100 to-transparent font-semibold uppercase tracking-wider',
-                    )}
-                    aria-hidden="true"
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      <ChevronRight className="size-4 text-primary animate-bounce-right" />
+                <div className="relative">
+                  {showMoreTimeHint && (
+                    <div
+                      className={cn(
+                        'pointer-events-none absolute inset-y-0 right-0 z-10 flex w-8 items-center justify-center',
+                        'bg-gradient-to-l from-background/100 to-transparent font-semibold uppercase tracking-wider',
+                      )}
+                      aria-hidden="true"
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <ChevronRight className="size-4 text-primary animate-bounce-right" />
+                      </div>
+                    </div>
+                  )}
+                  <div ref={mobileTimeSlotsScrollRef} className="overflow-x-auto pb-2 pr-8">
+                    <div className="flex gap-3">
+                      {groupedHours.map((hour) => (
+                        <div key={hour} className="min-w-[160px] shrink-0">
+                          <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                            {hour}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {groupedTimeSlots[hour].map((slot) => (
+                              <TimeSlotButton
+                                key={slot.startTime}
+                                time={slot.startTime}
+                                isSelected={displayTime === slot.startTime}
+                                onClick={() => handleTimeSelect(slot.startTime)}
+                                variant="compact"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                )}
-                <div ref={mobileTimeSlotsScrollRef} className="overflow-x-auto pb-2 pr-8">
-                  <div className="flex gap-3">
-                    {groupedHours.map((hour) => (
-                      <div key={hour} className="min-w-[160px] shrink-0">
-                        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          {hour}
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {groupedTimeSlots[hour].map((slot) => (
-                            <TimeSlotButton
-                              key={slot.startTime}
-                              time={slot.startTime}
-                              isSelected={displayTime === slot.startTime}
-                              onClick={() => handleTimeSelect(slot.startTime)}
-                              variant="compact"
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
-            </div>
+            </BookingSection>
           )}
         </div>
 
@@ -674,7 +678,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
             ======================================== */}
         <div className="hidden md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-5">
           {/* Date selector */}
-          <div className="rounded-lg border border-card-border bg-card p-4 lg:col-span-2">
+          <BookingSection className="lg:col-span-2">
             <div className="mb-2 flex items-center gap-2">
               <Calendar className="size-5 text-muted-foreground" />
               <h3 className="text-base font-bold text-card-text">Velg dato</h3>
@@ -710,10 +714,10 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                 ))}
               </div>
             )}
-          </div>
+          </BookingSection>
 
           {/* Time slots */}
-          <div className="rounded-lg border border-card-border bg-card p-4 lg:col-span-3">
+          <BookingSection className="lg:col-span-3">
             {!selectedDate ? (
               <div className="flex min-h-[220px] flex-col items-center justify-center gap-3">
                 <Clock className="size-12 text-muted-foreground opacity-50" />
@@ -758,7 +762,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                 </div>
               </>
             )}
-          </div>
+          </BookingSection>
         </div>
       </BookingContainer>
 

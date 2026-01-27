@@ -11,6 +11,7 @@ import {
   BookingButton,
   SelectableCard,
   BookingSummary,
+  BookingSection,
 } from '../../_components/booking-layout';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
@@ -117,99 +118,103 @@ export default function AppointmentsEmployee({ loaderData }: Route.ComponentProp
           className="mb-4 md:mb-5"
         />
 
-        <BookingGrid cols={2}>
-          {profiles.map((profile) => {
-            const isSelected = selectedProfileId === profile.id;
-            const isSubmittingProfile =
-              isSubmitting && submittingProfileId !== null && String(profile.id) === String(submittingProfileId);
+        <BookingSection>
+          <BookingGrid cols={2}>
+            {profiles.map((profile) => {
+              const isSelected = selectedProfileId === profile.id;
+              const isSubmittingProfile =
+                isSubmitting && submittingProfileId !== null && String(profile.id) === String(submittingProfileId);
 
-            return (
-              <SelectableCard
-                key={profile.id}
-                selected={isSelected}
-                className={cn(
-                  'flex h-full min-h-[260px] flex-col',
-                  isSelected && 'border-primary',
-                  isSubmittingProfile && 'border-primary bg-primary/10',
-                )}
-              >
-                {isSelected && (
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Valgt frisør</p>
-                )}
+              return (
+                <SelectableCard
+                  key={profile.id}
+                  selected={isSelected}
+                  className={cn(
+                    'flex h-full min-h-[260px] flex-col',
+                    isSelected && 'border-primary',
+                    isSubmittingProfile && 'border-primary bg-primary/10',
+                  )}
+                >
+                  {isSelected && (
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Valgt frisør</p>
+                  )}
 
-                <div className="flex min-h-[84px] items-start gap-3">
-                  {profile.image && (
-                    <div className="border border-border bg-muted w-16 h-16 flex-shrink-0">
-                      <img
-                        src={profile.image.url}
-                        alt={`${profile.givenName} ${profile.familyName}`}
-                        className="w-full h-full object-cover"
-                      />
+                  <div className="flex min-h-[84px] items-start gap-3">
+                    {profile.image && (
+                      <div className="border border-border bg-muted w-16 h-16 flex-shrink-0">
+                        <img
+                          src={profile.image.url}
+                          alt={`${profile.givenName} ${profile.familyName}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-sm font-semibold text-foreground">
+                        {profile.givenName} {profile.familyName}
+                      </h2>
+                      {profile.description && (
+                        <p className="text-xs text-muted-foreground mt-1">{profile.description}</p>
+                      )}
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-sm font-semibold text-foreground">
-                      {profile.givenName} {profile.familyName}
-                    </h2>
-                    {profile.description && <p className="text-xs text-muted-foreground mt-1">{profile.description}</p>}
                   </div>
-                </div>
 
-                <div className="border-t border-border py-4">
-                  {profile.services.length > 0 && (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline"
-                        >
-                          Vis tjenester
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-72 rounded-none border border-border bg-background p-4">
-                        <div className="max-h-56 space-y-3 overflow-y-auto pr-1">
-                          {profile.services.map((group) => (
-                            <div key={group.id} className="space-y-2">
-                              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                                {group.name}
-                              </div>
-                              <div className="space-y-2">
-                                {group.services.map((service) => (
-                                  <div key={service.id} className="flex items-baseline justify-between gap-2">
-                                    <span className="text-sm text-foreground">{service.name}</span>
-                                    <div className="flex items-baseline gap-2 flex-shrink-0">
-                                      <span className="text-xs text-muted-foreground">{service.duration} min</span>
-                                      <span className="text-sm font-medium text-foreground">{service.price} kr</span>
+                  <div className="border-t border-border py-4">
+                    {profile.services.length > 0 && (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline"
+                          >
+                            Vis tjenester
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-72 rounded-none border border-border bg-background p-4">
+                          <div className="max-h-56 space-y-3 overflow-y-auto pr-1">
+                            {profile.services.map((group) => (
+                              <div key={group.id} className="space-y-2">
+                                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                                  {group.name}
+                                </div>
+                                <div className="space-y-2">
+                                  {group.services.map((service) => (
+                                    <div key={service.id} className="flex items-baseline justify-between gap-2">
+                                      <span className="text-sm text-foreground">{service.name}</span>
+                                      <div className="flex items-baseline gap-2 flex-shrink-0">
+                                        <span className="text-xs text-muted-foreground">{service.duration} min</span>
+                                        <span className="text-sm font-medium text-foreground">{service.price} kr</span>
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  </div>
 
-                <div className="mt-auto border-t border-border pt-4">
-                  {isSelected ? (
-                    <BookingButton type="button" variant="outline" fullWidth disabled>
-                      Valgt
-                    </BookingButton>
-                  ) : (
-                    <Form method="post">
-                      <input type="hidden" name="selectedProfileId" value={profile.id} />
-                      <BookingButton type="submit" fullWidth loading={isSubmittingProfile} disabled={isSubmitting}>
-                        Velg {profile.givenName}
+                  <div className="mt-auto border-t border-border pt-4">
+                    {isSelected ? (
+                      <BookingButton type="button" variant="outline" fullWidth disabled>
+                        Valgt
                       </BookingButton>
-                    </Form>
-                  )}
-                </div>
-              </SelectableCard>
-            );
-          })}
-        </BookingGrid>
+                    ) : (
+                      <Form method="post">
+                        <input type="hidden" name="selectedProfileId" value={profile.id} />
+                        <BookingButton type="submit" fullWidth loading={isSubmittingProfile} disabled={isSubmitting}>
+                          Velg {profile.givenName}
+                        </BookingButton>
+                      </Form>
+                    )}
+                  </div>
+                </SelectableCard>
+              );
+            })}
+          </BookingGrid>
+        </BookingSection>
       </BookingContainer>
 
       <BookingSummary

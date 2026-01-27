@@ -21,6 +21,7 @@ import {
   BookingButton,
   BookingCard,
   BookingSummary,
+  BookingSection,
 } from '../_components/booking-layout';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
@@ -182,7 +183,11 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
   return (
     <>
       <BookingContainer>
-        <div className="relative overflow-hidden rounded-lg border-2 border-secondary bg-gradient-to-br from-secondary/20 via-secondary/10 to-transparent p-6 shadow-lg md:p-8">
+        <BookingStepHeader
+          title="Timen er bekreftet"
+          description="Vi gleder oss til å se deg."
+        />
+        <BookingCard className="relative overflow-hidden border-secondary bg-gradient-to-br from-secondary/20 via-secondary/10 to-transparent p-6 shadow-lg md:p-8">
           {/* Decorative elements - confetti feel */}
           <div className="absolute -right-8 -top-8 size-32 rounded-full bg-secondary/20 blur-3xl" />
           <div className="absolute -bottom-8 -left-8 size-32 rounded-full bg-primary/10 blur-3xl" />
@@ -215,7 +220,7 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
               </div>
             </div>
           </div>
-        </div>
+        </BookingCard>
 
         {/* ========================================
           APPOINTMENT DETAILS CARD
@@ -410,41 +415,43 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
         {/* ========================================
           SOCIAL SHARING (Optional but powerful)
           ======================================== */}
-        <div className="flex items-center gap-3 rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 p-4">
-          <Share2 className="size-5 shrink-0 text-muted-foreground" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-card-text">Liker du {companySummary.name}?</p>
-            <p className="text-xs text-muted-foreground">Del gjerne dine erfaringer med andre</p>
+        <BookingSection className="border-dashed">
+          <div className="flex items-center gap-3">
+            <Share2 className="size-5 shrink-0 text-muted-foreground" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-card-text">Liker du {companySummary.name}?</p>
+              <p className="text-xs text-muted-foreground">Del gjerne dine erfaringer med andre</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                // TODO: Social sharing logic
+                if (navigator.share) {
+                  navigator.share({
+                    title: `Book time hos ${companySummary.name}`,
+                    text: 'Jeg har nettopp booket time!',
+                    url: window.location.origin,
+                  });
+                }
+              }}
+              className="shrink-0 text-sm font-medium text-primary hover:underline"
+            >
+              Del
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              // TODO: Social sharing logic
-              if (navigator.share) {
-                navigator.share({
-                  title: `Book time hos ${companySummary.name}`,
-                  text: 'Jeg har nettopp booket time!',
-                  url: window.location.origin,
-                });
-              }
-            }}
-            className="shrink-0 text-sm font-medium text-primary hover:underline"
-          >
-            Del
-          </button>
-        </div>
+        </BookingSection>
 
         {/* ========================================
           HELP/SUPPORT FOOTER
           ======================================== */}
-        <div className="rounded-lg border border-card-border bg-muted/30 p-4 text-center">
+        <BookingSection variant="muted" className="text-center">
           <p className="text-sm text-muted-foreground">
             Trenger du å endre eller avbestille timen?{' '}
             <a href="/support" className="font-medium text-primary hover:underline">
               Kontakt oss
             </a>
           </p>
-        </div>
+        </BookingSection>
       </BookingContainer>
       <BookingSummary
         mobile={{
