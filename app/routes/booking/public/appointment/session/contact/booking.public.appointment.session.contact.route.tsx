@@ -14,6 +14,8 @@ import { VerifyMobileFlow } from './_flows/verify-mobile.flow';
 import { CONTACT_VERIFICATION_TOKEN_STORAGE_KEY } from './_forms/session-keys';
 import { decodeFromRequest, ensureEncodedCompanyIdRedirect } from '~/lib/company-id-url.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import { SessionUserNoAuthFlow } from './_flows/session-user-no-auth.flow';
+import { BookingErrorBanner } from '../../_components/booking-layout';
 
 export const ACTION_INTENT = {
   SIGN_UP_LOCAL: 'sign_up_local',
@@ -155,6 +157,11 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
   const { session, authSession, sessionUser } = loaderData;
   const signUpFetcher = useFetcher({ key: CONTACT_SIGN_UP_FETCHER_KEY });
   const [signUpResponse, setSignUpResponse] = React.useState<unknown | null>(null);
+  const signUpError =
+    typeof signUpFetcher.data === 'object' && signUpFetcher.data && 'error' in signUpFetcher.data
+      ? String((signUpFetcher.data as { error?: unknown }).error)
+      : null;
+  const bannerMessage = loaderData.error ?? signUpError;
 
   React.useEffect(() => {
     console.log('[booking-contact] session details', { session, authSession, sessionUser });
@@ -170,19 +177,7 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
     }
   }, [signUpFetcher.data]);
 
-  if (session && !session.userId && !authSession) {
-    return <NoUserSessionNoAuthUserFlow />;
-  }
-
-  if (session && session.userId && sessionUser?.userDto && sessionUser.nextStep === 'VERIFY_EMAIL') {
-    return <VerifyEmailFlow email={sessionUser.userDto.email ?? ''} />;
-  }
-
-  if (session && session.userId && sessionUser?.userDto && sessionUser.nextStep === 'VERIFY_MOBILE') {
-    return <VerifyMobileFlow email={sessionUser.userDto.email ?? ''} />;
-  }
-
-  return (
+  let content: React.ReactNode = (
     <div className="space-y-4">
       {sessionUser ? (
         <pre className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
@@ -195,5 +190,28 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
         </pre>
       ) : null}
     </div>
+  );
+
+  if (session && !session.userId && !authSession) {
+    content = <NoUserSessionNoAuthUserFlow />;
+  } else if (session && session.userId && !authSession) {
+    content = (
+      <SessionUserNoAuthFlow
+        email={sessionUser?.userDto?.email ?? ''}
+        givenName={sessionUser?.userDto?.givenName ?? ''}
+        familyName={sessionUser?.userDto?.familyName ?? ''}
+      />
+    );
+  } else if (session && session.userId && sessionUser?.userDto && sessionUser.nextStep === 'VERIFY_EMAIL') {
+    content = <VerifyEmailFlow email={sessionUser.userDto.email ?? ''} />;
+  } else if (session && session.userId && sessionUser?.userDto && sessionUser.nextStep === 'VERIFY_MOBILE') {
+    content = <VerifyMobileFlow email={sessionUser.userDto.email ?? ''} />;
+  }
+
+  return (
+    <>
+      {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
+      {content}
+    </>
   );
 }

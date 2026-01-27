@@ -1,22 +1,17 @@
 // auth.sign-in.route.tsx
 import * as React from 'react';
-import { Form, Link, redirect, data, useFetcher, useLocation, useNavigation } from 'react-router';
-import type { Route } from './+types/auth.sign-in.route';
-
-import { ROUTES_MAP } from '~/lib/route-tree';
-import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
+import { Link, useFetcher, useLocation, useNavigate } from 'react-router';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { AuthFormContainer } from '../_components/auth.form-container';
 import { AuthFormField } from '../_components/auth.form-field';
 import { AuthFormButton } from '../_components/auth.form-button';
 import { GoogleSignInButton } from './_components/google-sign-in-button';
-import { AuthController } from '~/api/generated/identity';
-import { resolveErrorPayload } from '~/lib/api-error';
 import { ENV } from '~/api/config/env';
 
 const googleClientId = ENV.GOOGLE_CLIENT_ID;
 
-function getReturnTo(url: URL) {
-  const returnToParam = url.searchParams.get('returnTo');
+function getReturnToFromSearch(search: string) {
+  const returnToParam = new URLSearchParams(search).get('returnTo');
   return returnToParam && returnToParam.startsWith('/') && !returnToParam.startsWith('//') ? returnToParam : '/';
 }
 
@@ -37,77 +32,24 @@ function getErrorMessage(rawError: unknown) {
   return undefined;
 }
 
-export async function action({ request }: Route.ActionArgs) {
-  const url = new URL(request.url);
-  const returnTo = getReturnTo(url);
-  const formData = await request.formData();
-  const provider = String(formData.get('provider') || 'LOCAL');
-  const idToken = String(formData.get('idToken') || '');
-  const email = String(formData.get('email'));
-  const password = String(formData.get('password'));
-  const isGoogleLogin = provider === 'GOOGLE';
-
-  if (isGoogleLogin && !idToken) {
-    return data(
-      {
-        error: 'Kunne ikke logge inn med Google. Prøv igjen.',
-        values: { email },
-      },
-      { status: 400 },
-    );
-  }
-
-  try {
-    const response = await AuthController.signIn({
-      body: isGoogleLogin ? { provider: 'GOOGLE', idToken } : { provider: 'LOCAL', email, password },
-    });
-    const tokens = response.data?.data;
-
-    if (!tokens) {
-      const message = response.data?.message || 'Kunne ikke logge inn. Prøv igjen.';
-      return data(
-        {
-          error: message,
-          values: { email },
-        },
-        { status: 400 },
-      );
-    }
-
-    const accessCookie = await accessTokenCookie.serialize(tokens.accessToken, {
-      expires: new Date(tokens.accessTokenExpiresAt * 1000),
-    });
-    const refreshCookie = await refreshTokenCookie.serialize(tokens.refreshToken, {
-      expires: new Date(tokens.refreshTokenExpiresAt * 1000),
-    });
-
-    return redirect(returnTo, {
-      headers: [
-        ['Set-Cookie', accessCookie],
-        ['Set-Cookie', refreshCookie],
-      ],
-    });
-  } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke logge inn. Prøv igjen.');
-    return data(
-      {
-        error: message,
-        values: { email },
-      },
-      { status: status ?? 400 },
-    );
-  }
-}
-
-export default function AuthSignIn({ actionData }: Route.ComponentProps) {
-  const fetcher = useFetcher<typeof actionData>();
+export default function AuthSignIn() {
+  const fetcher = useFetcher();
   const location = useLocation();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
-  const isGoogleSubmitting = fetcher.state === 'submitting';
-  const rawError = fetcher.data?.error ?? actionData?.error;
+  const navigate = useNavigate();
+  const isSubmitting = fetcher.state === 'submitting';
+  const rawError =
+    typeof fetcher.data === 'object' && fetcher.data && 'error' in fetcher.data ? fetcher.data.error : null;
   const errorMessage = getErrorMessage(rawError);
-  const actionValues = actionData?.values;
+  const returnTo = React.useMemo(() => getReturnToFromSearch(location.search), [location.search]);
+  const action = API_ROUTES_MAP['auth.sign-in'].url;
+
+  React.useEffect(() => {
+    if (typeof fetcher.data !== 'object' || !fetcher.data) return;
+    const data = fetcher.data as { success?: boolean };
+    if (data.success) {
+      navigate(returnTo, { replace: true });
+    }
+  }, [fetcher.data, navigate, returnTo]);
   const submitGoogleToken = React.useCallback(
     (token: string) => {
       const formData = new FormData();
@@ -115,10 +57,10 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
       formData.append('idToken', token);
       fetcher.submit(formData, {
         method: 'post',
-        action: `${location.pathname}${location.search}`,
+        action,
       });
     },
-    [fetcher, location.pathname, location.search],
+    [action, fetcher],
   );
 
   return (
@@ -149,7 +91,7 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
     >
       {googleClientId ? (
         <>
-          <GoogleSignInButton onCredential={submitGoogleToken} disabled={isSubmitting || isGoogleSubmitting} />
+          <GoogleSignInButton onCredential={submitGoogleToken} disabled={isSubmitting} />
           <div className="flex items-center gap-3 py-2">
             <span className="h-px flex-1 bg-form-border" />
             <span className="text-xs font-medium uppercase tracking-wide text-form-text-muted">Eller</span>
@@ -157,7 +99,7 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
           </div>
         </>
       ) : null}
-      <Form method="post" className="space-y-4 md:space-y-6" aria-busy={isSubmitting}>
+      <fetcher.Form method="post" action={action} className="space-y-4 md:space-y-6" aria-busy={isSubmitting}>
         <AuthFormField
           id="email"
           name="email"
@@ -165,7 +107,6 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
           type="email"
           autoComplete="email"
           placeholder="din@e-post.no"
-          defaultValue={actionValues?.email}
           required
           disabled={isSubmitting}
         />
@@ -185,7 +126,7 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
             Logg inn
           </AuthFormButton>
         </div>
-      </Form>
+      </fetcher.Form>
     </AuthFormContainer>
   );
 }

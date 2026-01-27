@@ -428,6 +428,10 @@ export const API_ROUTES_TREE = [
         url: '/api/auth/verify-mobile',
       },
       {
+        id: 'auth.sign-in',
+        url: '/api/auth/sign-in',
+      },
+      {
         id: 'auth.verification-status',
         url: '/api/auth/verification-status',
       },

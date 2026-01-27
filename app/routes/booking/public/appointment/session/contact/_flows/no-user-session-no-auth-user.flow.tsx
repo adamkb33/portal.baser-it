@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { useFetcher, useLocation } from 'react-router';
+import { useFetcher, useLocation, useRevalidator } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { GoogleSignInButton } from '~/routes/auth/sign-in/_components/google-sign-in-button';
 import { AuthSignInFetcherForm } from '../_forms/auth-signin.fetcher-form';
 import { AuthSignUpFetcherForm } from '../_forms/auth-signup.fetcher-form';
@@ -51,9 +51,15 @@ const writeSessionStorage = (key: string, value: unknown) => {
   }
 };
 
-export function NoUserSessionNoAuthUserFlow() {
+type NoUserSessionNoAuthUserFlowProps = {
+  onBack?: () => void;
+  backLabel?: string;
+};
+
+export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: NoUserSessionNoAuthUserFlowProps) {
   const providerFetcher = useFetcher({ key: CONTACT_PROVIDER_SIGN_IN_FETCHER_KEY });
   const location = useLocation();
+  const revalidator = useRevalidator();
   const returnTo = `${location.pathname}${location.search}`;
   const isProviderSubmitting = providerFetcher.state === 'submitting';
   const [view, setView] = React.useState<typeof VIEW_MENU | typeof VIEW_SIGN_IN | typeof VIEW_SIGN_UP>(VIEW_MENU);
@@ -113,11 +119,27 @@ export function NoUserSessionNoAuthUserFlow() {
       formData.append('idToken', token);
       providerFetcher.submit(formData, {
         method: 'post',
-        action: `${ROUTES_MAP['auth.sign-in'].href}?index&returnTo=${encodeURIComponent(returnTo)}`,
+        action: API_ROUTES_MAP['auth.sign-in'].url,
       });
     },
-    [providerFetcher, returnTo],
+    [providerFetcher],
   );
+
+  React.useEffect(() => {
+    if (typeof providerFetcher.data !== 'object' || !providerFetcher.data) return;
+    const data = providerFetcher.data as { success?: boolean };
+    if (data.success) {
+      revalidator.revalidate();
+    }
+  }, [providerFetcher.data, revalidator]);
+
+  const backButton = onBack ? (
+    <div className="mt-4">
+      <Button type="button" variant="outline" className="w-full" onClick={onBack}>
+        {backLabel}
+      </Button>
+    </div>
+  ) : null;
 
   if (view === VIEW_MENU) {
     return (
@@ -154,6 +176,7 @@ export function NoUserSessionNoAuthUserFlow() {
               Opprett konto
             </Button>
           </div>
+          {backButton}
         </BookingSection>
       </BookingContainer>
     );
@@ -218,6 +241,7 @@ export function NoUserSessionNoAuthUserFlow() {
               </div>
             </AuthSignInFetcherForm>
           </div>
+          {backButton}
         </BookingSection>
       </BookingContainer>
     );
@@ -325,6 +349,7 @@ export function NoUserSessionNoAuthUserFlow() {
             </Button>
           </div>
         </AuthSignUpFetcherForm>
+        {backButton}
       </BookingSection>
     </BookingContainer>
   );
