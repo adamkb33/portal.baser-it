@@ -6,13 +6,19 @@ import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { GoogleSignInButton } from '~/routes/auth/sign-in/_components/google-sign-in-button';
 import { AuthSignInFetcherForm } from '../_forms/auth-signin.fetcher-form';
 import { AuthSignUpFetcherForm } from '../_forms/auth-signup.fetcher-form';
-import { BookingContainer, BookingSection, BookingStepHeader } from '../../../_components/booking-layout';
+import {
+  BookingContainer,
+  BookingErrorBanner,
+  BookingSection,
+  BookingStepHeader,
+} from '../../../_components/booking-layout';
 import {
   CONTACT_PROVIDER_SIGN_IN_FETCHER_KEY,
   CONTACT_SIGN_IN_FETCHER_KEY,
   CONTACT_SIGN_UP_FETCHER_KEY,
 } from '../_forms/fetcher-keys';
 import { ACTION_INTENT } from '../booking.public.appointment.session.contact.route';
+import { getFetcherErrorMessage } from '../_utils/fetcher-error';
 
 const VIEW_MENU = 'menu';
 const VIEW_SIGN_IN = 'sign-in';
@@ -58,6 +64,8 @@ type NoUserSessionNoAuthUserFlowProps = {
 
 export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: NoUserSessionNoAuthUserFlowProps) {
   const providerFetcher = useFetcher({ key: CONTACT_PROVIDER_SIGN_IN_FETCHER_KEY });
+  const signInFetcher = useFetcher({ key: CONTACT_SIGN_IN_FETCHER_KEY });
+  const signUpFetcher = useFetcher({ key: CONTACT_SIGN_UP_FETCHER_KEY });
   const location = useLocation();
   const revalidator = useRevalidator();
   const returnTo = `${location.pathname}${location.search}`;
@@ -141,6 +149,11 @@ export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: N
     </div>
   ) : null;
 
+  const bannerMessage =
+    getFetcherErrorMessage(providerFetcher.data) ??
+    getFetcherErrorMessage(signInFetcher.data) ??
+    getFetcherErrorMessage(signUpFetcher.data);
+
   if (view === VIEW_MENU) {
     return (
       <BookingContainer>
@@ -149,6 +162,8 @@ export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: N
           title="Logg inn eller opprett bruker"
           description="For å fortsette bestillingen trenger vi en bruker."
         />
+        {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
+
         <BookingSection title="Velg hvordan du vil fortsette" variant="elevated">
           <div className="space-y-3">
             <GoogleSignInButton onCredential={submitGoogleToken} disabled={isProviderSubmitting} />
@@ -190,6 +205,7 @@ export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: N
           title="Logg inn"
           description="Bruk eksisterende konto for å fortsette bestillingen."
         />
+        {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
         <BookingSection title="Logg inn" variant="elevated">
           <div className="space-y-6">
             <AuthSignInFetcherForm fetcherId={CONTACT_SIGN_IN_FETCHER_KEY} className="space-y-4">
@@ -254,6 +270,7 @@ export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: N
         title="Opprett konto"
         description="Opprett en bruker for å fortsette bestillingen."
       />
+      {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
       <BookingSection title="Opprett konto" variant="elevated">
         <AuthSignUpFetcherForm fetcherId={CONTACT_SIGN_UP_FETCHER_KEY} className="space-y-4">
           <input type="hidden" name="intent" value={ACTION_INTENT.SIGN_UP_LOCAL} />

@@ -12,14 +12,11 @@ export async function appointmentSessionSelectTimeLoader(args: Route.LoaderArgs)
   }
 
   try {
-    const schedulesResponse =
-      await PublicAppointmentSessionController.getAppointmentSessionSchedules(
-        {
-          query: {
-            sessionId: session.sessionId,
-          },
-        },
-      );
+    const schedulesResponse = await PublicAppointmentSessionController.getAppointmentSessionSchedules({
+      query: {
+        sessionId: session.sessionId,
+      },
+    });
 
     return data({
       session,

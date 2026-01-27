@@ -2,9 +2,15 @@ import * as React from 'react';
 import { useFetcher, useLocation, useRevalidator } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BookingContainer, BookingSection, BookingStepHeader } from '../../../_components/booking-layout';
+import {
+  BookingContainer,
+  BookingErrorBanner,
+  BookingSection,
+  BookingStepHeader,
+} from '../../../_components/booking-layout';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { CONTACT_VERIFICATION_TOKEN_STORAGE_KEY } from '../_forms/session-keys';
+import { getFetcherErrorMessage } from '../_utils/fetcher-error';
 
 const CODE_LENGTH = 6;
 
@@ -35,6 +41,7 @@ export function VerifyMobileFlow({ email }: VerifyMobileFlowProps) {
     typeof resendFetcher.data === 'object' && resendFetcher.data && 'message' in resendFetcher.data
       ? String((resendFetcher.data as { message?: unknown }).message)
       : null;
+  const bannerMessage = getFetcherErrorMessage(fetcher.data) ?? getFetcherErrorMessage(resendFetcher.data);
   const [code, setCode] = React.useState<string[]>(() => Array(CODE_LENGTH).fill(''));
   const inputRefs = React.useRef<Array<HTMLInputElement | null>>([]);
   const lastSubmittedRef = React.useRef<string | null>(null);
@@ -198,6 +205,8 @@ export function VerifyMobileFlow({ email }: VerifyMobileFlowProps) {
         title="Bekreft e-post"
         description="Skriv inn 6-sifret kode vi har sendt til e-posten din."
       />
+      {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
+
       <BookingSection title="Bekreftelseskode" variant="elevated">
         <fetcher.Form method="post" action={action} className="space-y-4">
           {errorMessage ? (

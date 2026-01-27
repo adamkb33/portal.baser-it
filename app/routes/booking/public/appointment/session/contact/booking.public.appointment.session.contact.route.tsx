@@ -15,7 +15,6 @@ import { CONTACT_VERIFICATION_TOKEN_STORAGE_KEY } from './_forms/session-keys';
 import { decodeFromRequest, ensureEncodedCompanyIdRedirect } from '~/lib/company-id-url.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { SessionUserNoAuthFlow } from './_flows/session-user-no-auth.flow';
-import { BookingErrorBanner } from '../../_components/booking-layout';
 
 export const ACTION_INTENT = {
   SIGN_UP_LOCAL: 'sign_up_local',
@@ -157,11 +156,6 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
   const { session, authSession, sessionUser } = loaderData;
   const signUpFetcher = useFetcher({ key: CONTACT_SIGN_UP_FETCHER_KEY });
   const [signUpResponse, setSignUpResponse] = React.useState<unknown | null>(null);
-  const signUpError =
-    typeof signUpFetcher.data === 'object' && signUpFetcher.data && 'error' in signUpFetcher.data
-      ? String((signUpFetcher.data as { error?: unknown }).error)
-      : null;
-  const bannerMessage = loaderData.error ?? signUpError;
 
   React.useEffect(() => {
     console.log('[booking-contact] session details', { session, authSession, sessionUser });
@@ -208,10 +202,5 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
     content = <VerifyMobileFlow email={sessionUser.userDto.email ?? ''} />;
   }
 
-  return (
-    <>
-      {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
-      {content}
-    </>
-  );
+  return content;
 }

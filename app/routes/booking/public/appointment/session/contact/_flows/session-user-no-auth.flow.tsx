@@ -1,10 +1,17 @@
 import * as React from 'react';
+import { useFetcher } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { BookingContainer, BookingSection, BookingStepHeader } from '../../../_components/booking-layout';
+import {
+  BookingContainer,
+  BookingErrorBanner,
+  BookingSection,
+  BookingStepHeader,
+} from '../../../_components/booking-layout';
 import { CONTACT_SIGN_IN_FETCHER_KEY } from '../_forms/fetcher-keys';
 import { AuthSignInFetcherForm } from '../_forms/auth-signin.fetcher-form';
 import { NoUserSessionNoAuthUserFlow } from './no-user-session-no-auth-user.flow';
+import { getFetcherErrorMessage } from '../_utils/fetcher-error';
 
 type SessionUserNoAuthFlowProps = {
   email?: string | null;
@@ -21,6 +28,8 @@ export function SessionUserNoAuthFlow({ email, givenName, familyName }: SessionU
     VIEW_DETAILS,
   );
   const displayName = [givenName, familyName].filter(Boolean).join(' ');
+  const signInFetcher = useFetcher({ key: CONTACT_SIGN_IN_FETCHER_KEY });
+  const bannerMessage = getFetcherErrorMessage(signInFetcher.data);
 
   if (view === VIEW_AUTH_OPTIONS) {
     return <NoUserSessionNoAuthUserFlow onBack={() => setView(VIEW_DETAILS)} backLabel="Tilbake til brukeren" />;
@@ -34,6 +43,7 @@ export function SessionUserNoAuthFlow({ email, givenName, familyName }: SessionU
           title="Logg inn for å fortsette"
           description="Skriv inn passordet ditt for å fortsette med denne brukeren."
         />
+        {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
         <BookingSection title="Logg inn" variant="elevated">
           <AuthSignInFetcherForm fetcherId={CONTACT_SIGN_IN_FETCHER_KEY} className="space-y-4">
             <div className="space-y-2">
@@ -83,6 +93,7 @@ export function SessionUserNoAuthFlow({ email, givenName, familyName }: SessionU
         title="Fortsett med denne brukeren?"
         description="Vi har funnet en eksisterende bruker knyttet til bestillingen."
       />
+      {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
       <BookingSection title="Brukerdetaljer" variant="elevated">
         <div className="space-y-2 text-sm text-muted-foreground">
           {displayName ? (
