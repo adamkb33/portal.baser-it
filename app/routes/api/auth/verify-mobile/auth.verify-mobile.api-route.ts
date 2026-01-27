@@ -1,6 +1,7 @@
 import { data } from 'react-router';
 import type { Route } from './+types/auth.verify-mobile.api-route';
 import { AuthController } from '~/api/generated/identity';
+import { authService } from '~/lib/auth-service';
 import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function action({ request }: Route.ActionArgs) {
@@ -22,7 +23,20 @@ export async function action({ request }: Route.ActionArgs) {
       },
     });
 
-    return data({ success: true, nextStep: response.data?.data?.nextStep ?? 'SIGN_IN' });
+    const nextStep = response.data?.data?.nextStep ?? 'SIGN_IN';
+    const authTokens = response.data?.data?.authTokens;
+
+    if (authTokens) {
+      const headers = await authService.setAuthCookies(
+        authTokens.accessToken,
+        authTokens.refreshToken,
+        authTokens.accessTokenExpiresAt,
+        authTokens.refreshTokenExpiresAt,
+      );
+      return data({ success: true, nextStep, signedIn: true }, { headers });
+    }
+
+    return data({ success: true, nextStep, signedIn: false });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke bekrefte mobilnummer. Prøv igjen.');
     return data({ error: message }, { status: status ?? 400 });

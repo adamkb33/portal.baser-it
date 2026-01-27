@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useFetcher, useLocation } from 'react-router';
+import { useFetcher, useLocation, useRevalidator } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BookingContainer, BookingSection, BookingStepHeader } from '../../../_components/booking-layout';
@@ -14,6 +14,7 @@ type VerifyMobileFlowProps = {
 
 export function VerifyMobileFlow({ email }: VerifyMobileFlowProps) {
   const fetcher = useFetcher();
+  const revalidator = useRevalidator();
   const resendFetcher = useFetcher();
   const location = useLocation();
   const action = API_ROUTES_MAP['auth.verify-mobile'].url;
@@ -24,7 +25,10 @@ export function VerifyMobileFlow({ email }: VerifyMobileFlowProps) {
       ? String((fetcher.data as { error?: unknown }).error)
       : null;
   const successMessage =
-    typeof fetcher.data === 'object' && fetcher.data && 'success' in fetcher.data && (fetcher.data as { success?: boolean }).success
+    typeof fetcher.data === 'object' &&
+    fetcher.data &&
+    'success' in fetcher.data &&
+    (fetcher.data as { success?: boolean }).success
       ? 'Mobilnummeret er bekreftet.'
       : null;
   const resendMessage =
@@ -178,6 +182,14 @@ export function VerifyMobileFlow({ email }: VerifyMobileFlowProps) {
     fetcher.submit({ code: codeValue, verificationSessionToken }, { method: 'post', action });
     lastSubmittedRef.current = codeValue;
   }, [action, codeValue, fetcher, isComplete, verificationSessionToken]);
+
+  React.useEffect(() => {
+    if (typeof fetcher.data !== 'object' || !fetcher.data) return;
+    const data = fetcher.data as { success?: boolean; nextStep?: string | null };
+    if (!data.success) return;
+    if (!data.nextStep || data.nextStep === 'VERIFY_MOBILE') return;
+    revalidator.revalidate();
+  }, [fetcher.data, revalidator]);
 
   return (
     <BookingContainer>

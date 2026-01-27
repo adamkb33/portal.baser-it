@@ -310,8 +310,16 @@ export type ApiResponseVerifyMobileResponseDto = {
     timestamp: string;
 };
 
+export type AuthenticationTokenDto = {
+    accessToken: string;
+    accessTokenExpiresAt: number;
+    refreshToken: string;
+    refreshTokenExpiresAt: number;
+};
+
 export type VerifyMobileResponseDto = {
     nextStep: 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'SIGN_IN';
+    authTokens?: AuthenticationTokenDto;
 };
 
 export type SignUpDto = {
@@ -392,13 +400,6 @@ export type ApiResponseAuthenticationTokenDto = {
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
-};
-
-export type AuthenticationTokenDto = {
-    accessToken: string;
-    accessTokenExpiresAt: number;
-    refreshToken: string;
-    refreshTokenExpiresAt: number;
 };
 
 export type ResetPasswordDto = {
@@ -619,6 +620,7 @@ export type VerifyEmailResponseDto = {
     mobileRequired: boolean;
     mobileVerified: boolean;
     nextStep: 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'SIGN_IN';
+    authTokens?: AuthenticationTokenDto;
 };
 
 export type ApiResponseVerificationStatusResponseDto = {
