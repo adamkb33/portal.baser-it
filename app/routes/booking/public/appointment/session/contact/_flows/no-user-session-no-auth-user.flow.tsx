@@ -2,16 +2,11 @@ import * as React from 'react';
 import { useFetcher, useLocation, useRevalidator } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { BookingErrorBanner, BookingSection, BookingStepHeader } from '../../../_components/booking-layout';
 import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { GoogleSignInButton } from '~/routes/auth/sign-in/_components/google-sign-in-button';
 import { AuthSignInFetcherForm } from '../_forms/auth-signin.fetcher-form';
 import { AuthSignUpFetcherForm } from '../_forms/auth-signup.fetcher-form';
-import {
-  BookingContainer,
-  BookingErrorBanner,
-  BookingSection,
-  BookingStepHeader,
-} from '../../../_components/booking-layout';
 import {
   CONTACT_PROVIDER_SIGN_IN_FETCHER_KEY,
   CONTACT_SIGN_IN_FETCHER_KEY,
@@ -156,14 +151,13 @@ export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: N
 
   if (view === VIEW_MENU) {
     return (
-      <BookingContainer>
+      <>
         <BookingStepHeader
           label="Kontakt"
           title="Logg inn eller opprett bruker"
           description="For å fortsette bestillingen trenger vi en bruker."
         />
         {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
-
         <BookingSection title="Velg hvordan du vil fortsette" variant="elevated">
           <div className="space-y-3">
             <GoogleSignInButton onCredential={submitGoogleToken} disabled={isProviderSubmitting} />
@@ -193,13 +187,13 @@ export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: N
           </div>
           {backButton}
         </BookingSection>
-      </BookingContainer>
+      </>
     );
   }
 
   if (view === VIEW_SIGN_IN) {
     return (
-      <BookingContainer>
+      <>
         <BookingStepHeader
           label="Kontakt"
           title="Logg inn"
@@ -259,12 +253,12 @@ export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: N
           </div>
           {backButton}
         </BookingSection>
-      </BookingContainer>
+      </>
     );
   }
 
   return (
-    <BookingContainer>
+    <>
       <BookingStepHeader
         label="Kontakt"
         title="Opprett konto"
@@ -368,6 +362,6 @@ export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: N
         </AuthSignUpFetcherForm>
         {backButton}
       </BookingSection>
-    </BookingContainer>
+    </>
   );
 }

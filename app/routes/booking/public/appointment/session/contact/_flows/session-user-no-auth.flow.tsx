@@ -2,12 +2,7 @@ import * as React from 'react';
 import { useFetcher } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  BookingContainer,
-  BookingErrorBanner,
-  BookingSection,
-  BookingStepHeader,
-} from '../../../_components/booking-layout';
+import { BookingErrorBanner, BookingSection, BookingStepHeader } from '../../../_components/booking-layout';
 import { CONTACT_SIGN_IN_FETCHER_KEY } from '../_forms/fetcher-keys';
 import { AuthSignInFetcherForm } from '../_forms/auth-signin.fetcher-form';
 import { NoUserSessionNoAuthUserFlow } from './no-user-session-no-auth-user.flow';
@@ -37,7 +32,7 @@ export function SessionUserNoAuthFlow({ email, givenName, familyName }: SessionU
 
   if (view === VIEW_SIGN_IN) {
     return (
-      <BookingContainer>
+      <>
         <BookingStepHeader
           label="Kontakt"
           title="Logg inn for å fortsette"
@@ -72,22 +67,20 @@ export function SessionUserNoAuthFlow({ email, givenName, familyName }: SessionU
                 required
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Button type="submit" className="flex-1">
-                Fortsett
-              </Button>
-              <Button type="button" variant="outline" onClick={() => setView(VIEW_DETAILS)}>
+            <div className="flex items-center justify-between gap-2">
+              <Button type="button" variant="ghost" onClick={() => setView(VIEW_DETAILS)}>
                 Tilbake
               </Button>
+              <Button type="submit">Fortsett</Button>
             </div>
           </AuthSignInFetcherForm>
         </BookingSection>
-      </BookingContainer>
+      </>
     );
   }
 
   return (
-    <BookingContainer>
+    <>
       <BookingStepHeader
         label="Kontakt"
         title="Fortsett med denne brukeren?"
@@ -116,6 +109,6 @@ export function SessionUserNoAuthFlow({ email, givenName, familyName }: SessionU
           </Button>
         </div>
       </BookingSection>
-    </BookingContainer>
+    </>
   );
 }

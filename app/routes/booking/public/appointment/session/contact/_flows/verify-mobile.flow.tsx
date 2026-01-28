@@ -2,12 +2,7 @@ import * as React from 'react';
 import { useFetcher, useLocation, useRevalidator } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  BookingContainer,
-  BookingErrorBanner,
-  BookingSection,
-  BookingStepHeader,
-} from '../../../_components/booking-layout';
+import { BookingErrorBanner, BookingSection, BookingStepHeader } from '../../../_components/booking-layout';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { CONTACT_VERIFICATION_TOKEN_STORAGE_KEY } from '../_forms/session-keys';
 import { getFetcherErrorMessage } from '../_utils/fetcher-error';
@@ -199,14 +194,13 @@ export function VerifyMobileFlow({ email }: VerifyMobileFlowProps) {
   }, [fetcher.data, revalidator]);
 
   return (
-    <BookingContainer>
+    <>
       <BookingStepHeader
-        label="Verifisering"
+        label="Kontakt"
         title="Bekreft e-post"
         description="Skriv inn 6-sifret kode vi har sendt til e-posten din."
       />
       {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
-
       <BookingSection title="Bekreftelseskode" variant="elevated">
         <fetcher.Form method="post" action={action} className="space-y-4">
           {errorMessage ? (
@@ -256,6 +250,6 @@ export function VerifyMobileFlow({ email }: VerifyMobileFlowProps) {
           ) : null}
         </resendFetcher.Form>
       </BookingSection>
-    </BookingContainer>
+    </>
   );
 }

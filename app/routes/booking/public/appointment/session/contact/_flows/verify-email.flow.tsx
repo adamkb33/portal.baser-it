@@ -1,12 +1,7 @@
 import * as React from 'react';
 import { useFetcher, useRevalidator } from 'react-router';
 import { Loader2 } from 'lucide-react';
-import {
-  BookingContainer,
-  BookingErrorBanner,
-  BookingSection,
-  BookingStepHeader,
-} from '../../../_components/booking-layout';
+import { BookingErrorBanner, BookingSection, BookingStepHeader } from '../../../_components/booking-layout';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { CONTACT_VERIFICATION_TOKEN_STORAGE_KEY } from '../_forms/session-keys';
 import { getFetcherErrorMessage } from '../_utils/fetcher-error';
@@ -53,14 +48,9 @@ export function VerifyEmailFlow({ email }: VerifyEmailFlowProps) {
   }, [fetcher.data, revalidator]);
 
   return (
-    <BookingContainer>
-      <BookingStepHeader
-        label="Verifisering"
-        title="Bekreft e-post"
-        description="Følg lenken for å verifisere din epost."
-      />
+    <>
+      <BookingStepHeader label="Kontakt" title="Bekreft e-post" description="Følg lenken for å verifisere din epost." />
       {bannerMessage ? <BookingErrorBanner message={bannerMessage} sticky /> : null}
-
       <BookingSection title="Venter på verifisering" variant="elevated">
         <div className="flex items-start gap-3 rounded-md border border-border bg-muted/40 px-4 py-3">
           <Loader2 className="mt-0.5 size-5 animate-spin text-muted-foreground" />
@@ -70,6 +60,6 @@ export function VerifyEmailFlow({ email }: VerifyEmailFlowProps) {
           </div>
         </div>
       </BookingSection>
-    </BookingContainer>
+    </>
   );
 }

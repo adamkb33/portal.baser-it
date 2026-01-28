@@ -15,10 +15,15 @@ import { CONTACT_VERIFICATION_TOKEN_STORAGE_KEY } from './_forms/session-keys';
 import { decodeFromRequest, ensureEncodedCompanyIdRedirect } from '~/lib/company-id-url.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { SessionUserNoAuthFlow } from './_flows/session-user-no-auth.flow';
+import { BookingSection, BookingStepHeader } from '../../_components/booking-layout';
 
 export const ACTION_INTENT = {
   SIGN_UP_LOCAL: 'sign_up_local',
   CLEAR_SESSION: 'clear_session',
+} as const;
+
+export const handle = {
+  contactFlow: true,
 } as const;
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -171,36 +176,70 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
     }
   }, [signUpFetcher.data]);
 
-  let content: React.ReactNode = (
-    <div className="space-y-4">
-      {sessionUser ? (
-        <pre className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-          {JSON.stringify(sessionUser, null, 2)}
-        </pre>
-      ) : null}
-      {signUpResponse ? (
-        <pre className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-          {JSON.stringify(signUpResponse, null, 2)}
-        </pre>
-      ) : null}
-    </div>
+  const flows = [
+    {
+      id: 'no-user-session-no-auth-user',
+      matches: () => Boolean(session && !session.userId && !authSession),
+      element: <NoUserSessionNoAuthUserFlow />,
+    },
+    {
+      id: 'session-user-no-auth',
+      matches: () => Boolean(session && session.userId && !authSession),
+      element: (
+        <SessionUserNoAuthFlow
+          email={sessionUser?.userDto?.email ?? ''}
+          givenName={sessionUser?.userDto?.givenName ?? ''}
+          familyName={sessionUser?.userDto?.familyName ?? ''}
+        />
+      ),
+    },
+    {
+      id: 'verify-email',
+      matches: () =>
+        Boolean(session && session.userId && sessionUser?.userDto && sessionUser.nextStep === 'VERIFY_EMAIL'),
+      element: <VerifyEmailFlow email={sessionUser?.userDto?.email ?? ''} />,
+    },
+    {
+      id: 'verify-mobile',
+      matches: () =>
+        Boolean(session && session.userId && sessionUser?.userDto && sessionUser.nextStep === 'VERIFY_MOBILE'),
+      element: <VerifyMobileFlow email={sessionUser?.userDto?.email ?? ''} />,
+    },
+    {
+      id: 'debug',
+      matches: () => true,
+      element: <DebugFlow sessionUser={sessionUser} signUpResponse={signUpResponse} />,
+    },
+  ];
+
+  const activeFlow = flows.find((flow) => flow.matches()) ?? flows[flows.length - 1];
+
+  return activeFlow.element;
+}
+
+type DebugFlowProps = {
+  sessionUser: unknown;
+  signUpResponse: unknown;
+};
+
+function DebugFlow({ sessionUser, signUpResponse }: DebugFlowProps) {
+  return (
+    <>
+      <BookingStepHeader label="Kontakt" title="Kontakt" description="Kunne ikke avgjøre riktig flyt." />
+      <BookingSection title="Detaljer" variant="elevated">
+        <div className="space-y-4">
+          {sessionUser ? (
+            <pre className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+              {JSON.stringify(sessionUser, null, 2)}
+            </pre>
+          ) : null}
+          {signUpResponse ? (
+            <pre className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+              {JSON.stringify(signUpResponse, null, 2)}
+            </pre>
+          ) : null}
+        </div>
+      </BookingSection>
+    </>
   );
-
-  if (session && !session.userId && !authSession) {
-    content = <NoUserSessionNoAuthUserFlow />;
-  } else if (session && session.userId && !authSession) {
-    content = (
-      <SessionUserNoAuthFlow
-        email={sessionUser?.userDto?.email ?? ''}
-        givenName={sessionUser?.userDto?.givenName ?? ''}
-        familyName={sessionUser?.userDto?.familyName ?? ''}
-      />
-    );
-  } else if (session && session.userId && sessionUser?.userDto && sessionUser.nextStep === 'VERIFY_EMAIL') {
-    content = <VerifyEmailFlow email={sessionUser.userDto.email ?? ''} />;
-  } else if (session && session.userId && sessionUser?.userDto && sessionUser.nextStep === 'VERIFY_MOBILE') {
-    content = <VerifyMobileFlow email={sessionUser.userDto.email ?? ''} />;
-  }
-
-  return content;
 }
