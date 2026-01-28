@@ -1,4 +1,4 @@
-import { useFetcher } from 'react-router';
+import { useFetcher, useLocation } from 'react-router';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -11,10 +11,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { ACTION_INTENT } from '../booking.public.appointment.session.contact.route';
+import { ACTION_INTENT } from '../_utils/action-intents';
 
 export function ClearSessionAction() {
   const fetcher = useFetcher();
+  const location = useLocation();
+  const action = `${location.pathname}${location.search}`;
 
   return (
     <AlertDialog>
@@ -30,7 +32,7 @@ export function ClearSessionAction() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Avbryt</AlertDialogCancel>
-          <fetcher.Form method="post" action="?index">
+          <fetcher.Form method="post" action={action}>
             <input type="hidden" name="intent" value={ACTION_INTENT.CLEAR_SESSION} />
             <AlertDialogAction type="submit">Slett</AlertDialogAction>
           </fetcher.Form>

@@ -12,7 +12,8 @@ import {
   CONTACT_SIGN_IN_FETCHER_KEY,
   CONTACT_SIGN_UP_FETCHER_KEY,
 } from '../_forms/fetcher-keys';
-import { ACTION_INTENT } from '../booking.public.appointment.session.contact.route';
+import { ACTION_INTENT } from '../_utils/action-intents';
+import { CONTACT_VERIFICATION_TOKEN_STORAGE_KEY } from '../_forms/session-keys';
 import { getFetcherErrorMessage } from '../_utils/fetcher-error';
 
 const VIEW_MENU = 'menu';
@@ -135,6 +136,15 @@ export function NoUserSessionNoAuthUserFlow({ onBack, backLabel = 'Tilbake' }: N
       revalidator.revalidate();
     }
   }, [providerFetcher.data, revalidator]);
+
+  React.useEffect(() => {
+    if (!signUpFetcher.data) return;
+    const data = signUpFetcher.data as { signUp?: { verificationSessionToken?: string } };
+    const token = data.signUp?.verificationSessionToken;
+    if (token && typeof window !== 'undefined') {
+      window.sessionStorage.setItem(CONTACT_VERIFICATION_TOKEN_STORAGE_KEY, token);
+    }
+  }, [signUpFetcher.data]);
 
   const backButton = onBack ? (
     <div className="mt-4">

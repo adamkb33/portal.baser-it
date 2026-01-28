@@ -10,8 +10,7 @@ type AuthSignUpFetcherFormProps = {
 export function AuthSignUpFetcherForm({ fetcherId, className, children }: AuthSignUpFetcherFormProps) {
   const fetcher = useFetcher({ key: fetcherId });
   const location = useLocation();
-  const separator = location.search ? '&' : '?';
-  const action = `${location.pathname}${location.search}${separator}index`;
+  const action = `${location.pathname}${location.search}`;
 
   return (
     <fetcher.Form method="post" action={action} className={className}>
