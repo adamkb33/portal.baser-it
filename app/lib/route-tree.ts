@@ -587,6 +587,14 @@ export const ROUTE_TREE: RouteBranch[] = [
       },
     ],
   },
+  {
+    id: 'ui',
+    href: '/ui',
+    label: 'Design System',
+    category: BrachCategory.NONE,
+    accessType: Access.PUBLIC,
+    hidden: true,
+  },
 ];
 
 export type ApiRoute = {
@@ -760,6 +768,7 @@ export const API_ROUTES_TREE = [
       },
     ],
   },
+
 ];
 export const API_ROUTES_MAP: Record<string, { id: string; url: string }> = (() => {
   const map: Record<string, { id: string; url: string }> = {};
