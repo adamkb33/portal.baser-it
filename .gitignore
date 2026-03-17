@@ -15,3 +15,7 @@
 tmp
 
 .npm-cache
+playwright-report/
+test-results/
+
+.idea

@@ -3,12 +3,19 @@ import { Form, Link, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.reset-password.route';
 
 import { decodeResetPasswordToken } from './_utils/auth.reset-password.utils';
-import { AuthFormContainer } from '../_components/auth.form-container';
-import { AuthFormField } from '../_components/auth.form-field';
-import { AuthFormButton } from '../_components/auth.form-button';
 import { AuthController } from '~/api/generated/base';
 import { authService } from '~/lib/auth-service';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { Button, FormField, FormPageTemplate } from '~/ui';
+
+function toMessageValue(message: unknown, fallback: string) {
+  if (typeof message === 'string' && message.trim().length > 0) return message;
+  if (message && typeof message === 'object') {
+    const candidate = (message as { value?: string; id?: string }).value || (message as { id?: string }).id;
+    if (candidate) return candidate;
+  }
+  return fallback;
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -42,7 +49,7 @@ export async function action({ request }: Route.ActionArgs) {
     });
 
     if (!response.data || !response.data.data) {
-      const message = response.data?.message || 'Noe gikk galt. Prøv igjen.';
+      const message = toMessageValue(response.data?.message, 'Noe gikk galt. Prøv igjen.');
       return data(
         {
           error: message,
@@ -76,20 +83,22 @@ export default function AuthResetPassword({ loaderData, actionData }: Route.Comp
   const isSubmitting = navigation.state === 'submitting';
   const errorMessage = actionData?.error;
   return (
-    <AuthFormContainer
+    <FormPageTemplate
       title="Tilbakestill passord"
       description="Opprett et nytt passord for din konto."
       error={errorMessage}
-      secondaryAction={
+      variant="emphasis"
+      actions={
         <Link to="/" className="mt-2 block text-center text-sm font-medium text-foreground hover:underline">
           Tilbake til forsiden →
         </Link>
       }
+      footerLink={null}
     >
       <Form method="post" className="space-y-6">
         <input type="hidden" name="resetPasswordToken" value={resetPasswordToken} />
 
-        <AuthFormField
+        <FormField
           id="email"
           name="email"
           label="E-post"
@@ -99,7 +108,7 @@ export default function AuthResetPassword({ loaderData, actionData }: Route.Comp
           disabled
         />
 
-        <AuthFormField
+        <FormField
           id="password"
           name="password"
           label="Passord"
@@ -109,7 +118,7 @@ export default function AuthResetPassword({ loaderData, actionData }: Route.Comp
           disabled={isSubmitting}
         />
 
-        <AuthFormField
+        <FormField
           id="confirmPassword"
           name="confirmPassword"
           label="Bekreft passord"
@@ -119,10 +128,10 @@ export default function AuthResetPassword({ loaderData, actionData }: Route.Comp
           disabled={isSubmitting}
         />
 
-        <AuthFormButton isLoading={isSubmitting} loadingText="Tilbakestiller…">
+        <Button type="submit" fullWidth loading={isSubmitting}>
           Tilbakestill passord
-        </AuthFormButton>
+        </Button>
       </Form>
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }

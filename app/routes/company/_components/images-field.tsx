@@ -1,7 +1,5 @@
-import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { Badge } from '~/components/ui/badge';
 import { X, Undo2 } from 'lucide-react';
+import { Badge, Button, Input } from '~/ui';
 
 export type ImageField = {
   id?: number;
@@ -75,7 +73,7 @@ export function ImagesField({ images, onChange }: ImagesFieldProps) {
               <div
                 key={img.id ?? index}
                 className={`group relative overflow-hidden rounded-md border-2 transition-all ${
-                  img.pendingDeletion ? 'border-red-500 bg-red-50 opacity-60' : 'border-slate-200 bg-slate-50'
+                  img.pendingDeletion ? 'border-destructive bg-surface opacity-60' : 'border-border bg-surface'
                 }`}
               >
                 {img.pendingDeletion ? (
@@ -100,7 +98,7 @@ export function ImagesField({ images, onChange }: ImagesFieldProps) {
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute right-1.5 top-1.5 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-lg ring-2 ring-white transition hover:bg-red-600"
+                    className="absolute right-1.5 top-1.5 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full bg-destructive text-text-inverse shadow-lg ring-2 ring-background transition hover:opacity-90"
                   >
                     <X className="h-4 w-4" />
                     <span className="sr-only">Fjern bilde</span>
@@ -123,12 +121,12 @@ export function ImagesField({ images, onChange }: ImagesFieldProps) {
                     )}
                   </div>
                 ) : (
-                  <div className="flex h-32 w-full items-center justify-center text-xs text-slate-400">
+                  <div className="flex h-32 w-full items-center justify-center text-xs text-text-secondary">
                     Ingen bilde valgt
                   </div>
                 )}
 
-                <div className="space-y-2 border-t border-slate-200 bg-white p-2.5">
+                <div className="space-y-2 border-t border-border bg-background p-2.5">
                   {!isExisting && !img.pendingDeletion && (
                     <Input
                       type="file"

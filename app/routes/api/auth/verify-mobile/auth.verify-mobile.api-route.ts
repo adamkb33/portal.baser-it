@@ -3,6 +3,7 @@ import type { Route } from './+types/auth.verify-mobile.api-route';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
 import { ContactAuthService } from '~/routes/booking/public/appointment/session/contact/_services/contact-auth.service.server';
+import { extractAuthErrorCode, resolveMappedAuthError } from '~/routes/booking/public/appointment/session/contact/_utils/auth-step-error';
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -27,6 +28,7 @@ export async function action({ request }: Route.ActionArgs) {
     return data({ success: true, nextStep: result.nextStep, signedIn: false });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke bekrefte mobilnummer. Prøv igjen.');
-    return data({ error: message }, { status: status ?? 400 });
+    const errorCode = extractAuthErrorCode(error);
+    return data({ error: resolveMappedAuthError(error, message), errorCode }, { status: status ?? 400 });
   }
 }

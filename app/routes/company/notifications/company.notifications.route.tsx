@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { data, useNavigate, useSearchParams, useSubmit } from 'react-router';
 import type { DateRange } from 'react-day-picker';
 import { BellRing, Eye, Inbox } from 'lucide-react';
@@ -8,10 +8,8 @@ import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { serializeQueryParams } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { PageHeader } from '../_components/page-header';
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
-import { Badge } from '~/components/ui/badge';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
+import { CompanyMetricCard, CompanyPageTemplate, Notice } from '~/ui';
 import { NotificationsFilterCard } from './_components/notifications-filter-card';
 import { NotificationCardRow } from './_components/notification-card-row';
 import { NotificationTableRow } from './_components/notification-table-row';
@@ -150,48 +148,33 @@ export default function CompanyNotificationsRoute({ loaderData }: Route.Componen
   }, [notifications]);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="In-app varsler"
-        description="Varslene under er tilpasset den nye in-app DTO-en og viser emne, meldingstekst og lesestatus."
-        teaser="Klikk på et varsel for å åpne hele meldingen i egen visning."
-        actions={
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="border-primary/20 bg-primary/5 px-3 py-1 text-primary">
-              {pagination.totalElements} totalt
-            </Badge>
-            <Badge variant="outline" className="px-3 py-1">
-              Side {pagination.page + 1} av {Math.max(pagination.totalPages, 1)}
-            </Badge>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <NotificationsFilterCard
-            formRef={formRef}
-            fromDate={fromDate}
-            toDate={toDate}
-            dateRange={dateRange}
-            readFilter={readFilter}
-            pageSize={pagination.size}
-            resetHref="/company/notifications"
-            onRangeSelect={handleRangeSelect}
-            onReadFilterChange={handleReadFilterChange}
-          />
-          {summary.unread > 0 && (
-            <SummaryCard icon={<BellRing className="h-4 w-4 text-amber-600" />} label="Ulest" value={summary.unread} />
-          )}
+    <CompanyPageTemplate
+      title="In-app varsler"
+      description="Varsler, lesestatus og filtre presentert i samme kompakte mønster som resten av company-flatene."
+      label="Varsler"
+      hero={
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <CompanyMetricCard label="Totalt i listen" value={summary.total} icon={<Inbox className="h-5 w-5" />} />
+          <CompanyMetricCard label="Uleste" value={summary.unread} icon={<BellRing className="h-5 w-5" />} />
+          <CompanyMetricCard label="Leste" value={summary.read} icon={<Eye className="h-5 w-5" />} />
         </div>
-      </PageHeader>
+      }
+    >
+      <NotificationsFilterCard
+        formRef={formRef}
+        fromDate={fromDate}
+        toDate={toDate}
+        dateRange={dateRange}
+        readFilter={readFilter}
+        pageSize={pagination.size}
+        resetHref="/company/notifications"
+        onRangeSelect={handleRangeSelect}
+        onReadFilterChange={handleReadFilterChange}
+      />
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertTitle>Kunne ikke hente varsler</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {!error && (
+      {error ? (
+        <Notice tone="emphasis" title="Kunne ikke hente varsler" message={error} />
+      ) : (
         <ServerPaginatedTable<InAppNotificationDto>
           items={notifications}
           columns={[{ header: 'Tidspunkt' }, { header: 'Varsel' }, { header: 'Status' }]}
@@ -216,18 +199,6 @@ export default function CompanyNotificationsRoute({ loaderData }: Route.Componen
           )}
         />
       )}
-    </div>
-  );
-}
-
-function SummaryCard({ icon, label, value }: { icon: ReactNode; label: string; value: number }) {
-  return (
-    <div className="inline-flex items-center gap-2.5 rounded-full border border-border/70 bg-background/80 px-3 py-2 shadow-xs">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">{icon}</div>
-      <div className="leading-none">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">{label}</p>
-        <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
-      </div>
-    </div>
+    </CompanyPageTemplate>
   );
 }

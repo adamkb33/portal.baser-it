@@ -1,6 +1,6 @@
 export function Footer() {
   return (
-    <footer className="h-16 border-t border-footer-border lg:col-span-12 lg:grid lg:grid-cols-12 bg-footer-bg">
+    <footer className="h-full lg:col-span-12 lg:grid lg:grid-cols-12 bg-footer-bg">
       <div className="hidden lg:col-span-2 lg:block"></div>
 
       <section className="h-full p-2 lg:col-span-8 flex flex-col justify-center">

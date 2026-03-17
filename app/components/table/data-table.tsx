@@ -1,5 +1,4 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/ui';
 
 export interface Column<T> {
   header: string;
@@ -10,8 +9,8 @@ export interface Column<T> {
 export interface Action<T> {
   label: string;
   onClick: (row: T) => void;
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+  variant?: 'primary' | 'destructive' | 'outline' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg' | 'icon';
   className?: string;
 }
 

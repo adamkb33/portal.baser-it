@@ -1,6 +1,6 @@
 import { cn } from '../lib/cn';
 
-export type BadgeVariant = 'primary' | 'secondary' | 'ghost';
+export type BadgeVariant = 'primary' | 'secondary' | 'ghost' | 'default' | 'outline' | 'destructive';
 export type BadgeSize = 'sm' | 'md';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -13,6 +13,9 @@ const variantClasses: Record<BadgeVariant, string> = {
   primary: 'bg-interactive text-text-inverse',
   secondary: 'border border-interactive text-interactive bg-surface',
   ghost: 'text-text-secondary',
+  default: 'bg-interactive text-text-inverse',
+  outline: 'border border-border bg-background text-text-primary',
+  destructive: 'bg-destructive text-text-inverse',
 };
 
 const sizeClasses: Record<BadgeSize, string> = {

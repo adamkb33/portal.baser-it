@@ -1,15 +1,14 @@
-import { data, useFetcher, redirect } from 'react-router';
+import { data, useFetcher, redirect, useNavigate } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.session.contact.verify-mobile.route';
-import { Button } from '@/components/ui/button';
-import { VerificationCodeInput } from '@/components/ui/verification-code-input';
-import { BookingErrorBanner, BookingSection, BookingStepHeader } from '../../../_components/booking-layout';
 import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { action as resendVerificationMobileAction } from '~/routes/api/auth/resend-verification/mobile/auth.resend-verification.mobile.api-route';
 import type { action as verifyMobileAction } from '~/routes/api/auth/verify-mobile/auth.verify-mobile.api-route';
-import { redirectAuthStatusNextStepHref } from '../_utils/auth.utils';
+import type { loader as userStatusLoader } from '~/routes/api/auth/user-status/auth.user-status.api-route';
+import { redirectAuthStatusNextStepHref, resolveAuthNextStepHref } from '../_utils/auth.utils';
 import React from 'react';
 import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { AlertBanner, Button, Notice, PageHeader, Panel, Stack, VerificationCodeInput } from '~/ui';
 
 const CODE_LENGTH = 6;
 
@@ -68,8 +67,11 @@ export default function BookingPublicAppointmentSessionContactAuthVerifyMobileRo
   loaderData,
 }: Route.ComponentProps) {
   const fetcher = useFetcher<typeof verifyMobileAction>();
+  const statusFetcher = useFetcher<typeof userStatusLoader>();
   const resendFetcher = useFetcher<typeof resendVerificationMobileAction>();
   const [code, setCode] = React.useState('');
+  const navigate = useNavigate();
+  const didNavigateRef = React.useRef(false);
   const verificationSessionToken = loaderData.verificationSessionToken;
   const errorMessage =
     typeof fetcher.data === 'object' && fetcher.data && 'error' in fetcher.data ? fetcher.data.error : null;
@@ -82,54 +84,76 @@ export default function BookingPublicAppointmentSessionContactAuthVerifyMobileRo
       ? String(resendFetcher.data.error)
       : null;
 
+  React.useEffect(() => {
+    if (didNavigateRef.current) return;
+    if (fetcher.state !== 'idle') return;
+    if (!fetcher.data || typeof fetcher.data !== 'object') return;
+    if (!('success' in fetcher.data) || fetcher.data.success !== true) return;
+    if (!loaderData.session?.userId) return;
+
+    const params = new URLSearchParams({ userId: String(loaderData.session.userId) });
+    statusFetcher.load(`${API_ROUTES_MAP['auth.user-status'].url}?${params.toString()}`);
+  }, [fetcher.state, fetcher.data, loaderData.session?.userId, statusFetcher]);
+
+  React.useEffect(() => {
+    if (didNavigateRef.current) return;
+    if (!statusFetcher.data || typeof statusFetcher.data !== 'object') return;
+    if ('error' in statusFetcher.data) return;
+    if (!('nextStep' in statusFetcher.data) || !statusFetcher.data.nextStep) return;
+
+    const nextStepHref = resolveAuthNextStepHref(statusFetcher.data.nextStep);
+    if (!nextStepHref) return;
+
+    didNavigateRef.current = true;
+    navigate(nextStepHref, { replace: true });
+  }, [statusFetcher.data, navigate]);
+
   return (
     <>
-      <BookingStepHeader
-        label="Kontakt"
-        title="Bekreft mobil"
-        description="Skriv inn koden vi har sendt på SMS for å bekrefte mobilnummeret."
-      />
-      <BookingSection title="Bekreft kode" variant="elevated">
-        {errorMessage ? <BookingErrorBanner title={String(errorMessage)} /> : null}
-        {resendError ? <BookingErrorBanner title={String(resendError)} /> : null}
-        {resendMessage ? (
-          <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-            {resendMessage}
-          </div>
-        ) : null}
-        <fetcher.Form method="post" action={API_ROUTES_MAP['auth.verify-mobile'].url} className="space-y-4">
-          <div className="space-y-2">
-            <input type="hidden" name="verificationSessionToken" value={verificationSessionToken} />
-            <VerificationCodeInput
-              name="code"
-              value={code}
-              onChange={setCode}
-              length={CODE_LENGTH}
-              aria-invalid={Boolean(errorMessage)}
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={code.length !== CODE_LENGTH}>
-            Bekreft kode
-          </Button>
-        </fetcher.Form>
-        <div className="space-y-2 pt-3">
-          <resendFetcher.Form
-            method="post"
-            action={API_ROUTES_MAP['auth.resend-verification.mobile'].url}
-            className="space-y-2"
-          >
-            <input type="hidden" name="verificationSessionToken" value={verificationSessionToken} />
-            <Button
-              type="submit"
-              className="w-full"
-              variant="secondary"
-              disabled={!verificationSessionToken || resendFetcher.state !== 'idle'}
-            >
-              Send SMS på nytt
-            </Button>
-          </resendFetcher.Form>
-        </div>
-      </BookingSection>
+      <Stack space="xl">
+        <PageHeader
+          label="Kontakt"
+          title="Bekreft mobil"
+          description="Skriv inn koden vi har sendt på SMS for å bekrefte mobilnummeret."
+        />
+        <Panel title="Bekreft kode" tone="muted">
+          <Stack space="md">
+            {errorMessage ? <AlertBanner title={String(errorMessage)} /> : null}
+            {resendError ? <AlertBanner title={String(resendError)} /> : null}
+            {resendMessage ? <Notice title="Ny kode sendt" message={resendMessage} /> : null}
+            <fetcher.Form method="post" action={API_ROUTES_MAP['auth.verify-mobile'].url}>
+              <Stack space="md">
+                <Stack space="xs">
+                  <input type="hidden" name="verificationSessionToken" value={verificationSessionToken} />
+                  <VerificationCodeInput
+                    name="code"
+                    value={code}
+                    onChange={setCode}
+                    length={CODE_LENGTH}
+                    aria-invalid={Boolean(errorMessage)}
+                  />
+                </Stack>
+                <Button type="submit" className="w-full" disabled={code.length !== CODE_LENGTH}>
+                  Bekreft kode
+                </Button>
+              </Stack>
+            </fetcher.Form>
+            <resendFetcher.Form method="post" action={API_ROUTES_MAP['auth.resend-verification.mobile'].url}>
+              <Stack space="sm">
+                <input type="hidden" name="verificationSessionToken" value={verificationSessionToken} />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="secondary"
+                  disabled={!verificationSessionToken || resendFetcher.state !== 'idle'}
+                >
+                  Send SMS på nytt
+                </Button>
+              </Stack>
+            </resendFetcher.Form>
+          </Stack>
+        </Panel>
+      </Stack>
     </>
   );
 }

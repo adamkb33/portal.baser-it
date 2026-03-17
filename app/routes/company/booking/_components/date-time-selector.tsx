@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Calendar } from '~/components/ui/calendar';
-import { Button } from '~/components/ui/button';
-import { Label } from '~/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { Clock, CalendarIcon, ChevronDown } from 'lucide-react';
-import { cn } from '~/lib/utils';
+import { Clock, CalendarIcon } from 'lucide-react';
 import type { ScheduleDto, ScheduleTimeSlot } from '~/api/generated/booking';
+import { Button as LegacyButton } from '~/components/ui/button';
+import { Calendar } from '~/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
+import { Button, Label, cn } from '~/ui';
+import { format } from 'date-fns';
 
 type DateTimeSelectorProps = {
   schedules: ScheduleDto[];
@@ -44,12 +44,6 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
     selectedDateTime ? new Date(selectedDateTime.toDateString()) : findNearestAvailableDate(schedules),
   );
   const [calendarMonth, setCalendarMonth] = useState<Date | undefined>(selectedDate ?? undefined);
-
-  useEffect(() => {
-    if (selectedDate) {
-      setCalendarMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
-    }
-  }, [selectedDate]);
 
   useEffect(() => {
     if (selectedDateTime) {
@@ -120,18 +114,24 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
     <div className="space-y-3 md:space-y-4 rounded-md p-2">
       {/* Date Selector */}
       <div className="space-y-3">
-        <Label htmlFor="date" className="flex items-center gap-2 text-sm font-medium px-1">
+        <Label htmlFor="appointment-date" className="flex items-center gap-2 px-1">
           <CalendarIcon className="h-4 w-4" />
           <span>Velg dato</span>
         </Label>
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" id="date" className="w-full justify-between font-normal h-12 md:h-10">
-              <span className="text-sm md:text-sm">{selectedDate ? formatDate(selectedDate) : 'Velg dato'}</span>
-              <ChevronDown className="h-4 w-4 opacity-50" />
-            </Button>
+            <LegacyButton
+              variant="outline"
+              id="appointment-date"
+              className="h-12 w-full justify-between rounded-sm border border-border bg-background px-3 text-left text-sm font-normal text-text-primary shadow-none md:h-10"
+            >
+              <span className={!selectedDate ? 'text-text-secondary' : undefined}>
+                {selectedDate ? format(selectedDate, 'yyyy-MM-dd') : 'Velg dato'}
+              </span>
+              <CalendarIcon className="h-4 w-4 text-text-secondary" />
+            </LegacyButton>
           </PopoverTrigger>
-          <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+          <PopoverContent className="w-auto overflow-hidden border-border bg-overlay-surface p-0 text-text-primary" align="start">
             <Calendar
               mode="single"
               selected={selectedDate || undefined}
@@ -139,6 +139,7 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
               disabled={isDateDisabled}
               month={calendarMonth}
               onMonthChange={setCalendarMonth}
+              className="bg-overlay-surface"
             />
           </PopoverContent>
         </Popover>
@@ -146,7 +147,7 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
 
       {/* Time Slot Selector */}
       <div className="space-y-3">
-        <Label className="flex items-center gap-2 text-sm font-medium px-1">
+        <Label className="flex items-center gap-2 px-1">
           <Clock className="h-4 w-4" />
           <span>Velg tid</span>
         </Label>
@@ -170,7 +171,7 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
                 return (
                   <Button
                     key={index}
-                    variant={isSelected ? 'default' : 'outline'}
+                    variant={isSelected ? 'primary' : 'outline'}
                     size="sm"
                     className={cn(
                       'h-11 md:h-9 text-sm md:text-xs font-medium',

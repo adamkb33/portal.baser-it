@@ -1,22 +1,28 @@
 // routes/company/booking/profile/route.tsx
-import { useFetcher } from 'react-router';
-import { useState, useEffect, useMemo } from 'react';
+import { NavLink } from 'react-router';
+import { useMemo } from 'react';
 import { User, Briefcase, CalendarDays, Image as ImageIcon } from 'lucide-react';
-import { FormDialog } from '~/components/dialog/form-dialog';
-import { fileToBase64 } from '~/lib/file.utils';
-import { createImageUploadRenderer } from '~/components/dialog/create-image-upload-renderer';
-import { createServicesSelectionRenderer } from '~/components/dialog/create-services-rendrer';
-import type { DailyScheduleDto } from '~/api/generated/booking';
 
 import type { Route } from './+types/company.booking.profile.route';
 import { CompanyUserBookingProfileController, CompanyUserServiceGroupController } from '~/api/generated/booking';
-import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
-import { createDailyScheduleRenderer } from '~/components/dialog/create-daily-schedule-renderer';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
-import { Button } from '~/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
+import { ROUTES_MAP } from '~/lib/route-tree';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CompanyPageTemplate,
+  Text,
+  cn,
+} from '~/ui';
 
 const DAY_ABBREV: Record<string, string> = {
   MONDAY: 'Mandag',
@@ -62,103 +68,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function BookingCompanyUserProfile({ loaderData }: Route.ComponentProps) {
-  const fetcher = useFetcher<{ success?: boolean; message?: string }>();
-
-  const { bookingProfile, groupedServiceGroups = [] } = loaderData;
-
-  const [createOrUpdateDialogOpen, setCreateOrUpdateBookingProfileDialogOpen] = useState(false);
-  const [createOrUpdateDialogForm, setCreateOrUpdateDialogForm] = useState({
-    description: '',
-    services: [] as number[],
-    dailySchedules: [] as DailyScheduleDto[],
-    image: null as { file: File; previewUrl: string } | null,
-  });
-
-  useEffect(() => {
-    if (createOrUpdateDialogOpen && bookingProfile) {
-      // Extract individual service IDs from all service groups
-      const serviceIds =
-        bookingProfile.services?.flatMap((group: any) => group.services.map((service: any) => service.id)) || [];
-
-      setCreateOrUpdateDialogForm({
-        description: bookingProfile.description || '',
-        services: serviceIds,
-        dailySchedules: bookingProfile.dailySchedule || [],
-        image: null,
-      });
-    } else if (createOrUpdateDialogOpen && !bookingProfile) {
-      setCreateOrUpdateDialogForm({
-        description: '',
-        services: [],
-        dailySchedules: [],
-        image: null,
-      });
-    }
-  }, [createOrUpdateDialogOpen, bookingProfile]);
-
-  const handleFieldChange = (name: keyof typeof createOrUpdateDialogForm, value: any) => {
-    setCreateOrUpdateDialogForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleGetOrCreateProfileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const formData = new FormData();
-      formData.append('description', createOrUpdateDialogForm.description);
-
-      // Services
-      for (const serviceId of createOrUpdateDialogForm.services) {
-        formData.append('services[]', String(serviceId));
-      }
-
-      // Daily schedules
-      if (createOrUpdateDialogForm.dailySchedules.length > 0) {
-        formData.append('dailySchedules', JSON.stringify(createOrUpdateDialogForm.dailySchedules));
-      }
-
-      // Handle image action
-      if (createOrUpdateDialogForm.image?.file) {
-        formData.append('imageAction', 'UPLOAD');
-        const base64Data = await fileToBase64(createOrUpdateDialogForm.image.file);
-        formData.append('imageData[fileName]', createOrUpdateDialogForm.image.file.name);
-        formData.append(
-          'imageData[contentType]',
-          createOrUpdateDialogForm.image.file.type || 'application/octet-stream',
-        );
-        formData.append('imageData[data]', base64Data);
-        formData.append('imageData[label]', createOrUpdateDialogForm.image.file.name);
-      }
-
-      fetcher.submit(formData, {
-        method: 'post',
-        action: API_ROUTES_MAP['company.booking.profile.create-or-update'].url,
-      });
-      setCreateOrUpdateBookingProfileDialogOpen(false);
-    } catch (error) {
-      console.error('Failed to submit booking profile:', error);
-    }
-  };
-
-  const handleEditBookingProfile = () => {
-    setCreateOrUpdateBookingProfileDialogOpen(true);
-  };
-
-  const renderImageUpload = createImageUploadRenderer({
-    existingImageUrl: bookingProfile?.image?.url || null,
-    helperText: bookingProfile?.image?.url
-      ? 'Last opp et nytt bilde for å erstatte det eksisterende.'
-      : 'Last opp et profilbilde som vises til kunder.',
-  });
-
-  const renderServicesSelection = createServicesSelectionRenderer({ services: groupedServiceGroups });
-
-  const renderDailySchedule = createDailyScheduleRenderer({
-    helperText: 'Velg hvilke dager og klokkeslett du er tilgjengelig for bookinger.',
-  });
-
-  const dialogTitle = bookingProfile ? 'Rediger bookingprofil' : 'Lag bookingprofil';
-  const dialogSubmitLabel = bookingProfile ? 'Lagre endringer' : 'Opprett';
+  const { bookingProfile } = loaderData;
 
   const profileName =
     bookingProfile?.familyName && bookingProfile?.givenName
@@ -185,17 +95,71 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
   };
 
   return (
-    <>
-      <div className="grid grid-cols-1 xl:grid-cols-[320px,1fr] gap-4">
+    <CompanyPageTemplate
+      title="Bookingprofil"
+      description="Hold profilen, tjenestene og arbeidstidene dine konsistente med den kompakte booking-layouten."
+      routeLinks={
+        <>
+          <NavLink
+            to={ROUTES_MAP['company.booking'].href}
+            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+          >
+            Oversikt
+          </NavLink>
+          <NavLink
+            to={ROUTES_MAP['company.booking.profile.schedule-unavailability'].href}
+            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+          >
+            Mitt fravik
+          </NavLink>
+        </>
+      }
+      hero={
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <ProfileMetricCard
+            label="Tjenester"
+            value={totalServices}
+            icon={<Briefcase className="h-5 w-5 text-primary" />}
+            accent="info"
+          />
+          <ProfileMetricCard
+            label="Grupper"
+            value={totalServiceGroups}
+            icon={<Briefcase className="h-5 w-5 text-secondary" />}
+            accent="success"
+          />
+          <ProfileMetricCard
+            label="Dager"
+            value={availabilityDays}
+            icon={<CalendarDays className="h-5 w-5 text-primary" />}
+            accent="info"
+          />
+          <ProfileMetricCard
+            label="Tidsluker"
+            value={scheduleSlots}
+            icon={<CalendarDays className="h-5 w-5 text-secondary" />}
+            accent="success"
+          />
+        </div>
+      }
+    >
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[320px,1fr]">
         <div className="space-y-4">
-          <Card variant="elevated">
-            <CardHeader className="border-b">
+          <Card variant="default" className="bg-surface">
+            <CardHeader>
               <CardTitle>Profilforhåndsvisning</CardTitle>
               <CardDescription>Slik ser profilen ut for kunder.</CardDescription>
               <div className="flex justify-end">
-                <Button onClick={handleEditBookingProfile}>
+                <NavLink
+                  to={
+                    bookingProfile
+                      ? ROUTES_MAP['company.booking.profile.edit'].href
+                      : ROUTES_MAP['company.booking.profile.create'].href
+                  }
+                  className="inline-flex h-10 items-center justify-center rounded-sm bg-interactive px-4 text-sm font-medium text-text-inverse transition-colors hover:bg-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+                >
                   {bookingProfile ? 'Rediger bookingprofil' : 'Legg til bookingprofil'}
-                </Button>
+                </NavLink>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -222,17 +186,17 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
               {hasDescription ? (
                 <p className="text-sm text-muted-foreground leading-relaxed">{bookingProfile?.description}</p>
               ) : (
-                <div className="rounded-lg border border-muted/50 bg-muted/30 p-3 text-xs text-muted-foreground">
+                <div className="rounded-md bg-background p-3 text-xs text-muted-foreground">
                   Legg til en beskrivelse for å gjøre profilen mer personlig.
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg bg-muted/30 p-2.5">
+                <div className="rounded-md bg-background p-2.5">
                   <p className="text-xs text-muted-foreground">Tjenestegrupper</p>
                   <p className="text-base font-semibold text-foreground">{totalServiceGroups}</p>
                 </div>
-                <div className="rounded-lg bg-muted/30 p-2.5">
+                <div className="rounded-md bg-background p-2.5">
                   <p className="text-xs text-muted-foreground">Tidsluker</p>
                   <p className="text-base font-semibold text-foreground">{scheduleSlots}</p>
                 </div>
@@ -247,26 +211,26 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
         </div>
 
         <div className="space-y-4">
-          <Card variant="elevated">
-            <CardHeader className="border-b">
+          <Card variant="default" className="bg-surface">
+            <CardHeader>
               <CardTitle>Oversikt</CardTitle>
               <CardDescription>En rask oppsummering av profilen.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <div className="rounded-lg bg-muted/30 p-2.5">
+                <div className="rounded-md bg-background p-2.5">
                   <p className="text-xs text-muted-foreground">Tjenester</p>
                   <p className="text-lg font-semibold text-foreground">{totalServices}</p>
                 </div>
-                <div className="rounded-lg bg-muted/30 p-2.5">
+                <div className="rounded-md bg-background p-2.5">
                   <p className="text-xs text-muted-foreground">Tjenestegrupper</p>
                   <p className="text-lg font-semibold text-foreground">{totalServiceGroups}</p>
                 </div>
-                <div className="rounded-lg bg-muted/30 p-2.5">
+                <div className="rounded-md bg-background p-2.5">
                   <p className="text-xs text-muted-foreground">Dager tilgjengelig</p>
                   <p className="text-lg font-semibold text-foreground">{availabilityDays}</p>
                 </div>
-                <div className="rounded-lg bg-muted/30 p-2.5">
+                <div className="rounded-md bg-background p-2.5">
                   <p className="text-xs text-muted-foreground">Tidsluker</p>
                   <p className="text-lg font-semibold text-foreground">{scheduleSlots}</p>
                 </div>
@@ -274,164 +238,144 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
             </CardContent>
           </Card>
 
-          <Accordion type="multiple" className="space-y-3">
-            <AccordionItem value="description" className="bg-accordion-bg">
-              <Card variant="bordered">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="text-lg font-semibold text-foreground">Om deg</h3>
-                      <p className="text-sm text-muted-foreground">Gi kundene et inntrykk av profilen.</p>
-                    </div>
+          <Accordion type="multiple">
+            <AccordionItem value="description">
+              <AccordionTrigger>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary" />
                   </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  {hasDescription ? (
-                    <div className="rounded-lg bg-muted/30 p-3 text-sm text-foreground leading-relaxed">
-                      {bookingProfile?.description}
-                    </div>
-                  ) : (
-                    <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-sm text-muted-foreground">
-                      Legg til en beskrivelse for å øke tillit og konvertering.
-                    </div>
-                  )}
-                </AccordionContent>
-              </Card>
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold text-foreground">Om deg</h3>
+                    <p className="text-sm text-muted-foreground">Gi kundene et inntrykk av profilen.</p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                {hasDescription ? (
+                  <div className="rounded-md bg-surface p-3 text-sm text-foreground leading-relaxed">
+                    {bookingProfile?.description}
+                  </div>
+                ) : (
+                  <div className="rounded-md bg-surface p-3 text-sm text-muted-foreground">
+                    Legg til en beskrivelse for å øke tillit og konvertering.
+                  </div>
+                )}
+              </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="services" className="bg-accordion-bg">
-              <Card variant="bordered">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                      <Briefcase className="h-5 w-5 text-secondary" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="text-lg font-semibold text-foreground">Tjenester</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {totalServices} tjenester fordelt på {totalServiceGroups} grupper.
-                      </p>
-                    </div>
+            <AccordionItem value="services">
+              <AccordionTrigger>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+                    <Briefcase className="h-5 w-5 text-secondary" />
                   </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  {hasServices ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                      {bookingProfile?.services?.map((group) => (
-                        <div key={group.id} className="rounded-lg border border-card-border bg-muted/30 p-3">
-                          <p className="text-sm font-semibold text-foreground">{group.name}</p>
-                          <div className="mt-2 space-y-2">
-                            {group.services.map((service) => (
-                              <div key={service.id} className="flex items-center justify-between text-xs">
-                                <span className="text-foreground">{service.name}</span>
-                                <span className="text-muted-foreground">
-                                  {service.duration} min · <span className="font-semibold">kr {service.price}</span>
-                                </span>
-                              </div>
-                            ))}
-                          </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold text-foreground">Tjenester</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {totalServices} tjenester fordelt på {totalServiceGroups} grupper.
+                    </p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                {hasServices ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                    {bookingProfile?.services?.map((group) => (
+                      <div key={group.id} className="rounded-md bg-surface p-3">
+                        <p className="text-sm font-semibold text-foreground">{group.name}</p>
+                        <div className="mt-2 space-y-2">
+                          {group.services.map((service) => (
+                            <div key={service.id} className="flex items-center justify-between text-xs">
+                              <span className="text-foreground">{service.name}</span>
+                              <span className="text-muted-foreground">
+                                {service.duration} min · <span className="font-semibold">kr {service.price}</span>
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-lg border border-muted/50 bg-muted/30 p-3 text-sm text-muted-foreground">
-                      Legg til tjenester slik at kundene vet hva de kan bestille.
-                    </div>
-                  )}
-                </AccordionContent>
-              </Card>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-md bg-surface p-3 text-sm text-muted-foreground">
+                    Legg til tjenester slik at kundene vet hva de kan bestille.
+                  </div>
+                )}
+              </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="schedule" className="bg-accordion-bg">
-              <Card variant="bordered">
-                <AccordionTrigger>
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-chart-3/10 flex items-center justify-center">
-                      <CalendarDays className="h-5 w-5 text-chart-3" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="text-lg font-semibold text-foreground">Arbeidstider</h3>
-                      <p className="text-sm text-muted-foreground">Vis når du er tilgjengelig.</p>
-                    </div>
+            <AccordionItem value="schedule">
+              <AccordionTrigger>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-chart-3/10 flex items-center justify-center">
+                    <CalendarDays className="h-5 w-5 text-chart-3" />
                   </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  {hasDailySchedule ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {sortedDailySchedule.map((day) => (
-                        <div
-                          key={day.id}
-                          className="flex items-center justify-between rounded-lg border border-card-border bg-muted/30 px-3 py-2.5"
-                        >
-                          <span className="text-sm font-medium text-foreground">{DAY_ABBREV[day.dayOfWeek]}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatTimeRange(day.startTime, day.endTime)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-lg border border-muted/50 bg-muted/30 p-3 text-sm text-muted-foreground">
-                      Sett opp arbeidstider for å la kunder booke tider.
-                    </div>
-                  )}
-                </AccordionContent>
-              </Card>
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold text-foreground">Arbeidstider</h3>
+                    <p className="text-sm text-muted-foreground">Vis når du er tilgjengelig.</p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                {hasDailySchedule ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {sortedDailySchedule.map((day) => (
+                      <div key={day.id} className="flex items-center justify-between rounded-md bg-surface px-3 py-2.5">
+                        <span className="text-sm font-medium text-foreground">{DAY_ABBREV[day.dayOfWeek]}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatTimeRange(day.startTime, day.endTime)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-md bg-surface p-3 text-sm text-muted-foreground">
+                    Sett opp arbeidstider for å la kunder booke tider.
+                  </div>
+                )}
+              </AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
       </div>
+    </CompanyPageTemplate>
+  );
+}
 
-      <FormDialog
-        open={createOrUpdateDialogOpen}
-        onOpenChange={setCreateOrUpdateBookingProfileDialogOpen}
-        title={dialogTitle}
-        fields={[
-          {
-            name: 'image',
-            label: 'Profilbilde',
-            render: renderImageUpload,
-          },
-          {
-            name: 'description',
-            label: 'Beskrivelse',
-            type: 'textarea',
-            placeholder: 'Fortell kunder om dine spesialiteter, arbeidsområder eller andre relevante detaljer...',
-            description: 'Denne beskrivelsen vil være synlig for kunder.',
-            className: 'min-h-[120px]',
-          },
-          {
-            name: 'services',
-            label: 'Tjenester',
-            render: renderServicesSelection,
-            description: 'Velg hvilke tjenester du tilbyr.',
-          },
-          {
-            name: 'dailySchedules',
-            label: 'Arbeidstider',
-            render: renderDailySchedule,
-            description: 'Sett dine tilgjengelige dager og klokkeslett.',
-          },
-        ]}
-        formData={createOrUpdateDialogForm}
-        onFieldChange={handleFieldChange}
-        onSubmit={handleGetOrCreateProfileSubmit}
-        actions={[
-          {
-            label: 'Avbryt',
-            variant: 'outline',
-            onClick: () => setCreateOrUpdateBookingProfileDialogOpen(false),
-          },
-          {
-            label: dialogSubmitLabel,
-            variant: 'default',
-            type: 'submit',
-          },
-        ]}
-      />
-    </>
+function ProfileMetricCard({
+  label,
+  value,
+  icon,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ReactNode;
+  accent: 'info' | 'success';
+}) {
+  const accentClasses = {
+    info: 'bg-primary/10',
+    success: 'bg-secondary/10',
+  } as const;
+
+  return (
+    <Card variant="default" size="sm" className="bg-surface">
+      <CardContent className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <Text as="p" variant="body-sm" className="text-text-secondary">
+              {label}
+            </Text>
+            <Text as="p" variant="heading-md">
+              {value}
+            </Text>
+          </div>
+          <div className={cn('flex h-10 w-10 items-center justify-center rounded-md', accentClasses[accent])}>
+            {icon}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

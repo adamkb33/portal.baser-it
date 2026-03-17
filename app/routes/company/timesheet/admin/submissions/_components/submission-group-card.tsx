@@ -1,7 +1,5 @@
 import type { AdminEmployeeTimesheetEntriesDto, TimesheetDayEntryDto } from '~/api/generated/timesheet/types.gen';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
-import { Badge } from '~/components/ui/badge';
-import { Card } from '~/components/ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Badge, Card } from '~/ui';
 import { SubmissionStatusSection } from './submission-status-section';
 
 type SubmissionGroupCardProps = {

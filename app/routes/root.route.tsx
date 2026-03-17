@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '~/components/ui/button';
+import { Button } from '~/ui';
 import RootPageHeroMinimalist from './_components/heros/root-page-hero-minimalist';
 import RootPageHeroWithSplitFeature from './_components/heros/root-page-hero-with-split-feature';
 import RootPageHeroWithStatusBar from './_components/heros/root-page-hero-with-status-bar';
@@ -26,7 +26,7 @@ export default function RootRoute() {
           <Button
             key={variant.id}
             onClick={() => setCurrentIndex(index)}
-            variant={currentIndex === index ? 'default' : 'outline'}
+            variant={currentIndex === index ? 'primary' : 'outline'}
             size="sm"
           >
             {variant.name}

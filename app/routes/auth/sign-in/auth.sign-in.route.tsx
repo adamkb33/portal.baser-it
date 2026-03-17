@@ -2,9 +2,6 @@
 import { Link, Form, useNavigation, redirect } from 'react-router';
 import { data } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { AuthFormContainer } from '../_components/auth.form-container';
-import { AuthFormField } from '../_components/auth.form-field';
-import { AuthFormButton } from '../_components/auth.form-button';
 import { ProviderButtons } from '../_components/provider-buttons';
 import { AuthController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
@@ -14,6 +11,12 @@ import { redirectWithWarning } from '~/routes/company/_lib/flash-message.server'
 import { logger } from '~/lib/logger';
 import React from 'react';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
+import {
+  Button,
+  FormField,
+  FormPageTemplate,
+  Stack,
+} from '~/ui';
 
 function redactEmail(value: string) {
   const normalized = value.trim();
@@ -74,16 +77,55 @@ export async function action({ request }: Route.ActionArgs) {
     if (payload?.nextStep) {
       const { nextStepHref, verificationCookieHeader } = await resolveAuthPostRedirect(payload);
       const headers = new Headers();
+      let resolvedNextStepHref = nextStepHref;
+      let authTokens = payload.authTokens ?? null;
 
       if (payload.authTokens) {
-        const authCookieHeaders = await authService.setAuthCookies(
-          payload.authTokens.accessToken,
-          payload.authTokens.refreshToken,
-          payload.authTokens.accessTokenExpiresAt,
-          payload.authTokens.refreshTokenExpiresAt,
-        );
-        for (const [key, value] of new Headers(authCookieHeaders).entries()) {
-          headers.append(key, value);
+        if (payload.nextStep === 'DONE') {
+          const existingCompanyId = authService.getCompanyIdFromToken(payload.authTokens.accessToken);
+
+          if (!existingCompanyId) {
+            try {
+              const companyContextsResponse = await AuthController.getCompanyContexts({
+                headers: {
+                  Authorization: `Bearer ${payload.authTokens.accessToken}`,
+                },
+              });
+              const companyContexts = companyContextsResponse.data?.data ?? [];
+
+              if (companyContexts.length === 1) {
+                const companySignInResponse = await AuthController.companySignIn({
+                  body: { companyId: companyContexts[0].id },
+                  headers: {
+                    Authorization: `Bearer ${payload.authTokens.accessToken}`,
+                  },
+                });
+
+                if (companySignInResponse.data?.data) {
+                  authTokens = companySignInResponse.data.data;
+                }
+              } else if (companyContexts.length > 1) {
+                resolvedNextStepHref = ROUTES_MAP['user.company-context'].href;
+              }
+            } catch (companyContextError) {
+              logger.warn('[auth.sign-in] Failed to resolve company context after DONE', {
+                email: redactEmail(email),
+                error: companyContextError,
+              });
+            }
+          }
+        }
+
+        if (authTokens) {
+          const authCookieHeaders = await authService.setAuthCookies(
+            authTokens.accessToken,
+            authTokens.refreshToken,
+            authTokens.accessTokenExpiresAt,
+            authTokens.refreshTokenExpiresAt,
+          );
+          for (const [key, value] of new Headers(authCookieHeaders).entries()) {
+            headers.append(key, value);
+          }
         }
       }
 
@@ -94,11 +136,11 @@ export async function action({ request }: Route.ActionArgs) {
       logger.info('[auth.sign-in] Redirecting to auth next step', {
         email: redactEmail(email),
         nextStep: payload.nextStep ?? null,
-        nextStepHref,
+        nextStepHref: resolvedNextStepHref,
       });
 
-      if (nextStepHref) {
-        return redirect(nextStepHref, { headers: headers.entries().next().done ? undefined : headers });
+      if (resolvedNextStepHref) {
+        return redirect(resolvedNextStepHref, { headers: headers.entries().next().done ? undefined : headers });
       }
 
       logger.info('[auth.sign-in] Returning verification payload to client', {
@@ -163,59 +205,65 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
   }, [actionData]);
 
   return (
-    <AuthFormContainer
+    <FormPageTemplate
       title="Logg inn"
       description="Logg inn for å administrere ditt selskap og kundeforhold."
       error={errorMessage}
-      secondaryAction={
-        <div className="space-y-3 text-center">
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Ny bruker?</p>
+      size="md"
+      variant="emphasis"
+      footerLink={null}
+      footer={
+        <Stack space="md">
+          <div className="space-y-2 text-center">
+            <p className="text-xs text-text-secondary">Ny bruker?</p>
             <Link
               to={ROUTES_MAP['auth.sign-up'].href}
-              className="inline-block text-sm font-medium text-foreground hover:underline"
+              className="inline-block text-sm font-medium text-text-primary hover:underline"
             >
-              Opprett konto →
+              Opprett konto
             </Link>
           </div>
-          <p className="text-xs text-muted-foreground">Glemt passordet?</p>
-          <Link
-            to={ROUTES_MAP['auth.forgot-password'].href}
-            className="inline-block text-sm font-medium text-foreground hover:underline"
-          >
-            Tilbakestill passord →
-          </Link>
-        </div>
+
+          <div className="space-y-2 text-center">
+            <p className="text-xs text-text-secondary">Glemt passordet?</p>
+            <Link
+              to={ROUTES_MAP['auth.forgot-password'].href}
+              className="inline-block text-sm font-medium text-text-primary hover:underline"
+            >
+              Tilbakestill passord
+            </Link>
+          </div>
+        </Stack>
       }
     >
-      <Form method="post" className="space-y-4 md:space-y-6" aria-busy={isSubmitting}>
-        <ProviderButtons disabled={isSubmitting} />
+      <Form method="post" aria-busy={isSubmitting}>
+        <Stack space="md">
+          <ProviderButtons disabled={isSubmitting} />
 
-        <AuthFormField
-          id="email"
-          name="email"
-          label="E-post"
-          type="email"
-          autoComplete="email"
-          placeholder="e-post"
-          disabled={isSubmitting}
-        />
+          <FormField
+            id="email"
+            name="email"
+            label="E-post"
+            type="email"
+            autoComplete="email"
+            placeholder="e-post"
+            disabled={isSubmitting}
+          />
 
-        <AuthFormField
-          id="password"
-          name="password"
-          label="Passord"
-          type="password"
-          autoComplete="current-password"
-          disabled={isSubmitting}
-        />
+          <FormField
+            id="password"
+            name="password"
+            label="Passord"
+            type="password"
+            autoComplete="current-password"
+            disabled={isSubmitting}
+          />
 
-        <div className="pt-2">
-          <AuthFormButton isLoading={isSubmitting} loadingText="Logger inn…">
+          <Button type="submit" size="lg" fullWidth loading={isSubmitting}>
             Logg inn
-          </AuthFormButton>
-        </div>
+          </Button>
+        </Stack>
       </Form>
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }

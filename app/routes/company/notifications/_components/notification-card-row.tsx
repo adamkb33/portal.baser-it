@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 import { Clock3, Eye, MessageSquareQuote } from 'lucide-react';
 import type { InAppNotificationDto } from '~/api/generated/notification';
-import { Badge } from '~/components/ui/badge';
-import { Card, CardContent } from '~/components/ui/card';
+import { Badge, Card, CardContent } from '~/ui';
 import { cn } from '~/lib/utils';
 import { compactText, formatNotificationTimestamp } from '../_utils/format';
 import { getNotificationHeadline } from '../_utils/query';

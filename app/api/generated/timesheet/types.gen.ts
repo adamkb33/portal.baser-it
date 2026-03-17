@@ -198,6 +198,7 @@ export type UserDto = {
     mobileNumber?: string;
     mobileVerified: boolean;
     provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
+    hasPassword: boolean;
 };
 
 export type Link = {

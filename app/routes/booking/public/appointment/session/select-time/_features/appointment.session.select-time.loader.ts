@@ -1,9 +1,10 @@
-import { data, redirect } from 'react-router';
+import { redirect } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { Route } from '../+types/booking.public.appointment.session.select-time.route';
 import { requireAuthenticatedBookingFlow } from '../../_utils/require-authenticated-booking-flow.server';
+import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
 
 export async function appointmentSessionSelectTimeAction(args: Route.ActionArgs) {
   const guardResult = await requireAuthenticatedBookingFlow(args.request);
@@ -25,12 +26,7 @@ export async function appointmentSessionSelectTimeAction(args: Route.ActionArgs)
 
     return redirect(ROUTES_MAP['booking.public.appointment.session.overview'].href);
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre tidspunkt');
-    return data(
-      {
-        error: message,
-      },
-      { status: status ?? 400 },
-    );
+    const { message } = resolveErrorPayload(error, 'Kunne ikke lagre tidspunkt');
+    return redirectWithError(args.request, ROUTES_MAP['booking.public.appointment.session.select-time'].href, message);
   }
 }

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCompanyRoleData, AddCompanyRoleResponses, AddProductsToCompanyData, AddProductsToCompanyResponses, CancelCompanyUserInviteData, CancelCompanyUserInviteResponses, ChangeUnverifiedEmailData, ChangeUnverifiedEmailResponses, ChangeUnverifiedMobileData, ChangeUnverifiedMobileResponses, CompanySignInData, CompanySignInResponses, CreateCompanyData, CreateCompanyResponses, CreateContactData, CreateContactResponses, CreateUserInviteData, CreateUserInviteResponses, DecodeInviteData, DecodeInviteResponses, DecodeUserInviteData, DecodeUserInviteResponses, DeleteCompanyUserData, DeleteCompanyUserResponses, DeleteContactData, DeleteContactResponses, DiagnosticsData, DiagnosticsResponses, EditCompanyUserData, EditCompanyUserResponses, FindById1Data, FindById1Responses, FindByIdData, FindByIdResponses, FindByIds1Data, FindByIds1Responses, FindByIdsData, FindByIdsResponses, ForgotPasswordData, ForgotPasswordResponses, GetCompanyContextsData, GetCompanyContextsResponses, GetCompanyData, GetCompanyProductsData, GetCompanyProductsResponses, GetCompanyResponses, GetCompanyRoleData, GetCompanyRoleResponses, GetCompanySummaryByIdsData, GetCompanySummaryByIdsResponses, GetCompanySummaryData, GetCompanySummaryResponses, GetCompanyUserData, GetCompanyUserResponses, GetCompanyUsersByIdsData, GetCompanyUsersByIdsResponses, GetCompanyUsersData, GetCompanyUsersResponses, GetContactData, GetContactResponses, GetContactsByIdsData, GetContactsByIdsResponses, GetContactsData, GetContactsResponses, GetDashboardMetricsData, GetDashboardMetricsResponses, GetInvitationsData, GetInvitationsResponses, GetUser1Data, GetUser1Responses, GetUserByEmailData, GetUserByEmailResponses, GetUserByIdData, GetUserByIdResponses, GetUserContextData, GetUserContextResponses, GetUserData, GetUserResponses, HealthData, HealthResponses, InfoData, InfoResponses, InviteCompanyUserData, InviteCompanyUserResponses, InviteUserData, InviteUserResponses, JwtClaimsData, JwtClaimsResponses, LinksData, LinksResponses, ProviderCompleteProfileData, ProviderCompleteProfileResponses, PublicGetCompanyByIdData, PublicGetCompanyByIdResponses, PublicGetCreateOrUpdateContactData, PublicGetCreateOrUpdateContactResponses, RefreshData, RefreshResponses, RequestDeleteRoleData, RequestDeleteRoleResponses, ResendVerificationData, ResendVerificationEmailOnlyData, ResendVerificationEmailOnlyResponses, ResendVerificationMobileOnlyData, ResendVerificationMobileOnlyResponses, ResendVerificationResponses, ResetPasswordData, ResetPasswordResponses, ResolveOrCreatePendingUserData, ResolveOrCreatePendingUserResponses, RespondToInviteData, RespondToInviteResponses, RespondToUserInviteData, RespondToUserInviteResponses, RootData, RootResponses, SearchContactsData, SearchContactsResponses, SearchUsersData, SearchUsersResponses, SignInData, SignInResponses, SignOutData, SignOutResponses, SignUpData, SignUpResponses, UpdateContactData, UpdateContactResponses, UpdateMobileData, UpdateMobileResponses, UserStatusData, UserStatusResponses, ValidateCompanyData, ValidateCompanyResponses, ValidateCompanyUserData, ValidateCompanyUserResponses, ValidateCompanyUsersData, ValidateCompanyUsersResponses, ValidateContactData, ValidateContactResponses, ValidateContactsData, ValidateContactsResponses, ValidateProductData, ValidateProductResponses, VerificationStatusData, VerificationStatusResponses, VerifyEmailData, VerifyEmailResponses, VerifyGoogleTokenData, VerifyGoogleTokenResponses, VerifyMobileData, VerifyMobileResponses } from './types.gen';
+import type { AddCompanyRoleData, AddCompanyRoleResponses, AddProductsToCompanyData, AddProductsToCompanyResponses, CancelCompanyUserInviteData, CancelCompanyUserInviteResponses, ChangeUnverifiedEmailData, ChangeUnverifiedEmailResponses, ChangeUnverifiedMobileData, ChangeUnverifiedMobileResponses, CompanySignInData, CompanySignInResponses, CreateCompanyData, CreateCompanyResponses, CreateContactData, CreateContactResponses, CreateUserInviteData, CreateUserInviteResponses, DecodeInviteData, DecodeInviteResponses, DecodeUserInviteData, DecodeUserInviteResponses, DeleteCompanyUserData, DeleteCompanyUserResponses, DeleteContactData, DeleteContactResponses, DiagnosticsData, DiagnosticsResponses, EditCompanyUserData, EditCompanyUserResponses, FindById1Data, FindById1Responses, FindByIdData, FindByIdResponses, FindByIds1Data, FindByIds1Responses, FindByIdsData, FindByIdsResponses, ForgotPasswordData, ForgotPasswordResponses, GetCompanyContextsData, GetCompanyContextsResponses, GetCompanyData, GetCompanyProductsData, GetCompanyProductsResponses, GetCompanyResponses, GetCompanyRoleData, GetCompanyRoleResponses, GetCompanySummaryByIdsData, GetCompanySummaryByIdsResponses, GetCompanySummaryData, GetCompanySummaryResponses, GetCompanyUserData, GetCompanyUserResponses, GetCompanyUsersByIdsData, GetCompanyUsersByIdsResponses, GetCompanyUsersData, GetCompanyUsersResponses, GetContactData, GetContactResponses, GetContactsByIdsData, GetContactsByIdsResponses, GetContactsData, GetContactsResponses, GetDashboardMetricsData, GetDashboardMetricsResponses, GetInvitationsData, GetInvitationsResponses, GetUser1Data, GetUser1Responses, GetUserByEmailData, GetUserByEmailResponses, GetUserByIdData, GetUserByIdResponses, GetUserContextData, GetUserContextResponses, GetUserData, GetUserResponses, HealthData, HealthResponses, InfoData, InfoResponses, InviteCompanyUserData, InviteCompanyUserResponses, InviteUserData, InviteUserResponses, JwtClaimsData, JwtClaimsResponses, LinksData, LinksResponses, ProviderCompleteProfileData, ProviderCompleteProfileResponses, PublicGetCompanyByIdData, PublicGetCompanyByIdResponses, PublicGetCreateOrUpdateContactData, PublicGetCreateOrUpdateContactResponses, RefreshData, RefreshResponses, RequestDeleteRoleData, RequestDeleteRoleResponses, ResendVerificationData, ResendVerificationEmailOnlyData, ResendVerificationEmailOnlyResponses, ResendVerificationMobileOnlyData, ResendVerificationMobileOnlyResponses, ResendVerificationResponses, ResetPasswordData, ResetPasswordResponses, ResolveOrCreateAppointmentCustomerData, ResolveOrCreateAppointmentCustomerResponses, ResolveOrCreatePendingUserData, ResolveOrCreatePendingUserResponses, RespondToInviteData, RespondToInviteResponses, RespondToUserInviteData, RespondToUserInviteResponses, RootData, RootResponses, SearchContactsData, SearchContactsResponses, SearchUsersData, SearchUsersResponses, SignInData, SignInResponses, SignOutData, SignOutResponses, SignUpData, SignUpResponses, UpdateCompanyDisplayNameData, UpdateCompanyDisplayNameResponses, UpdateContactData, UpdateContactResponses, UpdateMobileData, UpdateMobileResponses, UserStatusData, UserStatusResponses, ValidateCompanyData, ValidateCompanyResponses, ValidateCompanyUserData, ValidateCompanyUserResponses, ValidateCompanyUsersData, ValidateCompanyUsersResponses, ValidateContactData, ValidateContactResponses, ValidateContactsData, ValidateContactsResponses, ValidateProductData, ValidateProductResponses, VerificationStatusData, VerificationStatusResponses, VerifyEmailData, VerifyEmailResponses, VerifyGoogleTokenData, VerifyGoogleTokenResponses, VerifyMobileData, VerifyMobileResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -77,6 +77,18 @@ export class AdminCompanyController {
         return (options.client ?? client).put<EditCompanyUserResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/admin/companies/user',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    public static updateCompanyDisplayName<ThrowOnError extends boolean = false>(options: Options<UpdateCompanyDisplayNameData, ThrowOnError>) {
+        return (options.client ?? client).put<UpdateCompanyDisplayNameResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/admin/companies/display-name',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -409,6 +421,18 @@ export class InternalContactController {
 }
 
 export class CompanyUserController {
+    public static resolveOrCreateAppointmentCustomer<ThrowOnError extends boolean = false>(options: Options<ResolveOrCreateAppointmentCustomerData, ThrowOnError>) {
+        return (options.client ?? client).post<ResolveOrCreateAppointmentCustomerResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/company-user/customers/resolve-or-create',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
     public static updateMobile<ThrowOnError extends boolean = false>(options: Options<UpdateMobileData, ThrowOnError>) {
         return (options.client ?? client).post<UpdateMobileResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],

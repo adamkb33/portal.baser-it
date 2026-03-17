@@ -13,6 +13,7 @@ const createUserContext = (
     email: 'test@example.com',
     emailVerified: true,
     mobileVerified: false,
+    hasPassword: true,
   },
   companies: [
     {

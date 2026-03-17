@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   signInLocal: vi.fn(),
   attachUserToSession: vi.fn(),
   resolvePostAuthRedirect: vi.fn(),
+  getUserStatus: vi.fn(),
   signUp: vi.fn(),
   setPendingSessionUser: vi.fn(),
   completeProfile: vi.fn(),
@@ -22,6 +23,7 @@ vi.mock('~/routes/booking/public/appointment/session/contact/_services/contact-a
     signInLocal: mocks.signInLocal,
     attachUserToSession: mocks.attachUserToSession,
     resolvePostAuthRedirect: mocks.resolvePostAuthRedirect,
+    getUserStatus: mocks.getUserStatus,
     signUp: mocks.signUp,
     setPendingSessionUser: mocks.setPendingSessionUser,
     completeProfile: mocks.completeProfile,
@@ -54,13 +56,6 @@ import { action as bookingSignUpAction } from './sign-up/booking.public.appointm
 import { action as bookingCollectEmailAction } from './collect-email/booking.public.appointment.session.contact.collect-email.route';
 import { action as bookingCollectMobileAction } from './collect-mobile/booking.public.appointment.session.contact.collect-mobile.route';
 
-function unwrapData<T = unknown>(result: unknown): T {
-  if (result && typeof result === 'object' && 'data' in (result as Record<string, unknown>)) {
-    return (result as { data: T }).data;
-  }
-  return result as T;
-}
-
 function getStatus(result: unknown): number | null {
   if (result && typeof result === 'object' && 'init' in (result as Record<string, unknown>)) {
     return ((result as { init?: { status?: number } | null }).init?.status ?? null) as number | null;
@@ -86,6 +81,9 @@ describe('booking contact auth routes matrix', () => {
       nextStepHref: ROUTES_MAP['booking.public.appointment.session.employee'].href,
       verificationCookieHeader: null,
     });
+    mocks.getUserStatus.mockResolvedValue({
+      nextStep: 'DONE',
+    });
     mocks.getSession.mockResolvedValue({
       sessionId: 's1',
       userId: 10,
@@ -95,7 +93,13 @@ describe('booking contact auth routes matrix', () => {
   });
 
   describe('sign-in action', () => {
-    it('returns error when Google idToken is missing', async () => {
+    it('redirects with flash error when Google idToken is missing', async () => {
+      mocks.redirectWithError.mockResolvedValueOnce(
+        new Response(null, {
+          status: 302,
+          headers: { Location: '/booking/public/appointment/session/contact/sign-in?provider=GOOGLE' },
+        }),
+      );
       const formData = new FormData();
       formData.set('provider', 'GOOGLE');
 
@@ -103,8 +107,13 @@ describe('booking contact auth routes matrix', () => {
         request: new Request('http://localhost/booking/sign-in', { method: 'POST', body: formData }),
       } as never);
 
-      expect(unwrapData(result)).toMatchObject({ error: 'Kunne ikke logge inn med Google. Prøv igjen.' });
-      expect(getStatus(result)).toBe(400);
+      expect(mocks.redirectWithError).toHaveBeenCalledWith(
+        expect.any(Request),
+        '/booking/sign-in?provider=GOOGLE',
+        'Kunne ikke logge inn med Google. Prøv igjen.',
+      );
+      expect(getStatus(result)).toBe(302);
+      expect(getLocation(result)).toBe('/booking/public/appointment/session/contact/sign-in?provider=GOOGLE');
     });
 
     it.each([
@@ -150,11 +159,48 @@ describe('booking contact auth routes matrix', () => {
         ROUTES_MAP['booking.public.appointment.session.employee'].href,
       );
     });
+
+    it('redirects with backend error message when sign-in fails', async () => {
+      mocks.signInLocal.mockRejectedValueOnce(new Error('bad credentials'));
+      mocks.resolveErrorPayload.mockReturnValueOnce({ message: 'Invalid credentials', status: 401 });
+      mocks.redirectWithError.mockResolvedValueOnce(
+        new Response(null, {
+          status: 302,
+          headers: { Location: '/booking/public/appointment/session/contact/sign-in?email=user%40example.com' },
+        }),
+      );
+
+      const formData = new FormData();
+      formData.set('provider', 'LOCAL');
+      formData.set('email', 'user@example.com');
+      formData.set('password', 'wrong-password');
+
+      const result = await bookingSignInAction({
+        request: new Request('http://localhost/booking/sign-in', { method: 'POST', body: formData }),
+      } as never);
+
+      expect(mocks.redirectWithError).toHaveBeenCalledWith(
+        expect.any(Request),
+        '/booking/sign-in?email=user%40example.com',
+        'Invalid credentials',
+      );
+      expect(getStatus(result)).toBe(302);
+      expect(getLocation(result)).toBe('/booking/public/appointment/session/contact/sign-in?email=user%40example.com');
+    });
   });
 
   describe('sign-up action', () => {
-    it('returns error payload when signup response is null', async () => {
+    it('redirects with flash error when signup response is null', async () => {
       mocks.signUp.mockResolvedValueOnce(null);
+      mocks.redirectWithError.mockResolvedValueOnce(
+        new Response(null, {
+          status: 302,
+          headers: {
+            Location:
+              '/booking/public/appointment/session/contact/sign-up?givenName=Ada&familyName=Lovelace&email=ada%40example.com&mobileNumber=%2B4712345678',
+          },
+        }),
+      );
 
       const formData = new FormData();
       formData.set('givenName', 'Ada');
@@ -168,8 +214,15 @@ describe('booking contact auth routes matrix', () => {
         request: new Request('http://localhost/booking/sign-up', { method: 'POST', body: formData }),
       } as never);
 
-      expect(unwrapData(result)).toMatchObject({ error: 'Kunne ikke opprette konto. Prøv igjen.' });
-      expect(getStatus(result)).toBe(400);
+      expect(mocks.redirectWithError).toHaveBeenCalledWith(
+        expect.any(Request),
+        '/booking/sign-up?givenName=Ada&familyName=Lovelace&email=ada%40example.com&mobileNumber=%2B4712345678',
+        'Kunne ikke opprette konto. Prøv igjen.',
+      );
+      expect(getStatus(result)).toBe(302);
+      expect(getLocation(result)).toBe(
+        '/booking/public/appointment/session/contact/sign-up?givenName=Ada&familyName=Lovelace&email=ada%40example.com&mobileNumber=%2B4712345678',
+      );
     });
 
     it('sets pending user and redirects to next step when signup succeeds', async () => {
@@ -233,6 +286,9 @@ describe('booking contact auth routes matrix', () => {
         nextStepHref: ROUTES_MAP['booking.public.appointment.session.employee'].href,
         verificationCookieHeader: null,
       });
+      mocks.getUserStatus.mockResolvedValueOnce({
+        nextStep: 'DONE',
+      });
 
       const formData = new FormData();
       formData.set(field, value);
@@ -246,6 +302,42 @@ describe('booking contact auth routes matrix', () => {
       expect(getLocation(result)).toBe(
         ROUTES_MAP['booking.public.appointment.session.employee'].href,
       );
+    });
+
+    it.each([
+      {
+        name: 'collect email error',
+        actionFn: bookingCollectEmailAction,
+        field: 'email',
+        value: 'user@example.com',
+        retryHref: '/booking/collect?email=user%40example.com',
+      },
+      {
+        name: 'collect mobile error',
+        actionFn: bookingCollectMobileAction,
+        field: 'mobileNumber',
+        value: '+4712345678',
+        retryHref: '/booking/collect?mobileNumber=%2B4712345678',
+      },
+    ])('$name redirects with flash error and retry query', async ({ actionFn, field, value, retryHref }) => {
+      mocks.completeProfile.mockRejectedValueOnce(new Error('bad request'));
+      mocks.resolveErrorPayload.mockReturnValueOnce({ message: 'Invalid profile input', status: 400 });
+      mocks.redirectWithError.mockResolvedValueOnce(
+        new Response(null, {
+          status: 302,
+          headers: { Location: `/booking/public/appointment/session/contact/${field === 'email' ? 'collect-email' : 'collect-mobile'}?${field}=${encodeURIComponent(value)}` },
+        }),
+      );
+
+      const formData = new FormData();
+      formData.set(field, value);
+
+      const result = await actionFn({
+        request: new Request('http://localhost/booking/collect', { method: 'POST', body: formData }),
+      } as never);
+
+      expect(mocks.redirectWithError).toHaveBeenCalledWith(expect.any(Request), retryHref, 'Invalid profile input');
+      expect(getStatus(result)).toBe(302);
     });
   });
 });

@@ -1,17 +1,13 @@
 // routes/company/admin/employees/tables/employees.table.tsx
 import { useState } from 'react';
-import { useSubmit, useNavigate, useSearchParams } from 'react-router';
-import { Button } from '~/components/ui/button';
-import { TableCell, TableRow } from '~/components/ui/table';
+import { NavLink, useSubmit, useNavigate, useSearchParams } from 'react-router';
 import { Pen } from 'lucide-react';
-import { API_ROUTES_MAP } from '~/lib/route-tree';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
-import { EditEmployeeForm } from '../forms/edit-employee.form-dialog';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import type { CompanyUserDto } from '~/api/generated/base';
-import { InviteEmployeeForm } from '../forms/invite-employee.form-dialog';
 import { COMPANY_ROLE_LABELS } from '~/lib/constants';
-import { Input } from '~/components/ui/input';
+import { Button, Input, TableCell, TableRow } from '~/ui';
 
 type EmployeesTableProps = {
   users: CompanyUserDto[];
@@ -28,7 +24,6 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
   const [searchParams] = useSearchParams();
   const submit = useSubmit();
   const [filter, setFilter] = useState(searchParams.get('search') ?? '');
-  const [editingUser, setEditingUser] = useState<CompanyUserDto | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingEmployeeId, setDeletingEmployeeId] = useState<number | null>(null);
 
@@ -99,20 +94,28 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
           { header: 'Handlinger', className: 'text-right' },
         ]}
         headerSlot={
-          <>
-            <Input
-              placeholder="Filtrer på navn eller e-post…"
-              value={filter}
-              onChange={(event) => handleFilterChange(event.target.value)}
-              className="max-w-sm"
-            />
-            <InviteEmployeeForm trigger={<Button>Inviter en ny ansatt</Button>} />
-          </>
+          <Input
+            placeholder="Filtrer på navn eller e-post…"
+            value={filter}
+            onChange={(event) => handleFilterChange(event.target.value)}
+            className="max-w-sm"
+          />
         }
-        mobileHeaderSlot={
-          <div>
-            <InviteEmployeeForm trigger={<Button size={'sm'}>Inviter en ny ansatt</Button>} />
-          </div>
+        primaryAction={
+          <NavLink
+            to={ROUTES_MAP['company.admin.employees.invite'].href}
+            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
+          >
+            Inviter en ny ansatt
+          </NavLink>
+        }
+        mobilePrimaryAction={
+          <NavLink
+            to={ROUTES_MAP['company.admin.employees.invite'].href}
+            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
+          >
+            Inviter en ny ansatt
+          </NavLink>
         }
         renderRow={(user) => (
           <TableRow>
@@ -121,10 +124,13 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
             <TableCell>{formatRoles(user.companyRoles)}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => setEditingUser(user)}>
+                <NavLink
+                  to={`${ROUTES_MAP['company.admin.employees.edit'].href}?userId=${user.userId}`}
+                  className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface"
+                >
                   <Pen className="h-4 w-4" />
                   <span className="sr-only">Rediger</span>
-                </Button>
+                </NavLink>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -138,8 +144,6 @@ export function EmployeesTable({ users, pagination }: EmployeesTableProps) {
           </TableRow>
         )}
       />
-
-      <EditEmployeeForm user={editingUser} />
 
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}

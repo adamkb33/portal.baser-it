@@ -18,44 +18,35 @@ export function TableMobilePagination({ pagination, onPageChange }: TableMobileP
   const canNext = page < totalPages - 1;
 
   return (
-    <div className="sticky bottom-0 left-0 right-0 z-10 bg-card-bg/95 backdrop-blur-sm border border-card-border rounded-lg p-4 shadow-lg">
-      {/* Page indicator with badge style */}
-      <div className="flex items-center justify-center gap-2 mb-3">
-        <span className="text-xs font-semibold text-muted-foreground">Side</span>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full">
-          <span className="text-sm font-bold text-primary">{page + 1}</span>
-          <span className="text-xs text-muted-foreground">/</span>
-          <span className="text-sm font-semibold text-foreground">{totalPages || 1}</span>
-        </div>
-      </div>
-
-      {/* Navigation buttons - 48px touch targets on mobile */}
-      <div className="flex justify-center items-center gap-3">
+    <div className="sticky bottom-0 left-0 right-0 z-10 rounded-lg border border-border/60 bg-surface-floating px-2.5 py-2 backdrop-blur-sm">
+      <div className="flex items-center justify-between gap-2">
         <Button
           variant="outline"
-          size="default"
+          size="sm"
           onClick={() => onPageChange(page - 1)}
           disabled={!canPrev}
-          className="min-w-[48px] min-h-[48px] px-6 font-semibold hover:bg-muted active:scale-95 transition-all"
+          className="h-9 min-w-9 rounded-md border-border/60 px-2"
           aria-label="Forrige side"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        {/* Current page number - visible on mobile for context */}
-        <div className="flex items-center justify-center min-w-[44px]">
-          <span className="text-base font-bold text-foreground">{page + 1}</span>
+        <div className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface-variant-3 px-2.5 py-1 text-xs">
+          <span className="text-text-secondary">Side</span>
+          <span className="font-semibold text-text-primary">{page + 1}</span>
+          <span className="text-text-secondary">av</span>
+          <span className="font-semibold text-text-primary">{totalPages || 1}</span>
         </div>
 
         <Button
           variant="outline"
-          size="default"
+          size="sm"
           onClick={() => onPageChange(page + 1)}
           disabled={!canNext}
-          className="min-w-[48px] min-h-[48px] px-6 font-semibold hover:bg-muted active:scale-95 transition-all"
+          className="h-9 min-w-9 rounded-md border-border/60 px-2"
           aria-label="Neste side"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>

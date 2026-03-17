@@ -1,9 +1,11 @@
 import * as React from 'react';
-import { Outlet, useLocation } from 'react-router';
+import { Outlet, useLocation, useOutletContext } from 'react-router';
 import { Heart as HeartIcon } from 'lucide-react';
+import type { RootOutletContext } from '../root.layout';
 
 export default function BookingLayout() {
   const location = useLocation();
+  const context = useOutletContext<RootOutletContext | undefined>();
   const [showHearts, setShowHearts] = React.useState(false);
 
   React.useEffect(() => {
@@ -14,7 +16,7 @@ export default function BookingLayout() {
   return (
     <>
       {showHearts && <HeartsOverlay />}
-      <Outlet />
+      <Outlet context={context} />
     </>
   );
 }

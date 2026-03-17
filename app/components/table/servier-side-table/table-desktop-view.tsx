@@ -1,12 +1,12 @@
 // components/table/table-desktop-view.tsx
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChevronDown, Database } from 'lucide-react';
 import { CELL_HEIGHT, TOTAL_VISIBLE_ROWS } from '../constants';
 import { TableDesktopHeader } from './table-desktop-header';
 import { TableDesktopFooter } from './table-desktop-footer';
 import type { ServerPaginatedTableProps } from './server-paginated-table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/ui';
 
 const VISIBLE_DATA_ROWS = TOTAL_VISIBLE_ROWS - 1;
 
@@ -20,6 +20,7 @@ export function TableDesktopView<T>({
   emptyMessage = 'Ingen resultater.',
   pageSizeOptions = [5, 10, 20, 50],
   headerSlot,
+  primaryAction,
   className,
 }: ServerPaginatedTableProps<T>) {
   const [showScrollHint, setShowScrollHint] = React.useState(true);
@@ -44,7 +45,7 @@ export function TableDesktopView<T>({
   return (
     <div
       className={cn(
-        'hidden md:block bg-card-bg border border-card-border rounded-lg shadow-md overflow-hidden',
+        'hidden overflow-hidden rounded-lg border border-border bg-background md:block',
         className,
       )}
     >
@@ -53,6 +54,7 @@ export function TableDesktopView<T>({
         onPageSizeChange={onPageSizeChange}
         pageSizeOptions={pageSizeOptions}
         headerSlot={headerSlot}
+        primaryAction={primaryAction}
       />
 
       <div className="relative">
@@ -63,11 +65,11 @@ export function TableDesktopView<T>({
         >
           <Table className="w-full table-fixed">
             <TableHeader>
-              <TableRow style={{ height: `${CELL_HEIGHT}px` }} className="border-b-2 border-card-border">
+              <TableRow style={{ height: `${CELL_HEIGHT}px` }}>
                 {columns.map((c, i) => (
                   <TableHead
                     key={i}
-                    className="sticky top-0 z-10 bg-muted/80 backdrop-blur-sm font-semibold text-foreground border-b border-card-border"
+                    className="sticky top-0 z-10 bg-surface font-semibold text-text-primary"
                     style={{ width: columnWidth }}
                   >
                     {c.header}
@@ -82,10 +84,10 @@ export function TableDesktopView<T>({
                 <TableRow style={{ height: `${CELL_HEIGHT * 3}px` }}>
                   <TableCell colSpan={columns.length} className="text-center">
                     <div className="flex flex-col items-center justify-center gap-3 py-8">
-                      <div className="h-12 w-12 rounded-full bg-muted/50 flex items-center justify-center">
-                        <Database className="h-6 w-6 text-muted-foreground" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface">
+                        <Database className="h-6 w-6 text-text-secondary" />
                       </div>
-                      <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+                      <p className="text-sm text-text-secondary">{emptyMessage}</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -96,10 +98,10 @@ export function TableDesktopView<T>({
 
         {/* Scroll hint with gradient */}
         {showScrollHint && hasScrollableContent && (
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card-bg via-card-bg/95 to-transparent flex items-end justify-center pb-3">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-              <ChevronDown className="h-4 w-4 text-primary animate-bounce" />
-              <span className="text-xs font-medium text-primary">Scroll for mer</span>
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex h-16 items-end justify-center bg-gradient-to-t from-background via-background/95 to-transparent pb-3">
+            <div className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5">
+              <ChevronDown className="h-4 w-4 animate-bounce text-text-secondary" />
+              <span className="text-xs font-medium text-text-secondary">Scroll for mer</span>
             </div>
           </div>
         )}

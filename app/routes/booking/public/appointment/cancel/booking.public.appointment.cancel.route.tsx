@@ -1,22 +1,26 @@
 import { data, Form, useActionData, useNavigation, useLoaderData } from 'react-router';
 import { useState } from 'react';
 import type { Route } from './+types/booking.public.appointment.cancel.route';
-import {
-  BookingContainer,
-  BookingSummary,
-  BookingStepHeader,
-  CollapsibleCard,
-  BookingMeta,
-  BookingButton,
-  BookingCard,
-  BookingSection,
-} from '../_components/booking-layout';
-import { BookingDeleteModal } from '../_components/booking-delete-modal';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 import { Calendar, Clock, User, Mail, Phone, Sparkles, XCircle } from 'lucide-react';
 import { decodeCancelAppointmentToken } from '~/routes/booking/public/_utils/cancel-appointment-token';
+import {
+  AlertBanner,
+  Button,
+  Card,
+  ConfirmDialog,
+  Container,
+  KeyValueList,
+  Notice,
+  PageHeader,
+  Panel,
+  Stack,
+  StickyFooterPageTemplate,
+  StickySummaryBar,
+  Text,
+} from '~/ui';
 
 type CancelActionData = { success: true; message: string } | { success: false; error: string };
 
@@ -270,6 +274,7 @@ export default function BookingPublicAppointmentCancelRoute() {
   const dateTime = appointment?.startTime ? formatNorwegianDateTime(appointment.startTime) : null;
   const timeRange = formatTimeRange(appointment?.startTime, appointment?.endTime);
   const services = appointment?.groupedServiceGroups.flatMap((group) => group.services) ?? [];
+  const contact = appointment?.user ?? null;
   const totalDuration = services.reduce((sum, service) => sum + service.duration, 0);
   const totalPrice = services.reduce((sum, service) => sum + service.price, 0);
   const durationMinutes = totalDuration || getDurationMinutes(appointment?.startTime, appointment?.endTime);
@@ -277,194 +282,28 @@ export default function BookingPublicAppointmentCancelRoute() {
 
   if (error && !appointment) {
     return (
-      <BookingContainer>
-        <BookingStepHeader label="Avbestilling" title="Avbestill time" description={error} />
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
-        </div>
-      </BookingContainer>
+      <Container size="lg">
+        <PageHeader label="Avbestilling" title="Avbestill time" description={error} />
+        <AlertBanner message={error} />
+      </Container>
     );
   }
 
   return (
-    <>
-      <BookingContainer>
-        {appointment && !error ? (
-          <BookingCard className="relative overflow-hidden border-destructive/20 bg-gradient-to-br from-destructive/10 via-destructive/5 to-transparent p-4 shadow-sm md:p-6">
-            <div className="absolute right-0 top-0 size-32 translate-x-8 -translate-y-8 rounded-full bg-destructive/10 blur-3xl" />
-            <div className="relative space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="flex size-12 items-center justify-center rounded-full bg-destructive/15 text-destructive shadow-sm">
-                  <XCircle className="size-6" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground md:text-sm">
-                    Avbestillingsforespørsel
-                  </p>
-                  <p className="text-sm text-muted-foreground md:text-base">
-                    {expiresAtLabel ? `Lenken er gyldig til ${expiresAtLabel}.` : 'Kontroller opplysningene under.'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-2 rounded-lg bg-background/50 p-4 backdrop-blur-sm">
-                <div className="flex items-center gap-2">
-                  <Calendar className="size-5 text-destructive/80 md:size-6" />
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground md:text-sm">{dateTime?.dayName ?? '—'}</p>
-                    <p className="text-lg font-bold text-card-text md:text-xl">{dateTime?.date ?? '—'}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 border-t border-card-border pt-2">
-                  <Clock className="size-5 text-destructive/80 md:size-6" />
-                  <div className="flex flex-1 items-baseline justify-between gap-3">
-                    <p className="text-lg font-bold text-card-text md:text-xl">{timeRange ?? dateTime?.time ?? '—'}</p>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-muted-foreground">
-                        {durationMinutes ? `${durationMinutes} min` : '—'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between gap-3 rounded-md bg-destructive/15 px-3 py-2 text-destructive">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="size-5 md:size-6" strokeWidth={2.5} />
-                  <span className="text-xs font-medium md:text-sm">Estimert total pris</span>
-                </div>
-                <p className="text-lg font-bold md:text-2xl">{totalPrice ? `${totalPrice} kr` : '—'}</p>
-              </div>
-            </div>
-          </BookingCard>
-        ) : null}
-
-        {error || actionError ? (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {actionError ?? error}
-          </div>
-        ) : null}
-
-        {actionData?.success ? (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-            {actionData.message}
-          </div>
-        ) : null}
-
-        {appointment ? (
-          <>
-            <CollapsibleCard
-              title="Kontaktinformasjon"
-              icon={<User className="size-5 text-destructive" />}
-              defaultOpen={false}
-            >
-              <BookingMeta
-                layout="stacked"
-                items={[
-                  {
-                    label: 'Navn',
-                    value:
-                      `${appointment.contact?.givenName ?? ''} ${appointment.contact?.familyName ?? ''}`.trim() || '—',
-                    icon: <User className="size-4 text-muted-foreground" />,
-                  },
-                  ...(appointment.contact?.email
-                    ? [
-                        {
-                          label: 'E-post',
-                          value: appointment.contact.email,
-                          icon: <Mail className="size-4 text-muted-foreground" />,
-                        },
-                      ]
-                    : []),
-                  ...(appointment.contact?.mobileNumber
-                    ? [
-                        {
-                          label: 'Mobilnummer',
-                          value: appointment.contact.mobileNumber,
-                          icon: <Phone className="size-4 text-muted-foreground" />,
-                        },
-                      ]
-                    : []),
-                ]}
-              />
-            </CollapsibleCard>
-
-            <CollapsibleCard title="Tidspunkt" icon={<Calendar className="size-5 text-destructive" />}>
-              <BookingMeta
-                layout="stacked"
-                items={[
-                  {
-                    label: 'Dato',
-                    value: dateTime?.date ?? appointment.startTime,
-                    icon: <Calendar className="size-4 text-muted-foreground" />,
-                  },
-                  {
-                    label: 'Tid',
-                    value: timeRange ?? dateTime?.time ?? appointment.startTime,
-                    icon: <Clock className="size-4 text-muted-foreground" />,
-                  },
-                  {
-                    label: 'Varighet',
-                    value: durationMinutes ? `${durationMinutes} min` : '—',
-                    icon: <Clock className="size-4 text-muted-foreground" />,
-                  },
-                ]}
-              />
-            </CollapsibleCard>
-
-            <CollapsibleCard
-              title="Tjenester"
-              icon={<Sparkles className="size-5 text-destructive" />}
-              badge={
-                <span className="rounded-full bg-destructive px-2.5 py-0.5 text-xs font-semibold text-destructive-foreground">
-                  {services.length}
-                </span>
-              }
-            >
-              {services.length ? (
-                <div className="space-y-2">
-                  {services.map((service) => (
-                    <div
-                      key={service.id}
-                      className="flex items-center justify-between gap-3 rounded-lg border border-card-border bg-card-accent/5 p-3"
-                    >
-                      <span className="text-sm font-medium text-card-text md:text-base">{service.name}</span>
-                      <div className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground md:text-sm">
-                        <span className="flex items-center gap-1">
-                          <Clock className="size-3 md:size-3.5" />
-                          {service.duration} min
-                        </span>
-                        <span className="flex items-center gap-1 font-semibold text-card-text">{service.price} kr</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">Ingen tjenester funnet.</p>
-              )}
-            </CollapsibleCard>
-          </>
-        ) : (
-          <BookingSection variant="muted">
-            <p className="text-sm text-muted-foreground">Ingen avtale funnet.</p>
-          </BookingSection>
-        )}
-      </BookingContainer>
-      {appointment ? (
-        <BookingSummary
-          mobile={{
-            title: 'Avbestill',
-            items: [
+    <StickyFooterPageTemplate
+      footer={
+        appointment ? (
+          <StickySummaryBar
+            title="Avbestill"
+            items={[
               { label: 'Dato', value: dateTime?.full ?? appointment?.startTime },
               {
                 label: 'Kontaktinformasjon',
-                value:
-                  `${appointment?.contact?.givenName ?? ''} ${appointment?.contact?.familyName ?? ''}`.trim() || '—',
+                value: `${contact?.givenName ?? ''} ${contact?.familyName ?? ''}`.trim() || '—',
               },
-            ],
-            primaryAction: (
-              <BookingButton
+            ]}
+            primaryAction={
+              <Button
                 type="button"
                 variant="destructive"
                 size="lg"
@@ -473,37 +312,131 @@ export default function BookingPublicAppointmentCancelRoute() {
                 onClick={() => setIsDeleteOpen(true)}
               >
                 Avbestill
-              </BookingButton>
-            ),
-            primaryActionClassName: 'w-full',
-            className: 'border-t border-destructive/20 bg-destructive/5',
-          }}
-          desktopClassName="sticky bottom-4 rounded-lg border-2 border-destructive/30 bg-destructive/10 p-4 text-foreground shadow-xl"
-        />
-      ) : null}
+              </Button>
+            }
+          />
+        ) : null
+      }
+    >
+      <Container size="lg">
+        <Stack space="xl">
+          <PageHeader
+            label="Avbestilling"
+            title="Avbestill time"
+            description={expiresAtLabel ? `Lenken er gyldig til ${expiresAtLabel}.` : 'Kontroller opplysningene under.'}
+          />
+          {appointment && !error ? (
+            <Card variant="emphasis" className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-full bg-surface">
+                <XCircle className="size-5 text-text-primary" strokeWidth={2.5} />
+              </div>
+              <div>
+                <Text as="p" variant="label">
+                  Avbestillingsforespørsel
+                </Text>
+                <Text as="p" variant="body-sm" className="text-text-secondary">
+                  {expiresAtLabel ? `Lenken er gyldig til ${expiresAtLabel}.` : 'Kontroller opplysningene under.'}
+                </Text>
+              </div>
+            </div>
+            <KeyValueList
+              items={[
+                { label: 'Dato', value: dateTime?.date ?? '—', icon: <Calendar className="size-4" /> },
+                { label: 'Tid', value: timeRange ?? dateTime?.time ?? '—', icon: <Clock className="size-4" /> },
+                { label: 'Varighet', value: durationMinutes ? `${durationMinutes} min` : '—' },
+                { label: 'Pris', value: totalPrice ? `${totalPrice} kr` : '—', icon: <Sparkles className="size-4" /> },
+              ]}
+            />
+            </Card>
+          ) : null}
 
-      <BookingDeleteModal
+          {error || actionError ? <AlertBanner message={actionError ?? error} /> : null}
+
+          {actionData?.success ? <Notice title="Avbestillingen er registrert" message={actionData.message} /> : null}
+
+          {appointment ? (
+            <Stack space="lg">
+            <Panel title="Kontaktinformasjon">
+              <KeyValueList
+                layout="stacked"
+                items={[
+                  {
+                    label: 'Navn',
+                    value: `${contact?.givenName ?? ''} ${contact?.familyName ?? ''}`.trim() || '—',
+                    icon: <User className="size-4" />,
+                  },
+                  ...(contact?.email ? [{ label: 'E-post', value: contact.email, icon: <Mail className="size-4" /> }] : []),
+                  ...(contact?.mobileNumber
+                    ? [{ label: 'Mobilnummer', value: contact.mobileNumber, icon: <Phone className="size-4" /> }]
+                    : []),
+                ]}
+              />
+            </Panel>
+
+            <Panel title="Tidspunkt">
+              <KeyValueList
+                layout="stacked"
+                items={[
+                  { label: 'Dato', value: dateTime?.date ?? appointment.startTime, icon: <Calendar className="size-4" /> },
+                  { label: 'Tid', value: timeRange ?? dateTime?.time ?? appointment.startTime, icon: <Clock className="size-4" /> },
+                  { label: 'Varighet', value: durationMinutes ? `${durationMinutes} min` : '—', icon: <Clock className="size-4" /> },
+                ]}
+              />
+            </Panel>
+
+            <Panel title="Tjenester">
+              {services.length ? (
+                <div className="space-y-2">
+                  {services.map((service) => (
+                    <div key={service.id} className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
+                      <span className="text-sm font-medium text-text-primary md:text-base">{service.name}</span>
+                      <div className="flex shrink-0 items-center gap-3 text-xs text-text-secondary md:text-sm">
+                        <span className="flex items-center gap-1">
+                          <Clock className="size-3 md:size-3.5" />
+                          {service.duration} min
+                        </span>
+                        <span className="flex items-center gap-1 font-semibold text-text-primary">{service.price} kr</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Text as="p" variant="body-sm" className="text-text-secondary">
+                  Ingen tjenester funnet.
+                </Text>
+              )}
+            </Panel>
+            </Stack>
+          ) : (
+            <Panel tone="muted">
+              <Text as="p" variant="body-sm" className="text-text-secondary">
+                Ingen avtale funnet.
+              </Text>
+            </Panel>
+          )}
+        </Stack>
+      </Container>
+
+      <ConfirmDialog
         title="Avbestill time"
         description="Er du sikker på at du vil avbestille timen? Avbestillingen kan ikke angres."
-        cancelLabel="Avbryt"
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
+        cancelAction={
+          <Button type="button" variant="outline">
+            Avbryt
+          </Button>
+        }
         confirmAction={
           <Form method="post" className="w-full sm:w-auto">
             <input type="hidden" name="token" value={cancelToken ?? ''} />
-            <BookingButton
-              type="submit"
-              variant="destructive"
-              size="md"
-              fullWidth
-              loading={isSubmitting}
-              disabled={!canCancel || isSubmitting}
-            >
+            <Button type="submit" variant="destructive" size="md" fullWidth loading={isSubmitting} disabled={!canCancel || isSubmitting}>
               Ja, avbestill
-            </BookingButton>
+            </Button>
           </Form>
         }
       />
-    </>
+    </StickyFooterPageTemplate>
   );
 }

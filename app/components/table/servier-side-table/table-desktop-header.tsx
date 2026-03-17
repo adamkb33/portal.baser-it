@@ -1,7 +1,14 @@
 // components/table/table-desktop-header.tsx
 import * as React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Rows3 } from 'lucide-react';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '~/ui';
 
 type TableDesktopHeaderProps = {
   pagination: {
@@ -13,6 +20,7 @@ type TableDesktopHeaderProps = {
   onPageSizeChange: (size: number) => void;
   pageSizeOptions: number[];
   headerSlot?: React.ReactNode;
+  primaryAction?: React.ReactNode;
 };
 
 export function TableDesktopHeader({
@@ -20,45 +28,49 @@ export function TableDesktopHeader({
   onPageSizeChange,
   pageSizeOptions,
   headerSlot,
+  primaryAction,
 }: TableDesktopHeaderProps) {
   const { page, size, totalElements } = pagination;
   const startIndex = page * size + 1;
   const endIndex = Math.min((page + 1) * size, totalElements);
 
   return (
-    <div className="bg-card-footer-bg border-b border-card-header-border p-4">
+    <div className="bg-surface p-4">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        {/* Count indicator with icon */}
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Rows3 className="h-4 w-4 text-primary" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background">
+            <Rows3 className="h-4 w-4 text-text-secondary" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-sm font-semibold text-text-primary">
               {totalElements ? startIndex : 0}–{endIndex} av {totalElements}
             </p>
-            <p className="text-xs text-muted-foreground">Viser resultater</p>
+            <p className="text-xs text-text-secondary">Viser resultater</p>
           </div>
         </div>
 
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 md:flex-1">
-          {headerSlot && <div className="flex w-full items-center gap-2 md:flex-1">{headerSlot}</div>}
+          {headerSlot ? <div className="flex w-full items-center gap-2 md:flex-1">{headerSlot}</div> : <div className="md:flex-1" />}
+          {primaryAction ? <div className="flex items-center md:shrink-0">{primaryAction}</div> : null}
 
-          {/* Page size selector */}
           <div className="flex items-center gap-3 md:shrink-0">
-            <span className="text-xs font-semibold text-muted-foreground">Rader per side</span>
-            <Select value={String(size)} onValueChange={(v) => onPageSizeChange(Number(v))}>
-              <SelectTrigger className="h-9 w-[100px] border-card-border bg-background hover:bg-muted transition-colors">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
+            <span className="text-xs font-semibold text-text-secondary">Rader per side</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="min-w-[100px] justify-between">
+                  {size} rader
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuRadioGroup value={String(size)} onValueChange={(value) => onPageSizeChange(Number(value))}>
                 {pageSizeOptions.map((opt) => (
-                  <SelectItem key={opt} value={String(opt)}>
+                  <DropdownMenuRadioItem key={opt} value={String(opt)}>
                     {opt} rader
-                  </SelectItem>
+                  </DropdownMenuRadioItem>
                 ))}
-              </SelectContent>
-            </Select>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

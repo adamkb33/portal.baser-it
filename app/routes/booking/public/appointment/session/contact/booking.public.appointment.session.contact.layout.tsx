@@ -1,9 +1,9 @@
 import { data, Outlet } from 'react-router';
-import { BookingContainer } from '../../_components/booking-layout';
 import type { Route } from './+types/booking.public.appointment.session.contact.layout';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { Container } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -33,8 +33,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function BookingPublicAppointmentSessionContactLayout() {
   return (
-    <BookingContainer>
+    <Container size="lg">
       <Outlet />
-    </BookingContainer>
+    </Container>
   );
 }

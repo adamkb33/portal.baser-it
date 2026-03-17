@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { BookingProfileDto } from '~/api/generated/booking';
-import { Button } from '~/components/ui/button';
+import { Button } from '~/ui';
 
 export interface BookingProfileCardProps {
   bookingProfile?: BookingProfileDto | null;
@@ -132,7 +132,7 @@ export const BookingProfileCard = React.forwardRef<HTMLElement, BookingProfileCa
 
         {/* Action Button - Bottom Fixed on Mobile */}
         <div className="sticky bottom-0 bg-card-footer-bg border-t border-card-header-border p-4 sm:relative">
-          <Button type="button" variant="default" size="lg" onClick={onEditProfile} className="w-full min-h-[48px]">
+          <Button type="button" variant="primary" size="lg" onClick={onEditProfile} className="w-full min-h-[48px]">
             Rediger profil
           </Button>
         </div>

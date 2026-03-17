@@ -2,6 +2,8 @@ type CreateFlowQueryState = {
   userId: number | null;
   email: string;
   mobileNumber: string;
+  givenName: string;
+  familyName: string;
   serviceIds: number[];
   startTime: string;
 };
@@ -32,6 +34,8 @@ export const parseCreateFlowQueryState = (searchParams: URLSearchParams): Create
     userId: parsePositiveInt(searchParams.get('userId')),
     email: searchParams.get('email') ?? '',
     mobileNumber: searchParams.get('mobileNumber') ?? '',
+    givenName: searchParams.get('givenName') ?? '',
+    familyName: searchParams.get('familyName') ?? '',
     serviceIds: parseServiceIdsParam(searchParams.get('serviceIds')),
     startTime: searchParams.get('startTime') ?? '',
   };
@@ -62,6 +66,8 @@ export const withCreateFlowQueryState = (
 
   setQueryParam(next, 'email', merged.email.trim() || null);
   setQueryParam(next, 'mobileNumber', merged.mobileNumber.trim() || null);
+  setQueryParam(next, 'givenName', merged.givenName.trim() || null);
+  setQueryParam(next, 'familyName', merged.familyName.trim() || null);
   setQueryParam(next, 'startTime', merged.startTime || null);
 
   const serviceIdsValue = serializeServiceIdsParam(merged.serviceIds);
@@ -77,37 +83,3 @@ export const parseListPageParam = (value: string | null, fallback: number): numb
   }
   return parsed;
 };
-
-export const isDuplicateContactError = (error: unknown): boolean => {
-  const errorPayload = error as {
-    response?: {
-      status?: number;
-      data?: {
-        message?: { id?: string; value?: string } | string;
-        errors?: Array<{
-          message?: { id?: string; value?: string } | string;
-          details?: string;
-        }>;
-      };
-    };
-  };
-
-  const status = errorPayload.response?.status;
-  const payload = errorPayload.response?.data;
-  const payloadMessage = payload?.message;
-  const payloadMessageId =
-    typeof payloadMessage === 'string' ? payloadMessage : (payloadMessage?.id ?? payloadMessage?.value ?? '');
-
-  const hasConflictMessage =
-    payloadMessageId === 'CONFLICT' ||
-    payloadMessageId === 'DATA_INTEGRITY_VIOLATION' ||
-    payload?.errors?.some((entry) => {
-      const message = entry.message;
-      const messageId = typeof message === 'string' ? message : (message?.id ?? message?.value ?? '');
-      return messageId === 'CONFLICT' || messageId === 'DATA_INTEGRITY_VIOLATION';
-    }) ||
-    payload?.errors?.some((entry) => /exist|duplicate|already/i.test(entry.details ?? ''));
-
-  return status === 409 || Boolean(hasConflictMessage);
-};
-

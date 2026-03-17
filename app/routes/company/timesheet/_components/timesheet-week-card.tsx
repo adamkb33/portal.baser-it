@@ -1,9 +1,9 @@
 import { addDays, format, isSameDay, parseISO } from 'date-fns';
 import type { TimesheetDayEntryDto } from '~/api/generated/timesheet';
-import { Card, CardContent } from '~/components/ui/card';
 import type { DayFormState } from '../_types/timesheet.types';
 import { createDefaultDayFormState } from '../_utils';
 import { TimesheetDayColumn } from './calendar/day-column';
+import { Card, CardContent } from '~/ui';
 
 export type TimesheetWeekCardProps = {
   startDate: string;
@@ -33,7 +33,7 @@ export function TimesheetWeekCard({ startDate, entries, dayForms, onDayFormChang
   });
 
   return (
-    <Card className="border-none">
+    <Card variant="subtle" className="border-none">
       <CardContent className="space-y-3 px-0">
         <div className="overflow-x-auto pb-2">
           <div className="grid min-w-[1280px] grid-cols-7 gap-2 px-1">

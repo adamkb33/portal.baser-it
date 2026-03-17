@@ -8,7 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import type { RouteBranch } from '~/lib/route-tree';
+import { ROUTE_TREE, type RouteBranch } from '~/lib/route-tree';
 
 interface BreadcrumbsProps {
   items: RouteBranch[] | undefined;
@@ -19,29 +19,33 @@ export function SidebarBreadcrumbs({ items, className }: BreadcrumbsProps) {
   const location = useLocation();
 
   const breadcrumbTrail = React.useMemo(() => {
-    const trail: RouteBranch[] = [];
     const currentPath = location.pathname;
 
-    const findPath = (navItems: RouteBranch[], path: RouteBranch[] = []): boolean => {
+    const findPath = (navItems: RouteBranch[], path: RouteBranch[] = []): RouteBranch[] | null => {
       for (const item of navItems) {
         const currentTrail = [...path, item];
 
         if (item.href === currentPath) {
-          trail.push(...currentTrail);
-          return true;
+          return currentTrail;
         }
 
         if (item.children && item.children.length > 0) {
-          if (findPath(item.children, currentTrail)) {
-            return true;
+          const childPath = findPath(item.children, currentTrail);
+          if (childPath) {
+            return childPath;
           }
         }
       }
-      return false;
+      return null;
     };
 
-    findPath(items ?? []);
-    return trail;
+    const visibleTrail = findPath(items ?? []);
+    if (visibleTrail) {
+      return visibleTrail;
+    }
+
+    // Fallback for hidden detail routes that are intentionally removed from nav trees.
+    return findPath(ROUTE_TREE) ?? [];
   }, [items, location.pathname]);
 
   if (breadcrumbTrail.length === 0) {

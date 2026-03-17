@@ -3,12 +3,10 @@ import { Form, Link, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.forgot-password.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { AuthFormContainer } from '../_components/auth.form-container';
-import { AuthFormField } from '../_components/auth.form-field';
-import { AuthFormButton } from '../_components/auth.form-button';
 import { AuthController } from '~/api/generated/base';
 import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { Button, FormField, FormPageTemplate } from '~/ui';
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -39,11 +37,12 @@ export default function AuthForgotPassword({ actionData }: Route.ComponentProps)
   const actionValues = actionData?.values;
 
   return (
-    <AuthFormContainer
+    <FormPageTemplate
       title="Glemt passord"
       description="Oppgi din e-post for å tilbakestille ditt passord. Følg lenken du får tilsendt på din e-post adresse."
       error={errorMessage}
-      secondaryAction={
+      variant="subtle"
+      actions={
         <>
           <Link
             to={ROUTES_MAP['auth.sign-in'].href}
@@ -56,9 +55,10 @@ export default function AuthForgotPassword({ actionData }: Route.ComponentProps)
           </Link>
         </>
       }
+      footerLink={null}
     >
       <Form method="post" className="space-y-6">
-        <AuthFormField
+        <FormField
           id="email"
           name="email"
           label="E-post adresse"
@@ -70,10 +70,10 @@ export default function AuthForgotPassword({ actionData }: Route.ComponentProps)
           disabled={isSubmitting}
         />
 
-        <AuthFormButton isLoading={isSubmitting} loadingText="Behandler…">
+        <Button type="submit" fullWidth loading={isSubmitting}>
           Send tilbakestillingskode
-        </AuthFormButton>
+        </Button>
       </Form>
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }

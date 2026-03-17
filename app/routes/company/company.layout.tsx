@@ -5,6 +5,7 @@ import type { RootOutletContext } from '../root.layout';
 import type { Route } from './+types/company.route';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import type { ApiMessage } from '~/api/generated/base';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -26,7 +27,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       return redirectWithInfo(request, ROUTES_MAP['user.company-context'].href, apiMessage);
     }
 
-    return null;
+    return redirectWithError(request, '/', 'Kunne ikke laste selskapssiden. Prøv igjen.');
   }
 }
 
@@ -34,14 +35,14 @@ export default function CompanyLayout() {
   const context = useOutletContext<RootOutletContext>();
 
   return (
-    <div className="flex flex-col bg-primary/10">
+    <div className="flex min-h-full flex-col">
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-3 md:px-6 md:py-4">
           <SidebarBreadcrumbs items={context.userNav?.SIDEBAR} />
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto p-2 md:px-6 md:py-6 lg:py-8">
+      <main className="container mx-auto flex-1 px-2 py-2 md:px-6 md:py-3">
         <Outlet context={context} />
       </main>
     </div>

@@ -6,10 +6,9 @@ import { AuthController } from '~/api/generated/base';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { verificationSessionToken } from '~/lib/auth.server';
-import { AuthFormContainer } from '../_components/auth.form-container';
-import { AuthFormButton } from '../_components/auth.form-button';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { authService } from '~/lib/auth-service';
+import { Button, FormPageTemplate } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -90,7 +89,7 @@ export default function AuthVerifyEmail({ loaderData }: Route.ComponentProps) {
     loaderData.redirectUrl === 'booking';
 
   return (
-    <AuthFormContainer
+    <FormPageTemplate
       title={isSuccess ? 'E-post bekreftet' : 'Kunne ikke bekrefte e-post'}
       description={
         isSuccess
@@ -100,11 +99,13 @@ export default function AuthVerifyEmail({ loaderData }: Route.ComponentProps) {
           : 'Vi klarte ikke å bekrefte e-posten din. Be om en ny lenke eller prøv igjen senere.'
       }
       error={loaderData?.error}
-      secondaryAction={
+      variant={isSuccess ? 'default' : 'emphasis'}
+      actions={
         <Link to="/" className="block text-center text-sm font-medium text-muted-foreground hover:underline">
           Tilbake til forsiden →
         </Link>
       }
+      footerLink={null}
     >
       <div className="space-y-4">
         <p className="text-sm text-form-text-muted">
@@ -117,11 +118,11 @@ export default function AuthVerifyEmail({ loaderData }: Route.ComponentProps) {
         {isBookingRedirect ? (
           <></>
         ) : (
-          <AuthFormButton asChild variant="secondary">
+          <Button asChild variant="secondary" fullWidth>
             <Link to={ROUTES_MAP['auth.sign-in'].href}>Gå til innlogging</Link>
-          </AuthFormButton>
+          </Button>
         )}
       </div>
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }

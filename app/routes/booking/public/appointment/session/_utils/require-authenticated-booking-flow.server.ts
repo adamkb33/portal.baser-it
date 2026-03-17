@@ -4,6 +4,7 @@ import { getSession } from '~/lib/appointments.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { ContactAuthService } from '../contact/_services/contact-auth.service.server';
 import { resolveAuthNextStepHref } from '../contact/_utils/auth.utils';
+import { AppointmentSessionService } from '../_services/appointment-session.service.server';
 
 type GuardResult = {
   session: AppointmentSessionDto;
@@ -17,7 +18,12 @@ export async function requireAuthenticatedBookingFlow(request: Request): Promise
 
   const authStatus = await ContactAuthService.getUserStatus(request);
   if (!authStatus) {
-    return redirect(ROUTES_MAP['booking.public.appointment.session.contact.sign-in'].href);
+    const clearSessionCookie = await AppointmentSessionService.delete(request);
+    return redirect(ROUTES_MAP['booking.public.appointment.session.contact'].href, {
+      headers: {
+        'Set-Cookie': clearSessionCookie,
+      },
+    });
   }
 
   if (authStatus.nextStep !== 'DONE') {

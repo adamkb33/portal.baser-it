@@ -1,6 +1,6 @@
 // components/table/table-desktop-footer.tsx
-import { Button } from '@/components/ui/button';
 import { ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
+import { Button, ButtonGroup } from '~/ui';
 
 type TableDesktopFooterProps = {
   pagination: {
@@ -18,24 +18,22 @@ export function TableDesktopFooter({ pagination, onPageChange }: TableDesktopFoo
   const canNext = page < totalPages - 1;
 
   return (
-    <div className="bg-card-footer-bg border-t border-card-header-border p-4">
+    <div className="bg-surface p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {/* Page indicator with highlight */}
-        <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-lg">
-          <span className="text-xs font-semibold text-muted-foreground">Side</span>
-          <span className="text-sm font-bold text-primary">{page + 1}</span>
-          <span className="text-xs text-muted-foreground">/</span>
-          <span className="text-sm font-semibold text-foreground">{totalPages || 1}</span>
+        <div className="inline-flex items-center gap-2 self-start rounded-lg border border-border bg-background px-3 py-1.5">
+          <span className="text-xs font-semibold text-text-secondary">Side</span>
+          <span className="text-sm font-bold text-text-primary">{page + 1}</span>
+          <span className="text-xs text-text-secondary">/</span>
+          <span className="text-sm font-semibold text-text-primary">{totalPages || 1}</span>
         </div>
 
-        {/* Navigation buttons with icons */}
-        <div className="flex items-center gap-2">
+        <ButtonGroup>
           <Button
             variant="outline"
             size="sm"
             onClick={() => onPageChange(0)}
             disabled={!canPrev}
-            className="gap-1.5 hover:bg-muted"
+            className="gap-1.5 border-border bg-background text-text-primary hover:bg-surface"
           >
             <ChevronsLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Første</span>
@@ -45,7 +43,7 @@ export function TableDesktopFooter({ pagination, onPageChange }: TableDesktopFoo
             size="sm"
             onClick={() => onPageChange(page - 1)}
             disabled={!canPrev}
-            className="gap-1.5 hover:bg-muted"
+            className="gap-1.5 border-border bg-background text-text-primary hover:bg-surface"
           >
             <ChevronLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Forrige</span>
@@ -55,7 +53,7 @@ export function TableDesktopFooter({ pagination, onPageChange }: TableDesktopFoo
             size="sm"
             onClick={() => onPageChange(page + 1)}
             disabled={!canNext}
-            className="gap-1.5 hover:bg-muted"
+            className="gap-1.5 border-border bg-background text-text-primary hover:bg-surface"
           >
             <span className="hidden sm:inline">Neste</span>
             <ChevronRight className="h-4 w-4" />
@@ -65,12 +63,12 @@ export function TableDesktopFooter({ pagination, onPageChange }: TableDesktopFoo
             size="sm"
             onClick={() => onPageChange(totalPages - 1)}
             disabled={!canNext}
-            className="gap-1.5 hover:bg-muted"
+            className="gap-1.5 border-border bg-background text-text-primary hover:bg-surface"
           >
             <span className="hidden sm:inline">Siste</span>
             <ChevronsRight className="h-4 w-4" />
           </Button>
-        </div>
+        </ButtonGroup>
       </div>
     </div>
   );

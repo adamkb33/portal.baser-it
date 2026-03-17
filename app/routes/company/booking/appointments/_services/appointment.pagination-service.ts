@@ -76,27 +76,6 @@ export class AppointmentPaginationService {
     return null;
   };
 
-  getDirection = (): 'ASC' | 'DESC' | undefined => {
-    const dir = this.searchParams.get('direction');
-    return dir === 'ASC' || dir === 'DESC' ? dir : undefined;
-  };
-
-  setDirection = (direction: 'ASC' | 'DESC' | undefined): void => {
-    const params = new URLSearchParams(this.searchParams);
-    const currentDirection = this.searchParams.get('direction');
-
-    if (direction === currentDirection) {
-      params.delete('direction');
-    } else if (direction === 'ASC' || direction === 'DESC') {
-      params.set('direction', direction);
-    } else {
-      params.delete('direction');
-    }
-
-    params.set('page', '0');
-    this.navigate(`?${params.toString()}`, { replace: true });
-  };
-
   handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(this.searchParams);
     params.set('page', newPage.toString());
@@ -136,12 +115,11 @@ export class AppointmentPaginationService {
     } else {
       params.delete('toDateTime');
     }
-
     params.set('page', '0');
     this.navigate(`?${params.toString()}`, { replace: true });
   };
 
-  private handleQuickFilter = (from: string, to: string) => {
+  private handleQuickFilter = (from: string, to: string, direction?: 'ASC' | 'DESC') => {
     const params = new URLSearchParams(this.searchParams);
 
     if (from) {
@@ -155,6 +133,11 @@ export class AppointmentPaginationService {
     } else {
       params.delete('toDateTime');
     }
+    if (direction) {
+      params.set('direction', direction);
+    } else {
+      params.delete('direction');
+    }
 
     params.set('page', '0');
     this.navigate(`?${params.toString()}`, { replace: true });
@@ -165,7 +148,7 @@ export class AppointmentPaginationService {
   };
 
   handlePastFilter = () => {
-    this.handleQuickFilter('', formatCurrentDateTimeInTimeZone());
+    this.handleQuickFilter('', formatCurrentDateTimeInTimeZone(), 'DESC');
   };
 
   handleTodayFilter = () => {
@@ -200,6 +183,14 @@ export class AppointmentPaginationService {
 
   handleClearFilters = () => {
     this.navigate('?', { replace: true });
+  };
+
+  handleRemoveDateRange = () => {
+    const params = new URLSearchParams(this.searchParams);
+    params.delete('fromDateTime');
+    params.delete('toDateTime');
+    params.set('page', '0');
+    this.navigate(`?${params.toString()}`, { replace: true });
   };
 
   handleRemoveFilter = (filterType: 'search' | 'fromDate' | 'toDate') => {

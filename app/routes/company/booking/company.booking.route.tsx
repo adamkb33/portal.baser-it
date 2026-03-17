@@ -1,7 +1,6 @@
 import type { Route } from './+types/company.booking.route';
 import { CompanyUserBookingController } from '~/api/generated/booking';
-import { Card, CardContent } from '~/components/ui/card';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
+import { NavLink } from 'react-router';
 import {
   DollarSign,
   TrendingUp,
@@ -24,6 +23,8 @@ import {
 } from 'lucide-react';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { ROUTES_MAP } from '~/lib/route-tree';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CompanyEmptyState, CompanyPageTemplate, Text, cn } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -45,103 +46,108 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function CompanyBookingPage({ loaderData }: Route.ComponentProps) {
-  const { metrics } = loaderData;
+  const { metrics, error } = loaderData;
 
   if (!metrics) {
-    return <></>;
+    return (
+      <CompanyPageTemplate
+        title="Booking"
+        description="Nøkkeltall, aktivitetsoversikt og profilinnsikt for booking-domenet."
+      >
+        <CompanyEmptyState
+          icon={<Calendar className="h-6 w-6" />}
+          title="Kunne ikke hente bookingoversikten"
+          description={error ?? 'Det oppstod en feil ved lasting av bookingnøkkeltall.'}
+        />
+      </CompanyPageTemplate>
+    );
   }
 
   const { summary, profiles } = metrics;
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-6">
-      {/* Hero Stats - 3 Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card variant="elevated" className="bg-card">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Omsetning Denne Måneden</p>
-                <p className="text-3xl font-bold text-foreground mt-2">
-                  {formatCurrency(summary.revenue.revenueThisMonth)}
-                </p>
-                <p
-                  className={`text-sm mt-1 flex items-center gap-1 ${summary.revenue.monthOverMonthChangePercent >= 0 ? 'text-secondary' : 'text-destructive'}`}
-                >
-                  {summary.revenue.monthOverMonthChangePercent >= 0 ? (
-                    <TrendingUp className="h-4 w-4" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4" />
-                  )}
-                  {Math.abs(summary.revenue.monthOverMonthChangePercent).toFixed(2)}% fra forrige måned
-                </p>
+    <CompanyPageTemplate
+      title="Booking"
+      description="Nøkkeltall, aktivitetsoversikt og profilinnsikt for booking-domenet. Samme kompakte sideoppsett skal kunne gjenbrukes på tvers av company-ruter."
+      routeLinks={
+        <NavLink
+          to={ROUTES_MAP['company.booking.appointments'].href}
+          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+        >
+          Timebestillinger
+        </NavLink>
+      }
+      hero={
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <SummaryMetricCard
+            label="Omsetning Denne Måneden"
+            value={formatCurrency(summary.revenue.revenueThisMonth)}
+            icon={<DollarSign className="h-6 w-6 text-primary" />}
+            accent="info"
+            meta={
+              <div
+                className={cn(
+                  'mt-1 flex items-center gap-1 text-sm',
+                  summary.revenue.monthOverMonthChangePercent >= 0 ? 'text-secondary' : 'text-destructive',
+                )}
+              >
+                {summary.revenue.monthOverMonthChangePercent >= 0 ? (
+                  <TrendingUp className="h-4 w-4" />
+                ) : (
+                  <TrendingDown className="h-4 w-4" />
+                )}
+                {Math.abs(summary.revenue.monthOverMonthChangePercent).toFixed(2)}% fra forrige måned
               </div>
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            }
+          />
 
-        <Card variant="elevated" className="bg-card">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Timer Denne Måneden</p>
-                <p className="text-3xl font-bold text-foreground mt-2">
-                  {profiles.reduce((sum, p) => sum + p.totalHoursThisMonth, 0).toFixed(1)}t
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">{summary.bookings.appointmentsThisMonth} avtaler</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-secondary/10 flex items-center justify-center">
-                <Clock className="h-6 w-6 text-secondary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <SummaryMetricCard
+            label="Timer Denne Måneden"
+            value={`${profiles.reduce((sum, p) => sum + p.totalHoursThisMonth, 0).toFixed(1)}t`}
+            icon={<Clock className="h-6 w-6 text-secondary" />}
+            accent="success"
+            meta={
+              <Text as="p" variant="body-sm" className="text-text-secondary">
+                {summary.bookings.appointmentsThisMonth} avtaler
+              </Text>
+            }
+          />
 
-        <Card variant="elevated" className="bg-card">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Unike Kunder</p>
-                <p className="text-3xl font-bold text-foreground mt-2">{summary.customers.uniqueCustomersThisMonth}</p>
-                <p className="text-sm text-muted-foreground mt-1">{summary.customers.returningCustomers} gjengangere</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center">
-                <Users className="h-6 w-6 text-accent-foreground" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Collapsible Sections */}
-      <Accordion type="multiple" className="space-y-4">
+          <SummaryMetricCard
+            label="Unike Kunder"
+            value={summary.customers.uniqueCustomersThisMonth}
+            icon={<Users className="h-6 w-6 text-text-primary" />}
+            accent="neutral"
+            meta={
+              <Text as="p" variant="body-sm" className="text-text-secondary">
+                {summary.customers.returningCustomers} gjengangere
+              </Text>
+            }
+          />
+        </div>
+      }
+    >
+      <Accordion type="multiple" defaultValue={[]}>
         {/* Revenue & Financial Section */}
-        <AccordionItem value="revenue" className="bg-accordion-bg">
-          <Card variant="bordered">
+        <AccordionItem value="revenue">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <DollarSign className="h-5 w-5 text-primary" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background">
+                  <DollarSign className="h-5 w-5 text-text-secondary" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-lg font-semibold text-foreground">Omsetning & Økonomi</h3>
-                  <p className="text-sm text-muted-foreground">Inntekter, trender og prognoser</p>
+                  <h3 className="text-lg font-semibold text-text-primary">Omsetning & Økonomi</h3>
+                  <p className="text-sm text-text-secondary">Inntekter, trender og prognoser</p>
                 </div>
               </div>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-6">
                 {/* Revenue Overview */}
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <BarChart3 className="h-4 w-4 text-primary" />
-                    </div>
-                    <h4 className="font-semibold text-foreground">Omsetningsoversikt</h4>
-                  </div>
+                <SectionBlock
+                  title="Omsetningsoversikt"
+                  icon={<BarChart3 className="h-4 w-4 text-primary" />}
+                >
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <MetricBox
                       label="I Dag"
@@ -168,41 +174,38 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
                       variant="info"
                     />
                   </div>
-                </div>
+                </SectionBlock>
 
                 {/* Revenue by Service Group */}
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-8 w-8 rounded-lg bg-secondary/10 flex items-center justify-center">
-                      <Package className="h-4 w-4 text-secondary" />
-                    </div>
-                    <h4 className="font-semibold text-foreground">Omsetning per Tjenestegruppe</h4>
-                  </div>
+                <SectionBlock
+                  title="Omsetning per Tjenestegruppe"
+                  icon={<Package className="h-4 w-4 text-secondary" />}
+                >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {summary.revenue.revenueByServiceGroup.map((group) => (
-                      <div key={group.groupId} className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                      <div key={group.groupId} className="flex items-center justify-between rounded-lg bg-background p-4">
                         <div>
-                          <p className="font-medium text-foreground">{group.groupName}</p>
-                          <p className="text-xs text-muted-foreground">{group.appointmentCount} avtaler</p>
+                          <p className="font-medium text-text-primary">{group.groupName}</p>
+                          <p className="text-xs text-text-secondary">{group.appointmentCount} avtaler</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xl font-bold text-foreground">{formatCurrency(group.totalRevenue)}</p>
+                          <p className="text-xl font-bold text-text-primary">{formatCurrency(group.totalRevenue)}</p>
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
+                </SectionBlock>
 
                 {/* Average Appointment Value */}
-                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                <div className="rounded-md border border-border bg-background p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Award className="h-5 w-5 text-primary" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface">
+                        <Award className="h-5 w-5 text-text-secondary" />
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Gjennomsnittlig Avtaleverdi</p>
-                        <p className="text-2xl font-bold text-foreground">
+                        <p className="text-sm text-text-secondary">Gjennomsnittlig Avtaleverdi</p>
+                        <p className="text-2xl font-bold text-text-primary">
                           {formatCurrency(summary.revenue.averageAppointmentValue)}
                         </p>
                       </div>
@@ -211,33 +214,28 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
                 </div>
               </div>
             </AccordionContent>
-          </Card>
         </AccordionItem>
 
         {/* Booking Activity Section */}
-        <AccordionItem value="bookings" className="bg-accordion-bg">
-          <Card variant="bordered">
+        <AccordionItem value="bookings">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-secondary" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background">
+                  <Calendar className="h-5 w-5 text-text-secondary" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-lg font-semibold text-foreground">Bestillingsaktivitet</h3>
-                  <p className="text-sm text-muted-foreground">Avtaler, trender og topptider</p>
+                  <h3 className="text-lg font-semibold text-text-primary">Bestillingsaktivitet</h3>
+                  <p className="text-sm text-text-secondary">Avtaler, trender og topptider</p>
                 </div>
               </div>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-6">
                 {/* Booking Stats */}
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-8 w-8 rounded-lg bg-secondary/10 flex items-center justify-center">
-                      <Activity className="h-4 w-4 text-secondary" />
-                    </div>
-                    <h4 className="font-semibold text-foreground">Avtalestatistikk</h4>
-                  </div>
+                <SectionBlock
+                  title="Avtalestatistikk"
+                  icon={<Activity className="h-4 w-4 text-secondary" />}
+                >
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <MetricBox
                       label="I Dag"
@@ -270,35 +268,29 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
                       variant={summary.bookings.monthOverMonthChangePercent >= 0 ? 'success' : 'error'}
                     />
                   </div>
-                </div>
+                </SectionBlock>
 
                 {/* Peak Booking Times */}
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-8 w-8 rounded-lg bg-chart-3/10 flex items-center justify-center">
-                      <Clock className="h-4 w-4 text-chart-3" />
-                    </div>
-                    <h4 className="font-semibold text-foreground">Topptider for Bestillinger</h4>
-                  </div>
+                <SectionBlock
+                  title="Topptider for Bestillinger"
+                  icon={<Clock className="h-4 w-4 text-chart-3" />}
+                >
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {summary.bookings.peakBookingTimes.slice(0, 6).map((peak, idx) => (
-                      <div key={idx} className="p-3 rounded-lg bg-muted/30">
-                        <p className="text-sm font-medium text-foreground">{peak.dayOfWeek}</p>
-                        <p className="text-xs text-muted-foreground">Kl. {peak.hour}:00</p>
-                        <p className="text-lg font-bold text-foreground mt-1">{peak.bookingCount} avtaler</p>
+                      <div key={idx} className="rounded-lg bg-background p-3">
+                        <p className="text-sm font-medium text-text-primary">{peak.dayOfWeek}</p>
+                        <p className="text-xs text-text-secondary">Kl. {peak.hour}:00</p>
+                        <p className="mt-1 text-lg font-bold text-text-primary">{peak.bookingCount} avtaler</p>
                       </div>
                     ))}
                   </div>
-                </div>
+                </SectionBlock>
 
                 {/* 30-Day Trend */}
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <BarChart3 className="h-4 w-4 text-primary" />
-                    </div>
-                    <h4 className="font-semibold text-foreground">30-Dagers Trend</h4>
-                  </div>
+                <SectionBlock
+                  title="30-Dagers Trend"
+                  icon={<BarChart3 className="h-4 w-4 text-primary" />}
+                >
                   <div className="h-24 flex items-end gap-1">
                     {summary.bookings.trendLast30Days.map((day, idx) => {
                       const maxCount = Math.max(...summary.bookings.trendLast30Days.map((d) => d.count));
@@ -306,36 +298,35 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
                       return (
                         <div
                           key={idx}
-                          className="flex-1 bg-primary/20 rounded-t hover:bg-primary/40 transition-colors"
+                          className="flex-1 rounded-t bg-border transition-colors hover:bg-surface"
                           style={{ height: `${height}%` }}
                           title={`${day.date}: ${day.count} avtaler`}
                         />
                       );
                     })}
                   </div>
-                </div>
+                </SectionBlock>
               </div>
             </AccordionContent>
-          </Card>
         </AccordionItem>
 
         {/* Service Performance Section */}
-        <AccordionItem value="services" className="bg-accordion-bg">
-          <Card variant="bordered">
+        <AccordionItem value="services">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-chart-5/10 flex items-center justify-center">
-                  <Package className="h-5 w-5 text-chart-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background">
+                  <Package className="h-5 w-5 text-text-secondary" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-lg font-semibold text-foreground">Tjenesteytelse</h3>
-                  <p className="text-sm text-muted-foreground">Populære tjenester og optimaliseringsmuligheter</p>
+                  <h3 className="text-lg font-semibold text-text-primary">Tjenesteytelse</h3>
+                  <p className="text-sm text-text-secondary">Populære tjenester og optimaliseringsmuligheter</p>
                 </div>
               </div>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-6">
                 {/* Service Overview */}
+                <SectionBlock title="Tjenesteoversikt" icon={<Package className="h-4 w-4 text-chart-5" />}>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <MetricBox
                     label="Aktive Tjenester"
@@ -362,85 +353,79 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
                     variant={summary.services.neverBookedServices.length > 0 ? 'warning' : 'success'}
                   />
                 </div>
+                </SectionBlock>
 
                 {/* Most Popular Services */}
-                <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-8 w-8 rounded-lg bg-secondary/10 flex items-center justify-center">
-                      <Award className="h-4 w-4 text-secondary" />
-                    </div>
-                    <h4 className="font-semibold text-foreground">Mest Populære Tjenester</h4>
-                  </div>
+                <SectionBlock
+                  title="Mest Populære Tjenester"
+                  icon={<Award className="h-4 w-4 text-secondary" />}
+                >
                   <div className="space-y-2">
                     {summary.services.mostPopularServices.map((service, idx) => (
                       <div
                         key={service.serviceId}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
+                        className="flex items-center justify-between rounded-lg bg-background p-3"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded bg-secondary/10 flex items-center justify-center">
-                            <span className="text-sm font-bold text-secondary">#{idx + 1}</span>
+                          <div className="flex h-8 w-8 items-center justify-center rounded bg-surface">
+                            <span className="text-sm font-bold text-text-primary">#{idx + 1}</span>
                           </div>
                           <div>
-                            <p className="font-medium text-foreground">{service.serviceName}</p>
-                            <p className="text-xs text-muted-foreground">{service.groupName}</p>
+                            <p className="font-medium text-text-primary">{service.serviceName}</p>
+                            <p className="text-xs text-text-secondary">{service.groupName}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-foreground">{formatCurrency(service.totalRevenue)}</p>
-                          <p className="text-xs text-muted-foreground">{service.bookingCount} bestillinger</p>
+                          <p className="text-lg font-bold text-text-primary">{formatCurrency(service.totalRevenue)}</p>
+                          <p className="text-xs text-text-secondary">{service.bookingCount} bestillinger</p>
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
+                </SectionBlock>
 
                 {/* Never Booked Services */}
                 {summary.services.neverBookedServices.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center">
-                        <AlertCircle className="h-4 w-4 text-destructive" />
-                      </div>
-                      <h4 className="font-semibold text-foreground">Tjenester Uten Bestillinger</h4>
-                    </div>
+                  <SectionBlock
+                    title="Tjenester Uten Bestillinger"
+                    icon={<AlertCircle className="h-4 w-4 text-destructive" />}
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {summary.services.neverBookedServices.map((service) => (
                         <div
                           key={service.serviceId}
-                          className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/20"
+                          className="flex items-center justify-between rounded-lg border border-border bg-background p-3"
                         >
                           <div>
-                            <p className="text-sm font-medium text-foreground">{service.serviceName}</p>
-                            <p className="text-xs text-muted-foreground">{service.groupName}</p>
+                            <p className="text-sm font-medium text-text-primary">{service.serviceName}</p>
+                            <p className="text-xs text-text-secondary">{service.groupName}</p>
                           </div>
-                          <p className="text-sm font-semibold text-muted-foreground">{formatCurrency(service.price)}</p>
+                          <p className="text-sm font-semibold text-text-secondary">{formatCurrency(service.price)}</p>
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </SectionBlock>
                 )}
               </div>
             </AccordionContent>
-          </Card>
         </AccordionItem>
 
         {/* Customer Insights Section */}
-        <AccordionItem value="customers" className="bg-accordion-bg">
-          <Card variant="bordered">
+        <AccordionItem value="customers">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-chart-3/10 flex items-center justify-center">
-                  <Users className="h-5 w-5 text-chart-3" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background">
+                  <Users className="h-5 w-5 text-text-secondary" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-lg font-semibold text-foreground">Kundeinnsikt</h3>
-                  <p className="text-sm text-muted-foreground">Kundeanalyse og engasjement</p>
+                  <h3 className="text-lg font-semibold text-text-primary">Kundeinnsikt</h3>
+                  <p className="text-sm text-text-secondary">Kundeanalyse og engasjement</p>
                 </div>
               </div>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-6">
+                <SectionBlock title="Kundeoversikt" icon={<Users className="h-4 w-4" />}>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <MetricBox
                     label="Totalt Unike"
@@ -467,16 +452,17 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
                     variant="neutral"
                   />
                 </div>
+                </SectionBlock>
 
-                <div className="p-4 rounded-lg bg-secondary/5 border border-secondary/20">
+                <div className="rounded-lg border border-border bg-background p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-secondary/10 flex items-center justify-center">
-                        <CalendarClock className="h-5 w-5 text-secondary" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface">
+                        <CalendarClock className="h-5 w-5 text-text-secondary" />
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Kunder med Kommende Avtaler</p>
-                        <p className="text-2xl font-bold text-foreground">
+                        <p className="text-sm text-text-secondary">Kunder med Kommende Avtaler</p>
+                        <p className="text-2xl font-bold text-text-primary">
                           {summary.customers.customersWithUpcomingAppointments}
                         </p>
                       </div>
@@ -485,24 +471,23 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
                 </div>
               </div>
             </AccordionContent>
-          </Card>
         </AccordionItem>
 
         {/* Session Analytics Section */}
-        <AccordionItem value="sessions" className="bg-accordion-bg">
-          <Card variant="bordered">
+        <AccordionItem value="sessions">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <MousePointer className="h-5 w-5 text-primary" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background">
+                  <MousePointer className="h-5 w-5 text-text-secondary" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-lg font-semibold text-foreground">Øktanalyse</h3>
-                  <p className="text-sm text-muted-foreground">Brukerøkter og konverteringsrater</p>
+                  <h3 className="text-lg font-semibold text-text-primary">Øktanalyse</h3>
+                  <p className="text-sm text-text-secondary">Brukerøkter og konverteringsrater</p>
                 </div>
               </div>
             </AccordionTrigger>
             <AccordionContent>
+              <SectionBlock title="Øktoversikt" icon={<Activity className="h-4 w-4 text-primary" />}>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <MetricBox
                   label="Aktive Økter"
@@ -529,25 +514,24 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
                   variant="success"
                 />
               </div>
+              </SectionBlock>
 
-              <div className="mt-6 p-4 rounded-lg bg-muted/30">
+              <div className="mt-6 rounded-lg bg-background p-4">
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-muted-foreground" />
+                  <Clock className="h-5 w-5 text-text-secondary" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Gjennomsnittlig Økttid</p>
-                    <p className="text-xl font-bold text-foreground">
+                    <p className="text-sm text-text-secondary">Gjennomsnittlig Økttid</p>
+                    <p className="text-xl font-bold text-text-primary">
                       {(summary.sessions.averageSessionDurationMinutes / 60).toFixed(2)} timer
                     </p>
                   </div>
                 </div>
               </div>
             </AccordionContent>
-          </Card>
         </AccordionItem>
 
         {/* Profile Breakdown Section */}
-        <AccordionItem value="profiles" className="bg-accordion-bg">
-          <Card variant="bordered">
+        <AccordionItem value="profiles">
             <AccordionTrigger>
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-chart-5/10 flex items-center justify-center">
@@ -659,10 +643,9 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
                 ))}
               </div>
             </AccordionContent>
-          </Card>
         </AccordionItem>
       </Accordion>
-    </div>
+    </CompanyPageTemplate>
   );
 }
 
@@ -677,20 +660,88 @@ type MetricBoxProps = {
   variant: 'success' | 'error' | 'warning' | 'info' | 'neutral';
 };
 
+type SectionBlockProps = {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+};
+
+function SectionBlock({ title, icon, children }: SectionBlockProps) {
+  return (
+    <section className="space-y-4">
+      <div className="inline-flex items-center gap-2 rounded-sm bg-surface px-3 py-2">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-sm bg-background">{icon}</span>
+        <h4 className="text-sm font-semibold text-text-primary">{title}</h4>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+type SummaryMetricCardProps = {
+  label: string;
+  value: string | number;
+  icon: React.ReactNode;
+  meta?: React.ReactNode;
+  accent: 'info' | 'success' | 'neutral';
+};
+
+function SummaryMetricCard({ label, value, icon, meta, accent }: SummaryMetricCardProps) {
+  const accentClasses = {
+    info: 'bg-background',
+    success: 'bg-background',
+    neutral: 'bg-background',
+  } as const;
+
+  return (
+    <Card variant="default" size="sm" className="bg-surface">
+      <CardContent className="space-y-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <Text as="p" variant="body-sm" className="text-text-secondary">
+              {label}
+            </Text>
+            <Text as="p" variant="heading-lg" className="text-text-primary">
+              {value}
+            </Text>
+          </div>
+          <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-md', accentClasses[accent])}>{icon}</div>
+        </div>
+        {meta}
+      </CardContent>
+    </Card>
+  );
+}
+
 function MetricBox({ label, value, icon, variant }: MetricBoxProps) {
   const variantStyles = {
-    success: 'bg-secondary/10 text-secondary',
-    error: 'bg-destructive/10 text-destructive',
-    warning: 'bg-chart-3/10 text-chart-3',
-    info: 'bg-primary/10 text-primary',
-    neutral: 'bg-muted text-muted-foreground',
+    success: {
+      panel: 'bg-surface',
+      icon: 'bg-background text-text-secondary',
+    },
+    error: {
+      panel: 'bg-surface',
+      icon: 'bg-background text-destructive',
+    },
+    warning: {
+      panel: 'bg-surface',
+      icon: 'bg-background text-text-secondary',
+    },
+    info: {
+      panel: 'bg-surface',
+      icon: 'bg-background text-text-secondary',
+    },
+    neutral: {
+      panel: 'bg-surface',
+      icon: 'bg-background text-text-secondary',
+    },
   };
 
   return (
-    <div className="p-4 rounded-lg bg-muted/30 space-y-2">
-      <div className={`inline-flex items-center justify-center h-8 w-8 rounded ${variantStyles[variant]}`}>{icon}</div>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-2xl font-bold text-foreground">{value}</p>
+    <div className={cn('space-y-2 rounded-md p-4', variantStyles[variant].panel)}>
+      <div className={cn('inline-flex h-8 w-8 items-center justify-center rounded-sm', variantStyles[variant].icon)}>{icon}</div>
+      <p className="text-xs text-text-secondary">{label}</p>
+      <p className="text-2xl font-bold text-text-primary">{value}</p>
     </div>
   );
 }

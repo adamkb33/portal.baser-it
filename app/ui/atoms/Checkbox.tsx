@@ -1,8 +1,10 @@
 import { cn } from '../lib/cn';
 
-export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+  onCheckedChange?: (checked: boolean) => void;
+}
 
-export function Checkbox({ className, disabled, ...props }: CheckboxProps) {
+export function Checkbox({ className, disabled, onCheckedChange, ...props }: CheckboxProps) {
   return (
     <input
       type="checkbox"
@@ -14,6 +16,10 @@ export function Checkbox({ className, disabled, ...props }: CheckboxProps) {
         className,
       )}
       disabled={disabled}
+      onChange={(event) => {
+        onCheckedChange?.(event.target.checked);
+        props.onInput?.(event);
+      }}
       {...props}
     />
   );

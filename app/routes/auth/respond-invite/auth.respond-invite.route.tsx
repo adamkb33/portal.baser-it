@@ -4,13 +4,11 @@ import type { Route } from './+types/auth.respond-invite.route';
 
 import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
 import { toAuthTokens } from '../_utils/token.utils';
-import { AuthFormContainer } from '../_components/auth.form-container';
-import { AuthFormField } from '../_components/auth.form-field';
-import { AuthFormButton } from '../_components/auth.form-button';
 import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
 import type { CompanySummaryDto } from '~/api/generated/base';
 import { AuthController, PublicCompanyController, PublicUserController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { Button, FormField, FormPageTemplate } from '~/ui';
 
 const USER_ROLE_LABELS: Record<'SYSTEM_ADMIN' | 'USER' | 'COMPANY_USER', string> = {
   SYSTEM_ADMIN: 'Systemadministrator',
@@ -21,6 +19,15 @@ const COMPANY_ROLE_LABELS: Record<'ADMIN' | 'EMPLOYEE', string> = {
   ADMIN: 'Administrator',
   EMPLOYEE: 'Ansatt',
 };
+
+function toMessageValue(message: unknown, fallback: string) {
+  if (typeof message === 'string' && message.trim().length > 0) return message;
+  if (message && typeof message === 'object') {
+    const candidate = (message as { value?: string; id?: string }).value || (message as { id?: string }).id;
+    if (candidate) return candidate;
+  }
+  return fallback;
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -41,7 +48,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const invite = inviteResponse.data?.data;
 
     if (!invite) {
-      const message = inviteResponse.data?.message || 'Ugyldig eller utløpt invitasjon.';
+      const message = toMessageValue(inviteResponse.data?.message, 'Ugyldig eller utløpt invitasjon.');
       return data({
         inviteToken,
         loginUrl,
@@ -67,7 +74,10 @@ export async function loader({ request }: Route.LoaderArgs) {
       const user = userResponse.data?.data;
       if (user) {
         existingUser = true;
-        existingUserProfile = { givenName: user.givenName, familyName: user.familyName };
+        existingUserProfile = {
+          givenName: user.givenName ?? '',
+          familyName: user.familyName ?? '',
+        };
       }
     } catch {
       existingUser = false;
@@ -155,7 +165,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     if (!tokens) {
-      const message = response.data?.message || 'Noe gikk galt. Prøv igjen.';
+      const message = toMessageValue(response.data?.message, 'Noe gikk galt. Prøv igjen.');
       return data(
         {
           error: message,
@@ -209,7 +219,7 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
   const actionValues = actionData?.values;
 
   return (
-    <AuthFormContainer
+    <FormPageTemplate
       title="Fullfør din konto"
       description={
         existingUser
@@ -217,11 +227,13 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
           : 'Opprett profilen din og sett passord for å aktivere tilgangen din.'
       }
       error={errorMessage}
-      secondaryAction={
+      variant="airy"
+      actions={
         <Link to="/" className="mt-2 block text-center text-sm font-medium text-foreground hover:underline">
           Tilbake til forsiden →
         </Link>
       }
+      footerLink={null}
     >
       <div className="space-y-4 rounded-md border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
         {companySummary ? (
@@ -247,18 +259,19 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
             <input type="hidden" name="familyName" value={existingUserProfile?.familyName ?? ''} />
 
             <div className="space-y-3">
-              <AuthFormButton isLoading={isSubmitting} loadingText="Aktiverer invitasjon…">
+              <Button type="submit" fullWidth loading={isSubmitting}>
                 Aksepter invitasjon
-              </AuthFormButton>
-              <AuthFormButton
+              </Button>
+              <Button
                 name="respondAction"
                 value="DECLINE"
                 variant="outline"
                 disabled={isSubmitting}
                 formNoValidate
+                fullWidth
               >
                 Avslå invitasjon
-              </AuthFormButton>
+              </Button>
             </div>
           </Form>
         ) : (
@@ -271,9 +284,9 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
             </Link>
             <Form method="post">
               <input type="hidden" name="inviteToken" value={inviteToken} />
-              <AuthFormButton name="respondAction" value="DECLINE" variant="outline" formNoValidate>
+              <Button name="respondAction" value="DECLINE" variant="outline" formNoValidate fullWidth>
                 Avslå invitasjon
-              </AuthFormButton>
+              </Button>
             </Form>
           </div>
         )
@@ -282,7 +295,7 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
           <input type="hidden" name="inviteToken" value={inviteToken} />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <AuthFormField
+            <FormField
               id="givenName"
               name="givenName"
               label="Fornavn"
@@ -293,7 +306,7 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
               disabled={isSubmitting}
             />
 
-            <AuthFormField
+            <FormField
               id="familyName"
               name="familyName"
               label="Etternavn"
@@ -305,7 +318,7 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
             />
           </div>
 
-          <AuthFormField
+          <FormField
             id="password"
             name="password"
             label="Passord"
@@ -315,7 +328,7 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
             disabled={isSubmitting}
           />
 
-          <AuthFormField
+          <FormField
             id="confirmPassword"
             name="confirmPassword"
             label="Bekreft passord"
@@ -326,21 +339,22 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
           />
 
           <div className="space-y-3">
-            <AuthFormButton isLoading={isSubmitting} loadingText="Oppretter konto…">
+            <Button type="submit" fullWidth loading={isSubmitting}>
               Opprett konto
-            </AuthFormButton>
-            <AuthFormButton
+            </Button>
+            <Button
               name="respondAction"
               value="DECLINE"
               variant="outline"
               disabled={isSubmitting}
               formNoValidate
+              fullWidth
             >
               Avslå invitasjon
-            </AuthFormButton>
+            </Button>
           </div>
         </Form>
       )}
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }

@@ -4,11 +4,9 @@ import { Link } from 'react-router';
 import axios from 'axios';
 import { type InAppNotificationDto } from '~/api/generated/notification';
 import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
 import { formatNotificationTimestamp } from '~/routes/company/notifications/_utils/format';
 import { getNotificationHeadline } from '~/routes/company/notifications/_utils/query';
+import { Badge, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '~/ui';
 
 const NAVBAR_NOTIFICATION_POLL_MS = 15_000;
 const NAVBAR_NOTIFICATION_API_URL = API_ROUTES_MAP['auth.navbar-notifications'].url;
@@ -25,42 +23,48 @@ export function NavbarNotificationBell() {
     hasUnread: false,
   });
 
-  const loadNotifications = React.useEffectEvent(async (signal: AbortSignal) => {
-    try {
-      const response = await axios.get<NavbarNotificationsState | { error?: string }>(NAVBAR_NOTIFICATION_API_URL, {
-        withCredentials: true,
-        signal,
-      });
-
-      const payload = response.data;
-
-      if (signal.aborted) {
-        return;
-      }
-
-      if ('items' in payload && 'hasUnread' in payload) {
-        setNotifications({
-          items: payload.items ?? [],
-          hasUnread: Boolean(payload.hasUnread),
-        });
-      }
-    } catch {}
-  });
-
   React.useEffect(() => {
-    const controller = new AbortController();
+    let isActive = true;
+    let currentController: AbortController | null = null;
 
-    void loadNotifications(controller.signal);
+    const loadNotifications = async () => {
+      currentController?.abort();
+      const controller = new AbortController();
+      currentController = controller;
+
+      try {
+        const response = await axios.get<NavbarNotificationsState | { error?: string }>(NAVBAR_NOTIFICATION_API_URL, {
+          withCredentials: true,
+          signal: controller.signal,
+        });
+
+        const payload = response.data;
+
+        if (!isActive || controller.signal.aborted) {
+          return;
+        }
+
+        if ('items' in payload && 'hasUnread' in payload) {
+          setNotifications({
+            items: payload.items ?? [],
+            hasUnread: Boolean(payload.hasUnread),
+          });
+        }
+      } catch {}
+    };
+
+    void loadNotifications();
 
     const intervalId = window.setInterval(() => {
-      void loadNotifications(controller.signal);
+      void loadNotifications();
     }, NAVBAR_NOTIFICATION_POLL_MS);
 
     return () => {
-      controller.abort();
+      isActive = false;
+      currentController?.abort();
       window.clearInterval(intervalId);
     };
-  }, [loadNotifications]);
+  }, []);
 
   const { items, hasUnread } = notifications;
 
@@ -92,7 +96,7 @@ export function NavbarNotificationBell() {
                 {hasUnread ? 'Du har uleste varsler' : 'Siste varsler'}
               </p>
             </div>
-            <Badge variant={hasUnread ? 'default' : 'outline'} className="shrink-0">
+            <Badge variant={hasUnread ? 'primary' : 'secondary'} className="shrink-0">
               {hasUnread ? 'Ulest' : 'Oppdatert'}
             </Badge>
           </div>

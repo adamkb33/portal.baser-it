@@ -1,611 +1,513 @@
-import { Text, Button, Input, Label, Badge, Link, Checkbox, FormField, cn } from '~/ui';
+import {
+  ActionBar,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Checkbox,
+  Cluster,
+  Container,
+  FieldMessage,
+  FormField,
+  Grid,
+  Inline,
+  Input,
+  KeyValueList,
+  Label,
+  Link,
+  Notice,
+  Panel,
+  ProgressSteps,
+  SectionHeader,
+  SelectionCard,
+  Stack,
+  StepPageTemplate,
+  Text,
+  Textarea,
+} from '~/ui';
 import type { Route } from './+types/ui.route';
 
 export async function loader({}: Route.LoaderArgs) {
   return {};
 }
 
-interface ComponentShowcaseProps {
+interface CatalogSectionProps {
+  id: string;
+  eyebrow: string;
   title: string;
-  description?: string;
+  description: string;
   children: React.ReactNode;
 }
 
-function ComponentShowcase({ title, description, children }: ComponentShowcaseProps) {
+function CatalogSection({ id, eyebrow, title, description, children }: CatalogSectionProps) {
   return (
-    <section className="py-16 border-b border-border">
-      <div className="max-w-container-xl mx-auto px-6 md:px-8">
-        <div className="mb-8">
-          <Text as="h2" variant="heading-md">
+    <section id={id} className="border-t border-border py-16">
+      <Container>
+        <div className="mb-8 max-w-3xl">
+          <Text as="p" variant="overline" className="text-text-secondary">
+            {eyebrow}
+          </Text>
+          <Text as="h2" variant="heading-lg" className="mt-2">
             {title}
           </Text>
-          {description && (
-            <Text as="p" variant="body-sm" className="text-text-secondary mt-2">
-              {description}
-            </Text>
-          )}
+          <Text as="p" variant="body" className="mt-3 text-text-secondary">
+            {description}
+          </Text>
         </div>
-        <div className="grid gap-8 bg-surface p-8 rounded-md border border-border">{children}</div>
-      </div>
+        <Stack space="lg">{children}</Stack>
+      </Container>
     </section>
   );
 }
 
-interface VariantGridProps {
+interface ShowcaseCardProps {
+  title: string;
+  description?: string;
+  variant?: 'default' | 'subtle' | 'emphasis' | 'interactive';
+  size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
-  columns?: 2 | 3 | 4;
+  footer?: React.ReactNode;
 }
 
-function VariantGrid({ children, columns = 3 }: VariantGridProps) {
-  const gridClass = {
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
-  }[columns];
-
-  return <div className={cn('grid gap-4', gridClass)}>{children}</div>;
+function ShowcaseCard({
+  title,
+  description,
+  variant = 'default',
+  size = 'md',
+  children,
+  footer,
+}: ShowcaseCardProps) {
+  return (
+    <Card variant={variant} size={size}>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        {description ? <CardDescription>{description}</CardDescription> : null}
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+      {footer ? <CardFooter>{footer}</CardFooter> : null}
+    </Card>
+  );
 }
+
+const progressDemo = [
+  { id: 'contact', label: 'Kontakt', status: 'complete' as const },
+  { id: 'profile', label: 'Behandler', status: 'current' as const },
+  { id: 'time', label: 'Tidspunkt', status: 'upcoming' as const },
+  { id: 'confirm', label: 'Bekreft', status: 'upcoming' as const },
+];
 
 export default function UIRoute() {
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="py-20 bg-background border-b border-border">
-        <div className="max-w-container-xl mx-auto px-6 md:px-8">
-          <Text as="h1" variant="display" className="mb-4">
-            Design System Showcase
-          </Text>
-          <Text as="p" variant="body-lg" className="text-text-secondary max-w-2xl">
-            A comprehensive showcase of all atomic design components. Built with zero-variance principles and
-            token-based styling.
-          </Text>
-        </div>
+    <div className="bg-background">
+      <section className="border-b border-border py-20">
+        <Container>
+          <div className="max-w-4xl">
+            <Text as="p" variant="overline" className="text-text-secondary">
+              UI Route
+            </Text>
+            <Text as="h1" variant="display" className="mt-3">
+              Design System Catalog
+            </Text>
+            <Text as="p" variant="body-lg" className="mt-4 text-text-secondary">
+              This route is the reference surface for the in-house UI system. It now documents the full system shape:
+              atoms, molecules, organisms, layout primitives, and templates.
+            </Text>
+          </div>
+
+          <Grid columns={4} className="mt-10">
+            <Card variant="subtle" size="sm">
+              <CardHeader>
+                <CardTitle>Atoms</CardTitle>
+                <CardDescription>Primitive controls and text styles.</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card variant="subtle" size="sm">
+              <CardHeader>
+                <CardTitle>Molecules</CardTitle>
+                <CardDescription>Small compositions of atoms.</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card variant="subtle" size="sm">
+              <CardHeader>
+                <CardTitle>Organisms</CardTitle>
+                <CardDescription>Reusable surfaces and interaction blocks.</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card variant="subtle" size="sm">
+              <CardHeader>
+                <CardTitle>Layout + Templates</CardTitle>
+                <CardDescription>Spatial rules and page shells.</CardDescription>
+              </CardHeader>
+            </Card>
+          </Grid>
+        </Container>
       </section>
 
-      {/* Typography */}
-      <ComponentShowcase
-        title="Typography"
-        description="All semantic text variants with consistent sizing, weight, and leading."
+      <CatalogSection
+        id="atoms"
+        eyebrow="Layer 1"
+        title="Atoms"
+        description="Atoms are the smallest reusable visual units. They must stay generic and token-driven."
       >
-        <div className="space-y-4">
-          <div>
-            <Text as="p" variant="display">
-              Display (48px / semibold / tight)
-            </Text>
-            <Text as="p" variant="body-sm" className="text-text-secondary mt-1">
-              Hero headlines, page titles
-            </Text>
-          </div>
+        <Grid columns={3}>
+          <ShowcaseCard title="Typography" description="Approved text variants from the type scale.">
+            <Stack space="sm">
+              <Text as="p" variant="display">
+                Display
+              </Text>
+              <Text as="p" variant="heading-lg">
+                Heading Large
+              </Text>
+              <Text as="p" variant="heading-md">
+                Heading Medium
+              </Text>
+              <Text as="p" variant="heading-sm">
+                Heading Small
+              </Text>
+              <Text as="p" variant="body">
+                Body text for standard application copy.
+              </Text>
+              <Text as="p" variant="body-sm" className="text-text-secondary">
+                Secondary body text for support copy.
+              </Text>
+              <Text as="p" variant="caption" className="text-text-secondary">
+                Caption for metadata and supporting details.
+              </Text>
+            </Stack>
+          </ShowcaseCard>
 
-          <div>
-            <Text as="p" variant="heading-lg">
-              Heading Large (30px / semibold / tight)
-            </Text>
-            <Text as="p" variant="body-sm" className="text-text-secondary mt-1">
-              Section headings
-            </Text>
-          </div>
-
-          <div>
-            <Text as="p" variant="heading-md">
-              Heading Medium (24px / semibold / snug)
-            </Text>
-            <Text as="p" variant="body-sm" className="text-text-secondary mt-1">
-              Card headings, modal titles
-            </Text>
-          </div>
-
-          <div>
-            <Text as="p" variant="heading-sm">
-              Heading Small (20px / medium / snug)
-            </Text>
-            <Text as="p" variant="body-sm" className="text-text-secondary mt-1">
-              Sub-headings
-            </Text>
-          </div>
-
-          <div>
-            <Text as="p" variant="body-lg">
-              Body Large (18px / regular / relaxed)
-            </Text>
-            <Text as="p" variant="body-sm" className="text-text-secondary mt-1">
-              Lead paragraphs
-            </Text>
-          </div>
-
-          <div>
-            <Text as="p" variant="body">
-              Body (16px / regular / normal) - All body copy
-            </Text>
-          </div>
-
-          <div>
-            <Text as="p" variant="body-sm">
-              Body Small (14px / regular / normal) - Secondary copy, descriptions
-            </Text>
-          </div>
-
-          <div>
-            <Text as="p" variant="label">
-              Label (14px / medium / normal / wide) - Form labels, tags, table headers
-            </Text>
-          </div>
-
-          <div>
-            <Text as="p" variant="caption">
-              Caption (12px / regular / normal / wide) - Metadata, timestamps, footnotes
-            </Text>
-          </div>
-
-          <div>
-            <Text as="p" variant="overline">
-              Overline (12px / medium / normal / widest) - Section eyebrows, category labels
-            </Text>
-          </div>
-        </div>
-      </ComponentShowcase>
-
-      {/* Buttons */}
-      <ComponentShowcase
-        title="Button"
-        description="Interactive button component with three variants and three sizes. Includes focus rings and hover transitions."
-      >
-        <div className="space-y-8">
-          {/* Primary Variant */}
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Primary Variant
-            </Text>
-            <VariantGrid columns={3}>
-              <div className="flex flex-col gap-2 items-start">
+          <ShowcaseCard title="Buttons" description="Primary, secondary, and ghost actions." variant="emphasis">
+            <Stack space="md">
+              <Inline wrap space="md">
                 <Button size="sm">Small</Button>
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  sm
-                </Text>
-              </div>
-              <div className="flex flex-col gap-2 items-start">
                 <Button size="md">Medium</Button>
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  md
-                </Text>
-              </div>
-              <div className="flex flex-col gap-2 items-start">
                 <Button size="lg">Large</Button>
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  lg
-                </Text>
-              </div>
-            </VariantGrid>
-          </div>
+              </Inline>
+              <Inline wrap space="md">
+                <Button variant="secondary">Secondary</Button>
+                <Button variant="ghost">Ghost</Button>
+                <Button disabled>Disabled</Button>
+              </Inline>
+            </Stack>
+          </ShowcaseCard>
 
-          {/* Secondary Variant */}
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Secondary Variant
-            </Text>
-            <VariantGrid columns={3}>
-              <div className="flex flex-col gap-2 items-start">
-                <Button variant="secondary" size="sm">
-                  Small
-                </Button>
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  sm
-                </Text>
+          <ShowcaseCard title="Inputs" description="Field primitives stay minimal and token-backed." variant="subtle">
+            <Stack space="md">
+              <div>
+                <Label htmlFor="ui-demo-input">Input</Label>
+                <Input id="ui-demo-input" placeholder="Type here" className="mt-2" />
               </div>
-              <div className="flex flex-col gap-2 items-start">
-                <Button variant="secondary" size="md">
-                  Medium
-                </Button>
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  md
-                </Text>
+              <div>
+                <Label htmlFor="ui-demo-textarea">Textarea</Label>
+                <Textarea id="ui-demo-textarea" placeholder="Longer text" className="mt-2" />
               </div>
-              <div className="flex flex-col gap-2 items-start">
-                <Button variant="secondary" size="lg">
-                  Large
-                </Button>
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  lg
-                </Text>
-              </div>
-            </VariantGrid>
-          </div>
+              <Inline space="md">
+                <Checkbox id="ui-demo-checkbox" defaultChecked />
+                <Label htmlFor="ui-demo-checkbox">Checkbox</Label>
+              </Inline>
+            </Stack>
+          </ShowcaseCard>
 
-          {/* Ghost Variant */}
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Ghost Variant
-            </Text>
-            <VariantGrid columns={3}>
-              <div className="flex flex-col gap-2 items-start">
-                <Button variant="ghost" size="sm">
-                  Small
-                </Button>
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  sm
-                </Text>
-              </div>
-              <div className="flex flex-col gap-2 items-start">
-                <Button variant="ghost" size="md">
-                  Medium
-                </Button>
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  md
-                </Text>
-              </div>
-              <div className="flex flex-col gap-2 items-start">
-                <Button variant="ghost" size="lg">
-                  Large
-                </Button>
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  lg
-                </Text>
-              </div>
-            </VariantGrid>
-          </div>
+          <ShowcaseCard title="Badges And Links" description="Simple semantic markers and inline actions." variant="interactive">
+            <Stack space="md">
+              <Cluster space="md">
+                <Badge>Primary</Badge>
+                <Badge variant="secondary">Secondary</Badge>
+                <Badge variant="ghost">Ghost</Badge>
+              </Cluster>
+              <Text as="p" variant="body-sm">
+                Read the <Link href="#molecules">molecule section</Link> for the next composition level.
+              </Text>
+            </Stack>
+          </ShowcaseCard>
+        </Grid>
+      </CatalogSection>
 
-          {/* Disabled State */}
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Disabled State
-            </Text>
-            <VariantGrid columns={3}>
-              <Button disabled>Primary Disabled</Button>
-              <Button variant="secondary" disabled>
-                Secondary Disabled
-              </Button>
-              <Button variant="ghost" disabled>
-                Ghost Disabled
-              </Button>
-            </VariantGrid>
-          </div>
-        </div>
-      </ComponentShowcase>
-
-      {/* Input */}
-      <ComponentShowcase
-        title="Input"
-        description="Form input element with three sizes and disabled state. Includes focus rings and border tokens."
+      <CatalogSection
+        id="molecules"
+        eyebrow="Layer 2"
+        title="Molecules"
+        description="Molecules combine a few atoms into repeatable patterns without owning page layout."
       >
-        <div className="space-y-6">
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Sizes
-            </Text>
-            <VariantGrid columns={3}>
-              <div className="flex flex-col gap-2">
-                <Input size="sm" placeholder="Small input" />
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  sm
-                </Text>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Input size="md" placeholder="Medium input" />
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  md
-                </Text>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Input size="lg" placeholder="Large input" />
-                <Text as="p" variant="caption" className="text-text-secondary">
-                  lg
-                </Text>
-              </div>
-            </VariantGrid>
-          </div>
-
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Disabled State
-            </Text>
-            <Input placeholder="Disabled input" disabled />
-          </div>
-        </div>
-      </ComponentShowcase>
-
-      {/* Label */}
-      <ComponentShowcase
-        title="Label"
-        description="Form label with semantic styling. Always paired with form controls."
-      >
-        <div className="flex flex-col gap-4">
-          <div>
-            <Label htmlFor="demo-input">Form Label Example</Label>
-            <Input id="demo-input" placeholder="Associated input" className="mt-2" />
-          </div>
-        </div>
-      </ComponentShowcase>
-
-      {/* Badge */}
-      <ComponentShowcase
-        title="Badge"
-        description="Small labeling component with three variants and two sizes."
-      >
-        <div className="space-y-6">
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Primary Variant
-            </Text>
-            <VariantGrid columns={2}>
-              <Badge size="sm">Small Badge</Badge>
-              <Badge size="md">Medium Badge</Badge>
-            </VariantGrid>
-          </div>
-
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Secondary Variant
-            </Text>
-            <VariantGrid columns={2}>
-              <Badge variant="secondary" size="sm">
-                Small Badge
-              </Badge>
-              <Badge variant="secondary" size="md">
-                Medium Badge
-              </Badge>
-            </VariantGrid>
-          </div>
-
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Ghost Variant
-            </Text>
-            <VariantGrid columns={2}>
-              <Badge variant="ghost" size="sm">
-                Small Badge
-              </Badge>
-              <Badge variant="ghost" size="md">
-                Medium Badge
-              </Badge>
-            </VariantGrid>
-          </div>
-        </div>
-      </ComponentShowcase>
-
-      {/* Link */}
-      <ComponentShowcase
-        title="Link"
-        description="Semantic link component with underline, focus ring, and hover transitions."
-      >
-        <div>
-          <Text as="p" variant="body">
-            This is a <Link href="#">inline link</Link> within body text. Links are always underlined and use
-            interactive color token.
-          </Text>
-        </div>
-      </ComponentShowcase>
-
-      {/* Checkbox */}
-      <ComponentShowcase
-        title="Checkbox"
-        description="Accessible checkbox input with focus ring and interactive styling."
-      >
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Checkbox id="demo-checkbox" />
-            <Label htmlFor="demo-checkbox">Unchecked checkbox</Label>
-          </div>
-          <div className="flex items-center gap-3">
-            <Checkbox id="demo-checkbox-checked" defaultChecked />
-            <Label htmlFor="demo-checkbox-checked">Checked checkbox</Label>
-          </div>
-          <div className="flex items-center gap-3">
-            <Checkbox id="demo-checkbox-disabled" disabled />
-            <Label htmlFor="demo-checkbox-disabled">Disabled checkbox</Label>
-          </div>
-        </div>
-      </ComponentShowcase>
-
-      {/* FormField Molecule */}
-      <ComponentShowcase
-        title="FormField (Molecule)"
-        description="Composition of Label + Input with optional error and helper text."
-      >
-        <div className="space-y-6 max-w-md">
-          <FormField label="Standard Field" placeholder="Enter text here" />
-
-          <FormField label="Field with Helper Text" helper-text="This is helper text" placeholder="Enter text here" />
-
-          <FormField label="Field with Error" error="This field is required" placeholder="Enter text here" />
-        </div>
-      </ComponentShowcase>
-
-      {/* Color Tokens */}
-      <ComponentShowcase
-        title="Color Tokens"
-        description="Monochrome palette with semantic color aliases for consistent visual language."
-      >
-        <div className="space-y-8">
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Semantic Colors
-            </Text>
-            <VariantGrid columns={4}>
-              <div>
-                <div className="h-24 bg-background border-2 border-border rounded-md mb-2" />
-                <Text as="p" variant="caption">background</Text>
-              </div>
-              <div>
-                <div className="h-24 bg-surface border-2 border-border rounded-md mb-2" />
-                <Text as="p" variant="caption">surface</Text>
-              </div>
-              <div>
-                <div className="h-24 bg-border border-2 border-border rounded-md mb-2" />
-                <Text as="p" variant="caption">border</Text>
-              </div>
-              <div>
-                <div className="h-24 bg-text-primary rounded-md mb-2" />
-                <Text as="p" variant="caption">text-primary</Text>
-              </div>
-            </VariantGrid>
-          </div>
-
-          <div>
-            <Text as="p" variant="label" className="mb-4">
-              Grayscale
-            </Text>
-            <VariantGrid columns={4}>
-              <div>
-                <div className="h-16 bg-gray-950 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-950</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-gray-900 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-900</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-gray-800 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-800</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-gray-700 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-700</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-gray-600 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-600</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-gray-500 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-500</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-gray-400 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-400</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-gray-300 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-300</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-gray-200 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-200</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-gray-100 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-100</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-gray-50 rounded-md mb-2" />
-                <Text as="p" variant="caption">gray-50</Text>
-              </div>
-              <div>
-                <div className="h-16 bg-white rounded-md border-2 border-border mb-2" />
-                <Text as="p" variant="caption">white</Text>
-              </div>
-            </VariantGrid>
-          </div>
-        </div>
-      </ComponentShowcase>
-
-      {/* Spacing Scale */}
-      <ComponentShowcase
-        title="Spacing Scale"
-        description="4px base unit with consistent multiples. All margins, padding, and gaps use these tokens."
-      >
-        <div className="space-y-4">
-          {[
-            { name: 'spacing-1', value: '4px' },
-            { name: 'spacing-2', value: '8px' },
-            { name: 'spacing-3', value: '12px' },
-            { name: 'spacing-4', value: '16px' },
-            { name: 'spacing-6', value: '24px' },
-            { name: 'spacing-8', value: '32px' },
-          ].map(({ name, value }) => (
-            <div key={name} className="flex items-center gap-4">
-              <div className="w-32">
-                <Text as="p" variant="caption" className="font-mono">
-                  {name}
-                </Text>
-              </div>
-              <div className="h-8 bg-interactive rounded-sm" style={{ width: value }} />
-              <Text as="p" variant="caption">{value}</Text>
+        <Grid columns={2}>
+          <ShowcaseCard title="FormField" description="Label, control, and validation context in one reusable unit.">
+            <div className="max-w-md">
+              <Stack space="md">
+                <FormField label="Standard field" placeholder="Example input" />
+                <FormField
+                  label="Field with helper text"
+                  helperText="Use helper text for guidance before the user makes a mistake."
+                  placeholder="Example input"
+                />
+                <FormField label="Field with error" error="Dette feltet ma fylles ut." placeholder="Example input" />
+              </Stack>
             </div>
-          ))}
-        </div>
-      </ComponentShowcase>
+          </ShowcaseCard>
 
-      {/* Border Radius */}
-      <ComponentShowcase
-        title="Border Radius"
-        description="Consistent border radius mapping by component type."
+          <ShowcaseCard title="SectionHeader And FieldMessage" description="Reusable micro-structures around content." variant="subtle">
+            <Stack space="md">
+              <SectionHeader
+                label="Section"
+                title="Section header"
+                description="Use this to title a content block or form group without introducing layout-specific wrappers."
+                action={
+                  <Button variant="ghost" size="sm">
+                    Action
+                  </Button>
+                }
+              />
+              <Stack space="sm">
+                <FieldMessage tone="muted">Muted helper message for passive guidance.</FieldMessage>
+                <FieldMessage tone="default">Default message for stronger emphasis.</FieldMessage>
+              </Stack>
+            </Stack>
+          </ShowcaseCard>
+        </Grid>
+      </CatalogSection>
+
+      <CatalogSection
+        id="organisms"
+        eyebrow="Layer 3"
+        title="Organisms"
+        description="Organisms define reusable surfaces, interaction structures, and section patterns."
       >
-        <VariantGrid columns={4}>
-          <div className="flex flex-col gap-2 items-center">
-            <div className="w-20 h-20 bg-surface border border-border rounded-none" />
-            <Text as="p" variant="caption">radius-none</Text>
-            <Text as="p" variant="caption" className="text-text-secondary">
-              0px
-            </Text>
-          </div>
-          <div className="flex flex-col gap-2 items-center">
-            <div className="w-20 h-20 bg-surface border border-border rounded-sm" />
-            <Text as="p" variant="caption">radius-sm</Text>
-            <Text as="p" variant="caption" className="text-text-secondary">
-              4px
-            </Text>
-          </div>
-          <div className="flex flex-col gap-2 items-center">
-            <div className="w-20 h-20 bg-surface border border-border rounded-md" />
-            <Text as="p" variant="caption">radius-md</Text>
-            <Text as="p" variant="caption" className="text-text-secondary">
-              8px
-            </Text>
-          </div>
-          <div className="flex flex-col gap-2 items-center">
-            <div className="w-20 h-20 bg-surface border border-border rounded-full" />
-            <Text as="p" variant="caption">radius-full</Text>
-            <Text as="p" variant="caption" className="text-text-secondary">
-              9999px
-            </Text>
-          </div>
-        </VariantGrid>
-      </ComponentShowcase>
+        <Grid columns={2}>
+          <ShowcaseCard title="Card Variants" description="Surface personalities for different levels of emphasis.">
+            <Stack space="md">
+              <Card variant="default" size="sm">
+                <CardHeader>
+                  <CardTitle>Default</CardTitle>
+                  <CardDescription>Neutral surfaced container.</CardDescription>
+                </CardHeader>
+              </Card>
+              <Card variant="subtle" size="sm">
+                <CardHeader>
+                  <CardTitle>Subtle</CardTitle>
+                  <CardDescription>Quieter block with lower visual weight.</CardDescription>
+                </CardHeader>
+              </Card>
+              <Card variant="emphasis" size="sm">
+                <CardHeader>
+                  <CardTitle>Emphasis</CardTitle>
+                  <CardDescription>Higher priority surfaced content.</CardDescription>
+                </CardHeader>
+              </Card>
+              <Card variant="interactive" size="sm">
+                <CardHeader>
+                  <CardTitle>Interactive</CardTitle>
+                  <CardDescription>Hover-responsive surface for selectable content.</CardDescription>
+                </CardHeader>
+              </Card>
+            </Stack>
+          </ShowcaseCard>
 
-      {/* Design Principles */}
-      <section className="py-16 bg-surface">
-        <div className="max-w-container-xl mx-auto px-6 md:px-8">
-          <Text as="h2" variant="heading-md" className="mb-8">
-            Design Principles
-          </Text>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: 'Zero Variance',
-                description: 'Every visual decision is made once and applied consistently everywhere.',
-              },
-              {
-                title: 'Token-Based',
-                description: 'All values map to design tokens. No arbitrary values or one-off styles.',
-              },
-              {
-                title: 'Atomic Design',
-                description: 'Components follow strict atomic hierarchy: atoms → molecules → organisms → pages.',
-              },
-              {
-                title: 'Monochrome Only',
-                description: 'Pure grayscale palette. No accent colors. States shown through text and icons.',
-              },
-              {
-                title: 'Minimal Motion',
-                description: 'Transitions confirm interactions. Respects prefers-reduced-motion.',
-              },
-              {
-                title: 'Clean & Clear',
-                description: 'Whitespace is structure. No decorative elements. Function over form.',
-              },
-            ].map((principle) => (
-              <div key={principle.title} className="bg-background p-6 rounded-md border border-border">
-                <Text as="p" variant="label" className="mb-2">
-                  {principle.title}
-                </Text>
+          <ShowcaseCard
+            title="Panel And Notice"
+            description="Use Panel for structured sections, Notice for messaging."
+            variant="subtle"
+          >
+            <Stack space="md">
+              <Panel
+                title="Panel title"
+                description="A panel is a section-level surface with heading structure."
+                action={
+                  <Button variant="ghost" size="sm">
+                    Manage
+                  </Button>
+                }
+              >
                 <Text as="p" variant="body-sm" className="text-text-secondary">
-                  {principle.description}
+                  Panels should replace ad hoc titled containers in route code.
                 </Text>
-              </div>
-            ))}
-          </div>
-        </div>
+              </Panel>
+              <Notice
+                title="Notice"
+                message="Use notices for passive guidance, empty states, and generic system messaging."
+                action={
+                  <Button variant="secondary" size="sm">
+                    Learn more
+                  </Button>
+                }
+              />
+            </Stack>
+          </ShowcaseCard>
+
+          <ShowcaseCard title="SelectionCard" description="Generic option selection without business language." variant="interactive">
+            <Stack space="md">
+              <SelectionCard
+                title="Standard option"
+                description="A selectable option with title and description."
+                meta={
+                  <Text as="p" variant="caption" className="text-text-secondary">
+                    Additional metadata
+                  </Text>
+                }
+              />
+              <SelectionCard
+                title="Selected option"
+                description="Use the selected state when the choice has been made."
+                selected
+                trailing={<Badge size="sm">Selected</Badge>}
+              />
+            </Stack>
+          </ShowcaseCard>
+
+          <ShowcaseCard
+            title="ProgressSteps, Summary, And Actions"
+            description="Shared building blocks for step-based or confirmation flows."
+            variant="emphasis"
+            footer={
+              <ActionBar
+                secondary={<Button variant="secondary">Back</Button>}
+                primary={<Button>Continue</Button>}
+              />
+            }
+          >
+            <Stack space="md">
+              <ProgressSteps steps={progressDemo} />
+              <KeyValueList
+                items={[
+                  { label: 'Name', value: 'Ada Lovelace' },
+                  { label: 'Email', value: 'ada@example.com' },
+                  { label: 'Status', value: 'Confirmed' },
+                ]}
+              />
+            </Stack>
+          </ShowcaseCard>
+        </Grid>
+      </CatalogSection>
+
+      <CatalogSection
+        id="layout"
+        eyebrow="Layer 4"
+        title="Layout Primitives"
+        description="Layout primitives are the missing glue layer. Use them to stop rewriting spacing and alignment by hand."
+      >
+        <Grid columns={2}>
+          <ShowcaseCard title="Stack And Inline" description="Vertical rhythm and one-dimensional alignment." variant="subtle">
+            <Stack space="md">
+              <Card variant="subtle" size="sm">
+                <Text as="p" variant="body-sm">
+                  Stack item one
+                </Text>
+              </Card>
+              <Card variant="subtle" size="sm">
+                <Text as="p" variant="body-sm">
+                  Stack item two
+                </Text>
+              </Card>
+              <Inline justify="between">
+                <Text as="p" variant="body-sm">
+                  Left
+                </Text>
+                <Text as="p" variant="body-sm">
+                  Right
+                </Text>
+              </Inline>
+            </Stack>
+          </ShowcaseCard>
+
+          <ShowcaseCard title="Cluster And Grid" description="Wrapped collections and responsive layouts." variant="default">
+            <Stack space="md">
+              <Cluster>
+                <Badge>Alpha</Badge>
+                <Badge variant="secondary">Beta</Badge>
+                <Badge variant="ghost">Gamma</Badge>
+                <Badge>Delta</Badge>
+              </Cluster>
+              <Grid columns={2} className="gap-3">
+                <Card variant="subtle" size="sm">
+                  <Text as="p" variant="body-sm">
+                    Grid cell 1
+                  </Text>
+                </Card>
+                <Card variant="subtle" size="sm">
+                  <Text as="p" variant="body-sm">
+                    Grid cell 2
+                  </Text>
+                </Card>
+              </Grid>
+            </Stack>
+          </ShowcaseCard>
+        </Grid>
+      </CatalogSection>
+
+      <CatalogSection
+        id="templates"
+        eyebrow="Layer 5"
+        title="Templates"
+        description="Templates provide page-level structure only. They should not impose domain-specific presentation."
+      >
+        <ShowcaseCard
+          title="StepPageTemplate"
+          description="A generic multi-step shell with header, progress, summary region, and footer actions."
+          variant="subtle"
+          size="lg"
+        >
+          <StepPageTemplate
+            header={
+              <SectionHeader
+                label="Template"
+                title="Step page template"
+                description="The route should provide content and data. The template handles structure."
+              />
+            }
+            steps={progressDemo}
+            summary={
+              <KeyValueList
+                items={[
+                  { label: 'Current step', value: 'Profile selection' },
+                  { label: 'Next step', value: 'Time selection' },
+                ]}
+                layout="stacked"
+              />
+            }
+            secondaryAction={<Button variant="secondary">Back</Button>}
+            primaryAction={<Button>Continue</Button>}
+          >
+            <Card variant="interactive">
+              <CardHeader>
+                <CardTitle>Main content</CardTitle>
+                <CardDescription>
+                  Templates should work with generic organisms rather than feature-local wrappers.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SelectionCard
+                  title="Composable option"
+                  description="A route can place its own content here without the template forcing a bordered wrapper."
+                  selected
+                />
+              </CardContent>
+            </Card>
+          </StepPageTemplate>
+        </ShowcaseCard>
+      </CatalogSection>
+
+      <section className="border-t border-border py-16">
+        <Container>
+          <ShowcaseCard
+            title="System Notes"
+            description="Short rules for using this route as the design-system reference."
+            variant="emphasis"
+          >
+            <Grid columns={2}>
+              <Notice
+                title="Use This Route For"
+                message="Checking component states, comparing layer boundaries, and validating whether a new abstraction belongs in app/ui."
+              />
+              <Notice
+                title="Do Not Use This Route For"
+                message="Shipping feature-specific UI. If an example starts sounding like booking, auth, or company admin, it belongs outside the shared system."
+                tone="emphasis"
+              />
+            </Grid>
+          </ShowcaseCard>
+        </Container>
       </section>
     </div>
   );

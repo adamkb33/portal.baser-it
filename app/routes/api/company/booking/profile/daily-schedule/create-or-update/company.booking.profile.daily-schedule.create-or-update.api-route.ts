@@ -4,7 +4,8 @@ import { DailyScheduleController } from '~/api/generated/booking';
 import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
-import type { DayOfWeek } from '~/routes/company/booking/profile/daily-schedule/types/daily-schedule.types';
+
+type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
 
 export async function action({ request }: ActionFunctionArgs) {
   try {

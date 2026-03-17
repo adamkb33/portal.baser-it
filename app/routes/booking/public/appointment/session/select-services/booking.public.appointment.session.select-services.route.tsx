@@ -3,10 +3,6 @@ import type { Route } from './+types/booking.public.appointment.session.select-s
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { Search, X, Clock, DollarSign, Check, Image as ImageIcon, ShoppingBag, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '~/components/ui/dialog';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import {
   PublicAppointmentSessionController,
   type GroupedServiceGroupDto,
@@ -14,15 +10,35 @@ import {
 } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import {
-  BookingContainer,
-  BookingButton,
-  BookingStepHeader,
-  SelectableCard,
-  BookingSummary,
-  BookingErrorBanner,
-} from '../../_components/booking-layout';
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  BookingStepTemplate,
+  Button,
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  Container,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  PageHeader,
+  Stack,
+  StickySummaryBar,
+} from '~/ui';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { requireAuthenticatedBookingFlow } from '../_utils/require-authenticated-booking-flow.server';
+import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -41,18 +57,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     return data({
       session,
       serviceGroups: serviceGroupsResponse.data?.data || [],
-      error: null as string | null,
     });
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente tjenester');
-    return data(
-      {
-        session: null,
-        serviceGroups: [],
-        error: message,
-      },
-      { status: status ?? 400 },
-    );
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente tjenester');
+    return redirectWithError(request, ROUTES_MAP['booking.public.appointment.session.employee'].href, message);
   }
 }
 
@@ -76,13 +84,8 @@ export async function action({ request }: Route.ActionArgs) {
 
     return redirect(ROUTES_MAP['booking.public.appointment.session.select-time'].href);
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre tjenestevalg');
-    return data(
-      {
-        error: message,
-      },
-      { status: status ?? 400 },
-    );
+    const { message } = resolveErrorPayload(error, 'Kunne ikke lagre tjenestevalg');
+    return redirectWithError(request, ROUTES_MAP['booking.public.appointment.session.select-services'].href, message);
   }
 }
 
@@ -102,10 +105,9 @@ function ServiceCard({ service, isSelected, onToggle, onViewImages }: ServiceCar
   const previewImage = hasImages ? service.images && service.images[0] : null;
 
   return (
-    <SelectableCard
-      selected={isSelected}
-      onClick={onToggle}
-      className={cn('group relative overflow-hidden transition-all', isSelected && 'ring-2 ring-primary ring-offset-2')}
+    <Card
+      variant={isSelected ? 'emphasis' : 'interactive'}
+      className={cn('group relative overflow-hidden transition-all', isSelected && 'ring-2 ring-booking-action')}
     >
       {/* Image Preview */}
       {previewImage && (
@@ -129,68 +131,67 @@ function ServiceCard({ service, isSelected, onToggle, onViewImages }: ServiceCar
 
           {/* Selected checkmark */}
           {isSelected && (
-            <div className="absolute left-2 top-2 flex size-8 items-center justify-center rounded-full bg-primary shadow-lg">
-              <Check className="size-5 text-primary-foreground" strokeWidth={3} />
+            <div className="absolute left-2 top-2 flex size-8 items-center justify-center rounded-full bg-booking-action shadow-lg">
+              <Check className="size-5 text-booking-action-contrast" strokeWidth={3} />
             </div>
           )}
         </div>
       )}
 
       {/* Service Info */}
-      <div className="space-y-2">
+      <CardHeader className="space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="flex-1 text-base font-bold text-card-text md:text-lg">{service.name}</h3>
+          <h3 className="flex-1 text-base font-bold text-booking-text md:text-lg">{service.name}</h3>
 
           {!previewImage && isSelected && (
-            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary">
-              <Check className="size-4 text-primary-foreground" strokeWidth={3} />
+            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-booking-action">
+              <Check className="size-4 text-booking-action-contrast" strokeWidth={3} />
             </div>
           )}
         </div>
 
         {/* Price & Duration */}
         <div className="flex items-center gap-3 text-sm">
-          <div className="flex items-center gap-1.5 font-bold text-primary">
+          <div className="flex items-center gap-1.5 font-bold text-booking-action">
             <DollarSign className="size-4" />
             <span>{service.price} kr</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-booking-text-muted">
             <Clock className="size-4" />
             <span>{service.duration} min</span>
           </div>
         </div>
-      </div>
+      </CardHeader>
 
       {/* Actions */}
-      <div className="mt-3 flex gap-2 border-t border-card-border pt-3">
+      <CardFooter className="mt-0 flex gap-2">
         {hasImages && (
-          <button
+          <Button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               onViewImages?.();
             }}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-card-border bg-card-accent/5 px-3 py-2 text-sm font-medium transition-colors hover:bg-card-accent/10"
+            variant="outline"
+            className="flex-1 gap-2"
           >
             <ImageIcon className="size-4" />
             <span className="hidden sm:inline">Vis bilder</span>
             <span className="sm:hidden">Bilder</span>
-          </button>
+          </Button>
         )}
 
-        <button
+        <Button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             onToggle();
           }}
           className={cn(
-            'flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
-            isSelected
-              ? 'border-2 border-primary bg-primary/10 text-primary hover:bg-primary/20'
-              : 'border-2 border-primary bg-primary text-primary-foreground hover:bg-primary/90',
+            'flex-1 gap-2',
           )}
+          variant={isSelected ? 'secondary' : 'primary'}
         >
           {isSelected ? (
             <>
@@ -200,9 +201,9 @@ function ServiceCard({ service, isSelected, onToggle, onViewImages }: ServiceCar
           ) : (
             <>Velg</>
           )}
-        </button>
-      </div>
-    </SelectableCard>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
 
@@ -235,27 +236,27 @@ function ServiceGroup({ group, selectedServices, onToggleService, onViewImages }
         type="single"
         collapsible
         onValueChange={handleAccordionChange}
-        className="rounded-lg border border-card-border bg-card"
+        className="rounded-lg border border-booking-border bg-booking-surface"
       >
         <AccordionItem value={String(group.id)} className="border-none">
           <div className="flex items-start gap-3 px-3 py-3 md:px-4 md:py-4">
             <AccordionTrigger className="flex-1 p-0 text-left hover:no-underline">
               <div className="flex-1">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-base font-bold text-card-text md:text-lg">{group.name}</h2>
+                  <h2 className="text-base font-bold text-booking-text md:text-lg">{group.name}</h2>
                   {selectedInGroup > 0 && (
-                    <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">
+                    <span className="rounded-full bg-booking-action px-2.5 py-0.5 text-xs font-semibold text-booking-action-contrast">
                       {selectedInGroup} valgt
                     </span>
                   )}
                 </div>
-                <p className="mt-0.5 text-xs text-muted-foreground md:text-sm">
+                <p className="mt-0.5 text-xs text-booking-text-muted md:text-sm">
                   {group.services.length} {group.services.length === 1 ? 'tjeneste' : 'tjenester'}
                 </p>
               </div>
             </AccordionTrigger>
           </div>
-          <AccordionContent className="border-t border-card-border p-3 md:p-4">
+          <AccordionContent className="border-t border-booking-border p-3 md:p-4">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 lg:grid-cols-3 lg:gap-5">
               {group.services.map((service) => (
                 <ServiceCard
@@ -280,7 +281,6 @@ function ServiceGroup({ group, selectedServices, onToggleService, onViewImages }
 
 export default function BookingPublicAppointmentSessionSelectServicesRoute({
   loaderData,
-  actionData,
 }: Route.ComponentProps) {
   const serviceGroups = loaderData.serviceGroups ?? [];
   const session = loaderData.session;
@@ -297,11 +297,11 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({
     }
   }, [session]);
 
-  if (loaderData.error || !session) {
+  if (!session) {
     return (
-      <BookingContainer>
-        <BookingStepHeader title="Velg tjenester" description={loaderData.error ?? 'Ugyldig økt'} />
-      </BookingContainer>
+      <Container size="lg">
+        <PageHeader title="Velg tjenester" description="Ugyldig økt" />
+      </Container>
     );
   }
 
@@ -355,45 +355,72 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({
   const totalServices = serviceGroups.reduce((sum, g) => sum + g.services.length, 0);
 
   return (
-    <>
-      <BookingContainer>
-        {/* ========================================
-            PAGE HEADER
-            ======================================== */}
-        <BookingStepHeader
-          label="Velg tjenester"
-          title="Hvilke tjenester ønsker du?"
-          description={`Velg én eller flere tjenester fra ${totalServices} tilgjengelige tjenester.`}
+    <BookingStepTemplate
+      label="Velg tjenester"
+      title="Hvilke tjenester ønsker du?"
+      description={`Velg én eller flere tjenester fra ${totalServices} tilgjengelige tjenester.`}
+      footer={
+        <StickySummaryBar
+          title="Oppsummering"
+          items={
+            hasSelections
+              ? [
+                  {
+                    label: 'Tjenester',
+                    value: `${selectedServices.size} ${selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}`,
+                    icon: <ShoppingBag className="size-4" />,
+                  },
+                  { label: 'Varighet', value: `${totalDuration} min` },
+                  { label: 'Pris', value: `${totalPrice} kr` },
+                ]
+              : [{ label: 'Tjenester', value: 'Velg tjenester', icon: <ShoppingBag className="size-4" /> }]
+          }
+          primaryAction={
+            <Form method="post">
+              {Array.from(selectedServices).map((serviceId) => (
+                <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
+              ))}
+              <Button type="submit" size="lg" fullWidth loading={isSubmitting} disabled={!hasSelections || isSubmitting}>
+                <Sparkles className="size-5" />
+                Fortsett til tidspunkt
+              </Button>
+            </Form>
+          }
+          secondaryAction={
+            <Link to={ROUTES_MAP['booking.public.appointment.session.employee'].href}>
+              <Button type="button" variant="outline" size="md" fullWidth>
+                Tilbake
+              </Button>
+            </Link>
+          }
         />
-
-        {loaderData.error && <BookingErrorBanner title={loaderData.error} />}
-        {actionData?.error && <BookingErrorBanner title={actionData.error} />}
-
-        <div>
+      }
+    >
+      <Stack space="lg">
           {/* ========================================
               SEARCH BAR - For many services
               ======================================== */}
           {totalServices > 6 && (
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                <Search className="size-5 text-muted-foreground" />
+                <Search className="size-5 text-booking-text-muted" />
               </div>
 
-              <input
+              <Input
                 type="text"
                 placeholder="Søk etter tjenester..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-12 w-full rounded-lg border border-card-border bg-card pl-11 pr-11 text-base placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="pl-11 pr-11"
               />
 
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-muted"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-booking-surface-muted"
                 >
-                  <X className="size-4 text-muted-foreground" />
+                  <X className="size-4 text-booking-text-muted" />
                 </button>
               )}
             </div>
@@ -402,7 +429,7 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({
           {/* ========================================
               SERVICE GROUPS
               ======================================== */}
-          <div className="space-y-4 md:space-y-5">
+          <Stack space="lg">
             {filteredGroups.length > 0 ? (
               filteredGroups
                 .filter((group) => group.services.length > 0)
@@ -416,84 +443,33 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({
                   />
                 ))
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 py-12 text-center">
-                <Search className="size-12 text-muted-foreground opacity-50" />
-                <p className="mt-4 text-base font-medium text-card-text">Ingen tjenester funnet</p>
-                <p className="mt-1 text-sm text-muted-foreground">Prøv et annet søkeord</p>
+              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-booking-border bg-booking-surface-muted py-12 text-center">
+                <Search className="size-12 text-booking-text-muted opacity-50" />
+                <p className="mt-4 text-base font-medium text-booking-text">Ingen tjenester funnet</p>
+                <p className="mt-1 text-sm text-booking-text-muted">Prøv et annet søkeord</p>
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="mt-4 text-sm font-medium text-primary hover:underline"
+                  className="mt-4 text-sm font-medium text-booking-action hover:underline"
                 >
                   Tilbakestill søk
                 </button>
               </div>
             )}
-          </div>
-        </div>
-      </BookingContainer>
-
-      <BookingSummary
-        show
-        mobile={{
-          title: 'Oppsummering',
-          items: hasSelections
-            ? [
-                {
-                  label: 'Tjenester',
-                  value: `${selectedServices.size} ${selectedServices.size === 1 ? 'tjeneste' : 'tjenester'}`,
-                  icon: <ShoppingBag className="size-4" />,
-                },
-                { label: 'Varighet', value: `${totalDuration} min` },
-                { label: 'Pris', value: `${totalPrice} kr` },
-              ]
-            : [
-                {
-                  label: 'Tjenester',
-                  value: 'Velg tjenester',
-                  icon: <ShoppingBag className="size-4" />,
-                },
-              ],
-          primaryAction: (
-            <Form method="post">
-              {Array.from(selectedServices).map((serviceId) => (
-                <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
-              ))}
-              <BookingButton
-                type="submit"
-                variant="primary"
-                size="lg"
-                fullWidth
-                loading={isSubmitting}
-                disabled={!hasSelections || isSubmitting}
-              >
-                <Sparkles className="size-5" />
-                Fortsett til tidspunkt
-              </BookingButton>
-            </Form>
-          ),
-          secondaryAction: (
-            <Link to={ROUTES_MAP['booking.public.appointment.session.employee'].href}>
-              <BookingButton type="button" variant="outline" size="md" fullWidth>
-                Tilbake
-              </BookingButton>
-            </Link>
-          ),
-        }}
-        desktopClassName="sticky top-4 rounded-lg border border-card-border bg-card p-4"
-      />
+          </Stack>
+      </Stack>
       {/* ========================================
           IMAGE DIALOG - Mobile-optimized
           ======================================== */}
-      <Dialog open={dialogService !== null} onOpenChange={(open) => !open && setDialogService(null)}>
+        <Dialog open={dialogService !== null} onOpenChange={(open) => !open && setDialogService(null)}>
         <DialogContent className="max-w-3xl gap-0 p-0">
           {dialogService && (
             <>
-              <DialogHeader className="border-b border-card-border p-4 md:p-6">
-                <DialogTitle className="text-base font-bold text-card-text md:text-lg">
+              <DialogHeader className="border-b border-booking-border p-4 md:p-6">
+                <DialogTitle className="text-base font-bold text-booking-text md:text-lg">
                   {dialogService.name}
                 </DialogTitle>
-                <DialogDescription className="mt-1 text-sm text-muted-foreground">
+                <DialogDescription className="mt-1 text-sm text-booking-text-muted">
                   {dialogService.images?.length} {dialogService.images?.length === 1 ? 'bilde' : 'bilder'}
                 </DialogDescription>
               </DialogHeader>
@@ -535,7 +511,7 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({
             </>
           )}
         </DialogContent>
-      </Dialog>
-    </>
+        </Dialog>
+    </BookingStepTemplate>
   );
 }

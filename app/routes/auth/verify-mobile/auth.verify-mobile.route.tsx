@@ -6,14 +6,11 @@ import type { Route } from './+types/auth.verify-mobile.route';
 import { AuthController, type VerificationStatusResponseDto } from '~/api/generated/base';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { AuthFormContainer } from '../_components/auth.form-container';
-import { Label } from '@/components/ui/label';
-import { VerificationCodeInput } from '@/components/ui/verification-code-input';
-import { AuthFormButton } from '../_components/auth.form-button';
 import { requireVerificationToken } from '~/routes/booking/public/appointment/session/contact/_utils/auth.utils.server';
 import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { authService } from '~/lib/auth-service';
+import { Button, FormPageTemplate, Label, Notice, VerificationCodeInput } from '~/ui';
 
 type VerifyMobileLoaderData = {
   verificationSessionToken: string;
@@ -164,11 +161,12 @@ export default function AuthVerifyMobile({ loaderData }: Route.ComponentProps) {
       : 'Du trenger ikke verifisere mobilnummer. Du kan gå videre til innlogging.';
 
   return (
-    <AuthFormContainer
+    <FormPageTemplate
       title="Bekreft mobilnummer"
       description={description}
       error={errorMessage}
-      secondaryAction={
+      variant={canVerifyMobile ? 'default' : 'subtle'}
+      actions={
         <div className="space-y-2 text-center">
           <Link
             to={ROUTES_MAP['auth.sign-in'].href}
@@ -181,26 +179,21 @@ export default function AuthVerifyMobile({ loaderData }: Route.ComponentProps) {
           </Link>
         </div>
       }
+      footerLink={null}
     >
       <div className="space-y-4">
         {!status?.emailVerified ? (
-          <div className="rounded-md border border-form-border bg-form-accent/30 px-4 py-3 text-sm text-form-text">
-            Du må bekrefte e-posten din før mobilnummeret kan verifiseres.
-          </div>
+          <Notice message="Du må bekrefte e-posten din før mobilnummeret kan verifiseres." />
         ) : null}
 
         {status && !status.mobileRequired ? (
-          <div className="rounded-md border border-form-border bg-form-accent/30 px-4 py-3 text-sm text-form-text">
-            Du la ikke til et mobilnummer. Du kan gå videre til innlogging.
-          </div>
+          <Notice message="Du la ikke til et mobilnummer. Du kan gå videre til innlogging." />
         ) : null}
 
         {isMobileVerified ? (
-          <div className="rounded-md border border-form-border bg-form-accent/30 px-4 py-3 text-sm text-form-text">
-            Mobilnummeret ditt er bekreftet. Du kan gå videre til innlogging.
-          </div>
+          <Notice message="Mobilnummeret ditt er bekreftet. Du kan gå videre til innlogging." />
         ) : null}
-        {resendMessage ? <div className="text-sm text-green-700">{resendMessage}</div> : null}
+        {resendMessage ? <Notice message={resendMessage} /> : null}
 
         {canVerifyMobile ? (
           <>
@@ -208,7 +201,7 @@ export default function AuthVerifyMobile({ loaderData }: Route.ComponentProps) {
               <input type="hidden" name="intent" value="verify" />
 
               <div className="space-y-3">
-                <Label htmlFor="code" className="text-xs font-medium uppercase tracking-[0.12em] text-form-text">
+                <Label htmlFor="code">
                   Engangskode
                 </Label>
                 <VerificationCodeInput
@@ -222,9 +215,9 @@ export default function AuthVerifyMobile({ loaderData }: Route.ComponentProps) {
                 />
               </div>
 
-              <AuthFormButton isLoading={isSubmitting} loadingText="Bekrefter…">
+              <Button type="submit" fullWidth loading={isSubmitting}>
                 Bekreft mobilnummer
-              </AuthFormButton>
+              </Button>
             </Form>
 
             <Form method="post">
@@ -241,11 +234,11 @@ export default function AuthVerifyMobile({ loaderData }: Route.ComponentProps) {
         ) : null}
 
         {(status?.mobileVerified || isMobileVerified || !status?.mobileRequired) && (
-          <AuthFormButton asChild variant="secondary">
+          <Button asChild variant="secondary" fullWidth>
             <Link to={ROUTES_MAP['auth.sign-in'].href}>Gå til innlogging</Link>
-          </AuthFormButton>
+          </Button>
         )}
       </div>
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }

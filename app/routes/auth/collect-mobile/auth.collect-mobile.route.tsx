@@ -4,10 +4,8 @@ import type { Route } from './+types/auth.collect-mobile.route';
 import { AuthController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { AuthFormButton } from '../_components/auth.form-button';
-import { AuthFormContainer } from '../_components/auth.form-container';
-import { AuthFormField } from '../_components/auth.form-field';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
+import { Button, FormField, FormPageTemplate } from '~/ui';
 
 type LoaderData = {
   userId: number;
@@ -65,11 +63,12 @@ export default function AuthCollectMobile({ loaderData, actionData }: Route.Comp
     actionData && typeof actionData === 'object' && 'error' in actionData ? String(actionData.error) : undefined;
 
   return (
-    <AuthFormContainer
+    <FormPageTemplate
       title="Legg til mobilnummer"
       description="Vi trenger mobilnummeret ditt for å fullføre registreringen."
       error={errorMessage}
-      secondaryAction={
+      variant="default"
+      actions={
         <div className="space-y-2 text-center">
           <Link
             to={ROUTES_MAP['auth.sign-in'].href}
@@ -79,10 +78,11 @@ export default function AuthCollectMobile({ loaderData, actionData }: Route.Comp
           </Link>
         </div>
       }
+      footerLink={null}
     >
       <Form method="post" className="space-y-4" aria-busy={isSubmitting}>
         <input type="hidden" name="userId" value={loaderData.userId} />
-        <AuthFormField
+        <FormField
           id="mobileNumber"
           name="mobileNumber"
           label="Mobilnummer"
@@ -93,10 +93,10 @@ export default function AuthCollectMobile({ loaderData, actionData }: Route.Comp
           disabled={isSubmitting}
         />
 
-        <AuthFormButton isLoading={isSubmitting} loadingText="Lagrer…">
+        <Button type="submit" fullWidth loading={isSubmitting}>
           Fortsett
-        </AuthFormButton>
+        </Button>
       </Form>
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }

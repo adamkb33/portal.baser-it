@@ -10,13 +10,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '~/components/ui/alert-dialog';
-import { AccordionContent, AccordionItem, AccordionTrigger } from '~/components/ui/accordion';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
-import { Textarea } from '~/components/ui/textarea';
+} from '~/ui';
+import {
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Badge,
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from '~/ui';
 import {
   formatDisplayDate,
   formatDuration,

@@ -2,12 +2,11 @@
 import { useState } from 'react';
 import { useSubmit } from 'react-router';
 import { toast } from 'sonner';
-import { Button } from '~/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table';
 import { API_ROUTES_MAP } from '~/lib/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import type { InviteTokenDto } from '~/api/generated/base';
 import { COMPANY_ROLE_LABELS } from '~/lib/constants';
+import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/ui';
 
 type InvitesTableProps = {
   invites: InviteTokenDto[];
@@ -54,7 +53,7 @@ export function InvitesTable({ invites }: InvitesTableProps) {
         <TableBody>
           {invites.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={3} className="py-8 text-center text-text-secondary">
                 Ingen aktive invitasjoner
               </TableCell>
             </TableRow>
@@ -64,7 +63,7 @@ export function InvitesTable({ invites }: InvitesTableProps) {
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <span>{invite.email}</span>
-                    <span className="border border-border bg-muted px-2.5 py-0.5 text-[0.7rem] font-medium rounded-none">
+                    <span className="rounded-sm border border-border bg-surface px-2.5 py-0.5 text-[0.7rem] font-medium text-text-secondary">
                       Venter
                     </span>
                   </div>

@@ -4,9 +4,7 @@ import type { Route } from './+types/auth.respond-user-invite.route';
 import { AuthController, type AcceptUserInviteDto, type UserInviteTokenDto } from '~/api/generated/base';
 import { authService } from '~/lib/auth-service';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { AuthFormButton } from '../_components/auth.form-button';
-import { AuthFormContainer } from '../_components/auth.form-container';
-import { AuthFormField } from '../_components/auth.form-field';
+import { Button, FormField, FormPageTemplate } from '~/ui';
 
 type InvitePayload = Pick<UserInviteTokenDto, 'userId' | 'email' | 'mobileNumber'>;
 
@@ -233,10 +231,11 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
 
   if (inviteData.invalidInvite) {
     return (
-      <AuthFormContainer
+      <FormPageTemplate
         title="Invitasjonen er ikke gyldig"
         description="Invitasjonen kan være brukt eller utløpt."
-        secondaryAction={
+        variant="emphasis"
+        actions={
           <div className="space-y-2 text-center">
             <p className="text-sm text-muted-foreground">Kontakt virksomheten for ny invitasjon</p>
             <Link to="/" className="inline-block text-sm font-medium text-foreground hover:underline">
@@ -244,24 +243,27 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
             </Link>
           </div>
         }
+        footerLink={null}
       >
         <div className="text-sm text-form-text-muted">
           Vi klarte ikke å validere invitasjonslenken. Be om en ny invitasjon og prøv igjen.
         </div>
-      </AuthFormContainer>
+      </FormPageTemplate>
     );
   }
 
   return (
-    <AuthFormContainer
+    <FormPageTemplate
       title="Svar på brukerinvitasjon"
       description="Fullfør profilen din for å akseptere invitasjonen."
       error={routeActionData?.formError}
-      secondaryAction={
+      variant="airy"
+      actions={
         <Link to="/" className="mt-2 block text-center text-sm font-medium text-muted-foreground hover:underline">
           Tilbake til forsiden →
         </Link>
       }
+      footerLink={null}
     >
       <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
         {inviteData.invite.email ? <p>Invitert e-post: {inviteData.invite.email}</p> : null}
@@ -274,7 +276,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
       <Form method="post" className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <AuthFormField
+            <FormField
               id="givenName"
               name="givenName"
               label="Fornavn"
@@ -289,7 +291,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
           </div>
 
           <div className="space-y-2">
-            <AuthFormField
+            <FormField
               id="familyName"
               name="familyName"
               label="Etternavn"
@@ -305,7 +307,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
         </div>
 
         <div className="space-y-2">
-          <AuthFormField
+          <FormField
             id="password"
             name="password"
             label="Passord"
@@ -320,7 +322,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
         </div>
 
         <div className="space-y-2">
-          <AuthFormField
+          <FormField
             id="password2"
             name="password2"
             label="Bekreft passord"
@@ -336,7 +338,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
 
         {visibility.showEmail ? (
           <div className="space-y-2">
-            <AuthFormField
+            <FormField
               id="email"
               name="email"
               label="E-post"
@@ -354,7 +356,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
 
         {visibility.showMobileNumber ? (
           <div className="space-y-2">
-            <AuthFormField
+            <FormField
               id="mobileNumber"
               name="mobileNumber"
               label="Mobilnummer"
@@ -369,11 +371,11 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
           </div>
         ) : null}
 
-        <AuthFormButton isLoading={isSubmitting} loadingText="Fullfører...">
+        <Button type="submit" fullWidth loading={isSubmitting}>
           Aksepter invitasjon
-        </AuthFormButton>
+        </Button>
       </Form>
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }
 
@@ -382,24 +384,24 @@ export function ErrorBoundary() {
 
   if (isRouteErrorResponse(error) && error.status === 400) {
     return (
-      <AuthFormContainer title="Ugyldig invitasjonslenke" description="Lenken mangler token.">
+      <FormPageTemplate title="Ugyldig invitasjonslenke" description="Lenken mangler token." variant="emphasis" footerLink={null}>
         <div className="space-y-2">
           <p className="text-sm text-form-text-muted">Sjekk at du bruker hele lenken fra invitasjonen.</p>
           <Link to="/" className="inline-block text-sm font-medium text-foreground hover:underline">
             Tilbake til forsiden →
           </Link>
         </div>
-      </AuthFormContainer>
+      </FormPageTemplate>
     );
   }
 
   return (
-    <AuthFormContainer title="Noe gikk galt" description="En uventet feil oppstod. Prøv igjen.">
+    <FormPageTemplate title="Noe gikk galt" description="En uventet feil oppstod. Prøv igjen." variant="emphasis" footerLink={null}>
       <div className="space-y-2">
         <Link to="/" className="inline-block text-sm font-medium text-foreground hover:underline">
           Tilbake til forsiden →
         </Link>
       </div>
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }

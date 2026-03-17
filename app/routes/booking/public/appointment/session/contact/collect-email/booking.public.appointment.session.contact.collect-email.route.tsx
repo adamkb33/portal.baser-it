@@ -1,17 +1,23 @@
 import { data, Form, redirect, useNavigation } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.session.contact.collect-email.route';
-import { Input } from '@/components/ui/input';
 import { Mail } from 'lucide-react';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
-import {
-  BookingButton,
-  BookingErrorBanner,
-  BookingSection,
-  BookingStepHeader,
-} from '../../../_components/booking-layout';
+import { Button, Input, PageHeader, Panel, Stack } from '~/ui';
 import { resolveAuthNextStepHref } from '../_utils/auth.utils';
+import { resolveMappedAuthError } from '../_utils/auth-step-error';
+
+function buildCollectEmailRetryHref(request: Request, email: string): string {
+  const currentUrl = new URL(request.url);
+  const retryUrl = new URL(`${currentUrl.pathname}${currentUrl.search}`, currentUrl.origin);
+  if (email) {
+    retryUrl.searchParams.set('email', email);
+  } else {
+    retryUrl.searchParams.delete('email');
+  }
+  return `${retryUrl.pathname}${retryUrl.search}`;
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { AppointmentSessionService } = await import('../../_services/appointment-session.service.server');
@@ -21,10 +27,12 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirectWithError(request, ROUTES_MAP['booking.public.appointment'].href, 'Kunne ikke hente session');
   }
 
-  return data({ session });
+  const url = new URL(request.url);
+  return data({ session, email: url.searchParams.get('email') || '' });
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  let submittedEmail = '';
   try {
     const { AppointmentSessionService } = await import('../../_services/appointment-session.service.server');
     const { ContactAuthService } = await import('../_services/contact-auth.service.server');
@@ -40,13 +48,17 @@ export async function action({ request }: Route.ActionArgs) {
 
     const formData = await request.formData();
     const email = String(formData.get('email') || '');
+    submittedEmail = email;
+    const retryHref = buildCollectEmailRetryHref(request, email);
 
     const response = await ContactAuthService.completeProfile({
       userId: session.userId,
       email,
     });
 
-    const { nextStepHref, verificationCookieHeader } = await ContactAuthService.resolvePostAuthRedirect(response);
+    const authStatus = await ContactAuthService.getUserStatus(request);
+    const nextStepHref = resolveAuthNextStepHref(authStatus?.nextStep ?? response?.nextStep);
+    const { verificationCookieHeader } = await ContactAuthService.resolvePostAuthRedirect(response);
     if (verificationCookieHeader) {
       const headers = new Headers();
       headers.append('Set-Cookie', verificationCookieHeader);
@@ -67,57 +79,56 @@ export async function action({ request }: Route.ActionArgs) {
       return redirectWithError(request, ROUTES_MAP['booking.public.appointment'].href, 'Kunne ikke lagre e-post.');
     }
 
-    const resolveNextStepHref = resolveAuthNextStepHref(response?.nextStep);
-    if (resolveNextStepHref) {
-      return redirect(resolveNextStepHref);
+    if (nextStepHref) {
+      return redirect(nextStepHref);
     }
 
     return redirectWithError(request, ROUTES_MAP['booking.public.appointment'].href, 'Kunne ikke lagre e-post.');
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre e-post. Prøv igjen.');
-    return data({ error: message }, { status: status ?? 400 });
+    const { message } = resolveErrorPayload(error, 'Kunne ikke lagre e-post. Prøv igjen.');
+    const mappedMessage = resolveMappedAuthError(error, message);
+    const retryHref = buildCollectEmailRetryHref(request, submittedEmail);
+    return redirectWithError(request, retryHref, mappedMessage);
   }
 }
 
 export default function BookingPublicAppointmentSessionContactAuthCollectEmailRoute({
-  actionData,
+  loaderData,
 }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-
-  const errorMessage = typeof actionData === 'object' && actionData && 'error' in actionData ? actionData.error : null;
   return (
     <>
-      <BookingStepHeader
-        label="Kontakt"
-        title="Legg til din e-post"
-        description="Vi trenger e-posten din for å fullføre booking."
-      />
+      <Stack space="xl">
+        <PageHeader
+          label="Kontakt"
+          title="Legg til din e-post"
+          description="Vi trenger e-posten din for å fullføre booking."
+        />
 
-      {errorMessage ? <BookingErrorBanner title={String(errorMessage)} /> : null}
+        <Panel title="E-post" tone="muted">
+          <Form method="post" aria-busy={isSubmitting}>
+            <Stack space="md">
+              <Stack space="xs">
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  defaultValue={loaderData.email || undefined}
+                  disabled={isSubmitting}
+                />
+              </Stack>
 
-      <BookingSection title="E-post" variant="elevated">
-        <Form method="post" className="space-y-4 md:space-y-5" aria-busy={isSubmitting}>
-          <div className="space-y-2">
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              disabled={isSubmitting}
-              className="h-12 border-form-border bg-form-bg text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
-            />
-          </div>
-
-          <div className="pt-2">
-            <BookingButton type="submit" size="lg" fullWidth variant="primary" className="justify-start gap-3">
-              <Mail className="size-5" />
-              Fortsett
-            </BookingButton>
-          </div>
-        </Form>
-      </BookingSection>
+              <Button type="submit" size="lg" fullWidth className="gap-3">
+                <Mail className="size-5" />
+                Fortsett
+              </Button>
+            </Stack>
+          </Form>
+        </Panel>
+      </Stack>
     </>
   );
 }

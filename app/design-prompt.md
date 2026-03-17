@@ -144,3 +144,99 @@ When responding to any design or UX request:
 **Clarity beats cleverness.**
 **Design for thumbs, not mice.**
 **Spacing creates meaning.**
+
+import \* as React from 'react';
+import { isRouteErrorResponse, useRouteError } from 'react-router';
+import { logger } from '~/lib/logger';
+
+export default function RootLayout() {
+const [showSidebar, setShowSidebar] = React.useState(true);
+
+return (
+<div className="flex min-h-screen flex-col bg-background text-text-primary">
+<header className="h-16 shrink-0 border-b border-border bg-surface">
+<div className="mx-auto flex h-full w-full max-w-[var(--container-xl)] items-center justify-between gap-4 px-4 lg:px-6">
+<div className="rounded-sm border border-border bg-background px-3 py-1 text-sm font-medium">Header</div>
+
+          <button
+            type="button"
+            onClick={() => setShowSidebar((value) => !value)}
+            className="rounded-sm border border-border bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-surface"
+          >
+            {showSidebar ? 'Hide Sidebar' : 'Show Sidebar'}
+          </button>
+        </div>
+      </header>
+
+      <main className="flex-1">
+        <div className="mx-auto flex w-full max-w-[var(--container-xl)]">
+          {showSidebar ? (
+            <aside className="hidden w-72 shrink-0 border-r border-border bg-surface lg:flex lg:flex-col">
+              <div className="flex flex-1 items-start p-6">
+                <div className="rounded-sm border border-border bg-background px-3 py-1 text-sm font-medium">Sidebar</div>
+              </div>
+            </aside>
+          ) : null}
+
+          <section className="min-w-0 flex-1 bg-background">
+            <div className="space-y-6 p-4 lg:p-6">
+              <div className="rounded-sm border border-border bg-surface px-3 py-1 text-sm font-medium">Main Content</div>
+
+              {Array.from({ length: 16 }, (_, index) => (
+                <section key={index} className="rounded-md border border-border bg-surface p-5">
+                  <h2 className="text-base font-semibold">Section {index + 1}</h2>
+                  <p className="mt-2 text-sm text-text-secondary">
+                    This is demo content to verify normal page scrolling. The header and footer should move with the page,
+                    and the document should grow naturally as more content is added.
+                  </p>
+                  <div className="mt-4 h-32 rounded-sm border border-border bg-background" />
+                </section>
+              ))}
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer className="h-16 shrink-0 border-t border-border bg-surface">
+        <div className="mx-auto flex h-full w-full max-w-[var(--container-xl)] items-center px-4 lg:px-6">
+          <div className="rounded-sm border border-border bg-background px-3 py-1 text-sm font-medium">Footer</div>
+        </div>
+      </footer>
+    </div>
+
+);
+}
+
+export function ErrorBoundary() {
+const error = useRouteError();
+
+logger.error('Route error boundary', { error });
+
+if (isRouteErrorResponse(error)) {
+return (
+<div className="flex min-h-screen flex-col bg-background">
+<main className="flex min-h-0 flex-1 overflow-y-auto py-[var(--app-content-padding-block-mobile)] lg:py-[var(--app-content-padding-block-desktop)]">
+<section className="mx-auto w-full max-w-lg px-6">
+<h1 className="text-xl font-semibold">Noe gikk galt</h1>
+<p className="mt-2 text-sm text-muted-foreground">
+{error.status} {error.statusText}
+</p>
+</section>
+</main>
+</div>
+);
+}
+
+const message = error instanceof Error ? error.message : 'Ukjent feil';
+
+return (
+<div className="flex min-h-screen flex-col bg-background">
+<main className="flex min-h-0 flex-1 overflow-y-auto py-[var(--app-content-padding-block-mobile)] lg:py-[var(--app-content-padding-block-desktop)]">
+<section className="mx-auto w-full max-w-lg px-6">
+<h1 className="text-xl font-semibold">Noe gikk galt</h1>
+<p className="mt-2 text-sm text-muted-foreground">{message}</p>
+</section>
+</main>
+</div>
+);
+}

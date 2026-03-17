@@ -8,7 +8,15 @@ import { ROUTES_MAP } from '~/lib/route-tree';
 import { formatCompactDate, formatFullDate, formatTime } from '~/lib/date.utils';
 import { appointmentSessionSelectTimeAction } from './_features/appointment.session.select-time.loader';
 import { appointmentSessionSelectTimeLoader } from './_features/appointment.session.select-time.action';
-import { BookingContainer, BookingStepHeader, BookingButton, BookingSummary, BookingSection } from '../../_components/booking-layout';
+import {
+  BookingStepTemplate,
+  Button as BookingButton,
+  Container as BookingContainer,
+  PageHeader as BookingStepHeader,
+  Panel as BookingSection,
+  Stack,
+  StickySummaryBar,
+} from '~/ui';
 
 export const loader = appointmentSessionSelectTimeLoader;
 export const action = appointmentSessionSelectTimeAction;
@@ -136,10 +144,13 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick, variant = 
         isCompact ? 'min-h-11 px-3 py-2' : 'min-h-16 p-3 md:min-h-14',
 
         // Selected state
-        isSelected && ['border-primary bg-primary text-primary-foreground', 'shadow-sm'],
+        isSelected && ['border-booking-action bg-booking-action text-booking-action-contrast', 'shadow-sm'],
 
         // Default state
-        !isSelected && ['border-card-border bg-card text-card-text', 'hover:border-primary/50 hover:bg-card-hover-bg'],
+        !isSelected && [
+          'border-booking-border bg-booking-surface text-booking-text',
+          'hover:border-booking-action/50 hover:bg-booking-surface-muted',
+        ],
       )}
     >
       {/* Date info */}
@@ -149,7 +160,7 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick, variant = 
           <span
             className={cn(
               'text-xs font-semibold uppercase tracking-wider',
-              isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground',
+              isSelected ? 'text-booking-action-contrast/80' : 'text-booking-text-muted',
             )}
           >
             {day}
@@ -164,10 +175,10 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick, variant = 
           <div
             className={cn(
               'flex size-6 items-center justify-center rounded-full',
-              isSelected ? 'bg-primary-foreground' : 'bg-primary',
+              isSelected ? 'bg-booking-action-contrast' : 'bg-booking-action',
             )}
           >
-            <Check className={cn('size-4', isSelected ? 'text-primary' : 'text-primary-foreground')} strokeWidth={3} />
+            <Check className={cn('size-4', isSelected ? 'text-booking-action' : 'text-booking-action-contrast')} strokeWidth={3} />
           </div>
         )}
       </div>
@@ -176,19 +187,19 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick, variant = 
       <div
         className={cn(
           'flex flex-col items-end gap-0.5 rounded-lg px-2.5 py-1',
-          isSelected ? 'bg-primary-foreground/20' : 'bg-muted',
+          isSelected ? 'bg-booking-action-contrast/20' : 'bg-booking-surface-muted',
         )}
       >
         <span
           className={cn(
             'font-bold',
             isCompact ? 'text-sm' : 'text-base',
-            isSelected ? 'text-primary-foreground' : 'text-card-text',
+            isSelected ? 'text-booking-action-contrast' : 'text-booking-text',
           )}
         >
           {schedule.timeSlots.length}
         </span>
-        <span className={cn('text-xs', isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground')}>
+        <span className={cn('text-xs', isSelected ? 'text-booking-action-contrast/80' : 'text-booking-text-muted')}>
           ledig
         </span>
       </div>
@@ -221,14 +232,14 @@ function TimeSlotButton({ time, isSelected, onClick, variant = 'default' }: Time
 
         // Selected state
         isSelected && [
-          'border-primary bg-primary text-primary-foreground',
-          'shadow-sm ring-2 ring-primary/20 ring-offset-2',
+          'border-booking-action bg-booking-action text-booking-action-contrast',
+          'shadow-sm ring-2 ring-booking-action/20 ring-offset-2',
         ],
 
         // Default state
         !isSelected && [
-          'border-card-border bg-card text-card-text',
-          'hover:border-primary/50 hover:bg-card-hover-bg',
+          'border-booking-border bg-booking-surface text-booking-text',
+          'hover:border-booking-action/50 hover:bg-booking-surface-muted',
           'active:scale-95',
         ],
       )}
@@ -254,17 +265,17 @@ function groupTimeSlotsByHour(timeSlots: ScheduleDto['timeSlots']) {
    ======================================== */
 
 export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderData }: Route.ComponentProps) {
-  const schedules = loaderData.schedules ?? [];
-  const session = loaderData.session;
+  const schedules = loaderData?.schedules ?? [];
+  const session = loaderData?.session ?? null;
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
-  if (loaderData.error || !session) {
+  if (!session) {
     return (
       <BookingContainer>
-        <BookingStepHeader title="Velg tidspunkt" description={loaderData.error ?? 'Ugyldig økt'} />
+        <BookingStepHeader title="Velg tidspunkt" description="Ugyldig økt" />
       </BookingContainer>
     );
   }
@@ -465,70 +476,88 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
   }, [groupedHours]);
 
   return (
-    <>
-      <BookingContainer>
-        {/* ========================================
-            PAGE HEADER
-            ======================================== */}
-        <BookingStepHeader
-          label="Velg tidspunkt"
-          title="Hva er ett tidspunkt du ønsker?"
-          description={displayTime ? 'Valgt tidspunkt kan endres' : 'Velg dato og klokkeslett for avtalen'}
-        />
-
-        {/* ========================================
-            QUICK BOOK - First available slot
-            ======================================== */}
-        {earliestSlot && !displayTime && (
-          <BookingSection>
-            <button
-              type="button"
-              onClick={handleQuickBook}
-              className="flex w-full items-center justify-between gap-3 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 p-4 transition-colors hover:border-primary hover:bg-primary/10"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-full bg-primary">
-                  <Zap className="size-5 text-primary-foreground" />
+    <BookingStepTemplate
+      label="Velg tidspunkt"
+      title="Hva er ett tidspunkt du ønsker?"
+      description={displayTime ? 'Valgt tidspunkt kan endres' : 'Velg dato og klokkeslett for avtalen'}
+      footer={
+        displayTime ? (
+          <StickySummaryBar
+            title="Oppsummering"
+            items={[
+              { label: 'Dato', value: formatFullDate(displayTime) },
+              { label: 'Tid', value: `kl. ${formatTime(displayTime)}` },
+            ]}
+            primaryAction={
+              <BookingButton variant="primary" size="lg" fullWidth onClick={handleSubmit} loading={isSubmitting} disabled={isSubmitting}>
+                Gå til oversikt
+              </BookingButton>
+            }
+            secondaryAction={
+              <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>
+                <BookingButton type="button" variant="outline" size="md" fullWidth>
+                  Tilbake
+                </BookingButton>
+              </Link>
+            }
+          />
+        ) : null
+      }
+    >
+      <Stack space="xl">
+          {/* ========================================
+              QUICK BOOK - First available slot
+              ======================================== */}
+          {earliestSlot && !displayTime && (
+            <BookingSection>
+              <button
+                type="button"
+                onClick={handleQuickBook}
+                className="flex w-full items-center justify-between gap-3 rounded-lg border-2 border-dashed border-booking-action/50 bg-booking-surface-muted p-4 transition-colors hover:border-booking-action hover:bg-booking-surface-muted"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-full bg-booking-action">
+                    <Zap className="size-5 text-booking-action-contrast" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-bold text-booking-text md:text-base">Raskeste tiden</p>
+                    <p className="text-xs text-booking-text-muted md:text-sm">
+                      {formatFullDate(earliestSlot.date)} kl. {formatTime(earliestSlot.time)}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <p className="text-sm font-bold text-card-text md:text-base">Raskeste tiden</p>
-                  <p className="text-xs text-muted-foreground md:text-sm">
-                    {formatFullDate(earliestSlot.date)} kl. {formatTime(earliestSlot.time)}
-                  </p>
-                </div>
-              </div>
-              <span className="text-xs font-medium text-primary">Velg →</span>
-            </button>
-          </BookingSection>
-        )}
+                <span className="text-xs font-medium text-booking-action">Velg →</span>
+              </button>
+            </BookingSection>
+          )}
 
-        {/* ========================================
-            WEEK NAVIGATOR
-            ======================================== */}
-        {weekGroups.length > 1 && (
-          <BookingSection className="p-0">
+          {/* ========================================
+              WEEK NAVIGATOR
+              ======================================== */}
+          {weekGroups.length > 1 && (
+            <BookingSection className="p-0">
             {/* Navigation controls */}
-            <div className="flex items-center border-b border-card-border">
+            <div className="flex items-center border-b border-booking-border">
               <button
                 type="button"
                 onClick={handlePrevWeek}
                 disabled={selectedWeekIndex === 0}
-                className="flex size-12 items-center justify-center border-r border-card-border transition-colors hover:bg-card-hover-bg disabled:cursor-not-allowed disabled:opacity-30 md:size-14"
+                className="flex size-12 items-center justify-center border-r border-booking-border transition-colors hover:bg-booking-surface-muted disabled:cursor-not-allowed disabled:opacity-30 md:size-14"
                 aria-label="Forrige uke"
               >
                 <ChevronLeft className="size-5 md:size-6" />
               </button>
 
               <div className="flex-1 py-3 text-center">
-                <p className="text-sm font-bold text-card-text md:text-base">{getWeekLabel(currentWeek)}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{totalSlots} ledige tider</p>
+                <p className="text-sm font-bold text-booking-text md:text-base">{getWeekLabel(currentWeek)}</p>
+                <p className="mt-0.5 text-xs text-booking-text-muted">{totalSlots} ledige tider</p>
               </div>
 
               <button
                 type="button"
                 onClick={handleNextWeek}
                 disabled={selectedWeekIndex === weekGroups.length - 1}
-                className="flex size-12 items-center justify-center border-l border-card-border transition-colors hover:bg-card-hover-bg disabled:cursor-not-allowed disabled:opacity-30 md:size-14"
+                className="flex size-12 items-center justify-center border-l border-booking-border transition-colors hover:bg-booking-surface-muted disabled:cursor-not-allowed disabled:opacity-30 md:size-14"
                 aria-label="Neste uke"
               >
                 <ChevronRight className="size-5 md:size-6" />
@@ -556,8 +585,8 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                         // Touch-friendly: 44px height
                         'min-h-11 shrink-0 rounded px-3 py-2 text-xs font-semibold transition-all md:text-sm md:flex-1',
                         'min-w-[140px] md:min-w-0',
-                        isActive && 'bg-primary text-primary-foreground shadow-sm',
-                        !isActive && 'bg-muted text-muted-foreground hover:bg-muted/70',
+                        isActive && 'bg-booking-action text-booking-action-contrast shadow-sm',
+                        !isActive && 'bg-booking-surface-muted text-booking-text-muted hover:bg-booking-surface',
                       )}
                       aria-label={`Gå til ${weekLabel}`}
                       aria-current={isActive ? 'true' : undefined}
@@ -568,23 +597,23 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                 })}
               </div>
             )}
-          </BookingSection>
-        )}
+            </BookingSection>
+          )}
 
-        {/* ========================================
-            MOBILE: STACKED LAYOUT
-            ======================================== */}
-        <div className="space-y-4 md:hidden">
+          {/* ========================================
+              MOBILE: STACKED LAYOUT
+              ======================================== */}
+          <div className="space-y-6 md:hidden">
           {/* Date selector */}
           <BookingSection>
             <div className="flex items-center gap-2">
-              <Calendar className="size-4 text-muted-foreground" />
-              <h3 className="text-sm font-bold text-card-text">Velg dato</h3>
+              <Calendar className="size-4 text-booking-text-muted" />
+              <h3 className="text-sm font-bold text-booking-text">Velg dato</h3>
               {selectedDate && isDateListCollapsed && (
                 <button
                   type="button"
                   onClick={() => setIsDateListCollapsed(false)}
-                  className="ml-auto rounded-md border border-primary px-2.5 py-1 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                  className="ml-auto rounded-md border border-booking-action px-2.5 py-1 text-sm font-semibold text-booking-action transition-colors hover:bg-booking-surface-muted"
                 >
                   Endre dato
                 </button>
@@ -592,8 +621,8 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
             </div>
 
             {currentWeekSchedules.length === 0 ? (
-              <div className="rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 p-6 text-center">
-                <p className="text-sm text-muted-foreground">Ingen ledige datoer denne uken</p>
+              <div className="rounded-lg border-2 border-dashed border-booking-border bg-booking-surface-muted p-6 text-center">
+                <p className="text-sm text-booking-text-muted">Ingen ledige datoer denne uken</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -619,10 +648,10 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
               <div ref={mobileTimeSlotsRef} className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Clock className="size-4 text-muted-foreground" />
-                    <h3 className="text-sm font-bold text-card-text">Velg tid</h3>
+                    <Clock className="size-4 text-booking-text-muted" />
+                    <h3 className="text-sm font-bold text-booking-text">Velg tid</h3>
                   </div>
-                  <p className="text-xs text-muted-foreground">{formatFullDate(selectedDate!)}</p>
+                  <p className="text-xs text-booking-text-muted">{formatFullDate(selectedDate!)}</p>
                 </div>
 
                 <div className="relative">
@@ -635,7 +664,7 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                       aria-hidden="true"
                     >
                       <div className="flex flex-col items-center gap-1">
-                        <ChevronRight className="size-4 text-primary animate-bounce-right" />
+                        <ChevronRight className="size-4 text-booking-action animate-bounce-right" />
                       </div>
                     </div>
                   )}
@@ -643,10 +672,10 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                     <div className="flex gap-3">
                       {groupedHours.map((hour) => (
                         <div key={hour} className="min-w-[160px] shrink-0">
-                          <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-booking-text-muted">
                             {hour}
                           </div>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-2 p-1">
                             {groupedTimeSlots[hour].map((slot) => (
                               <TimeSlotButton
                                 key={slot.startTime}
@@ -665,22 +694,22 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
               </div>
             </BookingSection>
           )}
-        </div>
+          </div>
 
-        {/* ========================================
-            DESKTOP: SIDE-BY-SIDE LAYOUT
-            ======================================== */}
-        <div className="hidden md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-5">
+          {/* ========================================
+              DESKTOP: SIDE-BY-SIDE LAYOUT
+              ======================================== */}
+          <div className="hidden md:grid md:grid-cols-2 md:gap-6 lg:grid-cols-5">
           {/* Date selector */}
           <BookingSection className="lg:col-span-2">
             <div className="mb-2 flex items-center gap-2">
-              <Calendar className="size-5 text-muted-foreground" />
-              <h3 className="text-base font-bold text-card-text">Velg dato</h3>
+              <Calendar className="size-5 text-booking-text-muted" />
+              <h3 className="text-base font-bold text-booking-text">Velg dato</h3>
               {selectedDate && isDateListCollapsed && (
                 <button
                   type="button"
                   onClick={() => setIsDateListCollapsed(false)}
-                  className="ml-auto rounded-md border border-primary px-2.5 py-1 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                  className="ml-auto rounded-md border border-booking-action px-2.5 py-1 text-sm font-semibold text-booking-action transition-colors hover:bg-booking-surface-muted"
                 >
                   Endre dato
                 </button>
@@ -688,8 +717,8 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
             </div>
 
             {currentWeekSchedules.length === 0 ? (
-              <div className="flex min-h-[220px] items-center justify-center rounded-lg border-2 border-dashed border-card-border bg-card-accent/5 p-6 text-center">
-                <p className="text-sm text-muted-foreground">Ingen ledige datoer denne uken</p>
+              <div className="flex min-h-[220px] items-center justify-center rounded-lg border-2 border-dashed border-booking-border bg-booking-surface-muted p-6 text-center">
+                <p className="text-sm text-booking-text-muted">Ingen ledige datoer denne uken</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -714,20 +743,20 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
           <BookingSection className="lg:col-span-3">
             {!selectedDate ? (
               <div className="flex min-h-[220px] flex-col items-center justify-center gap-3">
-                <Clock className="size-12 text-muted-foreground opacity-50" />
-                <p className="text-sm font-medium text-card-text">Velg en dato først</p>
-                <p className="max-w-xs text-center text-xs text-muted-foreground">
+                <Clock className="size-12 text-booking-text-muted opacity-50" />
+                <p className="text-sm font-medium text-booking-text">Velg en dato først</p>
+                <p className="max-w-xs text-center text-xs text-booking-text-muted">
                   Velg en dato fra listen til venstre for å se ledige tider
                 </p>
               </div>
             ) : (
               <>
-                <div className="mb-3 flex items-center justify-between gap-3 border-b border-card-border pb-2">
+                <div className="mb-3 flex items-center justify-between gap-3 border-b border-booking-border pb-2">
                   <div className="flex items-center gap-2">
-                    <Clock className="size-5 text-muted-foreground" />
+                    <Clock className="size-5 text-booking-text-muted" />
                     <div>
-                      <h3 className="text-base font-bold text-card-text">Ledige tider</h3>
-                      <p className="text-sm text-muted-foreground">{formatFullDate(selectedDate)}</p>
+                      <h3 className="text-base font-bold text-booking-text">Ledige tider</h3>
+                      <p className="text-sm text-booking-text-muted">{formatFullDate(selectedDate)}</p>
                     </div>
                   </div>
                 </div>
@@ -736,10 +765,10 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
                   <div className="flex gap-3 overflow-x-auto pb-2">
                     {groupedHours.map((hour) => (
                       <div key={hour} className="min-w-[180px] shrink-0">
-                        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-booking-text-muted">
                           {hour}
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-2 p-1">
                           {groupedTimeSlots[hour].map((slot) => (
                             <TimeSlotButton
                               key={slot.startTime}
@@ -757,40 +786,8 @@ export default function BookingPublicAppointmentSessionSelectTimeRoute({ loaderD
               </>
             )}
           </BookingSection>
-        </div>
-      </BookingContainer>
-
-      {displayTime && (
-        <BookingSummary
-          mobile={{
-            title: 'Oppsummering',
-            items: [
-              { label: 'Dato', value: formatFullDate(displayTime) },
-              { label: 'Tid', value: `kl. ${formatTime(displayTime)}` },
-            ],
-            primaryAction: (
-              <BookingButton
-                variant="primary"
-                size="lg"
-                fullWidth
-                onClick={handleSubmit}
-                loading={isSubmitting}
-                disabled={isSubmitting}
-              >
-                Gå til oversikt →
-              </BookingButton>
-            ),
-            secondaryAction: (
-              <Link to={ROUTES_MAP['booking.public.appointment.session.select-services'].href}>
-                <BookingButton type="button" variant="outline" size="md" fullWidth>
-                  Tilbake
-                </BookingButton>
-              </Link>
-            ),
-          }}
-          desktopClassName="sticky bottom-4 rounded-lg border border-primary bg-primary p-4 text-primary-foreground shadow-lg"
-        />
-      )}
-    </>
+          </div>
+      </Stack>
+    </BookingStepTemplate>
   );
 }

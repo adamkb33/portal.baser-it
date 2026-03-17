@@ -1,17 +1,11 @@
-import { Form, useActionData, useNavigation, useLoaderData } from 'react-router';
-import { data } from 'react-router';
+import { data, Form, Link, useActionData, useLoaderData, useNavigation } from 'react-router';
 import type { Route } from './+types/company.timesheet.edit-hours.route';
 import { CompanyUserTimesheetEntryController } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithSuccess, setFlashMessage } from '~/routes/company/_lib/flash-message.server';
-import { Label } from '~/components/ui/label';
-import { Input } from '~/components/ui/input';
-import { Textarea } from '~/components/ui/textarea';
-import { Button } from '~/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
+import { Button, CompanyPageTemplate, Input, Label, Notice, Panel, Textarea } from '~/ui';
 import {
   formatDateInputToZonedISOString,
   normalizeNote,
@@ -99,48 +93,45 @@ export default function CompanyTimesheetEditHours() {
   const isSubmitting = navigation.state === 'submitting';
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Rediger timer #{id}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form method="post" className="space-y-4">
-            {declineReason && (
-              <Alert variant="destructive">
-                <AlertTitle>Registreringen ble avvist</AlertTitle>
-                <AlertDescription>{declineReason}</AlertDescription>
-              </Alert>
-            )}
+    <CompanyPageTemplate
+      title={`Rediger timer #${id}`}
+      description="Oppdater timer med samme kompakte formulamønster som resten av company-domenet."
+      label="Timelister"
+      actions={
+        <Link
+          to={ROUTES_MAP['company.timesheet'].href}
+          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+        >
+          Tilbake
+        </Link>
+      }
+    >
+      <Panel title="Oppdater registrering" description="Dato, timer og notat for valgt registrering.">
+        <Form method="post" className="space-y-4">
+          {declineReason ? <Notice tone="emphasis" title="Registreringen ble avvist" message={declineReason} /> : null}
 
-            <div className="space-y-2">
-              <Label htmlFor="date">Dato</Label>
-              <Input type="date" id="date" name="date" defaultValue={entry.date} required />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="date">Dato</Label>
+            <Input type="date" id="date" name="date" defaultValue={entry.date} required />
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="hours">Antall timer</Label>
-              <Input type="number" id="hours" name="hours" step="0.25" min="0.25" defaultValue={entry.hours} required />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="hours">Antall timer</Label>
+            <Input type="number" id="hours" name="hours" step="0.25" min="0.25" defaultValue={entry.hours} required />
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="note">Notat (valgfritt)</Label>
-              <Textarea id="note" name="note" rows={4} placeholder="Oppdater kommentar" defaultValue={entry.note} />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="note">Notat (valgfritt)</Label>
+            <Textarea id="note" name="note" rows={4} placeholder="Oppdater kommentar" defaultValue={entry.note} />
+          </div>
 
-            {actionData?.error && (
-              <Alert variant="destructive">
-                <AlertTitle>Kunne ikke oppdatere</AlertTitle>
-                <AlertDescription>{actionData.error}</AlertDescription>
-              </Alert>
-            )}
+          {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke oppdatere" message={actionData.error} /> : null}
 
-            <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
-              {isSubmitting ? 'Oppdaterer...' : 'Oppdater timer'}
-            </Button>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Oppdaterer...' : 'Oppdater timer'}
+          </Button>
+        </Form>
+      </Panel>
+    </CompanyPageTemplate>
   );
 }

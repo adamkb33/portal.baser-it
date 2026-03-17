@@ -1,20 +1,21 @@
 import { Link, NavLink } from 'react-router';
 import type { UserNavigation } from '~/lib/route-tree';
-import { RoutePlaceMent, BrachCategory, ROUTES_MAP } from '~/lib/route-tree';
+import { BrachCategory, ROUTES_MAP, RoutePlaceMent } from '~/lib/route-tree';
 import type { CompanySummaryDto } from '~/api/generated/base';
 import CompanyHeader from './company-header';
 import { Loader2, Menu, User } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { Button } from '../ui/button';
-import BiTLogo from '../logos/BiT.logo';
+import PTLLogo from '../logos/PTL.logo';
 import { NavbarNotificationBell } from './navbar-notification-bell';
+import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '~/ui';
 
 export type NavbarProps = {
   navRoutes: UserNavigation | undefined;
   companyContext: CompanySummaryDto | null | undefined;
+  hasSidebar?: boolean;
+  onOpenSidebar?: () => void;
 };
 
-export function Navbar({ navRoutes, companyContext }: NavbarProps) {
+export function Navbar({ navRoutes, companyContext, hasSidebar = false, onOpenSidebar }: NavbarProps) {
   const navigationBranches = navRoutes?.[RoutePlaceMent.NAVIGATION] || [];
   const sidebarBranches = navRoutes?.[RoutePlaceMent.SIDEBAR] || [];
   const userBranches = navigationBranches.filter((branch) => branch.category === BrachCategory.USER);
@@ -23,17 +24,27 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
   const canAccessCompanyContext = navigationBranches.some((branch) => branch.id === 'user.company-context');
   const canAccessNotifications = !!companyContext && hasBranch(sidebarBranches, 'company.notifications');
   const isLoggedInCompanyUser = !!companyContext;
+  const showCompanyHeader = companyContext !== null || canAccessCompanyContext;
 
   return (
-    <div className="flex h-full items-center justify-between w-full">
-      <div className="flex h-full items-center gap-6">
-        <Link to="/" className="flex items-center h-full text-xl font-semibold">
-          <BiTLogo size="xl" onDark />
+    <div className="flex h-full w-full items-stretch">
+      <section className="flex w-max shrink-0 items-center justify-start pr-3 lg:w-[var(--app-sidebar-width)] md:pr-4">
+        <Link to="/" className="flex h-full shrink-0 items-center text-xl font-semibold">
+          <PTLLogo size="xl" onDark />
         </Link>
-        <CompanyHeader company={companyContext} canAccessCompanyContext={canAccessCompanyContext} />
-      </div>
+      </section>
 
-      <div className="flex items-center gap-4 h-full">
+      <section className="flex min-w-0 flex-1 items-center">
+        {showCompanyHeader ? (
+          <CompanyHeader
+            company={companyContext}
+            canAccessCompanyContext={canAccessCompanyContext}
+            className="min-w-0 w-full max-w-none"
+          />
+        ) : null}
+      </section>
+
+      <section className="flex w-max shrink-0 items-center justify-end gap-2 md:gap-4">
         {!isLoggedInCompanyUser && (
           <NavLink
             to={ROUTES_MAP['booking.public.appointment'].href}
@@ -55,9 +66,21 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
           </NavLink>
         )}
 
-        {canAccessNotifications && <NavbarNotificationBell />}
+        {canAccessNotifications ? <NavbarNotificationBell /> : null}
 
-        {hasMobileMenuLinks && (
+        {hasSidebar ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onOpenSidebar}
+            className="h-11 w-11 border border-navbar-border text-navbar-accent-foreground lg:hidden"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        ) : null}
+
+        {hasMobileMenuLinks && !hasSidebar ? (
           <div className="md:hidden">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
@@ -73,7 +96,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
 
               <DropdownMenuContent align="end" className="min-w-[220px] p-4">
                 <div className="space-y-4">
-                  {userBranches.length > 0 && (
+                  {userBranches.length > 0 ? (
                     <div className="space-y-2">
                       {userBranches.map((link) => (
                         <DropdownMenuItem key={link.id} asChild className="px-3 py-3">
@@ -83,9 +106,9 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
                         </DropdownMenuItem>
                       ))}
                     </div>
-                  )}
+                  ) : null}
 
-                  {authBranches.length > 0 && (
+                  {authBranches.length > 0 ? (
                     <div className="space-y-2">
                       {authBranches.map((link) => (
                         <DropdownMenuItem key={link.id} asChild className="px-3 py-3">
@@ -95,15 +118,15 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
                         </DropdownMenuItem>
                       ))}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        )}
+        ) : null}
 
-        <div className="hidden md:flex">
-          {userBranches.length > 0 && (
+        {userBranches.length > 0 ? (
+          <div className="hidden md:flex">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -126,8 +149,8 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-          )}
-        </div>
+          </div>
+        ) : null}
 
         <div className="hidden md:flex items-center gap-2">
           {authBranches.map((link) => (
@@ -140,7 +163,7 @@ export function Navbar({ navRoutes, companyContext }: NavbarProps) {
             </Link>
           ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

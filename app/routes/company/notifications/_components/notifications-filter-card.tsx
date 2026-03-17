@@ -1,11 +1,11 @@
 import { Form, Link } from 'react-router';
 import type { RefObject } from 'react';
 import type { DateRange } from 'react-day-picker';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { Button as LegacyButton } from '~/components/ui/button';
 import { Calendar } from '~/components/ui/calendar';
-import { Label } from '~/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { Button } from '~/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
+import { Button, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/ui';
 import type { NotificationReadFilter } from '../_utils/query';
 
 type Props = {
@@ -38,17 +38,24 @@ export function NotificationsFilterCard({
           <Label className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Dato</Label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" type="button" className="h-10 w-full justify-start text-left text-sm">
-                {fromDate ? (toDate ? `${fromDate} - ${toDate}` : `${fromDate} -`) : 'Velg fra- og til-dato'}
-              </Button>
+              <LegacyButton
+                variant="outline"
+                type="button"
+                className="h-10 w-full justify-between rounded-sm border border-border bg-background px-3 text-left text-sm font-normal text-text-primary shadow-none"
+              >
+                <span className={!fromDate ? 'text-text-secondary' : undefined}>
+                  {fromDate ? (toDate ? `${fromDate} - ${toDate}` : `${fromDate} -`) : 'Velg fra- og til-dato'}
+                </span>
+                <CalendarIcon className="h-4 w-4 text-text-secondary" />
+              </LegacyButton>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto overflow-hidden border-border bg-overlay-surface p-0 text-text-primary" align="start">
               <Calendar
                 mode="range"
                 selected={dateRange}
                 onSelect={onRangeSelect}
                 numberOfMonths={1}
-                className="rounded-md border"
+                className="bg-overlay-surface"
               />
             </PopoverContent>
           </Popover>

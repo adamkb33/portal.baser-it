@@ -5,21 +5,20 @@ import { AppointmentsController, type CompanySummaryDto } from '~/api/generated/
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import {
-  BookingContainer,
-  BookingErrorBanner,
-  BookingGrid,
-  BookingPageHeader,
-  BookingSection,
-} from './_components/booking-layout';
-import {
+  AlertBanner,
+  Container,
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
+  Grid,
+  PageHeader,
+  Panel,
+  Stack,
+  Text,
+} from '~/ui';
 import { Loader2 } from 'lucide-react';
 
 const CompaniesMap = lazy(() => import('~/components/booking/companies-map.client'));
@@ -203,6 +202,7 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
   const companies = loaderData.companies ?? [];
   const locations = loaderData.locations ?? [];
   const error = loaderData.error ?? null;
+  const errorMessage = typeof error === 'string' ? error : error?.value ?? null;
   const [showMap, setShowMap] = useState(false);
   const [activeCompanyId, setActiveCompanyId] = useState<number | null>(null);
   const navigation = useNavigation();
@@ -217,43 +217,44 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
   }, []);
 
   return (
-    <BookingContainer>
-      <BookingPageHeader
-        label="Bestill time"
-        title="Velg bedrift"
-        description="Velg en bedrift for å starte timebestilling."
-      />
+    <Container size="lg">
+      <Stack space="xl">
+        <PageHeader
+          label="Bestill time"
+          title="Velg bedrift"
+          description="Velg en bedrift for å starte timebestilling."
+        />
 
-      {error && <BookingErrorBanner message={error} sticky />}
+        {errorMessage ? <AlertBanner message={errorMessage} sticky /> : null}
 
-      {companies.length > 0 && (
-        <BookingSection title="Kart">
-          {showMap ? (
-            <Suspense
-              fallback={
-                <div className="flex h-72 items-center justify-center rounded-lg border border-card-border bg-card text-sm text-muted-foreground">
-                  Laster kart...
-                </div>
-              }
-            >
-              <CompaniesMap locations={locations} />
-            </Suspense>
-          ) : (
-            <div className="flex h-72 items-center justify-center rounded-lg border border-card-border bg-card text-sm text-muted-foreground">
-              Laster kart...
+        {companies.length > 0 && (
+          <Panel title="Kart" tone="muted">
+            {showMap ? (
+              <Suspense
+                fallback={
+                  <div className="flex h-72 items-center justify-center rounded-md border border-border bg-background text-sm text-text-secondary">
+                    Laster kart...
+                  </div>
+                }
+              >
+                <CompaniesMap locations={locations} />
+              </Suspense>
+            ) : (
+              <div className="flex h-72 items-center justify-center rounded-md border border-border bg-background text-sm text-text-secondary">
+                Laster kart...
+              </div>
+            )}
+          </Panel>
+        )}
+
+        <Panel title="Tilgjengelige bedrifter">
+          {companies.length === 0 ? (
+            <div className="rounded-md border border-border bg-background p-4 text-sm text-text-secondary">
+              Ingen bedrifter er klare for booking akkurat nå.
             </div>
-          )}
-        </BookingSection>
-      )}
-
-      <BookingSection title="Tilgjengelige bedrifter">
-        {companies.length === 0 ? (
-          <div className="rounded-lg border border-card-border bg-card-muted-bg p-4 text-sm text-muted-foreground">
-            Ingen bedrifter er klare for booking akkurat nå.
-          </div>
-        ) : (
-          <BookingGrid cols={2}>
-            {companies.map((company) => {
+          ) : (
+            <Grid columns={2}>
+              {companies.map((company) => {
               const companyName = company.name || `Selskap ${company.orgNumber}`;
               const startUrl = `${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=${company.id}`;
               const addressLine = buildAddressLine(company);
@@ -271,7 +272,7 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
                   <Card
                     variant="interactive"
                     size="md"
-                    className="h-full focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+                    className="h-full focus-visible:ring-2 focus-visible:ring-interactive"
                   >
                     <CardHeader>
                       <CardTitle>{companyName}</CardTitle>
@@ -280,26 +281,31 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
                           ? `Organisasjonsform: ${orgTypeDescription}`
                           : 'Velg denne bedriften for å starte en ny booking.'}
                       </CardDescription>
-                      <CardAction>
-                        <span className="text-base text-muted-foreground transition group-hover:text-foreground">
-                          →
-                        </span>
-                      </CardAction>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-1 text-xs text-muted-foreground md:text-sm">
+                      <div className="space-y-2">
                         <div>
-                          <span className="font-semibold text-card-text">Org.nr:</span> {company.orgNumber}
+                          <Text as="span" variant="label" className="mr-2 text-text-secondary">
+                            Org.nr
+                          </Text>
+                          <Text as="span" variant="body-sm">
+                            {company.orgNumber}
+                          </Text>
                         </div>
                         {addressLine && (
                           <div>
-                            <span className="font-semibold text-card-text">Adresse:</span> {addressLine}
+                            <Text as="span" variant="label" className="mr-2 text-text-secondary">
+                              Adresse
+                            </Text>
+                            <Text as="span" variant="body-sm">
+                              {addressLine}
+                            </Text>
                           </div>
                         )}
                       </div>
                     </CardContent>
-                    <CardFooter className="border-t border-card-footer-border">
-                      <div className="inline-flex items-center gap-2 text-sm font-semibold text-card-text">
+                    <CardFooter>
+                      <div className="inline-flex items-center gap-2 text-sm font-medium text-text-primary">
                         {isLoading ? (
                           <>
                             <Loader2 className="size-4 animate-spin" />
@@ -316,10 +322,11 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
                   </Card>
                 </Link>
               );
-            })}
-          </BookingGrid>
-        )}
-      </BookingSection>
-    </BookingContainer>
+              })}
+            </Grid>
+          )}
+        </Panel>
+      </Stack>
+    </Container>
   );
 }

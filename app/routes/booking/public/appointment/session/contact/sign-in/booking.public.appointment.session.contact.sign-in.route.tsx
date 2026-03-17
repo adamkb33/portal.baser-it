@@ -3,20 +3,32 @@ import { data, Form, useNavigation, useLocation, redirect, Link } from 'react-ro
 import type { Route } from './+types/booking.public.appointment.session.contact.sign-in.route';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { ProviderButtons } from '~/routes/auth/_components/provider-buttons';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  BookingButton,
-  BookingErrorBanner,
-  BookingSection,
-  BookingStepHeader,
-} from '../../../_components/booking-layout';
 import { ChevronLeft, LogIn } from 'lucide-react';
 import { redirectWithError, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { logger } from '~/lib/logger';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { ContactAuthService } from '../_services/contact-auth.service.server';
+import { Button, Input, Label, PageHeader, Panel, Stack } from '~/ui';
+
+function buildSignInRetryHref(request: Request, email: string, provider: string): string {
+  const currentUrl = new URL(request.url);
+  const retryUrl = new URL(`${currentUrl.pathname}${currentUrl.search}`, currentUrl.origin);
+
+  if (email) {
+    retryUrl.searchParams.set('email', email);
+  } else {
+    retryUrl.searchParams.delete('email');
+  }
+
+  if (provider === 'GOOGLE') {
+    retryUrl.searchParams.set('provider', provider);
+  } else {
+    retryUrl.searchParams.delete('provider');
+  }
+
+  return `${retryUrl.pathname}${retryUrl.search}`;
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { AppointmentSessionService } = await import('../../_services/appointment-session.service.server');
@@ -45,9 +57,10 @@ export async function action({ request }: Route.ActionArgs) {
   const password = String(formData.get('password') || '');
   const redirectUrl = String(formData.get('redirectUrl') || '');
   const isGoogleLogin = provider === 'GOOGLE';
+  const retryHref = buildSignInRetryHref(request, email, provider);
 
   if (isGoogleLogin && !idToken) {
-    return data({ error: 'Kunne ikke logge inn med Google. Prøv igjen.' }, { status: 400 });
+    return redirectWithError(request, retryHref, 'Kunne ikke logge inn med Google. Prøv igjen.');
   }
 
   try {
@@ -101,13 +114,13 @@ export async function action({ request }: Route.ActionArgs) {
     );
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke logge inn. Prøv igjen.');
-    return data({ error: message }, { status: status ?? 400 });
+    logger.warn('[sign-in] Login failed', { status: status ?? 400, message });
+    return redirectWithError(request, retryHref, message);
   }
 }
 
 export default function BookingPublicAppointmentSessionContactSignInRoute({
   loaderData,
-  actionData,
 }: Route.ComponentProps) {
   const navigation = useNavigation();
   const location = useLocation();
@@ -128,66 +141,61 @@ export default function BookingPublicAppointmentSessionContactSignInRoute({
 
   return (
     <>
-      <BookingStepHeader label="Kontakt" title="Logg inn" description="Logg inn for å fortsette booking." />
-      <div>
-        <Link
-          to={ROUTES_MAP['booking.public.appointment.session.contact'].href}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="size-4" />
-          Tilbake til kontakt
-        </Link>
-      </div>
+      <Stack space="xl">
+        <PageHeader label="Kontakt" title="Logg inn" description="Logg inn for å fortsette booking." />
+        <div>
+          <Link
+            to={ROUTES_MAP['booking.public.appointment.session.contact'].href}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary"
+          >
+            <ChevronLeft className="size-4" />
+            Tilbake til kontakt
+          </Link>
+        </div>
 
-      <BookingSection title="Logg inn med e-post" variant="elevated">
-        <Form method="post" className="space-y-4 md:space-y-5" aria-busy={isSubmitting}>
-          <ProviderButtons showDivider={!isGoogleProvider} />
-          {actionData && 'error' in actionData && <BookingErrorBanner title={actionData.error} />}
-          <input type="hidden" name="redirectUrl" value="booking" />
+        <Panel title="Logg inn med e-post" tone="muted">
+          <Form method="post" aria-busy={isSubmitting}>
+            <Stack space="md">
+              <ProviderButtons showDivider={!isGoogleProvider} />
+              <input type="hidden" name="redirectUrl" value="booking" />
 
-          {!isGoogleProvider ? (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-form-text md:text-base">
-                  E-post
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  value={email || undefined}
-                  onChange={(event) => setEmail(event.target.value)}
-                  disabled={isSubmitting}
-                  className="h-12 bg-form-bg border-form-border text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
-                />
-              </div>
+              {!isGoogleProvider ? (
+                <>
+                  <Stack space="xs">
+                    <Label htmlFor="email">E-post</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      value={email || undefined}
+                      onChange={(event) => setEmail(event.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </Stack>
 
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-form-text md:text-base">
-                  Passord
-                </Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  disabled={isSubmitting}
-                  className="h-12 bg-form-bg border-form-border text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
-                />
-              </div>
+                  <Stack space="xs">
+                    <Label htmlFor="password">Passord</Label>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="current-password"
+                      disabled={isSubmitting}
+                    />
+                  </Stack>
 
-              <div className="pt-2">
-                <BookingButton type="submit" size="lg" fullWidth variant="primary" className="justify-start gap-3">
-                  <LogIn className="size-5" />
-                  Logg inn
-                </BookingButton>
-              </div>
-            </>
-          ) : null}
-        </Form>
-      </BookingSection>
+                  <Button type="submit" size="lg" fullWidth className="gap-3">
+                    <LogIn className="size-5" />
+                    Logg inn
+                  </Button>
+                </>
+              ) : null}
+            </Stack>
+          </Form>
+        </Panel>
+      </Stack>
     </>
   );
 }

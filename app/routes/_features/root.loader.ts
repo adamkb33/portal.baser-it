@@ -6,11 +6,47 @@ import type { FlashMessage } from '~/routes/company/_lib/flash-message.server';
 import { AuthController } from '~/api/generated/base';
 import type { UserContextDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
+import { readEmbedModeFromCookieString, readEmbedThemeFromCookieString } from '~/lib/embed-shell';
+
+function mergeResponseHeaders(...headersInit: Array<HeadersInit | undefined>): Headers {
+  const merged = new Headers();
+
+  for (const init of headersInit) {
+    if (!init) continue;
+
+    if (init instanceof Headers) {
+      for (const [key, value] of init.entries()) {
+        merged.append(key, value);
+      }
+      continue;
+    }
+
+    if (Array.isArray(init)) {
+      for (const [key, value] of init) {
+        merged.append(key, value);
+      }
+      continue;
+    }
+
+    for (const [key, value] of Object.entries(init)) {
+      if (value !== undefined) {
+        merged.append(key, value);
+      }
+    }
+  }
+
+  return merged;
+}
+
+function isEmbeddedRequest(request: Request): boolean {
+  return request.headers.get('sec-fetch-dest') === 'iframe';
+}
 
 export const refreshAndBuildResponse = async (
   request: Request,
   refreshToken: string,
   flashMessage: FlashMessage | null,
+  additionalHeaders?: HeadersInit,
 ) => {
   try {
     const { accessToken } = await authService.getTokensFromRequest(request);
@@ -30,10 +66,10 @@ export const refreshAndBuildResponse = async (
     const { headers } = await authService.processTokenRefresh(tokens);
     const body = await buildResponseData(request, tokens.accessToken, flashMessage);
 
-    return data(body, { headers });
+    return data(body, { headers: mergeResponseHeaders(headers, additionalHeaders) });
   } catch (err) {
     logger.error('Token refresh failed', { error: err instanceof Error ? err.message : String(err) });
-    return await defaultResponse(flashMessage);
+    return await defaultResponse(flashMessage, request, additionalHeaders);
   }
 };
 
@@ -67,23 +103,36 @@ export const buildResponseData = async (request: Request, accessToken: string, f
   }
 
   const navigation = createNavigation(userContext);
+  const cookieHeader = request.headers.get('Cookie') ?? '';
 
   return {
     user: authPayload,
     userNavigation: navigation,
     companyContext: companySummary,
     flashMessage,
+    embedMode: readEmbedModeFromCookieString(cookieHeader),
+    embedTheme: readEmbedThemeFromCookieString(cookieHeader),
+    isEmbeddedRequest: isEmbeddedRequest(request),
   };
 };
 
-export const defaultResponse = async (flashMessage: FlashMessage | null = null) => {
-  const headers = await authService.clearAuthCookies();
+export const defaultResponse = async (
+  flashMessage: FlashMessage | null = null,
+  request?: Request,
+  additionalHeaders?: HeadersInit,
+) => {
+  const authHeaders = await authService.clearAuthCookies();
+  const headers = mergeResponseHeaders(authHeaders, additionalHeaders);
+  const cookieHeader = request?.headers.get('Cookie') ?? '';
   return data(
     {
       user: null,
       companyContext: null,
       userNavigation: createNavigation(undefined),
       flashMessage,
+      embedMode: readEmbedModeFromCookieString(cookieHeader),
+      embedTheme: readEmbedThemeFromCookieString(cookieHeader),
+      isEmbeddedRequest: request ? isEmbeddedRequest(request) : false,
     },
     { status: 200, headers },
   );

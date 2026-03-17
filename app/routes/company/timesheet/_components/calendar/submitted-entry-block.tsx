@@ -1,13 +1,11 @@
 import type { CSSProperties } from 'react';
 import type { TimesheetDayEntryDto } from '~/api/generated/timesheet';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { FileText, Pencil } from 'lucide-react';
 import { Link } from 'react-router';
 import { TIMESHEET_SUBMITTED_STATUS_LABELS, TIMESHEET_SUBMITTED_STATUS_VARIANTS } from '../../_utils';
 import { CALENDAR_START_HOUR, SLOT_HEIGHT_PX } from './constants';
 import { clampEntryWindow, formatEntryLabel, resolveEntryWindow } from './time-utils';
+import { Badge, Button, Popover, PopoverContent, PopoverTrigger } from '~/ui';
 
 type SubmittedEntryBlockProps = {
   entry: TimesheetDayEntryDto;
@@ -59,11 +57,13 @@ export function SubmittedEntryBlock({ entry, editHref }: SubmittedEntryBlockProp
             </Popover>
           )}
           {editHref && (
-            <Button asChild type="button" variant="ghost" size="icon" className="size-5 shrink-0">
-              <Link to={editHref} aria-label="Oppdater registrering">
-                <Pencil className="size-3.5" />
-              </Link>
-            </Button>
+            <Link
+              to={editHref}
+              aria-label="Oppdater registrering"
+              className="inline-flex size-5 shrink-0 items-center justify-center rounded-sm text-interactive transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+            >
+              <Pencil className="size-3.5" />
+            </Link>
           )}
         </div>
       </div>

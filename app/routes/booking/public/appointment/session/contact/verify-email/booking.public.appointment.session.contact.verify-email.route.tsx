@@ -2,13 +2,6 @@ import * as React from 'react';
 import { data, useFetcher, useLocation, useNavigate, redirect } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.session.contact.verify-email.route';
 import { CheckCircle2, Loader2, Mail, MailCheck } from 'lucide-react';
-import {
-  BookingButton,
-  BookingErrorBanner,
-  BookingSection,
-  BookingStepHeader,
-  BookingStepList,
-} from '../../../_components/booking-layout';
 import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { loader as userStatusLoader } from '~/routes/api/auth/user-status/auth.user-status.api-route';
@@ -18,6 +11,7 @@ import {
   resolveAuthNextStepHref,
 } from '../_utils/auth.utils';
 import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { AlertBanner, Button, Notice, PageHeader, Panel, Stack, Text } from '~/ui';
 
 export const handle = {
   contactFlow: true,
@@ -140,95 +134,108 @@ export default function BookingPublicAppointmentSessionContactAuthVerifyEmailRou
 
   return (
     <>
-      <BookingStepHeader
-        label="Kontakt"
-        title="Bekreft e-post"
-        description="Klikk på lenken i e-posten for å fullføre verifiseringen."
-      />
-      {redirectHint === 'booking' ? (
-        <div className="rounded-lg border border-card-border bg-card p-3 text-sm text-card-text">
-          Du kan nå fortsette med bookingen. Gå tilbake til bookingsteget for å fullføre.
-        </div>
-      ) : null}
-      <BookingSection title="Venter på verifisering" variant="elevated">
-        <div className="space-y-4">
+      <Stack space="xl">
+        <PageHeader
+          label="Kontakt"
+          title="Bekreft e-post"
+          description="Klikk på lenken i e-posten for å fullføre verifiseringen."
+        />
+        {redirectHint === 'booking' ? (
+          <div className="rounded-md border border-border bg-background p-3 text-sm text-text-primary">
+            Du kan nå fortsette med bookingen. Gå tilbake til bookingsteget for å fullføre.
+          </div>
+        ) : null}
+        <Panel title="Venter på verifisering" tone="muted">
+          <Stack space="md">
           {statusFetcherError && errorCountRef.current >= 3 ? (
-            <BookingErrorBanner title="Kunne ikke sjekke verifiseringsstatus automatisk" />
+            <AlertBanner title="Kunne ikke sjekke verifiseringsstatus automatisk" />
           ) : null}
-          {resendError ? <BookingErrorBanner title={resendError} /> : null}
-          {resendSuccess ? (
-            <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-              {resendSuccess}
-            </div>
-          ) : null}
-          <div className="relative overflow-hidden rounded-lg border border-card-border bg-card p-4 md:p-5">
-            <div className="absolute right-0 top-0 size-28 -translate-y-8 translate-x-8 rounded-full bg-primary/10 blur-2xl" />
-            <div className="relative flex items-start gap-3">
+          {resendError ? <AlertBanner title={resendError} /> : null}
+          {resendSuccess ? <Notice title="Ny e-post sendt" message={resendSuccess} /> : null}
+          <div className="rounded-md border border-border bg-background p-4 md:p-5">
+            <div className="flex items-start gap-3">
               <Loader2 className="size-10 animate-spin text-primary" />
               <div className="space-y-1">
-                <p className="text-base font-semibold text-card-text md:text-lg">Vi venter på bekreftelse</p>
-                <p className="text-sm text-muted-foreground md:text-base">
+                <Text as="p" variant="heading-sm">
+                  Vi venter på bekreftelse
+                </Text>
+                <Text as="p" className="text-text-secondary">
                   Når du bekrefter e-posten, tar vi deg videre automatisk.
-                </p>
+                </Text>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border border-card-border bg-background p-3 md:p-4">
+          <div className="rounded-md border border-border bg-background p-3 md:p-4">
             <div className="flex items-start gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <div className="flex size-10 items-center justify-center rounded-full bg-surface text-text-secondary">
                 <Mail className="size-5" />
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-card-text">E-post sendt</p>
-                <p className="text-sm text-muted-foreground">
+                <Text as="p" variant="label">
+                  E-post sendt
+                </Text>
+                <Text as="p" variant="body-sm" className="text-text-secondary">
                   {email ? `Sjekk innboksen til ${email}.` : 'Sjekk innboksen din for verifiseringslenken.'}
-                </p>
+                </Text>
               </div>
             </div>
           </div>
 
-          <BookingStepList
-            steps={[
-              {
-                title: 'Åpne e-posten og klikk på lenken',
-                description: 'Bekreft e-postadressen din for å fortsette.',
-                icon: <Mail className="size-4 text-primary-foreground" />,
-              },
-              {
-                title: 'Kom tilbake hit',
-                description: 'Vi sjekker status automatisk og sender deg videre.',
-                icon: <CheckCircle2 className="size-4 text-primary-foreground" />,
-              },
-            ]}
-          />
+          <ol className="space-y-3 rounded-md border border-border bg-background p-4">
+            <li className="flex items-start gap-3">
+              <div className="mt-0.5 flex size-6 items-center justify-center rounded-full bg-surface text-text-primary">
+                <Mail className="size-3.5" />
+              </div>
+              <div>
+                <Text as="p" variant="label">
+                  Åpne e-posten og klikk på lenken
+                </Text>
+                <Text as="p" variant="body-sm" className="text-text-secondary">
+                  Bekreft e-postadressen din for å fortsette.
+                </Text>
+              </div>
+            </li>
+            <li className="flex items-start gap-3">
+              <div className="mt-0.5 flex size-6 items-center justify-center rounded-full bg-surface text-text-primary">
+                <CheckCircle2 className="size-3.5" />
+              </div>
+              <div>
+                <Text as="p" variant="label">
+                  Kom tilbake hit
+                </Text>
+                <Text as="p" variant="body-sm" className="text-text-secondary">
+                  Vi sjekker status automatisk og sender deg videre.
+                </Text>
+              </div>
+            </li>
+          </ol>
 
-          <div className="space-y-2">
-            <resendFetcher.Form
-              method="post"
-              action={API_ROUTES_MAP['auth.resend-verification.email'].url}
-              className="space-y-2"
-            >
+          <div>
+            <resendFetcher.Form method="post" action={API_ROUTES_MAP['auth.resend-verification.email'].url}>
+              <Stack space="sm">
               <input type="hidden" name="redirectUrl" value="booking" />
               <input type="hidden" name="email" value={email} />
               <input type="hidden" name="sendEmail" value="true" />
               <input type="hidden" name="sendMobile" value="false" />
-              <BookingButton
+              <Button
                 type="submit"
                 size="lg"
                 fullWidth
                 variant="secondary"
-                className="justify-start gap-3"
+                className="gap-3"
                 loading={resendFetcher.state !== 'idle'}
                 disabled={!email}
-              >
-                <MailCheck className="size-5" />
-                Send e-posten på nytt
-              </BookingButton>
+                >
+                  <MailCheck className="size-5" />
+                  Send e-posten på nytt
+                </Button>
+              </Stack>
             </resendFetcher.Form>
           </div>
-        </div>
-      </BookingSection>
+          </Stack>
+        </Panel>
+      </Stack>
     </>
   );
 }

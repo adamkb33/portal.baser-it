@@ -3,15 +3,13 @@ import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import type { TimesheetDayEntryDto } from '~/api/generated/timesheet';
 import { TimePicker } from '~/components/pickers/time-picker';
-import { Input } from '~/components/ui/input';
-import { Button } from '~/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { cn } from '~/lib/utils';
 import type { DayFormState } from '../../_types/timesheet.types';
 import { buildEditHref } from '../../_utils';
 import { HOURS, SLOT_HEIGHT_PX } from './constants';
 import { HourSlots } from './hour-slots';
 import { SubmittedEntryBlock } from './submitted-entry-block';
+import { Button, Input, Popover, PopoverContent, PopoverTrigger } from '~/ui';
 
 type TimesheetDayColumnProps = {
   date: Date;
@@ -37,7 +35,7 @@ export function TimesheetDayColumn({
   const inputsDisabled = disabled;
 
   return (
-    <div className="min-w-[180px] overflow-hidden rounded-lg border border-border/70 bg-card">
+    <div className="min-w-[180px] overflow-hidden rounded-lg border border-border/70 bg-surface">
       <div className="flex items-start justify-between gap-2 border-b px-2 py-2">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -115,7 +113,7 @@ export function TimesheetDayColumn({
         </div>
       </div>
 
-      <div className={cn('relative border-t bg-muted/10 px-2 py-1', showHourLabels ? 'pl-10' : '')}>
+      <div className={cn('relative border-t bg-background px-2 py-1', showHourLabels ? 'pl-10' : '')}>
         {showHourLabels && (
           <div className="absolute left-1 top-1 bottom-1 w-8">
             <HourSlots showLabels />

@@ -1,11 +1,22 @@
 /* Design System: Single source of truth for all tokens */
 @import './styles/tokens.css';
+@import './styles/booking-tokens.css';
 @import 'tw-animate-css';
 
 /* Global base styles */
 @layer base {
+  html,
+  body {
+    height: 100%;
+    min-height: 100%;
+  }
+
   body {
     @apply font-sans bg-background text-text-primary;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   html {

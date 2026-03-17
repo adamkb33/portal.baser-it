@@ -7,8 +7,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request: _request }: Route.LoaderArgs) {
   try {
-    const bookingInfoResponse =
-      await CompanyUserBookingController.getCompanyBookingInfo();
+    const bookingInfoResponse = await CompanyUserBookingController.getCompanyBookingInfo();
 
     return { bookingInfo: bookingInfoResponse.data?.data ?? null, error: null as string | null };
   } catch (error) {
@@ -127,7 +126,7 @@ export default function CompanyBookingLayout({ loaderData }: Route.ComponentProp
       )}
 
       <div className="space-y-4">
-      <Outlet />
+        <Outlet />
       </div>
     </>
   );

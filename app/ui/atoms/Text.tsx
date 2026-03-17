@@ -12,7 +12,7 @@ export type TextVariant =
   | 'caption'
   | 'overline';
 
-export type TextElement = 'p' | 'span' | 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+export type TextElement = 'p' | 'span' | 'div' | 'dt' | 'dd' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 export interface TextProps extends React.HTMLAttributes<HTMLElement> {
   variant?: TextVariant;

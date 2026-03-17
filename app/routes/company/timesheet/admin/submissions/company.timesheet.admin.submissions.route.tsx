@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { data, useSubmit } from 'react-router';
 import type { DateRange } from 'react-day-picker';
+import { ClipboardList, UserCheck, UserX } from 'lucide-react';
 import type { Route } from './+types/company.timesheet.admin.submissions.route';
 import { AdminTimeSheetEntryController, type AdminEmployeeTimesheetEntriesDto } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithSuccess, setFlashMessage } from '~/routes/company/_lib/flash-message.server';
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
-import { Accordion } from '~/components/ui/accordion';
-import { Card, CardContent } from '~/components/ui/card';
+import { Accordion, CompanyEmptyState, CompanyMetricCard, CompanyPageTemplate, Notice } from '~/ui';
 import { TimesheetPaginationFilterCard } from '~/routes/company/timesheet/_components/timesheet-pagination-filters';
 import { SubmissionGroupCard } from './_components/submission-group-card';
 import {
@@ -88,7 +87,6 @@ export async function action({ request }: Route.ActionArgs) {
   const { requestPayload } = parseTimesheetListRequest(url);
 
   try {
-    // Fetch current admin list with explicit SUBMITTED filter to get all actionable entry IDs.
     const listResponse = await withAuth(request, () =>
       AdminTimeSheetEntryController.getEmployeeTimesheetEntries({
         query: {
@@ -209,8 +207,34 @@ export default function CompanyTimesheetSubmissionsPage({ loaderData, actionData
     { value: 'DECLINED', label: TIMESHEET_SUBMITTED_STATUS_LABELS.DECLINED },
   ];
 
+  const summary = groups.reduce(
+    (acc, group) => {
+      acc.employees += 1;
+      for (const entry of group.entries ?? []) {
+        acc.total += 1;
+        if (entry.status === 'SUBMITTED') acc.submitted += 1;
+        if (entry.status === 'ACCEPTED') acc.accepted += 1;
+        if (entry.status === 'DECLINED') acc.declined += 1;
+      }
+      return acc;
+    },
+    { employees: 0, total: 0, submitted: 0, accepted: 0, declined: 0 },
+  );
+
   return (
-    <div className="space-y-4">
+    <CompanyPageTemplate
+      title="Innsendinger"
+      description="Oversikt over innsendte timeregistreringer fordelt per ansatt, i samme kompakte company-mønster som booking og admin."
+      label="Timelister"
+      hero={
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <CompanyMetricCard label="Ansatte" value={summary.employees} icon={<ClipboardList className="h-5 w-5" />} />
+          <CompanyMetricCard label="Innsendt" value={summary.submitted} icon={<ClipboardList className="h-5 w-5" />} />
+          <CompanyMetricCard label="Godkjent" value={summary.accepted} icon={<UserCheck className="h-5 w-5" />} />
+          <CompanyMetricCard label="Avvist" value={summary.declined} icon={<UserX className="h-5 w-5" />} />
+        </div>
+      }
+    >
       <TimesheetPaginationFilterCard
         formRef={formRef}
         filters={filters}
@@ -224,35 +248,25 @@ export default function CompanyTimesheetSubmissionsPage({ loaderData, actionData
         onSubmitDebounced={submitDebounced}
       />
 
-      {actionData && 'error' in actionData && (
-        <Alert variant="destructive">
-          <AlertTitle>Kunne ikke oppdatere</AlertTitle>
-          <AlertDescription>{actionData.error}</AlertDescription>
-        </Alert>
-      )}
+      {actionData && 'error' in actionData ? (
+        <Notice tone="emphasis" title="Kunne ikke oppdatere" message={actionData.error} />
+      ) : null}
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertTitle>Kunne ikke hente innsendinger</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {!error && groups.length === 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Ingen innsendinger funnet for valgte filtre.</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {groups.length > 0 && (
+      {error ? (
+        <Notice tone="emphasis" title="Kunne ikke hente innsendinger" message={error} />
+      ) : groups.length === 0 ? (
+        <CompanyEmptyState
+          icon={<ClipboardList className="h-6 w-6" />}
+          title="Ingen innsendinger funnet"
+          description="Det finnes ingen registreringer som matcher de valgte filtrene."
+        />
+      ) : (
         <Accordion type="multiple" className="space-y-3">
           {groups.map((group, index) => (
             <SubmissionGroupCard key={group.user.id ?? index} group={group} index={index} />
           ))}
         </Accordion>
       )}
-    </div>
+    </CompanyPageTemplate>
   );
 }

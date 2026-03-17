@@ -1,18 +1,15 @@
 // routes/company/contacts/company.contacts.route.tsx
-import { data, useNavigate, useSearchParams, useSubmit } from 'react-router';
+import { NavLink, data, useNavigate, useSearchParams, useSubmit } from 'react-router';
 import { useState } from 'react';
 import { Pen } from 'lucide-react';
-import { Input } from '~/components/ui/input';
 import type { Route } from './+types/company.admin.contacts.route';
 import { CompanyUserContactController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
-import { Button } from '~/components/ui/button';
-import { TableCell, TableRow } from '~/components/ui/table';
-import { API_ROUTES_MAP } from '~/lib/route-tree';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
-import { ContactFormDialog } from './_components/contact.form-dialog';
 import type { ContactDto } from '~/api/generated/base';
+import { Button, Input, Notice, TableCell, TableRow } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -53,15 +50,12 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
   const [filter, setFilter] = useState(searchParams.get('search') ?? '');
   const navigate = useNavigate();
   const submit = useSubmit();
-  const [editingContact, setEditingContact] = useState<ContactDto | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingContactId, setDeletingContactId] = useState<number | null>(null);
 
   if ('error' in loaderData) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <p className="text-red-500">{loaderData.error}</p>
-      </div>
+      <Notice tone="emphasis" title="Kunne ikke hente kontakter" message={loaderData.error} />
     );
   }
 
@@ -130,20 +124,28 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
           { header: 'Handlinger', className: 'text-right' },
         ]}
         headerSlot={
-          <>
-            <Input
-              placeholder="Filtrer på navn, e-post eller mobil…"
-              value={filter}
-              onChange={(event) => handleFilterChange(event.target.value)}
-              className="max-w-sm"
-            />
-            <ContactFormDialog trigger={<Button>Legg til ny kontakt</Button>} />
-          </>
+          <Input
+            placeholder="Filtrer på navn, e-post eller mobil…"
+            value={filter}
+            onChange={(event) => handleFilterChange(event.target.value)}
+            className="max-w-sm"
+          />
         }
-        mobileHeaderSlot={
-          <div>
-            <ContactFormDialog trigger={<Button size="sm">Legg til ny kontakt</Button>} />
-          </div>
+        primaryAction={
+          <NavLink
+            to={ROUTES_MAP['company.admin.contacts.create'].href}
+            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
+          >
+            Legg til ny kontakt
+          </NavLink>
+        }
+        mobilePrimaryAction={
+          <NavLink
+            to={ROUTES_MAP['company.admin.contacts.create'].href}
+            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
+          >
+            Legg til ny kontakt
+          </NavLink>
         }
         renderRow={(contact) => (
           <TableRow>
@@ -152,10 +154,13 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
             <TableCell>{contact.mobileNumber || '—'}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => setEditingContact(contact)}>
+                <NavLink
+                  to={`${ROUTES_MAP['company.admin.contacts.edit'].href}?contactId=${contact.id}`}
+                  className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface"
+                >
                   <Pen className="h-4 w-4" />
                   <span className="sr-only">Rediger</span>
-                </Button>
+                </NavLink>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -170,8 +175,6 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
           </TableRow>
         )}
       />
-
-      {editingContact && <ContactFormDialog contact={editingContact} />}
 
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}

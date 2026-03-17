@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   signIn: vi.fn(),
+  getCompanyContexts: vi.fn(),
+  companySignIn: vi.fn(),
+  getCompanyIdFromToken: vi.fn(),
   signUp: vi.fn(),
   verificationStatus: vi.fn(),
   resendVerificationEmailOnly: vi.fn(),
@@ -26,6 +29,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('~/api/generated/base', () => ({
   AuthController: {
     signIn: mocks.signIn,
+    getCompanyContexts: mocks.getCompanyContexts,
+    companySignIn: mocks.companySignIn,
     signUp: mocks.signUp,
     verificationStatus: mocks.verificationStatus,
     resendVerificationEmailOnly: mocks.resendVerificationEmailOnly,
@@ -39,6 +44,7 @@ vi.mock('~/api/generated/base', () => ({
 vi.mock('~/lib/auth-service', () => ({
   authService: {
     setAuthCookies: mocks.setAuthCookies,
+    getCompanyIdFromToken: mocks.getCompanyIdFromToken,
   },
 }));
 
@@ -116,6 +122,9 @@ describe('auth flow routes matrix', () => {
       (_request: Request, href: string) => new Response(null, { status: 302, headers: { Location: href } }),
     );
     mocks.setAuthCookies.mockResolvedValue(new Headers([['Set-Cookie', 'auth=1']]));
+    mocks.getCompanyIdFromToken.mockReturnValue(undefined);
+    mocks.getCompanyContexts.mockResolvedValue({ data: { data: [] } });
+    mocks.companySignIn.mockResolvedValue({ data: { data: null } });
     mocks.readVerificationToken.mockResolvedValue('vt-1');
     mocks.buildVerificationCookieHeader.mockResolvedValue('verification=vt-2');
     mocks.buildVerificationCookieHeaderFromDto.mockResolvedValue('verification=vt-2');
@@ -153,6 +162,59 @@ describe('auth flow routes matrix', () => {
         expectedLocation: '/',
       },
       {
+        name: 'done with multiple company contexts redirects to company-context page',
+        payload: {
+          nextStep: 'DONE',
+          userId: 1,
+          authTokens: {
+            accessToken: 'a',
+            refreshToken: 'r',
+            accessTokenExpiresAt: 1,
+            refreshTokenExpiresAt: 2,
+          },
+        },
+        setup: () => {
+          mocks.getCompanyContexts.mockResolvedValueOnce({
+            data: {
+              data: [
+                { id: 10, orgNumber: '111', name: 'A' },
+                { id: 20, orgNumber: '222', name: 'B' },
+              ],
+            },
+          });
+        },
+        expectedLocation: ROUTES_MAP['user.company-context'].href,
+      },
+      {
+        name: 'done with one company context auto-signs company and redirects home',
+        payload: {
+          nextStep: 'DONE',
+          userId: 1,
+          authTokens: {
+            accessToken: 'a',
+            refreshToken: 'r',
+            accessTokenExpiresAt: 1,
+            refreshTokenExpiresAt: 2,
+          },
+        },
+        setup: () => {
+          mocks.getCompanyContexts.mockResolvedValueOnce({
+            data: { data: [{ id: 99, orgNumber: '999', name: 'Single Co' }] },
+          });
+          mocks.companySignIn.mockResolvedValueOnce({
+            data: {
+              data: {
+                accessToken: 'ca',
+                refreshToken: 'cr',
+                accessTokenExpiresAt: 11,
+                refreshTokenExpiresAt: 22,
+              },
+            },
+          });
+        },
+        expectedLocation: '/',
+      },
+      {
         name: 'verify email redirects to check-email',
         payload: {
           nextStep: 'VERIFY_EMAIL',
@@ -163,7 +225,8 @@ describe('auth flow routes matrix', () => {
         },
         expectedLocation: '/auth/check-email?emailDelivery=SENT&mobileDelivery=NOT_ATTEMPTED',
       },
-    ])('$name', async ({ payload, expectedLocation }) => {
+    ])('$name', async ({ payload, expectedLocation, setup }) => {
+      setup?.();
       mocks.signIn.mockResolvedValueOnce({ data: { data: payload } });
 
       const formData = new FormData();
@@ -193,6 +256,38 @@ describe('auth flow routes matrix', () => {
 
       expect(mocks.redirectWithWarning).toHaveBeenCalledOnce();
       expect(getStatus(result)).toBe(302);
+    });
+
+    it('skips company context lookup when access token already has company context', async () => {
+      mocks.getCompanyIdFromToken.mockReturnValueOnce('42');
+      mocks.signIn.mockResolvedValueOnce({
+        data: {
+          data: {
+            nextStep: 'DONE',
+            userId: 1,
+            authTokens: {
+              accessToken: 'a',
+              refreshToken: 'r',
+              accessTokenExpiresAt: 1,
+              refreshTokenExpiresAt: 2,
+            },
+          },
+        },
+      });
+
+      const formData = new FormData();
+      formData.set('provider', 'LOCAL');
+      formData.set('email', 'user@example.com');
+      formData.set('password', 'secret');
+
+      const result = await signInAction({
+        request: new Request('http://localhost/auth/sign-in', { method: 'POST', body: formData }),
+      } as never);
+
+      expect(getStatus(result)).toBe(302);
+      expect(getLocation(result)).toBe('/');
+      expect(mocks.getCompanyContexts).not.toHaveBeenCalled();
+      expect(mocks.companySignIn).not.toHaveBeenCalled();
     });
   });
 

@@ -1,9 +1,10 @@
-import { data, Form, redirect } from 'react-router';
-import { CompanyContextSummaryCard } from '~/routes/user/company-context/_components/company-context-summary-card';
+import { data, Form, redirect, useNavigation } from 'react-router';
+import { Building2, ChevronRight, MapPin } from 'lucide-react';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
-import { AuthController } from '~/api/generated/base';
+import { AuthController, type CompanySummaryDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import type { Route } from './+types/user.company-context.route';
+import { Grid, Notice, PageTemplate, Panel, SelectionCard, Text } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   return withAuth(request, async () => {
@@ -66,42 +67,93 @@ export async function action({ request }: Route.ActionArgs) {
   });
 }
 
-export default function CompanyContextPage({ loaderData }: Route.ComponentProps) {
+export default function CompanyContextPage({ loaderData, actionData }: Route.ComponentProps) {
   const companies = loaderData?.companyContexts || [];
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === 'submitting';
+  const actionError =
+    actionData && typeof actionData === 'object' && 'error' in actionData
+      ? typeof actionData.error === 'string'
+        ? actionData.error
+        : 'Noe gikk galt. Prøv igjen.'
+      : null;
 
   return (
-    <section className="mx-auto w-full max-w-5xl space-y-6">
-      <header className="rounded-lg border border-card-border bg-card p-5 shadow-sm sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Selskapskontekst</p>
-        <h1 className="mt-2 text-2xl font-semibold text-card-text sm:text-3xl">Velg selskap</h1>
-        <p className="mt-2 text-sm text-card-text-muted sm:text-base">
-          Logg inn i riktig selskap for å administrere tjenester, ansatte og booking.
-        </p>
-      </header>
+    <PageTemplate
+      title="Velg selskap"
+      description="Logg inn i riktig selskapskontekst for å fortsette med administrasjon, booking eller timelister i samme felles sideoppsett som resten av produktet."
+      label="Selskapskontekst"
+      hero={
+        <Panel title="Tilgjengelige selskaper" description="Alle selskaper du kan bytte inn i fra denne brukerkontoen.">
+          <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2.5">
+            <Text as="p" variant="body-sm" className="text-text-secondary">
+              Antall tilgjengelige kontekster
+            </Text>
+            <Text as="p" variant="heading-sm">
+              {companies.length}
+            </Text>
+          </div>
+        </Panel>
+      }
+    >
+      {actionError ? <Notice tone="emphasis" title="Kunne ikke bytte selskapskontekst" message={actionError} /> : null}
 
       {companies.length === 0 ? (
-        <div className="rounded-lg border border-card-border bg-card-muted-bg p-6 text-center shadow-sm">
-          <p className="text-base font-semibold text-card-text">Ingen selskaper funnet</p>
-          <p className="mt-2 text-sm text-card-text-muted">Du har ikke tilgang til noen selskapskontekster enda.</p>
-        </div>
-      ) : (
-        <>
-          <div className="flex items-center justify-between rounded-lg border border-card-border bg-card p-4 text-sm text-card-text-muted">
-            <span>Tilgjengelige selskaper</span>
-            <span className="font-medium text-card-text">{companies.length}</span>
+        <Panel title="Ingen selskaper funnet" description="Du har ikke tilgang til noen selskapskontekster enda.">
+          <div className="rounded-md border border-border bg-background px-4 py-5 text-center">
+            <Text as="p" variant="body-sm" className="text-text-secondary">
+              Kontakt administrator hvis du forventer å se et selskap her.
+            </Text>
           </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        </Panel>
+      ) : (
+        <Panel title="Velg kontekst" description="Hvert valg logger deg inn i valgt selskap og bruker samme tematiske sideuttrykk som company-flatene.">
+          <Grid columns={3} gap="md">
             {companies.map((company) => (
               <Form key={company.id} method="post" className="h-full">
                 <input type="hidden" name="companyId" value={company.id} />
                 <input type="hidden" name="orgNumber" value={company.orgNumber} />
-                <CompanyContextSummaryCard company={company} />
+                <SelectionCard
+                  type="submit"
+                  className="h-full"
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting}
+                  title={company.name ?? 'Ukjent selskap'}
+                  description={company.orgNumber ?? 'Mangler organisasjonsnummer'}
+                  leading={
+                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-surface text-text-secondary">
+                      <Building2 className="h-5 w-5" />
+                    </div>
+                  }
+                  trailing={<ChevronRight className="mt-0.5 h-4 w-4 text-text-secondary" />}
+                  meta={
+                    company.postalAddress ? (
+                      <div className="flex items-start gap-2 rounded-md border border-border bg-surface px-3 py-2">
+                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-text-secondary" />
+                        <Text as="p" variant="body-sm" className="text-text-secondary">
+                          {formatAddress(company.postalAddress)}
+                        </Text>
+                      </div>
+                    ) : (
+                      <div className="rounded-md border border-border bg-surface px-3 py-2">
+                        <Text as="p" variant="body-sm" className="text-text-secondary">
+                          Ingen postadresse registrert
+                        </Text>
+                      </div>
+                    )
+                  }
+                />
               </Form>
             ))}
-          </div>
-        </>
+          </Grid>
+        </Panel>
       )}
-    </section>
+    </PageTemplate>
   );
+}
+
+function formatAddress(address?: CompanySummaryDto['postalAddress']) {
+  if (!address) return '';
+  const parts = [...(address.addressLines || []), address.postalCode, address.city].filter(Boolean);
+  return parts.join(', ');
 }

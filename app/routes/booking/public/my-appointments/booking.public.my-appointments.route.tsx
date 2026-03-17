@@ -14,15 +14,17 @@ import {
 import { AppointmentsController, type MyAppointmentDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { ROUTES_MAP } from '~/lib/route-tree';
 import {
-  BookingCard,
-  BookingContainer,
-  BookingErrorBanner,
-  BookingPageHeader,
-  BookingSection,
-} from '../appointment/_components/booking-layout';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
+  AlertBanner as BookingErrorBanner,
+  Badge,
+  Button,
+  Card as BookingCard,
+  Container as BookingContainer,
+  PageHeader as BookingPageHeader,
+  Panel as BookingSection,
+  Stack,
+} from '~/ui';
 const UPCOMING_BADGE_CLASS = 'border-border bg-muted text-foreground';
 const COMPLETED_BADGE_CLASS = 'border-secondary/30 bg-secondary/15 text-foreground';
 
@@ -106,6 +108,11 @@ const buildGoogleMapsUrl = (appointment?: MyAppointmentDto) => {
 
   if (!query) return null;
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+};
+
+const buildCancelHref = (appointment?: MyAppointmentDto): string | null => {
+  if (!appointment) return null;
+  return ROUTES_MAP['booking.public.appointment.cancel-by-id'].href.replace(':appointmentId', String(appointment.id));
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -229,18 +236,18 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
     : 0;
   const nearestCalendarPayload = buildCalendarPayload(nearestUpcomingAppointment ?? undefined);
   const nearestMapsUrl = buildGoogleMapsUrl(nearestUpcomingAppointment ?? undefined);
+  const nearestCancelHref = buildCancelHref(nearestUpcomingAppointment ?? undefined);
   const expiredAppointments = completedAppointments;
 
   return (
     <BookingContainer>
-      <BookingPageHeader title="Mine bookinger" description="Her kan du se dine bookinger." />
-      {loaderData.error && <BookingErrorBanner message={loaderData.error} />}
+      <Stack space="md">
+        <BookingPageHeader title="Mine bookinger" description="Her kan du se dine bookinger." />
+        {loaderData.error && <BookingErrorBanner message={loaderData.error} />}
 
-      {nearestUpcomingAppointment && (
-        <BookingCard className="relative overflow-hidden border-primary bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 shadow-sm md:p-6">
-          <div className="absolute right-0 top-0 size-32 translate-x-8 -translate-y-8 rounded-full bg-primary/10 blur-3xl" />
-
-          <div className="relative space-y-4">
+        {nearestUpcomingAppointment && (
+          <BookingCard variant="emphasis" className="space-y-4">
+          <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="flex size-12 items-center justify-center rounded-full bg-primary shadow-sm">
                 <CalendarClock className="size-6 text-primary-foreground" strokeWidth={2.5} />
@@ -255,7 +262,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
             </div>
 
             {nearestUpcomingDate && (
-              <div className="space-y-2 rounded-lg bg-background/50 p-4 backdrop-blur-sm">
+              <div className="space-y-2 rounded-lg bg-background p-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="size-5 text-primary md:size-6" />
                   <div>
@@ -278,7 +285,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
             {getGroupedServices(nearestUpcomingAppointment).length > 0 && (
               <div className="space-y-2">
                 {getGroupedServices(nearestUpcomingAppointment).map((group) => (
-                  <div key={group.id} className="space-y-2 rounded-lg border border-card-border bg-card-accent/5 p-3">
+                  <div key={group.id} className="space-y-2 rounded-lg border border-card-border bg-background p-3">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group.name}</p>
                     <div className="space-y-1.5">
                       {group.services.map((service) => (
@@ -323,13 +330,21 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
                     Google Maps
                   </a>
                 )}
+                {nearestCancelHref && (
+                  <Link
+                    to={nearestCancelHref}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-destructive/40 bg-destructive/10 px-4 py-3 font-semibold text-destructive transition-colors hover:bg-destructive/20"
+                  >
+                    Avbestill
+                  </Link>
+                )}
               </div>
             )}
           </div>
-        </BookingCard>
-      )}
+          </BookingCard>
+        )}
 
-      <BookingSection title={`Kommende bookinger (${upcomingTotalElements})`}>
+        <BookingSection title={`Kommende bookinger (${upcomingTotalElements})`}>
         {upcomingAppointments.length === 0 ? (
           <p className="text-sm text-muted-foreground">Ingen flere kommende bookinger.</p>
         ) : (
@@ -339,12 +354,10 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
               const appointmentDuration = formatDurationMinutes(appointment.startTime, appointment.endTime);
               const appointmentCalendarPayload = buildCalendarPayload(appointment);
               const appointmentMapsUrl = buildGoogleMapsUrl(appointment);
+              const cancelHref = buildCancelHref(appointment);
 
               return (
-                <BookingCard
-                  key={appointment.id}
-                  className="overflow-hidden border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 md:p-4"
-                >
+                <BookingCard key={appointment.id} className="overflow-hidden p-3 md:p-4">
                   <details className="group">
                     <summary className="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
                       <div className="flex items-center justify-between gap-3">
@@ -377,7 +390,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
                           {getGroupedServices(appointment).map((group) => (
                             <div
                               key={`${appointment.id}-${group.id}`}
-                              className="space-y-1.5 rounded-lg border border-card-border bg-card-accent/5 p-2.5"
+                              className="space-y-1.5 rounded-lg border border-card-border bg-background p-2.5"
                             >
                               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                 {group.name}
@@ -428,6 +441,14 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
                             Google Maps
                           </a>
                         )}
+                        {cancelHref && (
+                          <Link
+                            to={cancelHref}
+                            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-destructive/40 bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20"
+                          >
+                            Avbestill
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </details>
@@ -438,20 +459,24 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
         )}
         {upcomingTotalElements > 0 && (
           <div className="flex items-center justify-between gap-3 pt-1">
-            <Button asChild variant="outline" disabled={!upcomingHasPrevious || isLoading}>
-              <Link to={buildSectionPageHref('upcoming', upcomingPage - 1)}>Forrige</Link>
-            </Button>
+            <Link to={buildSectionPageHref('upcoming', upcomingPage - 1)}>
+              <Button variant="outline" disabled={!upcomingHasPrevious || isLoading}>
+                Forrige
+              </Button>
+            </Link>
             <p className="text-sm text-muted-foreground">
               Side {upcomingPage + 1} av {Math.max(upcomingTotalPages, 1)}
             </p>
-            <Button asChild variant="outline" disabled={!upcomingHasNext || isLoading}>
-              <Link to={buildSectionPageHref('upcoming', upcomingPage + 1)}>Neste</Link>
-            </Button>
+            <Link to={buildSectionPageHref('upcoming', upcomingPage + 1)}>
+              <Button variant="outline" disabled={!upcomingHasNext || isLoading}>
+                Neste
+              </Button>
+            </Link>
           </div>
         )}
-      </BookingSection>
+        </BookingSection>
 
-      <BookingSection title={`Tidligere bookinger (${completedTotalElements})`}>
+        <BookingSection title={`Tidligere bookinger (${completedTotalElements})`}>
         {expiredAppointments.length === 0 ? (
           <p className="text-sm text-muted-foreground">Ingen tidligere bookinger å vise.</p>
         ) : (
@@ -462,10 +487,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
               const appointmentMapsUrl = buildGoogleMapsUrl(appointment);
 
               return (
-                <BookingCard
-                  key={appointment.id}
-                  className="overflow-hidden border-secondary/30 bg-gradient-to-br from-secondary/10 via-secondary/5 to-transparent p-3 md:p-4"
-                >
+                <BookingCard key={appointment.id} className="overflow-hidden p-3 md:p-4">
                   <details className="group">
                     <summary className="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
                       <div className="flex items-center justify-between gap-3">
@@ -498,7 +520,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
                           {getGroupedServices(appointment).map((group) => (
                             <div
                               key={`${appointment.id}-${group.id}`}
-                              className="space-y-1.5 rounded-lg border border-card-border bg-card-accent/5 p-2.5"
+                              className="space-y-1.5 rounded-lg border border-card-border bg-background p-2.5"
                             >
                               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                 {group.name}
@@ -536,18 +558,23 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
         )}
         {completedTotalElements > 0 && (
           <div className="flex items-center justify-between gap-3 pt-1">
-            <Button asChild variant="outline" disabled={!completedHasPrevious || isLoading}>
-              <Link to={buildSectionPageHref('completed', completedPage - 1)}>Forrige</Link>
-            </Button>
+            <Link to={buildSectionPageHref('completed', completedPage - 1)}>
+              <Button variant="outline" disabled={!completedHasPrevious || isLoading}>
+                Forrige
+              </Button>
+            </Link>
             <p className="text-sm text-muted-foreground">
               Side {completedPage + 1} av {Math.max(completedTotalPages, 1)}
             </p>
-            <Button asChild variant="outline" disabled={!completedHasNext || isLoading}>
-              <Link to={buildSectionPageHref('completed', completedPage + 1)}>Neste</Link>
-            </Button>
+            <Link to={buildSectionPageHref('completed', completedPage + 1)}>
+              <Button variant="outline" disabled={!completedHasNext || isLoading}>
+                Neste
+              </Button>
+            </Link>
           </div>
         )}
-      </BookingSection>
+        </BookingSection>
+      </Stack>
     </BookingContainer>
   );
 }

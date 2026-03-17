@@ -1,20 +1,21 @@
 import { redirect, Form, useNavigation } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.session.overview.route';
-import { Calendar, Clock, User, Mail, Scissors, DollarSign, CheckCircle2, Sparkles } from 'lucide-react';
+import { Calendar, User, Mail, DollarSign, CheckCircle2 } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
-import {
-  BookingContainer,
-  BookingStepHeader,
-  BookingButton,
-  BookingMeta,
-  CollapsibleCard,
-  BookingSummary,
-  BookingCard,
-} from '../../_components/booking-layout';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { requireAuthenticatedBookingFlow } from '../_utils/require-authenticated-booking-flow.server';
+import {
+  BookingStepTemplate,
+  Button,
+  Container,
+  KeyValueList,
+  PageHeader,
+  Panel,
+  Stack,
+  Text,
+} from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -37,7 +38,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     return {
       sessionOverview: response.data.data,
-      error: null as string | null,
     };
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke hente oversikt');
@@ -126,14 +126,11 @@ export default function BookingPublicAppointmentSessionOverviewRoute({ loaderDat
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
-  if (loaderData.error || !loaderData.sessionOverview) {
+  if (!loaderData.sessionOverview) {
     return (
-      <BookingContainer>
-        <BookingStepHeader
-          title="Bekreft timebestilling"
-          description={loaderData.error ?? 'Kunne ikke hente oversikt'}
-        />
-      </BookingContainer>
+      <Container size="lg">
+        <PageHeader title="Bekreft timebestilling" description="Kunne ikke hente oversikt" />
+      </Container>
     );
   }
 
@@ -144,229 +141,126 @@ export default function BookingPublicAppointmentSessionOverviewRoute({ loaderDat
   const dateTime = formatNorwegianDateTime(sessionOverview.selectedStartTime);
 
   return (
-    <>
-      <BookingContainer>
-        {/* ========================================
-            PAGE HEADER
-            ======================================== */}
-        <BookingStepHeader title="Bekreft timebestilling" description="Gjennomgå detaljene før du bekrefter" />
-
-        {/* ========================================
-            APPOINTMENT HERO CARD
-            ======================================== */}
-        <BookingCard className="relative overflow-hidden border-primary bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 shadow-sm md:p-6">
-          {/* Decorative element */}
-          <div className="absolute right-0 top-0 size-32 translate-x-8 -translate-y-8 rounded-full bg-primary/10 blur-3xl" />
-
-          <div className="relative space-y-4">
-            {/* Title */}
-            <div className="flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-full bg-primary shadow-sm">
-                <CheckCircle2 className="size-6 text-primary-foreground" strokeWidth={2.5} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-primary md:text-sm">
-                  Klar for booking
-                </p>
-                <p className="text-sm text-muted-foreground md:text-base">
-                  {sessionOverview.selectedServices.length}{' '}
-                  {sessionOverview.selectedServices.length === 1 ? 'tjeneste' : 'tjenester'}
-                </p>
-              </div>
-            </div>
-
-            {/* Date & Time - Prominent */}
-            <div className="space-y-2 rounded-lg bg-background/50 p-4 backdrop-blur-sm">
-              <div className="flex items-center gap-2">
-                <Calendar className="size-5 text-primary md:size-6" />
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground md:text-sm">{dateTime.dayName}</p>
-                  <p className="text-lg font-bold text-card-text md:text-xl">{dateTime.date}</p>
+    <BookingStepTemplate
+      title="Bekreft timebestilling"
+      description="Gjennomgå detaljene før du bekrefter."
+      footer={
+        <div className="flex flex-col gap-2 md:flex-row md:justify-end">
+          <Form method="get" action={ROUTES_MAP['booking.public.appointment.session.select-time'].href}>
+            <Button type="submit" variant="outline" size="md" fullWidth>
+              Endre tidspunkt
+            </Button>
+          </Form>
+          <Form method="post">
+            <Button type="submit" size="lg" fullWidth loading={isSubmitting} disabled={isSubmitting}>
+              <CheckCircle2 className="size-5" strokeWidth={2.5} />
+              Bekreft og book time
+            </Button>
+          </Form>
+        </div>
+      }
+    >
+      <Stack space="lg">
+          <Panel title="Oversikt" description="Kontroller informasjonen før bekreftelse.">
+            <div className="space-y-4">
+              <div className="rounded-md border border-border bg-background p-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <Text as="p" variant="label">
+                    Tidspunkt
+                  </Text>
+                  <a href={ROUTES_MAP['booking.public.appointment.session.select-time'].href} className="text-xs text-text-secondary">
+                    Endre
+                  </a>
                 </div>
+                <KeyValueList
+                  items={[
+                    { label: 'Dato', value: dateTime.full, icon: <Calendar className="size-4" /> },
+                    { label: 'Varighet', value: `${totalDuration} min` },
+                    { label: 'Pris', value: `${totalPrice} kr`, icon: <DollarSign className="size-4" /> },
+                  ]}
+                />
               </div>
 
-              <div className="flex items-center gap-2 border-t border-card-border pt-2">
-                <Clock className="size-5 text-primary md:size-6" />
-                <div className="flex flex-1 items-baseline justify-between gap-3">
-                  <p className="text-lg font-bold text-card-text md:text-xl">{dateTime.time}</p>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-muted-foreground">{totalDuration} min</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-md border border-border bg-background p-3">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <Text as="p" variant="label">
+                      Kontakt
+                    </Text>
+                    <a href={ROUTES_MAP['booking.public.appointment.session.contact'].href} className="text-xs text-text-secondary">
+                      Endre
+                    </a>
+                  </div>
+                  <KeyValueList
+                    layout="stacked"
+                    items={[
+                      {
+                        label: 'Navn',
+                        value: `${sessionOverview.user.givenName} ${sessionOverview.user.familyName}`,
+                        icon: <User className="size-4" />,
+                      },
+                      ...(sessionOverview.user.email
+                        ? [{ label: 'E-post', value: sessionOverview.user.email, icon: <Mail className="size-4" /> }]
+                        : []),
+                    ]}
+                  />
+                </div>
+                <div className="rounded-md border border-border bg-background p-3">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <Text as="p" variant="label">
+                      Behandler
+                    </Text>
+                    <a href={ROUTES_MAP['booking.public.appointment.session.employee'].href} className="text-xs text-text-secondary">
+                      Endre
+                    </a>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    {sessionOverview.selectedProfile.image ? (
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-sm border border-border bg-surface">
+                        <img
+                          src={sessionOverview.selectedProfile.image.url}
+                          alt={`${sessionOverview.selectedProfile.givenName} ${sessionOverview.selectedProfile.familyName}`}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : null}
+                    <Text as="p" variant="body-sm" className="font-semibold">
+                      {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
+                    </Text>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Total Price - Emphasized */}
-            <div className="flex items-center justify-between gap-3 rounded-md bg-primary px-3 py-2 text-primary-foreground">
-              <div className="flex items-center gap-2">
-                <DollarSign className="size-5 md:size-6" strokeWidth={2.5} />
-                <span className="text-xs font-medium md:text-sm">Estimert total pris</span>
-              </div>
-              <p className="text-lg font-bold md:text-2xl">{totalPrice} kr</p>
-            </div>
-          </div>
-        </BookingCard>
-
-        {/* ========================================
-            COLLAPSIBLE DETAILS SECTIONS
-            ======================================== */}
-
-        {/* Contact Info */}
-        <CollapsibleCard
-          title="Bruker"
-          icon={<User className="size-5 text-primary" />}
-          editLink={ROUTES_MAP['booking.public.appointment.session.contact'].href}
-          defaultOpen={false}
-        >
-          <BookingMeta
-            layout="stacked"
-            items={[
-              {
-                label: 'Navn',
-                value: `${sessionOverview.user.givenName} ${sessionOverview.user.familyName}`,
-                icon: <User className="size-4 text-muted-foreground" />,
-              },
-              ...(sessionOverview.user.email
-                ? [
-                    {
-                      label: 'E-post',
-                      value: sessionOverview.user.email,
-                      icon: <Mail className="size-4 text-muted-foreground" />,
-                    },
-                  ]
-                : []),
-            ]}
-          />
-        </CollapsibleCard>
-
-        {/* Stylist */}
-        <CollapsibleCard
-          title="Behandler"
-          icon={<Scissors className="size-5 text-primary" />}
-          editLink={ROUTES_MAP['booking.public.appointment.session.employee'].href}
-          defaultOpen={false}
-        >
-          <div className="flex items-start gap-3">
-            {sessionOverview.selectedProfile.image && (
-              <div className="relative size-16 shrink-0 overflow-hidden rounded-full border-2 border-card-border md:size-20">
-                <img
-                  src={sessionOverview.selectedProfile.image.url}
-                  alt={`${sessionOverview.selectedProfile.givenName} ${sessionOverview.selectedProfile.familyName}`}
-                  className="size-full object-cover"
-                />
-              </div>
-            )}
-            <div className="flex-1">
-              <h4 className="text-base font-bold text-card-text md:text-lg">
-                {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
-              </h4>
-              {sessionOverview.selectedProfile.description && (
-                <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                  {sessionOverview.selectedProfile.description}
-                </p>
-              )}
-            </div>
-          </div>
-        </CollapsibleCard>
-
-        {/* Services */}
-        <CollapsibleCard
-          title="Tjenester"
-          icon={<Sparkles className="size-5 text-primary" />}
-          editLink={ROUTES_MAP['booking.public.appointment.session.select-services'].href}
-          badge={
-            <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-primary-foreground">
-              {sessionOverview.selectedServices.length}
-            </span>
-          }
-        >
-          <div className="space-y-2">
-            {sessionOverview.selectedServices.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between gap-3 rounded-lg border border-card-border bg-card-accent/5 p-3"
-              >
-                <span className="text-sm font-medium text-card-text md:text-base">{item.services.name}</span>
-                <div className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground md:text-sm">
-                  <span className="flex items-center gap-1">
-                    <Clock className="size-3 md:size-3.5" />
-                    {item.services.duration} min
-                  </span>
-                  <span className="flex items-center gap-1 font-semibold text-card-text">
-                    <DollarSign className="size-3 md:size-3.5" />
-                    {item.services.price} kr
-                  </span>
+              <div className="rounded-md border border-border bg-background p-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <Text as="p" variant="label">
+                    Tjenester
+                  </Text>
+                  <a href={ROUTES_MAP['booking.public.appointment.session.select-services'].href} className="text-xs text-text-secondary">
+                    Endre
+                  </a>
+                </div>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {sessionOverview.selectedServices.map((item, index) => (
+                    <div key={index} className="rounded-md border border-border bg-background p-2.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <Text as="p" variant="body-sm" className="font-medium">
+                          {item.services.name}
+                        </Text>
+                        <Text as="p" variant="body-sm" className="text-text-secondary">
+                          {item.services.price} kr
+                        </Text>
+                      </div>
+                      <Text as="p" variant="caption" className="mt-0.5 text-text-secondary">
+                        {item.services.duration} min
+                      </Text>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-        </CollapsibleCard>
-      </BookingContainer>
-
-      <div className="hidden md:block h-12" />
-
-      <BookingSummary
-        mobile={{
-          title: 'Oppsummering',
-          items: [
-            { label: 'Dato', value: dateTime.full },
-            { label: 'Varighet', value: `${totalDuration} min` },
-            { label: 'Pris', value: `${totalPrice} kr` },
-          ],
-          className: 'md:hidden',
-          primaryAction: (
-            <Form method="post">
-              <BookingButton
-                type="submit"
-                variant="primary"
-                size="lg"
-                fullWidth
-                loading={isSubmitting}
-                disabled={isSubmitting}
-              >
-                <CheckCircle2 className="size-5" strokeWidth={2.5} />
-                Bekreft og book time
-              </BookingButton>
-            </Form>
-          ),
-          secondaryAction: (
-            <Form method="get" action={ROUTES_MAP['booking.public.appointment.session.select-time'].href}>
-              <BookingButton type="submit" variant="outline" size="md" fullWidth>
-                Endre tidspunkt
-              </BookingButton>
-            </Form>
-          ),
-        }}
-        desktopClassName="sticky bottom-4 rounded-lg border-2 border-primary bg-primary p-4 text-primary-foreground shadow-xl"
-        desktop={
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex size-14 items-center justify-center rounded-full bg-primary-foreground/20">
-                <CheckCircle2 className="size-7" strokeWidth={2.5} />
-              </div>
-              <div>
-                <p className="text-xs font-medium opacity-80">Klar for booking</p>
-                <p className="text-lg font-bold">{dateTime.full}</p>
-                <p className="text-sm font-medium opacity-90">Total: {totalPrice} kr</p>
-              </div>
             </div>
-
-            <Form method="post">
-              <BookingButton
-                type="submit"
-                variant="secondary"
-                size="lg"
-                loading={isSubmitting}
-                disabled={isSubmitting}
-                className="min-w-[200px]"
-              >
-                <CheckCircle2 className="size-5" strokeWidth={2.5} />
-                Bekreft og book time
-              </BookingButton>
-            </Form>
-          </div>
-        }
-      />
-    </>
+          </Panel>
+      </Stack>
+    </BookingStepTemplate>
   );
 }

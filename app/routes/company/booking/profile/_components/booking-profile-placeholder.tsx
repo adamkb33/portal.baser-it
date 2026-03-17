@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button } from '~/components/ui/button';
+import { Button } from '~/ui';
 
 export interface EmptyBookingProfileProps {
   onCreateProfile: () => void;
@@ -34,7 +34,7 @@ export const EmptyBookingProfile = React.forwardRef<HTMLElement, EmptyBookingPro
         </div>
 
         <div className={['border-t border-border', 'pt-4'].join(' ')}>
-          <Button type="button" variant="default" size="default" onClick={onCreateProfile}>
+          <Button type="button" variant="primary" size="md" onClick={onCreateProfile}>
             Lag bookingprofil
           </Button>
         </div>

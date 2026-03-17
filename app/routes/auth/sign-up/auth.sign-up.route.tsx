@@ -2,13 +2,11 @@
 import { Link, Form, redirect, data, useActionData, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.sign-up.route';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { AuthFormContainer } from '../_components/auth.form-container';
-import { AuthFormField } from '../_components/auth.form-field';
-import { AuthFormButton } from '../_components/auth.form-button';
 import { AuthController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
 import { authService } from '~/lib/auth-service';
+import { Button, FormField, FormPageTemplate } from '~/ui';
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -72,11 +70,12 @@ export default function AuthSignUp() {
     actionData && typeof actionData === 'object' && 'error' in actionData ? String(actionData.error) : undefined;
 
   return (
-    <AuthFormContainer
+    <FormPageTemplate
       title="Opprett konto"
       description="Registrer deg for å få tilgang til selskapet ditt og kundene dine."
       error={errorMessage}
-      secondaryAction={
+      variant="airy"
+      actions={
         <div className="space-y-2 text-center">
           <p className="text-xs text-muted-foreground">Har du allerede en konto?</p>
           <Link
@@ -87,10 +86,11 @@ export default function AuthSignUp() {
           </Link>
         </div>
       }
+      footerLink={null}
     >
       <Form method="post" className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2">
-          <AuthFormField
+          <FormField
             id="givenName"
             name="givenName"
             label="Fornavn"
@@ -100,7 +100,7 @@ export default function AuthSignUp() {
             disabled={isSubmitting}
           />
 
-          <AuthFormField
+          <FormField
             id="familyName"
             name="familyName"
             label="Etternavn"
@@ -111,7 +111,7 @@ export default function AuthSignUp() {
           />
         </div>
 
-        <AuthFormField
+        <FormField
           id="email"
           name="email"
           label="E-post"
@@ -122,7 +122,7 @@ export default function AuthSignUp() {
           disabled={isSubmitting}
         />
 
-        <AuthFormField
+        <FormField
           id="mobileNumber"
           name="mobileNumber"
           label="Mobilnummer (valgfritt)"
@@ -131,7 +131,7 @@ export default function AuthSignUp() {
           disabled={isSubmitting}
         />
 
-        <AuthFormField
+        <FormField
           id="password"
           name="password"
           label="Passord"
@@ -141,7 +141,7 @@ export default function AuthSignUp() {
           disabled={isSubmitting}
         />
 
-        <AuthFormField
+        <FormField
           id="password2"
           name="password2"
           label="Bekreft passord"
@@ -155,10 +155,10 @@ export default function AuthSignUp() {
           Vi sender en bekreftelseslenke til e-posten din. Oppgir du mobilnummer, får du også en engangskode på SMS.
         </p>
 
-        <AuthFormButton isLoading={isSubmitting} loadingText="Oppretter konto…">
+        <Button type="submit" fullWidth loading={isSubmitting}>
           Opprett konto
-        </AuthFormButton>
+        </Button>
       </Form>
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }

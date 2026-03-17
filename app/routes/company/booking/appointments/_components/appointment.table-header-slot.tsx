@@ -1,23 +1,27 @@
-import { useState } from 'react';
-import { Input } from '~/components/ui/input';
-import { Button } from '~/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { Badge } from '~/components/ui/badge';
-import { Calendar as CalendarIcon, X, Search, Check } from 'lucide-react';
-import { Calendar } from '~/components/ui/calendar';
+import { useEffect, useState } from 'react';
+import { Filter, Search, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import type { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
+import { Calendar } from '~/components/ui/calendar';
 import { toDateInputFromOffsetDateTime } from '~/lib/query';
 import {
   AppointmentPaginationQuickFilter,
   AppointmentPaginationService,
 } from '../_services/appointment.pagination-service';
+import {
+  Button,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Text,
+} from '~/ui';
 
 export function AppointmentTableHeaderSlot() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
 
   const paginationService = new AppointmentPaginationService(searchParams, navigate);
 
@@ -31,168 +35,195 @@ export function AppointmentTableHeaderSlot() {
   const [localFromDate, setLocalFromDate] = useState(fromDate);
   const [localToDate, setLocalToDate] = useState(toDate);
 
-  const hasActiveFilters = fromDate || toDate || searchFilter;
-  const hasCustomDateFilter = (fromDate || toDate) && paginationService.getActiveQuickFilter() === null;
+  useEffect(() => {
+    setLocalFromDate(fromDate);
+    setLocalToDate(toDate);
+  }, [fromDate, toDate]);
+
+  const activeQuickFilter = paginationService.getActiveQuickFilter();
+  const hasDateFilter = Boolean(fromDate || toDate);
+  const hasAnyFilters = Boolean(searchFilter || hasDateFilter);
+  const filledFilterButtonClass = 'bg-chip-surface hover:bg-chip-surface-hover border-border';
+  const activeFilledFilterButtonClass = 'bg-chip-surface-active hover:bg-chip-surface-active-hover border-border';
 
   const handleApplyDateFilters = () => {
     paginationService.applyDateFilters(localFromDate, localToDate);
-    setIsDatePickerOpen(false);
+    setIsFilterPopoverOpen(false);
   };
 
-  const handleClearFilters = () => {
-    setLocalFromDate('');
-    setLocalToDate('');
-    paginationService.handleClearFilters();
-    setIsDatePickerOpen(false);
+  const handleQuickFilterClick = (filter: AppointmentPaginationQuickFilter) => {
+    switch (filter) {
+      case AppointmentPaginationQuickFilter.UPCOMING:
+        paginationService.handleUpcomingFilter();
+        break;
+      case AppointmentPaginationQuickFilter.TODAY:
+        paginationService.handleTodayFilter();
+        break;
+      case AppointmentPaginationQuickFilter.PAST:
+        paginationService.handlePastFilter();
+        break;
+      case AppointmentPaginationQuickFilter.NEXT_7_DAYS:
+        paginationService.handleNext7days();
+        setIsFilterPopoverOpen(false);
+        break;
+      case AppointmentPaginationQuickFilter.NEXT_30_DAYS:
+        paginationService.handleNext30Days();
+        setIsFilterPopoverOpen(false);
+        break;
+    }
   };
-
-  const activeQuickFilter = paginationService.getActiveQuickFilter();
 
   return (
-    <div className="space-y-3 md:space-y-4 w-full">
-      {/* Search Input */}
-      <div className="relative max-w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-        <Input
-          placeholder="Søk avtaler..."
-          value={searchFilter}
-          onChange={(e) => paginationService.handleSearchChange(e.target.value)}
-          className="pl-9 pr-9 h-11 text-base md:h-10"
-        />
-        {searchFilter && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-            onClick={() => paginationService.handleRemoveFilter('search')}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
+    <div className="w-full space-y-3 rounded-lg border border-border bg-surface-accent-subtle p-2.5 md:space-y-4">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="relative w-full md:max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Søk avtaler..."
+            value={searchFilter}
+            onChange={(e) => paginationService.handleSearchChange(e.target.value)}
+            className="h-11 border-border bg-surface-variant-1 pl-9 pr-9 text-base md:h-10"
+          />
+          {searchFilter && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"
+              onClick={() => paginationService.handleRemoveFilter('search')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+            <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={hasDateFilter ? 'secondary' : 'outline'}
+                  size="sm"
+                  className={`h-9 gap-1.5 ${hasDateFilter ? activeFilledFilterButtonClass : filledFilterButtonClass}`}
+                >
+                  <Filter className="h-3.5 w-3.5" />
+                  Filtrer
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[min(92vw,24rem)] border-border bg-surface-variant-1 p-0" align="end">
+                <div className="space-y-4 p-4">
+                <div className="flex items-center justify-between">
+                  <Text as="p" variant="label">
+                    Hurtigfiltre
+                  </Text>
+                  {hasAnyFilters && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        paginationService.handleClearFilters();
+                        setIsFilterPopoverOpen(false);
+                      }}
+                      className="h-7 border border-border bg-chip-surface px-2 text-xs text-destructive hover:bg-chip-surface-hover"
+                    >
+                      Nullstill alle
+                    </Button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_7_DAYS ? 'secondary' : 'outline'}
+                    onClick={() => handleQuickFilterClick(AppointmentPaginationQuickFilter.NEXT_7_DAYS)}
+                    className={`h-8 ${
+                      activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_7_DAYS
+                        ? activeFilledFilterButtonClass
+                        : filledFilterButtonClass
+                    }`}
+                  >
+                    Neste 7 dager
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_30_DAYS ? 'secondary' : 'outline'}
+                    onClick={() => handleQuickFilterClick(AppointmentPaginationQuickFilter.NEXT_30_DAYS)}
+                    className={`h-8 ${
+                      activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_30_DAYS
+                        ? activeFilledFilterButtonClass
+                        : filledFilterButtonClass
+                    }`}
+                  >
+                    Neste 30 dager
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <Text as="p" variant="label">
+                    Egendefinert periode
+                  </Text>
+                  <Calendar
+                    mode="range"
+                    selected={{
+                      from: localFromDate ? new Date(localFromDate) : undefined,
+                      to: localToDate ? new Date(localToDate) : undefined,
+                    }}
+                    onSelect={(range: DateRange | undefined) => {
+                      setLocalFromDate(range?.from ? format(range.from, 'yyyy-MM-dd') : '');
+                      setLocalToDate(range?.to ? format(range.to, 'yyyy-MM-dd') : '');
+                    }}
+                    numberOfMonths={1}
+                    className="rounded-md border border-border bg-surface-variant-2"
+                  />
+                  <Button
+                    onClick={handleApplyDateFilters}
+                    className="h-9 w-full border border-border bg-chip-surface-active text-sm text-text-primary hover:bg-chip-surface-active-hover"
+                    disabled={!localFromDate && !localToDate}
+                  >
+                    Bruk periode
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
-      {/* Quick Filters - Wrapping on mobile */}
       <div className="flex flex-wrap gap-2">
         <Button
           size="sm"
           variant={activeQuickFilter === AppointmentPaginationQuickFilter.UPCOMING ? 'secondary' : 'outline'}
-          onClick={paginationService.handleUpcomingFilter}
-          className="h-9"
+          onClick={() => handleQuickFilterClick(AppointmentPaginationQuickFilter.UPCOMING)}
+          className={`h-9 rounded-full ${
+            activeQuickFilter === AppointmentPaginationQuickFilter.UPCOMING
+              ? activeFilledFilterButtonClass
+              : filledFilterButtonClass
+          }`}
         >
           Kommende
         </Button>
         <Button
           size="sm"
           variant={activeQuickFilter === AppointmentPaginationQuickFilter.TODAY ? 'secondary' : 'outline'}
-          onClick={paginationService.handleTodayFilter}
-          className="h-9"
+          onClick={() => handleQuickFilterClick(AppointmentPaginationQuickFilter.TODAY)}
+          className={`h-9 rounded-full ${
+            activeQuickFilter === AppointmentPaginationQuickFilter.TODAY
+              ? activeFilledFilterButtonClass
+              : filledFilterButtonClass
+          }`}
         >
           I dag
         </Button>
         <Button
           size="sm"
           variant={activeQuickFilter === AppointmentPaginationQuickFilter.PAST ? 'secondary' : 'outline'}
-          onClick={paginationService.handlePastFilter}
-          className="h-9"
+          onClick={() => handleQuickFilterClick(AppointmentPaginationQuickFilter.PAST)}
+          className={`h-9 rounded-full ${
+            activeQuickFilter === AppointmentPaginationQuickFilter.PAST
+              ? activeFilledFilterButtonClass
+              : filledFilterButtonClass
+          }`}
         >
           Fullførte
         </Button>
-
-        {/* Separator */}
-        <div className="w-px bg-border self-stretch hidden sm:block" />
-
-        {/* Sort Direction Buttons */}
-        <Button
-          size="sm"
-          variant={paginationService.getDirection() == 'ASC' ? 'default' : 'outline'}
-          onClick={() => paginationService.setDirection('ASC')}
-          className="h-9"
-        >
-          <span className="hidden sm:inline">Tidligste først</span>
-          <span className="sm:hidden">↑ Tidligste</span>
-        </Button>
-        <Button
-          size="sm"
-          variant={paginationService.getDirection() == 'DESC' ? 'default' : 'outline'}
-          onClick={() => paginationService.setDirection('DESC')}
-          className="h-9"
-        >
-          <span className="hidden sm:inline">Seneste først</span>
-          <span className="sm:hidden">↓ Seneste</span>
-        </Button>
-      </div>
-
-      {/* Date Range Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          size="sm"
-          variant={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_7_DAYS ? 'default' : 'outline'}
-          onClick={paginationService.handleNext7days}
-          className="h-9"
-        >
-          Neste 7 dager
-        </Button>
-        <Button
-          size="sm"
-          variant={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_30_DAYS ? 'default' : 'outline'}
-          onClick={paginationService.handleNext30Days}
-          className="h-9"
-        >
-          Neste 30 dager
-        </Button>
-
-        <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-          <PopoverTrigger asChild>
-            <Button variant={hasCustomDateFilter ? 'default' : 'outline'} size="sm" className="h-9 gap-1.5 relative">
-              <CalendarIcon className="h-3.5 w-3.5" />
-              <span className="text-xs">Periode</span>
-              {hasCustomDateFilter && (
-                <Badge className="h-4 w-4 p-0 flex items-center justify-center ml-0.5">
-                  <Check className="h-2.5 w-2.5" />
-                </Badge>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold">Velg periode</h4>
-                {hasActiveFilters && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClearFilters}
-                    className="h-7 px-2 text-xs text-destructive"
-                  >
-                    Nullstill
-                  </Button>
-                )}
-              </div>
-
-              <Calendar
-                mode="range"
-                selected={{
-                  from: localFromDate ? new Date(localFromDate) : undefined,
-                  to: localToDate ? new Date(localToDate) : undefined,
-                }}
-                onSelect={(range: DateRange | undefined) => {
-                  setLocalFromDate(range?.from ? format(range.from, 'yyyy-MM-dd') : '');
-                  setLocalToDate(range?.to ? format(range.to, 'yyyy-MM-dd') : '');
-                }}
-                numberOfMonths={1}
-                className="rounded-md border"
-              />
-
-              <Button
-                onClick={handleApplyDateFilters}
-                className="w-full h-9 text-sm"
-                disabled={!localFromDate && !localToDate}
-              >
-                Bruk filter
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
       </div>
     </div>
   );

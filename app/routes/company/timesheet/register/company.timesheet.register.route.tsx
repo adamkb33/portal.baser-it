@@ -3,16 +3,25 @@ import { data, Link, useNavigation, useSubmit } from 'react-router';
 import type { Route } from './+types/company.timesheet.register.route';
 import { CompanyUserTimesheetEntryController } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { DatePicker } from '~/components/pickers/date-picker';
 import { TimePicker } from '~/components/pickers/time-picker';
-import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import { Textarea } from '~/components/ui/textarea';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { redirectWithSuccess, setFlashMessage } from '~/routes/company/_lib/flash-message.server';
+import {
+  Button,
+  Calendar,
+  CompanyPageTemplate,
+  Input,
+  Notice,
+  Panel,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+} from '~/ui';
 import { formatDateInputToZonedISOString, normalizeNote, parseBulkEntries, splitBulkEntries } from '../_utils';
 
 type EntryMode = 'hours' | 'range';
@@ -45,6 +54,13 @@ export async function action({ request }: Route.ActionArgs) {
   const { rangeEntries, hoursEntries } = splitBulkEntries(entries);
   if (!rangeEntries.length && !hoursEntries.length) {
     const errorMessage = 'Legg til minst én gyldig registrering før du lagrer.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: errorMessage });
+    return data({ ok: false, error: errorMessage }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
+  }
+
+  const hasDisallowedDate = entries.some((entry) => !isEntryDateAllowed(parseDateInput(entry.date)));
+  if (hasDisallowedDate) {
+    const errorMessage = 'Du kan bare registrere timer fra i dag og opptil tre uker frem i tid.';
     const flashCookie = await setFlashMessage(request, { type: 'error', text: errorMessage });
     return data({ ok: false, error: errorMessage }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
@@ -91,6 +107,7 @@ export default function CompanyTimeSheetsRegisterRoute({ actionData }: Route.Com
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
+  const [openDateEntryId, setOpenDateEntryId] = React.useState<string | null>(null);
   const [form, setForm] = React.useState<RegisterFormData>({
     mode: 'hours',
     note: '',
@@ -121,39 +138,36 @@ export default function CompanyTimeSheetsRegisterRoute({ actionData }: Route.Com
   const visibleEntries = form.entries.filter((entry) => entry.mode === form.mode);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-foreground">Ny registrering</h1>
-          <p className="text-sm text-muted-foreground">Opprett timer eller tidsintervaller og send dem inn.</p>
-        </div>
-        <Button asChild variant="outline">
-          <Link to={ROUTES_MAP['company.timesheet'].href}>Avbryt</Link>
-        </Button>
-      </div>
-
+    <CompanyPageTemplate
+      title="Ny registrering"
+      description="Opprett timer eller tidsintervaller i samme kompakte formulamønster som resten av company-domenet."
+      label="Timelister"
+      actions={
+        <Link
+          to={ROUTES_MAP['company.timesheet'].href}
+          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+        >
+          Avbryt
+        </Link>
+      }
+    >
       {actionData?.ok === false && actionData.error ? (
-        <Alert variant="destructive">
-          <AlertTitle>Kunne ikke lagre registreringen</AlertTitle>
-          <AlertDescription>{actionData.error}</AlertDescription>
-        </Alert>
+        <Notice tone="emphasis" title="Kunne ikke lagre registreringen" message={actionData.error} />
       ) : null}
 
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          const formData = new FormData();
-          formData.append('note', form.note);
-          formData.append('entries', JSON.stringify(toBulkEntries(form.entries)));
-          submit(formData, { method: 'post' });
-        }}
-        className="rounded-lg border border-border bg-card"
-      >
-        <div className="space-y-6 p-4 sm:p-6">
+      <Panel title="Ny registrering" description="Legg inn en eller flere timer eller intervaller og send dem inn samlet.">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            const formData = new FormData();
+            formData.append('note', form.note);
+            formData.append('entries', JSON.stringify(toBulkEntries(form.entries)));
+            submit(formData, { method: 'post' });
+          }}
+          className="space-y-6"
+        >
           <section className="space-y-3">
-            <div className="space-y-1">
-              <h2 className="text-sm font-medium text-foreground">Registreringstype</h2>
-            </div>
+            <h2 className="text-sm font-medium text-text-primary">Registreringstype</h2>
             <Tabs
               value={form.mode}
               onValueChange={(value) => setForm((prev) => ({ ...prev, mode: value as RegisterFormData['mode'] }))}
@@ -164,29 +178,25 @@ export default function CompanyTimeSheetsRegisterRoute({ actionData }: Route.Com
                   Timer
                 </TabsTrigger>
                 <TabsTrigger value="range" className="w-full">
-                  Interval
+                  Intervall
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </section>
 
           <section className="space-y-3">
-            <div className="space-y-1">
-              <h2 className="text-sm font-medium text-foreground">Notat</h2>
-            </div>
+            <h2 className="text-sm font-medium text-text-primary">Notat</h2>
             <Textarea
               value={form.note}
               onChange={(event) => setForm((prev) => ({ ...prev, note: event.target.value }))}
               placeholder="Valgfritt"
-              className="min-h-24 bg-form-bg border-form-border text-form-text"
+              className="min-h-24"
             />
           </section>
 
           <section className="space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <div className="space-y-1">
-                <h2 className="text-sm font-medium text-foreground">Registreringer</h2>
-              </div>
+              <h2 className="text-sm font-medium text-text-primary">Registreringer</h2>
               <Button type="button" variant="secondary" onClick={() => addEntry(form.mode)}>
                 Legg til registrering
               </Button>
@@ -194,17 +204,36 @@ export default function CompanyTimeSheetsRegisterRoute({ actionData }: Route.Com
 
             <div className="space-y-3">
               {visibleEntries.map((entry) => (
-                <div key={entry.id} className="flex flex-wrap gap-2 rounded-md border border-border p-3">
-                  <div className="flex-1 min-w-[220px]">
-                    <DatePicker
-                      selectedDate={entry.date}
-                      onChange={(isoDate) => updateEntry(entry.id, { date: isoDate })}
-                      isDateAllowed={isDateWithinOneMonth}
-                      minDate={getMinSelectableDate()}
-                      maxDate={getMaxSelectableDate()}
-                    />
+                <div key={entry.id} className="flex flex-wrap gap-2 rounded-md border border-border bg-background p-3">
+                  <div className="min-w-[220px] flex-1">
+                    <Popover
+                      open={openDateEntryId === entry.id}
+                      onOpenChange={(open) => setOpenDateEntryId(open ? entry.id : null)}
+                    >
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" type="button" className="h-10 w-full justify-start text-left text-sm">
+                          {entry.date || 'Velg dato'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={parseDateInput(entry.date)}
+                          onSelect={(nextDate) => {
+                            if (nextDate) {
+                              updateEntry(entry.id, { date: formatDateForInput(nextDate) });
+                            }
+                            setOpenDateEntryId(null);
+                          }}
+                          numberOfMonths={1}
+                          hidden={{ before: getMinSelectableDate(), after: getMaxSelectableDate() }}
+                          disabled={(date) => !isEntryDateAllowed(date)}
+                          className="rounded-md border"
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
-                  <div className="flex-1 min-w-[220px] flex items-center">
+                  <div className="flex min-w-[220px] flex-1 items-center">
                     {entry.mode === 'hours' ? (
                       <Input
                         type="number"
@@ -212,7 +241,6 @@ export default function CompanyTimeSheetsRegisterRoute({ actionData }: Route.Com
                         placeholder="Timer"
                         value={entry.hours}
                         onChange={(event) => updateEntry(entry.id, { hours: event.target.value })}
-                        className="bg-form-bg border-form-border text-form-text"
                       />
                     ) : (
                       <RangeTimeInputs
@@ -232,18 +260,21 @@ export default function CompanyTimeSheetsRegisterRoute({ actionData }: Route.Com
               ))}
             </div>
           </section>
-        </div>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-border px-4 py-3 sm:flex-row sm:justify-end sm:px-6">
-          <Button type="button" variant="outline" asChild>
-            <Link to={ROUTES_MAP['company.timesheet'].href}>Avbryt</Link>
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Lagrer...' : 'Lagre'}
-          </Button>
-        </div>
-      </form>
-    </div>
+          <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+            <Link
+              to={ROUTES_MAP['company.timesheet'].href}
+              className="inline-flex h-10 items-center justify-center rounded-sm border border-border bg-background px-4 text-base font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+            >
+              Avbryt
+            </Link>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Lagrer...' : 'Lagre'}
+            </Button>
+          </div>
+        </form>
+      </Panel>
+    </CompanyPageTemplate>
   );
 }
 
@@ -263,6 +294,15 @@ function formatDateForInput(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function parseDateInput(value: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = new Date(`${value}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
 
 function createEntryId() {
@@ -323,7 +363,11 @@ function RangeTimeInputs({ entryId, fromTime, toTime, onChange }: RangeTimeInput
   );
 }
 
-function isDateWithinOneMonth(date: Date) {
+function isEntryDateAllowed(date: Date | undefined) {
+  if (!date) {
+    return false;
+  }
+
   const min = getMinSelectableDate();
   const max = getMaxSelectableDate();
   return date >= startOfDay(min) && date <= endOfDay(max);
@@ -342,15 +386,11 @@ function endOfDay(date: Date) {
 }
 
 function getMinSelectableDate() {
-  const now = new Date();
-  const min = new Date(now);
-  min.setMonth(min.getMonth() - 1);
-  return min;
+  return startOfDay(new Date());
 }
 
 function getMaxSelectableDate() {
-  const now = new Date();
-  const max = new Date(now);
-  max.setMonth(max.getMonth() + 1);
+  const max = startOfDay(new Date());
+  max.setDate(max.getDate() + 21);
   return max;
 }

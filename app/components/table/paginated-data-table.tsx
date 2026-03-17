@@ -1,9 +1,21 @@
 // components/ui/paginated-table.tsx
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+import {
+  Button,
+  ButtonGroup,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '~/ui';
 
 type Column = {
   header: React.ReactNode;
@@ -84,28 +96,30 @@ export function PaginatedTable<T>({
             {headerSlot && <div className="flex items-center gap-2">{headerSlot}</div>}
 
             <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Per side</span>
-              <Select
-                value={String(pageSize)}
-                onValueChange={(v) => {
-                  const next = Number(v);
-                  if (next === pageSize) return;
-                  setPageSize(next);
-                  setPage(1);
-                  onPageSizeChange?.(next);
-                }}
-              >
-                <SelectTrigger className="h-8 w-[92px] rounded-none">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
+              <span className="text-xs uppercase tracking-[0.12em] text-text-secondary">Per side</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">{pageSize}</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuRadioGroup
+                    value={String(pageSize)}
+                    onValueChange={(v) => {
+                      const next = Number(v);
+                      if (next === pageSize) return;
+                      setPageSize(next);
+                      setPage(1);
+                      onPageSizeChange?.(next);
+                    }}
+                  >
                   {pageSizeOptions.map((opt) => (
-                    <SelectItem key={opt} value={String(opt)}>
+                    <DropdownMenuRadioItem key={opt} value={String(opt)}>
                       {opt}
-                    </SelectItem>
+                    </DropdownMenuRadioItem>
                   ))}
-                </SelectContent>
-              </Select>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -138,11 +152,11 @@ export function PaginatedTable<T>({
       {/* Bottom pagination */}
       <div className="border-t border-border bg-background p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+          <div className="text-xs uppercase tracking-[0.12em] text-text-secondary">
             Side {page} / {totalPages}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <ButtonGroup className="flex-wrap">
             <Button variant="outline" size="sm" onClick={() => setPage(1)} disabled={!canPrev}>
               « Første
             </Button>
@@ -160,7 +174,7 @@ export function PaginatedTable<T>({
             <Button variant="outline" size="sm" onClick={() => setPage(totalPages)} disabled={!canNext}>
               Siste »
             </Button>
-          </div>
+          </ButtonGroup>
         </div>
       </div>
     </div>

@@ -24,7 +24,7 @@ export default function CompanyHeader({ company, canAccessCompanyContext = true,
       <Link
         to={ROUTES_MAP['user.company-context'].href}
         className={cn(
-          'group flex items-center gap-3 px-4 py-3 border-l-2 border-navbar-border',
+          'group flex items-center gap-2 border-l border-navbar-border py-2 pr-0 pl-2 md:gap-3 md:border-l-2 md:px-4 md:py-3',
           'hover:border-primary hover:bg-navbar-accent transition-all duration-200',
           'focus:outline-none focus:ring-2 focus:ring-navbar-ring focus:ring-inset',
           className,
@@ -45,12 +45,12 @@ export default function CompanyHeader({ company, canAccessCompanyContext = true,
 
   return (
     <Link
-      to={ROUTES_MAP['company'].href}
-      className={cn(
-        'group flex items-center gap-3 px-4 py-3 border-l-2 border-navbar-border',
-        'hover:border-primary hover:bg-navbar-accent transition-all duration-200',
-        'focus:outline-none focus:ring-2 focus:ring-navbar-ring focus:ring-inset',
-        className,
+        to={ROUTES_MAP['company'].href}
+        className={cn(
+          'group flex items-center gap-2 border-l border-navbar-border py-2 pr-0 pl-2 md:gap-3 md:border-l-2 md:px-4 md:py-3',
+          'hover:border-primary hover:bg-navbar-accent transition-all duration-200',
+          'focus:outline-none focus:ring-2 focus:ring-navbar-ring focus:ring-inset',
+          className,
       )}
     >
       <div className="md:hidden flex h-10 w-10 items-center justify-center rounded bg-primary/10 text-primary font-bold text-base shrink-0 uppercase transition-all duration-200 group-hover:bg-primary/20 group-hover:scale-105">

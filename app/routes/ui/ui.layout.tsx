@@ -1,6 +1,4 @@
 import { Outlet } from 'react-router';
-import { Navbar } from './_components/navbar';
-import { Footer } from '../_components/footer';
 import type { Route } from './+types/ui.layout';
 
 export async function loader({}: Route.LoaderArgs) {

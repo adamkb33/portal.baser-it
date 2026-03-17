@@ -3,14 +3,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-
 import {
   type SubmitContactFormSchema,
   submitContactFormSchema,
 } from '~/routes/booking/public/appointment/session/contact/_schemas/submit-contact.form.schema';
+import { Button, Input, Label, Text } from '~/ui';
 
 export interface GetOrCreateContactFetcherFormProps {
   companyId: number;
@@ -64,108 +61,70 @@ export function SubmitContactForm({
     onSubmit(values);
   });
 
+  const renderField = (
+    name: keyof SubmitContactFormSchema,
+    label: string,
+    options?: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
+  ) => {
+    const fieldError = form.formState.errors[name];
+    const field = form.register(name);
+
+    return (
+      <div className="space-y-2">
+        <Label htmlFor={name}>{label}</Label>
+        <Input
+          id={name}
+          {...field}
+          {...options}
+          aria-invalid={Boolean(fieldError)}
+        />
+        {fieldError?.message ? (
+          <Text as="p" variant="caption" className="text-destructive">
+            {String(fieldError.message)}
+          </Text>
+        ) : null}
+      </div>
+    );
+  };
+
   return (
-    <Form {...form}>
-      <form id={formId} className="flex flex-col" onSubmit={handleSubmit} noValidate>
-        {/* Form Fields Container - Mobile-first spacing */}
-        <div className="space-y-4 md:space-y-5">
-          {/* Name Fields - Single column mobile, side-by-side desktop */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
-            <FormField
-              control={form.control}
-              name="givenName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-form-text md:text-base">Fornavn</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      autoComplete="given-name"
-                      className="h-12 bg-form-bg border-form-border text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs text-form-invalid md:text-sm" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="familyName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-form-text md:text-base">Etternavn</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      autoComplete="family-name"
-                      className="h-12 bg-form-bg border-form-border text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs text-form-invalid md:text-sm" />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Email - Full width always */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-form-text md:text-base">E-post</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    className="h-12 bg-form-bg border-form-border text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
-                  />
-                </FormControl>
-                <FormMessage className="text-xs text-form-invalid md:text-sm" />
-              </FormItem>
-            )}
-          />
-
-          {/* Mobile Number - Full width always */}
-          <FormField
-            control={form.control}
-            name="mobileNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-form-text md:text-base">Mobilnummer</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    maxLength={8}
-                    className="h-12 bg-form-bg border-form-border text-base placeholder:text-form-text-muted focus:border-form-ring focus:ring-form-ring md:h-11"
-                  />
-                </FormControl>
-                <FormMessage className="text-xs text-form-invalid md:text-sm" />
-              </FormItem>
-            )}
-          />
+    <form id={formId} className="flex flex-col" onSubmit={handleSubmit} noValidate>
+      <div className="space-y-4 md:space-y-5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+          {renderField('givenName', 'Fornavn', {
+            autoComplete: 'given-name',
+          })}
+          {renderField('familyName', 'Etternavn', {
+            autoComplete: 'family-name',
+          })}
         </div>
 
-        {/* Submit Button - Desktop */}
-        <div className="mt-6 hidden md:block">
-          <Button variant="default" type="submit" disabled={isSubmitting} className="h-11 px-8 text-sm font-semibold">
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                Lagrer…
-              </>
-            ) : (
-              'Fortsett'
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
+        {renderField('email', 'E-post', {
+          type: 'email',
+          inputMode: 'email',
+          autoComplete: 'email',
+        })}
+
+        {renderField('mobileNumber', 'Mobilnummer', {
+          type: 'tel',
+          inputMode: 'tel',
+          autoComplete: 'tel',
+          maxLength: 8,
+        })}
+      </div>
+
+      <div className="mt-6 hidden md:block">
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" />
+              Lagrer…
+            </>
+          ) : (
+            'Fortsett'
+          )}
+        </Button>
+      </div>
+    </form>
   );
 }

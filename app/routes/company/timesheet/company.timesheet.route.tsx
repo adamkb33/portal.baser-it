@@ -1,63 +1,108 @@
 import * as React from 'react';
 import { Link } from 'react-router';
+import { CalendarDays, Clock3, PenLine } from 'lucide-react';
 import type { Route } from './+types/company.timesheet.route';
 import type { TimesheetDayEntryDto } from '~/api/generated/timesheet';
 import { CompanyUserTimesheetEntryController } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
+import { resolveErrorPayload } from '~/lib/api-error';
 import { CalendarView, type CalendarEntry } from '~/components/calendar/CalendarView';
-import { Button } from '~/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
 import { ROUTES_MAP } from '~/lib/route-tree';
+import { CompanyEmptyState, CompanyMetricCard, CompanyPageTemplate, Notice, Popover, PopoverContent, PopoverTrigger } from '~/ui';
 import { parseTimesheetListRequest, serializeTimesheetQuery, TIMESHEET_STATUS_LABELS } from './_utils';
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const url = new URL(request.url);
-  const { requestPayload } = parseTimesheetListRequest(url);
+  try {
+    const url = new URL(request.url);
+    const { requestPayload } = parseTimesheetListRequest(url);
 
-  const response = await withAuth(request, () =>
-    CompanyUserTimesheetEntryController.getEntries({
-      query: { request: requestPayload },
-      paramsSerializer: (params) => serializeTimesheetQuery(params.request),
-    }),
-  );
+    const response = await withAuth(request, () =>
+      CompanyUserTimesheetEntryController.getEntries({
+        query: { request: requestPayload },
+        paramsSerializer: (params) => serializeTimesheetQuery(params.request),
+      }),
+    );
 
-  return {
-    entries: (response.data?.data?.content ?? []).map((entry) => ({
-      id: entry.id?.toString() ?? entry.date,
-      date: entry.date,
-      label: toCalendarEntryLabel(entry),
-      href: getEditableEntryHref(entry),
-      status: entry.status,
-      entryMode: entry.entryMode,
-      fromTime: entry.fromTime ?? null,
-      toTime: entry.toTime ?? null,
-      durationMinutes: entry.durationMinutes,
-      note: entry.note ?? null,
-      declineReason: entry.declineReason ?? null,
-      className: getStatusClassName(entry.status),
-    })),
-  };
+    return {
+      entries: (response.data?.data?.content ?? []).map((entry) => ({
+        id: entry.id?.toString() ?? entry.date,
+        date: entry.date,
+        label: toCalendarEntryLabel(entry),
+        href: getEditableEntryHref(entry),
+        status: entry.status,
+        entryMode: entry.entryMode,
+        fromTime: entry.fromTime ?? null,
+        toTime: entry.toTime ?? null,
+        durationMinutes: entry.durationMinutes,
+        note: entry.note ?? null,
+        declineReason: entry.declineReason ?? null,
+        className: getStatusClassName(entry.status),
+      })),
+      error: null as string | null,
+    };
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente timelister');
+    return {
+      entries: [],
+      error: message,
+    };
+  }
 }
 
 export default function CompanyTimesheetRoute({ loaderData }: Route.ComponentProps) {
-  const entries: CalendarEntry[] = loaderData.entries.map((entry) => ({
+  const entries = loaderData.entries;
+  const error = loaderData.error;
+  const calendarEntries: CalendarEntry[] = entries.map((entry) => ({
     id: entry.id,
     date: entry.date,
     content: <TimesheetCalendarEntry entry={entry} />,
     className: entry.className,
   }));
 
+  const summary = entries.reduce(
+    (acc, entry) => {
+      acc.total += 1;
+      acc.minutes += entry.durationMinutes;
+      acc[entry.status] += 1;
+      return acc;
+    },
+    { total: 0, minutes: 0, SUBMITTED: 0, ACCEPTED: 0, DECLINED: 0 },
+  );
+
   return (
-    <div className="space-y-4">
-      <CalendarView
-        entries={entries}
-        header={
-          <Button asChild>
-            <Link to={ROUTES_MAP['company.timesheet.register'].href}>Ny registrering</Link>
-          </Button>
-        }
-      />
-    </div>
+    <CompanyPageTemplate
+      title="Timelister"
+      description="Kalenderbasert oversikt over egne registreringer i samme kompakte sideoppsett som resten av company-domenet."
+      label="Timeregistrering"
+      actions={
+        <Link
+          to={ROUTES_MAP['company.timesheet.register'].href}
+          className="inline-flex h-8 items-center justify-center rounded-sm bg-interactive px-3 text-sm font-medium text-text-inverse transition-colors hover:bg-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+        >
+          Ny registrering
+        </Link>
+      }
+      hero={
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <CompanyMetricCard label="Registreringer" value={summary.total} icon={<CalendarDays className="h-5 w-5" />} />
+          <CompanyMetricCard label="Timer totalt" value={formatDurationHours(summary.minutes)} icon={<Clock3 className="h-5 w-5" />} />
+          <CompanyMetricCard label="Sendt inn" value={summary.SUBMITTED} icon={<PenLine className="h-5 w-5" />} />
+          <CompanyMetricCard label="Godkjent" value={summary.ACCEPTED} icon={<Clock3 className="h-5 w-5" />} />
+        </div>
+      }
+    >
+      {error ? (
+        <Notice tone="emphasis" title="Kunne ikke hente timelister" message={error} />
+      ) : entries.length === 0 ? (
+        <CompanyEmptyState
+          icon={<CalendarDays className="h-6 w-6" />}
+          title="Ingen registreringer ennå"
+          description="Du har ingen timeregistreringer i den valgte perioden. Start med en ny registrering."
+        />
+      ) : (
+        <CalendarView entries={calendarEntries} />
+      )}
+    </CompanyPageTemplate>
   );
 }
 
@@ -86,13 +131,22 @@ function TimesheetCalendarEntry({
       className="block w-full hover:underline"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
     >
       {entry.label}
     </Link>
   ) : (
-    <div className="block w-full cursor-default" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    <button
+      type="button"
+      className="block w-full cursor-default text-left"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+    >
       {entry.label}
-    </div>
+    </button>
   );
 
   return (
@@ -107,12 +161,12 @@ function TimesheetCalendarEntry({
         onMouseLeave={() => setOpen(false)}
       >
         <div className="flex items-center justify-between gap-2">
-          <p className="text-xs font-semibold text-foreground">{entry.label}</p>
-          <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-xs font-semibold text-text-primary">{entry.label}</p>
+          <span className="text-[10px] font-medium uppercase tracking-wide text-text-secondary">
             {TIMESHEET_STATUS_LABELS[entry.status]}
           </span>
         </div>
-        <div className="space-y-1 text-[11px] leading-4 text-muted-foreground">
+        <div className="space-y-1 text-[11px] leading-4 text-text-secondary">
           <p>{entry.entryMode === 'RANGE' ? 'Tidsintervall' : 'Timer'}</p>
           {entry.entryMode === 'RANGE' && entry.fromTime && entry.toTime ? (
             <p>
@@ -121,8 +175,8 @@ function TimesheetCalendarEntry({
           ) : (
             <p>{formatDurationHours(entry.durationMinutes)}</p>
           )}
-          {entry.note ? <p className="line-clamp-2 text-foreground/80">{entry.note}</p> : null}
-          {entry.declineReason ? <p className="text-destructive line-clamp-3">Avvist: {entry.declineReason}</p> : null}
+          {entry.note ? <p className="line-clamp-2 text-text-primary">{entry.note}</p> : null}
+          {entry.declineReason ? <p className="line-clamp-3 text-destructive">Avvist: {entry.declineReason}</p> : null}
         </div>
       </PopoverContent>
     </Popover>
@@ -152,12 +206,12 @@ function getEditableEntryHref(entry: TimesheetDayEntryDto) {
 function getStatusClassName(status: TimesheetDayEntryDto['status']): CalendarEntry['className'] {
   switch (status) {
     case 'ACCEPTED':
-      return 'bg-secondary/30';
+      return 'bg-surface';
     case 'SUBMITTED':
-      return 'bg-primary/30';
+      return 'bg-surface';
     case 'DECLINED':
-      return 'bg-destructive/30';
+      return 'bg-surface';
     default:
-      return 'bg-muted';
+      return 'bg-surface';
   }
 }

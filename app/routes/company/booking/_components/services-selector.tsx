@@ -1,10 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Input } from '~/components/ui/input';
-import { Button } from '~/components/ui/button';
-import { Check, Clock, DollarSign, ChevronDown, ChevronUp, User2Icon } from 'lucide-react';
-import { cn } from '~/lib/utils';
+import { useEffect, useState } from 'react';
+import { Check, ChevronDown, ChevronUp, Clock, DollarSign, Search } from 'lucide-react';
 import type { GroupedServiceGroupDto } from '~/api/generated/booking';
-import { Label } from '~/components/ui/label';
+import { Button, Input, Text, cn } from '~/ui';
 
 type ServiceSelectorProps = {
   serviceGroups: GroupedServiceGroupDto[];
@@ -13,6 +10,7 @@ type ServiceSelectorProps = {
   onDeselectService: (serviceId: number) => void;
   onSearchChange: (search: string) => void;
   initialSearch?: string;
+  compact?: boolean;
 };
 
 export function ServicesSelector({
@@ -22,6 +20,7 @@ export function ServicesSelector({
   onDeselectService,
   onSearchChange,
   initialSearch = '',
+  compact = false,
 }: ServiceSelectorProps) {
   const [searchFilter, setSearchFilter] = useState(initialSearch);
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
@@ -32,22 +31,19 @@ export function ServicesSelector({
 
   useEffect(() => {
     if (serviceGroups.length > 0) {
-      setExpandedGroups(new Set(serviceGroups.map((g) => g.id)));
+      setExpandedGroups(new Set(serviceGroups.map((group) => group.id)));
     }
   }, [serviceGroups]);
 
   const handleSearchChange = (value: string) => {
     setSearchFilter(value);
-    const timeoutId = setTimeout(() => {
-      onSearchChange(value);
-    }, 300);
-
+    const timeoutId = setTimeout(() => onSearchChange(value), 300);
     return () => clearTimeout(timeoutId);
   };
 
   const toggleGroup = (groupId: number) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
+    setExpandedGroups((current) => {
+      const next = new Set(current);
       if (next.has(groupId)) {
         next.delete(groupId);
       } else {
@@ -55,6 +51,14 @@ export function ServicesSelector({
       }
       return next;
     });
+  };
+
+  const handleToggleService = (serviceId: number) => {
+    if (selectedServiceIds.includes(serviceId)) {
+      onDeselectService(serviceId);
+      return;
+    }
+    onSelectService(serviceId);
   };
 
   const formatDuration = (minutes: number) => {
@@ -65,148 +69,175 @@ export function ServicesSelector({
     return `${mins}m`;
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('nb-NO', {
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat('nb-NO', {
       style: 'currency',
       currency: 'NOK',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
+
+  const totalServices = serviceGroups.reduce((sum, group) => sum + group.services.length, 0);
+  const visibleServiceIds = serviceGroups.flatMap((group) => group.services.map((service) => service.id));
+  const selectedVisibleServiceIds = visibleServiceIds.filter((serviceId) => selectedServiceIds.includes(serviceId));
+  const allVisibleSelected = visibleServiceIds.length > 0 && selectedVisibleServiceIds.length === visibleServiceIds.length;
+
+  const handleSelectAll = () => {
+    visibleServiceIds.forEach((serviceId) => {
+      if (!selectedServiceIds.includes(serviceId)) {
+        onSelectService(serviceId);
+      }
+    });
   };
 
-  const handleToggleService = (serviceId: number) => {
-    if (selectedServiceIds.includes(serviceId)) {
-      onDeselectService(serviceId);
-    } else {
-      onSelectService(serviceId);
-    }
+  const handleClearAll = () => {
+    selectedServiceIds.forEach((serviceId) => onDeselectService(serviceId));
   };
-
-  const totalServices = serviceGroups?.reduce((acc, group) => acc + group.services.length, 0);
 
   return (
-    <div className="space-y-3 md:space-y-4 p-2">
-      <Label htmlFor="date" className="flex items-center gap-2 text-sm font-medium px-1">
-        <User2Icon className="h-4 w-4" />
-        <span>Velg eller legg til kontakt</span>
-      </Label>
-
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Input
-            placeholder="Søk tjeneste…"
-            value={searchFilter}
-            onChange={(e) => {
-              const value = e.target.value;
-              setSearchFilter(value);
-              handleSearchChange(value);
-            }}
-            className="h-11 text-sm md:h-10 md:text-base"
-          />
-        </div>
+    <div className={cn('space-y-2', compact ? 'p-0' : 'p-2')}>
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-secondary" />
+        <Input
+          id="service-search"
+          placeholder="Søk tjeneste"
+          value={searchFilter}
+          onChange={(event) => {
+            const value = event.target.value;
+            setSearchFilter(value);
+            handleSearchChange(value);
+          }}
+          className={cn('pl-9', compact ? 'h-9 text-sm' : 'h-10 text-sm')}
+        />
       </div>
 
-      <div className="space-y-2.5 md:space-y-2 h-[450px] md:h-[350px] overflow-y-auto p-3 md:p-4 border rounded-lg">
+      <div
+        className={cn(
+          'rounded-md border border-border bg-background',
+          compact ? 'max-h-[300px] overflow-y-auto p-2' : 'max-h-[360px] overflow-y-auto p-3',
+        )}
+      >
         {totalServices === 0 ? (
-          <div className="py-12 md:py-8 text-center">
-            <DollarSign className="h-12 w-12 md:h-10 md:w-10 mx-auto text-muted-foreground/50 mb-3 md:mb-2" />
-            <p className="text-sm md:text-xs text-muted-foreground">
-              {searchFilter ? 'Ingen tjenester funnet' : 'Ingen tjenester'}
-            </p>
+          <div className="flex min-h-32 flex-col items-center justify-center gap-2 text-center">
+            <DollarSign className="h-5 w-5 text-text-secondary" />
+            <Text as="p" variant="body-sm" className="text-text-secondary">
+              {searchFilter ? 'Ingen tjenester funnet' : 'Ingen tjenester tilgjengelig'}
+            </Text>
           </div>
         ) : (
-          serviceGroups.map((group) => (
-            <div key={group.id} className="space-y-2 md:space-y-1.5">
-              <button
-                onClick={() => toggleGroup(group.id)}
-                className="w-full flex items-center justify-between p-3 md:p-2 hover:bg-muted/50 rounded-lg transition-colors min-h-[44px] md:min-h-0"
-              >
-                <div className="flex items-center gap-2.5 md:gap-2">
-                  <div className="font-bold text-sm md:text-xs uppercase tracking-wide text-foreground/80">
-                    {group.name}
+          <div className="space-y-2">
+            {serviceGroups.map((group) => (
+              <div key={group.id} className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.id)}
+                  className={cn(
+                    'flex w-full items-center justify-between rounded-sm bg-surface text-left transition-colors hover:bg-background',
+                    compact ? 'px-2 py-1.5' : 'px-3 py-2',
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <Text as="span" variant="label" className="text-text-primary">
+                      {group.name}
+                    </Text>
+                    <Text as="span" variant="body-sm" className="text-text-secondary">
+                      {group.services.length}
+                    </Text>
                   </div>
-                  <div className="text-xs md:text-[10px] text-muted-foreground">({group.services.length})</div>
-                </div>
+                  {expandedGroups.has(group.id) ? (
+                    <ChevronUp className="h-3.5 w-3.5 text-text-secondary" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5 text-text-secondary" />
+                  )}
+                </button>
+
                 {expandedGroups.has(group.id) ? (
-                  <ChevronUp className="h-4 w-4 md:h-3.5 md:w-3.5 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 md:h-3.5 md:w-3.5 text-muted-foreground" />
-                )}
-              </button>
+                  <div className="space-y-1 pl-2">
+                    {group.services.map((service) => {
+                      const isSelected = selectedServiceIds.includes(service.id);
 
-              {expandedGroups.has(group.id) && (
-                <div className="space-y-2 md:space-y-1.5 pl-2 md:pl-2">
-                  {group.services.map((service) => {
-                    const isSelected = selectedServiceIds.includes(service.id);
-                    return (
-                      <div
-                        key={service.id}
-                        className={cn(
-                          'relative group cursor-pointer rounded-lg border p-3 md:p-2 transition-all',
-                          'hover:shadow-sm hover:border-primary/50',
-                          'active:scale-[0.98]',
-                          isSelected && 'border-primary bg-primary/5 shadow-sm',
-                        )}
-                        onClick={() => handleToggleService(service.id)}
-                      >
-                        {isSelected && (
-                          <div className="absolute -top-2 -right-2 md:-top-1.5 md:-right-1.5 bg-primary text-primary-foreground rounded-full p-1 md:p-0.5">
-                            <Check className="h-3 w-3 md:h-2.5 md:w-2.5" />
-                          </div>
-                        )}
-
-                        <div className="flex items-start gap-3 md:gap-2">
+                      return (
+                        <button
+                          key={service.id}
+                          type="button"
+                          onClick={() => handleToggleService(service.id)}
+                          className={cn(
+                            'flex w-full items-start gap-2 rounded-sm border text-left transition-colors',
+                            compact ? 'px-2 py-1.5' : 'px-3 py-2',
+                            isSelected
+                              ? 'border-border bg-surface text-text-primary'
+                              : 'border-border bg-background text-text-primary hover:bg-surface',
+                          )}
+                        >
                           <div
                             className={cn(
-                              'flex-shrink-0 h-5 w-5 md:h-4 md:w-4 rounded border-2 flex items-center justify-center transition-all',
-                              isSelected
-                                ? 'bg-primary border-primary'
-                                : 'border-muted-foreground/30 group-hover:border-primary/50',
+                              'mt-0.5 flex shrink-0 items-center justify-center rounded-sm border',
+                              compact ? 'h-4 w-4' : 'h-4 w-4',
+                              isSelected ? 'border-interactive bg-interactive text-text-inverse' : 'border-border bg-background text-text-secondary',
                             )}
                           >
-                            {isSelected && <Check className="h-3 w-3 md:h-2.5 md:w-2.5 text-primary-foreground" />}
+                            {isSelected ? <Check className="h-3 w-3" /> : null}
                           </div>
 
-                          <div className="flex-1 min-w-0 space-y-1 md:space-y-0.5">
-                            <div className="font-semibold text-sm md:text-xs">{service.name}</div>
-
-                            <div className="flex items-center gap-3 md:gap-3 text-xs md:text-[10px] text-muted-foreground">
-                              <div className="flex items-center gap-1.5 md:gap-1">
-                                <DollarSign className="h-3.5 w-3.5 md:h-2.5 md:w-2.5 flex-shrink-0" />
-                                <span>{formatPrice(service.price)}</span>
+                          <div className="min-w-0 flex-1 space-y-0.5">
+                            <Text as="p" variant="body-sm" className="text-text-primary">
+                              {service.name}
+                            </Text>
+                            <div className="flex items-center gap-3 text-text-secondary">
+                              <div className="flex items-center gap-1">
+                                <DollarSign className="h-3 w-3" />
+                                <Text as="span" variant="body-sm" className="text-text-secondary">
+                                  {formatPrice(service.price)}
+                                </Text>
                               </div>
-                              <div className="flex items-center gap-1.5 md:gap-1">
-                                <Clock className="h-3.5 w-3.5 md:h-2.5 md:w-2.5 flex-shrink-0" />
-                                <span>{formatDuration(service.duration)}</span>
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                <Text as="span" variant="body-sm" className="text-text-secondary">
+                                  {formatDuration(service.duration)}
+                                </Text>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ))
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      {selectedServiceIds.length > 0 && (
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between text-xs md:text-[10px] text-muted-foreground pt-3 md:pt-1.5 border-t">
-          <div className="font-medium text-center md:text-left">
-            {selectedServiceIds.length} tjeneste{selectedServiceIds.length !== 1 ? 'r' : ''} valgt
+      {totalServices > 0 ? (
+        <div className="flex items-center justify-between border-t border-border pt-2">
+          <Text as="p" variant="body-sm" className="text-text-secondary">
+            {selectedVisibleServiceIds.length} valgt
+          </Text>
+          <div className="flex items-center gap-1.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className={cn(compact ? 'h-7 px-2 text-xs' : 'h-8 px-2 text-xs')}
+              onClick={handleSelectAll}
+              disabled={allVisibleSelected}
+            >
+              Velg alle
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className={cn(compact ? 'h-7 px-2 text-xs' : 'h-8 px-2 text-xs')}
+              onClick={handleClearAll}
+              disabled={selectedServiceIds.length === 0}
+            >
+              Fjern alle
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full md:w-auto h-11 md:h-7 text-sm md:text-[10px]"
-            onClick={() => selectedServiceIds.forEach((id) => onDeselectService(id))}
-          >
-            Fjern alle
-          </Button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

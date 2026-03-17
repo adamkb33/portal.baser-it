@@ -1,15 +1,12 @@
-import { useFetcher, useNavigate, useSearchParams } from 'react-router';
+import { NavLink, useNavigate, useSearchParams, useSubmit } from 'react-router';
 import { useState } from 'react';
-import { Button } from '~/components/ui/button';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
-import { FormDialog } from '~/components/dialog/form-dialog';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
-import { Input } from '~/components/ui/input';
-import { TableCell, TableRow } from '~/components/ui/table';
+import { Button, Input, Notice, TableCell, TableRow } from '~/ui';
 import type { Route } from './+types/company.booking.admin.service-groups.route';
 import { CompanyUserServiceGroupController, type ServiceGroupDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
-import { API_ROUTES_MAP } from '~/lib/route-tree';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -19,18 +16,17 @@ export async function loader({ request }: Route.LoaderArgs) {
     const size = parseInt(url.searchParams.get('size') || '10', 10);
     const search = url.searchParams.get('search') || '';
 
-    const response = await withAuth(request, async () => {
-      return CompanyUserServiceGroupController.getServiceGroups({
+    const response = await withAuth(request, async () =>
+      CompanyUserServiceGroupController.getServiceGroups({
         query: {
           page,
           size,
           ...(search && { search }),
         },
-      });
-    });
+      }),
+    );
 
-    const apiResponse = response.data;
-    const pageData = apiResponse?.data;
+    const pageData = response.data?.data;
 
     return {
       serviceGroups: pageData?.content || [],
@@ -56,82 +52,27 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
-type FormData = {
-  id?: number;
-  name: string;
-};
-
 export default function BookingServiceGroups({ loaderData }: Route.ComponentProps) {
-  const { serviceGroups, pagination } = loaderData;
+  const { serviceGroups, pagination, error } = loaderData;
   const navigate = useNavigate();
+  const submit = useSubmit();
   const [searchParams] = useSearchParams();
-  const fetcher = useFetcher<{ success?: boolean; message?: string }>();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [editingServiceGroup, setEditingServiceGroup] = useState<FormData | null>(null);
   const [deletingServiceGroupId, setDeletingServiceGroupId] = useState<number | null>(null);
   const [filter, setFilter] = useState(searchParams.get('search') || '');
-
-  const handleAdd = () => {
-    setEditingServiceGroup({ name: '' });
-    setIsDialogOpen(true);
-  };
-
-  const handleEdit = (serviceGroup: ServiceGroupDto) => {
-    setEditingServiceGroup({
-      id: serviceGroup.id,
-      name: serviceGroup.name,
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleDeleteClick = (id: number) => {
-    setDeletingServiceGroupId(id);
-    setIsDeleteDialogOpen(true);
-  };
 
   const handleDeleteConfirm = () => {
     if (!deletingServiceGroupId) return;
 
     const formData = new FormData();
     formData.append('id', String(deletingServiceGroupId));
-
-    fetcher.submit(formData, {
+    submit(formData, {
       method: 'post',
       action: API_ROUTES_MAP['company.booking.admin.service-groups.delete'].url,
     });
 
     setIsDeleteDialogOpen(false);
     setDeletingServiceGroupId(null);
-  };
-
-  const handleFieldChange = (name: keyof FormData, value: any) => {
-    if (editingServiceGroup) {
-      setEditingServiceGroup({ ...editingServiceGroup, [name]: value });
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingServiceGroup) return;
-
-    const formData = new FormData();
-    if (editingServiceGroup.id) {
-      formData.append('id', String(editingServiceGroup.id));
-    }
-    formData.append('name', editingServiceGroup.name);
-
-    const action = editingServiceGroup.id
-      ? API_ROUTES_MAP['company.booking.admin.service-groups.update'].url
-      : API_ROUTES_MAP['company.booking.admin.service-groups.create'].url;
-
-    fetcher.submit(formData, {
-      method: 'post',
-      action,
-    });
-
-    setIsDialogOpen(false);
-    setEditingServiceGroup(null);
   };
 
   const handleFilterChange = (value: string) => {
@@ -161,6 +102,8 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
 
   return (
     <>
+      {error ? <Notice tone="emphasis" title="Kunne ikke hente tjenestegrupper" message={error} /> : null}
+
       <ServerPaginatedTable<ServiceGroupDto>
         items={serviceGroups}
         pagination={pagination}
@@ -173,20 +116,28 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
           { header: 'Handlinger', className: 'text-right' },
         ]}
         headerSlot={
-          < >
-            <Input
-              placeholder="Søk på navn..."
-              value={filter}
-              onChange={(event) => handleFilterChange(event.target.value)}
-              className="max-w-sm"
-            />
-            <Button onClick={handleAdd}>Legg til ny tjenestegruppe</Button>
-          </>
+          <Input
+            placeholder="Søk på navn..."
+            value={filter}
+            onChange={(event) => handleFilterChange(event.target.value)}
+            className="max-w-sm"
+          />
         }
-        mobileHeaderSlot={
-          <Button size="sm" onClick={handleAdd}>
+        primaryAction={
+          <NavLink
+            to={ROUTES_MAP['company.booking.admin.service-groups.create'].href}
+            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
+          >
+            Legg til ny tjenestegruppe
+          </NavLink>
+        }
+        mobilePrimaryAction={
+          <NavLink
+            to={ROUTES_MAP['company.booking.admin.service-groups.create'].href}
+            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
+          >
             Ny tjenestegruppe
-          </Button>
+          </NavLink>
         }
         renderRow={(serviceGroup) => (
           <TableRow>
@@ -194,15 +145,20 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
             <TableCell className="font-medium">{serviceGroup.name}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => handleEdit(serviceGroup)}>
+                <NavLink
+                  to={`${ROUTES_MAP['company.booking.admin.service-groups.edit'].href}?id=${serviceGroup.id}`}
+                  className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface"
+                >
                   Rediger
-                </Button>
+                </NavLink>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="text-red-500"
-                  onClick={() => handleDeleteClick(serviceGroup.id!)}
-                  disabled={fetcher.state !== 'idle' && deletingServiceGroupId === serviceGroup.id}
+                  onClick={() => {
+                    setDeletingServiceGroupId(serviceGroup.id!);
+                    setIsDeleteDialogOpen(true);
+                  }}
                 >
                   Slett
                 </Button>
@@ -211,42 +167,6 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
           </TableRow>
         )}
       />
-
-      {editingServiceGroup && (
-        <FormDialog<FormData>
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          title={editingServiceGroup.id ? 'Rediger tjenestegruppe' : 'Ny tjenestegruppe'}
-          formData={editingServiceGroup}
-          onFieldChange={handleFieldChange}
-          onSubmit={handleSubmit}
-          fields={[
-            {
-              name: 'name',
-              label: 'Navn',
-              type: 'text',
-              placeholder: 'Skriv inn navn',
-              required: true,
-            },
-          ]}
-          actions={[
-            {
-              label: 'Avbryt',
-              variant: 'outline',
-              onClick: () => {
-                setIsDialogOpen(false);
-                setEditingServiceGroup(null);
-              },
-            },
-            {
-              label: 'Lagre',
-              type: 'submit',
-              variant: 'default',
-              onClick: () => {},
-            },
-          ]}
-        />
-      )}
 
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}

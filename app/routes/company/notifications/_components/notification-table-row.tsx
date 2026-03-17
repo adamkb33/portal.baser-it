@@ -1,9 +1,8 @@
 import { Clock3, MessageSquareQuote } from 'lucide-react';
 import type { InAppNotificationDto } from '~/api/generated/notification';
-import { Badge } from '~/components/ui/badge';
-import { TableCell, TableRow } from '~/components/ui/table';
 import { compactText, formatNotificationTimestamp } from '../_utils/format';
 import { getNotificationHeadline } from '../_utils/query';
+import { Badge, TableCell, TableRow } from '~/ui';
 
 type NotificationTableRowProps = {
   notification: InAppNotificationDto;

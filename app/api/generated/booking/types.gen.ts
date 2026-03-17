@@ -136,7 +136,7 @@ export type ApiResponsePublicPendingUserResponseDto = {
 export type PublicPendingUserResponseDto = {
     sessionId: string;
     userDto?: UserDto;
-    nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'DONE';
+    nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
 };
 
 export type UserDto = {
@@ -148,6 +148,7 @@ export type UserDto = {
     mobileNumber?: string;
     mobileVerified: boolean;
     provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
+    hasPassword: boolean;
 };
 
 export type ApiResponseAppointmentDto = {
@@ -167,6 +168,7 @@ export type AppointmentDto = {
     startTime: string;
     endTime: string;
     groupedServiceGroups: Array<GroupedServiceGroupDto>;
+    images: Array<ImageDto>;
 };
 
 export type GroupedServiceDto = {
@@ -319,17 +321,35 @@ export type ApiResponseListDailyScheduleDto = {
     timestamp: string;
 };
 
-export type CompanyUserCreateAppointmentForNewUserDto = {
-    email?: string;
-    mobileNumber?: string;
+export type CompanyUserCreateAppointmentDto = {
+    userId: number;
     serviceIds: Array<number>;
     startTime: string;
 };
 
-export type CompanyUserCreateAppointmentForExistingUserDto = {
-    userId: number;
-    serviceIds: Array<number>;
-    startTime: string;
+export type CompanyUserUploadAppointmentImageDto = {
+    image: ImageUpload;
+};
+
+export type ApiResponseLong = {
+    success: boolean;
+    message: ApiMessage;
+    data?: number;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type CompanyAdminSetAppointmentNoShowDto = {
+    noShow: boolean;
+};
+
+export type ApiResponseUnit = {
+    success: boolean;
+    message: ApiMessage;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
 };
 
 export type ApiResponsePublicSessionUserStatusDto = {
@@ -345,7 +365,7 @@ export type PublicSessionUserStatusDto = {
     sessionId: string;
     userId?: number;
     attached: boolean;
-    nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'DONE';
+    nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
     provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
 };
 
@@ -362,7 +382,7 @@ export type PublicSessionRequirementsDto = {
     needsUser: boolean;
     needsEmail: boolean;
     needsMobile: boolean;
-    nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'DONE';
+    nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
 };
 
 export type ApiResponseListBookingProfileDto = {
@@ -722,15 +742,11 @@ export type ApiResponsePublicPendingUserClearedResponseDto = {
 export type PublicPendingUserClearedResponseDto = {
     sessionId: string;
     pendingUserId?: number;
-    nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'DONE';
+    nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
 };
 
-export type ApiResponseUnit = {
-    success: boolean;
-    message: ApiMessage;
-    errors?: Array<ApiError>;
-    meta?: ApiMeta;
-    timestamp: string;
+export type CompanyAdminCancelAppointmentDto = {
+    reason: string;
 };
 
 export type DeleteServiceData = {
@@ -1109,37 +1125,81 @@ export type CreateOrUpdateDailySchedulesResponses = {
 
 export type CreateOrUpdateDailySchedulesResponse = CreateOrUpdateDailySchedulesResponses[keyof CreateOrUpdateDailySchedulesResponses];
 
-export type CompanyUserCreateAppointmentForNewUserData = {
-    body: CompanyUserCreateAppointmentForNewUserDto;
+export type GetAppointmentsData = {
+    body?: never;
     path?: never;
-    query?: never;
-    url: '/company-user/appointments/new-user';
+    query?: {
+        page?: number;
+        size?: number;
+        sort?: string;
+        fromDateTime?: string;
+        toDateTime?: string;
+        direction?: 'ASC' | 'DESC';
+        search?: string;
+    };
+    url: '/company-user/appointments';
 };
 
-export type CompanyUserCreateAppointmentForNewUserResponses = {
+export type GetAppointmentsResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponsePaginatedResponseAppointmentDto;
+};
+
+export type GetAppointmentsResponse = GetAppointmentsResponses[keyof GetAppointmentsResponses];
+
+export type CompanyUserCreateAppointmentData = {
+    body: CompanyUserCreateAppointmentDto;
+    path?: never;
+    query?: never;
+    url: '/company-user/appointments';
+};
+
+export type CompanyUserCreateAppointmentResponses = {
     /**
      * OK
      */
     200: ApiResponseAppointmentDto;
 };
 
-export type CompanyUserCreateAppointmentForNewUserResponse = CompanyUserCreateAppointmentForNewUserResponses[keyof CompanyUserCreateAppointmentForNewUserResponses];
+export type CompanyUserCreateAppointmentResponse = CompanyUserCreateAppointmentResponses[keyof CompanyUserCreateAppointmentResponses];
 
-export type CompanyUserCreateAppointmentForExistingUserData = {
-    body: CompanyUserCreateAppointmentForExistingUserDto;
-    path?: never;
+export type UploadAppointmentImageData = {
+    body: CompanyUserUploadAppointmentImageDto;
+    path: {
+        id: number;
+    };
     query?: never;
-    url: '/company-user/appointments/existing-user';
+    url: '/company-user/appointments/{id}/images';
 };
 
-export type CompanyUserCreateAppointmentForExistingUserResponses = {
+export type UploadAppointmentImageResponses = {
     /**
      * OK
      */
-    200: ApiResponseAppointmentDto;
+    200: ApiResponseLong;
 };
 
-export type CompanyUserCreateAppointmentForExistingUserResponse = CompanyUserCreateAppointmentForExistingUserResponses[keyof CompanyUserCreateAppointmentForExistingUserResponses];
+export type UploadAppointmentImageResponse = UploadAppointmentImageResponses[keyof UploadAppointmentImageResponses];
+
+export type SetAppointmentNoShowData = {
+    body: CompanyAdminSetAppointmentNoShowDto;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/company-user/appointments/{id}/no-show';
+};
+
+export type SetAppointmentNoShowResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUnit;
+};
+
+export type SetAppointmentNoShowResponse = SetAppointmentNoShowResponses[keyof SetAppointmentNoShowResponses];
 
 export type GetAppointmentSessionUserStatusData = {
     body?: never;
@@ -1348,30 +1408,6 @@ export type GetCompanyBookingInfoResponses = {
 };
 
 export type GetCompanyBookingInfoResponse = GetCompanyBookingInfoResponses[keyof GetCompanyBookingInfoResponses];
-
-export type GetAppointmentsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        page?: number;
-        size?: number;
-        sort?: string;
-        fromDateTime?: string;
-        toDateTime?: string;
-        direction?: 'ASC' | 'DESC';
-        search?: string;
-    };
-    url: '/company-user/appointments';
-};
-
-export type GetAppointmentsResponses = {
-    /**
-     * OK
-     */
-    200: ApiResponsePaginatedResponseAppointmentDto;
-};
-
-export type GetAppointmentsResponse = GetAppointmentsResponses[keyof GetAppointmentsResponses];
 
 export type GetAppointmentCustomersData = {
     body?: never;
@@ -1612,7 +1648,7 @@ export type DeleteDailyScheduleResponses = {
 export type DeleteDailyScheduleResponse = DeleteDailyScheduleResponses[keyof DeleteDailyScheduleResponses];
 
 export type DeleteAppointmentData = {
-    body?: never;
+    body: CompanyAdminCancelAppointmentDto;
     path: {
         id: number;
     };
@@ -1628,3 +1664,22 @@ export type DeleteAppointmentResponses = {
 };
 
 export type DeleteAppointmentResponse = DeleteAppointmentResponses[keyof DeleteAppointmentResponses];
+
+export type DeleteAppointmentImageData = {
+    body?: never;
+    path: {
+        id: number;
+        imageId: number;
+    };
+    query?: never;
+    url: '/company-user/appointments/{id}/images/{imageId}';
+};
+
+export type DeleteAppointmentImageResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUnit;
+};
+
+export type DeleteAppointmentImageResponse = DeleteAppointmentImageResponses[keyof DeleteAppointmentImageResponses];

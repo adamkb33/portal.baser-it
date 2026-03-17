@@ -1,5 +1,5 @@
-import { Checkbox } from '~/components/ui/checkbox';
 import { CompanyRole } from '~/api/clients/types';
+import { Checkbox } from '~/ui';
 
 export const ROLE_OPTIONS = [
   { value: CompanyRole.ADMIN as const, label: 'Administrator', description: 'Full tilgang til alle funksjoner' },
@@ -25,10 +25,10 @@ export const RoleCheckboxes = ({
             transition-all duration-200
             ${
               isChecked
-                ? 'bg-primary/5 border-primary/30 shadow-2xs'
-                : 'bg-background border-border hover:border-primary/20 hover:bg-accent/5'
+                ? 'border-interactive bg-surface'
+                : 'border-border bg-background hover:border-interactive hover:bg-surface'
             }
-            focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2
+            focus-within:ring-2 focus-within:ring-interactive focus-within:ring-offset-2
           `}
         >
           <Checkbox
@@ -45,16 +45,16 @@ export const RoleCheckboxes = ({
 
           <div className="flex-1 min-w-0">
             <div
-              className={`text-sm font-semibold transition-colors duration-200 leading-tight ${isChecked ? 'text-primary' : 'text-foreground'}`}
+              className={`text-sm font-semibold leading-tight transition-colors duration-200 ${isChecked ? 'text-interactive' : 'text-text-primary'}`}
             >
               {role.label}
             </div>
-            <div className="text-xs text-muted-foreground mt-1 leading-relaxed">{role.description}</div>
+            <div className="mt-1 text-xs leading-relaxed text-text-secondary">{role.description}</div>
           </div>
 
           {isChecked && (
             <div
-              className="absolute top-2 md:top-3 right-2 md:right-3 h-2 w-2 rounded-full bg-primary animate-in fade-in zoom-in duration-200"
+              className="absolute right-2 top-2 h-2 w-2 rounded-full bg-interactive animate-in fade-in zoom-in duration-200 md:right-3 md:top-3"
               aria-hidden="true"
             />
           )}

@@ -2,24 +2,70 @@ import * as React from 'react';
 import { LogIn, UserPlus } from 'lucide-react';
 import { data, Form, redirect, useNavigate } from 'react-router';
 import { ProviderButtons } from '~/routes/auth/_components/provider-buttons';
-import { BookingButton, BookingGrid, BookingSection, BookingStepHeader } from '../../_components/booking-layout';
 import type { UserAuthStatusDto } from '~/api/generated/base';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { redirectWithError, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { Route } from './+types/booking.public.appointment.session.contact.route';
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
 import { resolveAuthNextStepHref, resolveAuthStatusNextStepHref } from './_utils/auth.utils';
 import { authService } from '~/lib/auth-service';
 import { ContactSessionService } from './_services/contact-session.service.server';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { logger } from '~/lib/logger';
+import { Button, Card, CardDescription, CardFooter, CardHeader, CardTitle, Grid, PageHeader, Panel, Stack, Text } from '~/ui';
 
 const ACTION_INTENT = {
   CONTINUE_WITH_SESSION_USER: 'continue-with-session-user',
   CONTINUE_WITH_PROVIDER: 'continue-with-provider',
   CONTINUE_WITH_AUTHENTICATED_USER: 'continue-with-authenticated-user',
 } as const;
+
+type ContinueCardProps = {
+  title: string;
+  description?: string;
+  cta: string;
+  initials?: string;
+  intentValue: string;
+};
+
+function ContinueCard({ title, description, cta, initials, intentValue }: ContinueCardProps) {
+  return (
+    <Form method="post">
+      <button
+        type="submit"
+        name="intent"
+        value={intentValue}
+        className="group w-full rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-booking-action"
+      >
+        <Card
+          variant="interactive"
+          size="sm"
+          className="cursor-pointer border-booking-border bg-booking-surface transition-colors group-hover:bg-booking-surface-muted group-focus-visible:border-booking-action"
+        >
+          <CardHeader>
+            <div className="flex gap-4">
+              {initials ? (
+                <div className="flex size-10 items-center justify-center rounded-full bg-booking-surface-muted text-sm font-semibold text-booking-text-muted">
+                  {initials}
+                </div>
+              ) : null}
+              <div className="flex flex-col">
+                <CardTitle className="text-booking-text">{title}</CardTitle>
+                {description ? <CardDescription className="text-booking-text-muted">{description}</CardDescription> : null}
+              </div>
+            </div>
+          </CardHeader>
+          <CardFooter>
+            <div className="inline-flex w-full items-center justify-center gap-2 text-sm font-medium text-booking-text">
+              <LogIn className="size-5" />
+              {cta}
+            </div>
+          </CardFooter>
+        </Card>
+      </button>
+    </Form>
+  );
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -221,7 +267,7 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
 
   const goToSignIn = React.useCallback(
     (authStatus?: UserAuthStatusDto | null) => {
-      const nextStepHref = verificationSessionToken ? resolveAuthStatusNextStepHref(authStatus) : null;
+      const nextStepHref = resolveAuthStatusNextStepHref(authStatus);
       if (nextStepHref) {
         navigate(nextStepHref);
         return;
@@ -230,142 +276,89 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
       const signInHref = email ? `sign-in?email=${email}` : 'sign-in';
       navigate(signInHref);
     },
-    [navigate, verificationSessionToken],
+    [navigate],
   );
 
   const goToSignUp = React.useCallback(() => navigate('sign-up'), [navigate]);
 
   return (
     <>
-      <BookingStepHeader
-        label="Kontakt"
-        title="Hvordan vil du fortsette?"
-        description="Velg en av de følgende metodene for å fortsette."
-      />
+      <Stack space="xl">
+        <PageHeader
+          label="Kontakt"
+          title="Hvordan vil du fortsette?"
+          description="Velg en av de følgende metodene for å fortsette."
+        />
 
-      <BookingSection title="Velg innloggingsmetode" variant="elevated">
-        {sessionUser && !isSameSessionAndAuthenticatedUser && (
-          <Form method="post">
-            <button type="submit" name="intent" value={ACTION_INTENT.CONTINUE_WITH_SESSION_USER} className="w-full">
-              <Card variant={'interactive'} size={'sm'} className="cursor-pointer flex gap-4">
-                <CardHeader>
-                  <div className="flex gap-4">
-                    <div className="flex size-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-                      {sessionInitials}
-                    </div>
-                    <div className="flex flex-col">
-                      <CardTitle>
-                        {sessionUser.user.givenName} {sessionUser.user.familyName}
-                      </CardTitle>
-                      <CardDescription>{sessionUser.user.email}</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardFooter>
-                  <div className="inline-flex w-full items-center justify-center gap-2 text-sm font-medium">
-                    <LogIn className="size-5" />
-                    Fortsett med denne brukeren
-                  </div>
-                </CardFooter>
-              </Card>
-            </button>
-          </Form>
-        )}
-        {auth && !isSameSessionAndAuthenticatedUser && (
-          <Form method="post">
-            <button
-              type="submit"
-              name="intent"
-              value={ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER}
-              className="w-full"
-            >
-              <Card variant={'interactive'} size={'sm'} className="cursor-pointer flex gap-4">
-                <CardHeader>
-                  <div className="flex gap-4">
-                    <div className="flex flex-col">
-                      <CardTitle>{auth.email}</CardTitle>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardFooter>
-                  <div className="inline-flex w-full items-center justify-center gap-2 text-sm font-medium">
-                    <LogIn className="size-5" />
-                    Fortsett med innlogget bruker
-                  </div>
-                </CardFooter>
-              </Card>
-            </button>
-          </Form>
-        )}
-        {sessionUser && auth && isSameSessionAndAuthenticatedUser && (
-          <Form method="post">
-            <button
-              type="submit"
-              name="intent"
-              value={ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER}
-              className="w-full"
-            >
-              <Card variant={'interactive'} size={'sm'} className="cursor-pointer flex gap-4">
-                <CardHeader>
-                  <div className="flex gap-4">
-                    <div className="flex size-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-                      {sessionInitials}
-                    </div>
-                    <div className="flex flex-col">
-                      <CardTitle>
-                        {sessionUser.user.givenName} {sessionUser.user.familyName}
-                      </CardTitle>
-                      <CardDescription>{sessionUser.user.email || auth.email}</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardFooter>
-                  <div className="inline-flex w-full items-center justify-center gap-2 text-sm font-medium">
-                    <LogIn className="size-5" />
-                    Fortsett som innlogget bruker
-                  </div>
-                </CardFooter>
-              </Card>
-            </button>
-          </Form>
-        )}
-        <Form method="post">
-          <input type="hidden" name="intent" value={ACTION_INTENT.CONTINUE_WITH_PROVIDER} />
-          <input type="hidden" name="redirectUrl" value="booking" />
-          <ProviderButtons />
-        </Form>
+        <Panel title="Velg innloggingsmetode" tone="muted">
+          <Stack space="lg">
+            {sessionUser && !isSameSessionAndAuthenticatedUser && (
+              <ContinueCard
+                title={`${sessionUser.user.givenName} ${sessionUser.user.familyName}`}
+                description="Vi fant en eksisterende bruker. Fortsett for å verifisere og gå videre."
+                cta="Fortsett med denne brukeren"
+                initials={sessionInitials}
+                intentValue={ACTION_INTENT.CONTINUE_WITH_SESSION_USER}
+              />
+            )}
+            {auth && !isSameSessionAndAuthenticatedUser && (
+              <ContinueCard
+                title={auth.email}
+                cta="Fortsett med innlogget bruker"
+                intentValue={ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER}
+              />
+            )}
+            {sessionUser && auth && isSameSessionAndAuthenticatedUser && (
+              <ContinueCard
+                title={`${sessionUser.user.givenName} ${sessionUser.user.familyName}`}
+                description="Fortsett for å verifisere kontaktopplysningene dine."
+                cta="Fortsett som innlogget bruker"
+                initials={sessionInitials}
+                intentValue={ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER}
+              />
+            )}
+            <Form method="post">
+              <input type="hidden" name="intent" value={ACTION_INTENT.CONTINUE_WITH_PROVIDER} />
+              <input type="hidden" name="redirectUrl" value="booking" />
+              <ProviderButtons />
+            </Form>
 
-        <BookingGrid cols={2}>
-          <div className="space-y-2">
-            <BookingButton
-              type="button"
-              size="lg"
-              fullWidth
-              variant="primary"
-              onClick={goToSignIn}
-              className="justify-start gap-3"
-            >
-              <LogIn className="size-5" />
-              Logg inn
-            </BookingButton>
-            <p className="text-xs text-muted-foreground md:text-sm">Fortsett med en eksisterende konto.</p>
-          </div>
-          <div className="space-y-2">
-            <BookingButton
-              type="button"
-              size="lg"
-              fullWidth
-              variant="outline"
-              onClick={goToSignUp}
-              className="justify-start gap-3"
-            >
-              <UserPlus className="size-5" />
-              Opprett konto
-            </BookingButton>
-            <p className="text-xs text-muted-foreground md:text-sm">Ny her? Lag en konto på et minutt.</p>
-          </div>
-        </BookingGrid>
-      </BookingSection>
+            <Grid columns={2} gap="md">
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  size="lg"
+                  fullWidth
+                  onClick={() => goToSignIn()}
+                  className="gap-3"
+                >
+                  <LogIn className="size-5" />
+                  Logg inn
+                </Button>
+                <Text as="p" variant="body-sm" className="text-text-secondary">
+                  Fortsett med en eksisterende konto.
+                </Text>
+              </div>
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  size="lg"
+                  fullWidth
+                  variant="outline"
+                  onClick={goToSignUp}
+                  className="gap-3"
+                >
+                  <UserPlus className="size-5" />
+                  Opprett konto
+                </Button>
+                <Text as="p" variant="body-sm" className="text-text-secondary">
+                  Ny her? Lag en konto på et minutt.
+                </Text>
+              </div>
+            </Grid>
+          </Stack>
+        </Panel>
+      </Stack>
     </>
   );
 }

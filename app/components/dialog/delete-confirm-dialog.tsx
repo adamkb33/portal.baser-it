@@ -1,13 +1,4 @@
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { Button, ConfirmDialog } from '~/ui';
 
 interface DeleteConfirmDialogProps {
   open: boolean;
@@ -29,17 +20,21 @@ export function DeleteConfirmDialog({
   confirmText = 'Slett',
 }: DeleteConfirmDialogProps) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{cancelText}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>{confirmText}</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      description={description}
+      cancelAction={
+        <Button type="button" variant="outline">
+          {cancelText}
+        </Button>
+      }
+      confirmAction={
+        <Button type="button" variant="destructive" onClick={onConfirm}>
+          {confirmText}
+        </Button>
+      }
+    />
   );
 }

@@ -6,10 +6,10 @@ import type { Route } from './+types/auth.check-email.route';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { AuthController, type DeliveryStatusDto, type VerificationStatusResponseDto } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { AuthFormContainer } from '../_components/auth.form-container';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { getVerificationTokenFromRequest } from '~/routes/booking/public/appointment/session/contact/_utils/auth.utils.server';
 import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
+import { FormPageTemplate, Notice } from '~/ui';
 
 type CheckEmailLoaderData = {
   emailDelivery: DeliveryStatusDto['status'] | null;
@@ -152,7 +152,7 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
   }, [navigate, nextStep]);
 
   return (
-    <AuthFormContainer
+    <FormPageTemplate
       title="Sjekk e-posten din"
       description={
         hasError
@@ -160,7 +160,8 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
           : 'Bekreft e-posten din for å fortsette.'
       }
       error={hasError ? 'Kunne ikke sende e-post.' : undefined}
-      secondaryAction={
+      variant="airy"
+      actions={
         <div className="space-y-2 text-center">
           <Link
             to={ROUTES_MAP['auth.sign-in'].href}
@@ -173,6 +174,7 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
           </Link>
         </div>
       }
+      footerLink={null}
     >
       <div className="space-y-3 text-sm text-form-text-muted">
         <p>Følg instruksene i e-posten for å bekrefte kontoen din.</p>
@@ -183,8 +185,8 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
         {effectiveMobileDelivery === 'SENT' || effectiveMobileDelivery === 'SKIPPED_ALREADY_ACTIVE' ? (
           <p>Etter e-postbekreftelse kan mobilverifisering være neste steg.</p>
         ) : null}
-        {resendError ? <p className="text-destructive">{resendError}</p> : null}
-        {resendSuccess ? <p className="text-green-700">{resendSuccess}</p> : null}
+        {resendError ? <Notice tone="emphasis" message={resendError} /> : null}
+        {resendSuccess ? <Notice message={resendSuccess} /> : null}
         <Form method="post">
           <button
             type="submit"
@@ -195,6 +197,6 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
           </button>
         </Form>
       </div>
-    </AuthFormContainer>
+    </FormPageTemplate>
   );
 }

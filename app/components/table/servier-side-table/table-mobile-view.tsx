@@ -1,9 +1,9 @@
 // components/table/table-mobile-view.tsx
 import * as React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { TableMobilePagination } from './table-mobile-pagination';
 import { Database } from 'lucide-react';
+import { TableMobilePagination } from './table-mobile-pagination';
 import type { ServerPaginatedTableProps } from './server-paginated-table';
+import { Card, CardContent, Text } from '~/ui';
 
 function DefaultMobileCard<T>({
   item,
@@ -25,12 +25,12 @@ function DefaultMobileCard<T>({
   const actionsCell = cells[cells.length - 1] as any;
 
   return (
-    <Card className="bg-card-bg border border-card-border hover:border-card-hover-border hover:shadow-md transition-all">
+    <Card variant="interactive" size="sm" className="bg-surface">
       <CardContent className="p-4">
         {/* Index badge */}
-        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-card-header-border">
-          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-xs font-bold text-primary">#{index + 1}</span>
+        <div className="mb-3 flex items-center gap-2 border-b border-border pb-3">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-background">
+            <span className="text-xs font-bold text-text-primary">#{index + 1}</span>
           </div>
         </div>
 
@@ -42,8 +42,8 @@ function DefaultMobileCard<T>({
 
             return (
               <div key={cellIndex} className="flex flex-col gap-1 min-w-0">
-                <dt className="text-xs font-semibold text-card-text-muted uppercase tracking-wider">{columnHeader}</dt>
-                <dd className="text-sm font-medium text-card-text break-words">{cellContent}</dd>
+                <dt className="text-xs font-semibold uppercase tracking-wider text-text-secondary">{columnHeader}</dt>
+                <dd className="break-words text-sm font-medium text-text-primary">{cellContent}</dd>
               </div>
             );
           })}
@@ -51,7 +51,7 @@ function DefaultMobileCard<T>({
 
         {/* Actions footer */}
         {actionsCell && (
-          <div className="pt-3 border-t border-card-header-border">
+          <div className="border-t border-border pt-3">
             <div className="flex items-center justify-end gap-2">{actionsCell.props?.children}</div>
           </div>
         )}
@@ -70,15 +70,21 @@ export function TableMobileView<T>({
   onPageChange,
   emptyMessage = 'Ingen resultater.',
   mobileHeaderSlot,
+  mobilePrimaryAction,
 }: ServerPaginatedTableProps<T>) {
   return (
-    <div className="md:hidden space-y-4">
-      {mobileHeaderSlot && (
-        <div className="bg-card-bg border border-card-border rounded-lg p-4">{mobileHeaderSlot}</div>
+    <div className="space-y-3 md:hidden">
+      {(mobileHeaderSlot || mobilePrimaryAction) && (
+        <div className="rounded-lg border border-border bg-surface-variant-2 p-3">
+          <div className="flex flex-col gap-2">
+            {mobileHeaderSlot ? <div>{mobileHeaderSlot}</div> : null}
+            {mobilePrimaryAction ? <div>{mobilePrimaryAction}</div> : null}
+          </div>
+        </div>
       )}
 
       {/* Scrollable container */}
-      <div className="max-h-[600px] overflow-y-auto space-y-3 pr-1">
+      <div className="max-h-[600px] space-y-2 overflow-y-auto pr-0.5">
         {items.length > 0 ? (
           items.map((item, index) => (
             <React.Fragment key={getRowKey(item, index)}>
@@ -90,13 +96,15 @@ export function TableMobileView<T>({
             </React.Fragment>
           ))
         ) : (
-          <Card className="bg-card-bg border border-card-border">
+          <Card variant="default" size="sm" className="bg-surface-variant-2">
             <CardContent className="p-8">
               <div className="flex flex-col items-center justify-center gap-3">
-                <div className="h-14 w-14 rounded-full bg-muted/50 flex items-center justify-center">
-                  <Database className="h-7 w-7 text-muted-foreground" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-variant-3">
+                  <Database className="h-7 w-7 text-text-secondary" />
                 </div>
-                <p className="text-sm text-muted-foreground text-center">{emptyMessage}</p>
+                <Text as="p" variant="body-sm" className="text-center text-text-secondary">
+                  {emptyMessage}
+                </Text>
               </div>
             </CardContent>
           </Card>

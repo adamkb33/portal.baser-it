@@ -51,7 +51,7 @@ export default function AuthSignOut() {
   }, []);
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6 py-12 text-center">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-6 text-center">
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">Logger ut</h1>
         <p className="text-sm text-muted-foreground">

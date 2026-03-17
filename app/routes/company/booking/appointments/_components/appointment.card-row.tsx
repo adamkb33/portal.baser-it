@@ -1,196 +1,194 @@
-// components/appointments/appointment-card-row.tsx
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
-import { Card, CardContent } from '~/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { User, Trash2, Clock, Banknote, Info } from 'lucide-react';
-import { cn } from '~/lib/utils';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { parseISO, format } from 'date-fns';
 import { nb } from 'date-fns/locale';
-import { getTotalServiceCount, getTotalDuration, getTotalPrice } from '../_utils/appointments.utils';
+import { CalendarClock, ChevronRight, Clock3, Trash2, Wallet } from 'lucide-react';
+import { getTotalServiceCount, getTotalDuration, getTotalPrice, isAppointmentCompleted } from '../_utils/appointments.utils';
 import type { AppointmentDto } from '~/api/generated/booking';
+import {
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Text,
+  cn,
+} from '~/ui';
 
 type AppointmentCardRowProps = {
   appointment: AppointmentDto;
   onDelete: (id: number) => void;
+  onUploadImage: (id: number) => void;
   isDeleting?: boolean;
+  index?: number;
 };
 
-export function AppointmentCardRow({ appointment, onDelete, isDeleting = false }: AppointmentCardRowProps) {
+export function AppointmentCardRow({ appointment, onDelete, onUploadImage, isDeleting = false, index = 0 }: AppointmentCardRowProps) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const now = useMemo(() => new Date(), []);
+  const start = new Date(appointment.startTime).getTime();
+  const end = new Date(appointment.endTime).getTime();
+  const current = now.getTime();
+  const isPast = isAppointmentCompleted(appointment);
+  const isInProgress = current >= start && current <= end;
   const totalServices = getTotalServiceCount(appointment);
-  const isPast = new Date(appointment.startTime) < new Date();
+  const serviceNames =
+    appointment.groupedServiceGroups?.flatMap((group) => (group.services ?? []).map((service) => service.name)).filter(Boolean) ?? [];
+
+  const status = isInProgress ? 'ongoing' : isPast ? 'completed' : 'upcoming';
+  const statusLabel = status === 'ongoing' ? 'Pågår nå' : status === 'completed' ? 'Fullført' : 'Kommende';
+
+  const toneClass =
+    status === 'ongoing'
+      ? 'border-interactive/35 bg-surface-accent-subtle'
+      : status === 'completed'
+        ? 'border-border bg-surface-variant-2'
+        : 'border-border bg-surface-variant-1';
+  const accentClass =
+    status === 'ongoing' ? 'bg-interactive' : status === 'completed' ? 'bg-secondary/70' : 'bg-primary/65';
+  const zebraClass = index % 2 === 0 ? 'bg-surface-row-even' : 'bg-surface-row-odd';
 
   return (
-    <Card
-      className={cn(
-        'group relative overflow-hidden transition-all duration-200',
-        isPast && 'opacity-60 grayscale-[0.5]',
-        !isPast && 'border-l-4 border-l-primary shadow-sm hover:shadow-md',
-      )}
-    >
-      <CardContent className="p-3 space-y-2.5 md:p-4 md:space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 space-y-1">
-            <time
-              className="block text-base font-semibold text-foreground leading-tight md:text-lg"
-              dateTime={appointment.startTime}
-            >
-              {format(parseISO(appointment.startTime), 'PPPp', { locale: nb })}
-            </time>
+    <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+      <div className={cn('relative overflow-hidden rounded-xl border shadow-sm transition-colors', toneClass)}>
+        <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-surface-accent-strong/70 blur-2xl" />
+        <div className={cn('h-1.5 w-full', accentClass)} />
 
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5" />
-              <span>
-                {appointment.user.givenName} {appointment.user.familyName}
-              </span>
-            </p>
-          </div>
-
-          {isPast && (
-            <Badge variant="secondary" className="text-xs font-medium shrink-0">
-              Fullført
-            </Badge>
-          )}
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-11 w-11 md:h-9 md:w-9 text-destructive hover:bg-destructive/10 shrink-0 -mr-2 -mt-1"
-            onClick={() => onDelete(appointment.id!)}
-            disabled={isDeleting}
-            aria-label="Slett avtale"
+        <div className="space-y-1.5 p-2.5">
+          <button
+            type="button"
+            onClick={() => setDetailsOpen(true)}
+            className={cn(
+              'w-full rounded-lg border border-border p-2.5 text-left transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive',
+              zebraClass,
+            )}
           >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <time className="block text-xs font-semibold leading-tight text-text-primary" dateTime={appointment.startTime}>
+                  {format(parseISO(appointment.startTime), "EEE d. MMM 'kl.' HH:mm", { locale: nb })}
+                </time>
+                <p className="mt-0.5 truncate text-sm font-semibold text-foreground">
+                  {appointment.user.givenName} {appointment.user.familyName}
+                </p>
+              </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-        <div className="space-y-2">
-          {totalServices > 1 ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tjenester</span>
-
-              {appointment.groupedServiceGroups?.[0]?.services?.slice(0, 2).map((service) => (
-                <Badge
-                  key={service.id}
-                  variant="secondary"
-                  className="text-xs font-normal bg-secondary/20 text-secondary-foreground"
-                >
-                  {service.name}
-                </Badge>
-              ))}
-
-              {totalServices > 2 && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-3 md:h-6 md:px-2 text-xs font-medium text-primary hover:bg-primary/10"
-                    >
-                      +{totalServices - 2} til
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80 p-4" align="start">
-                    <div className="space-y-3">
-                      <h4 className="text-sm font-semibold text-foreground border-b border-border pb-2">
-                        Alle tjenester ({totalServices})
-                      </h4>
-                      {appointment.groupedServiceGroups?.map((group) => (
-                        <div key={group.id} className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-1 w-1 rounded-full bg-primary" />
-                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                              {group.name}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-wrap gap-1.5 pl-3">
-                            {group.services?.map((service) => (
-                              <Badge key={service.id} variant="secondary" className="text-xs font-normal">
-                                {service.name}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              )}
+              <Badge variant="outline" size="sm" className="shrink-0 text-[11px]">
+                {statusLabel}
+              </Badge>
             </div>
-          ) : (
-            <div className="flex items-start gap-2">
-              <div className="flex-1 space-y-0.5">
-                <span className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  {appointment.groupedServiceGroups?.[0]?.name}
-                </span>
-                <span className="block text-sm font-semibold text-foreground">
-                  {appointment.groupedServiceGroups?.[0]?.services?.[0]?.name}
-                </span>
+
+            <p className="mt-1 truncate text-xs text-text-secondary">
+              {totalServices} {totalServices === 1 ? 'tjeneste' : 'tjenester'}
+              {serviceNames.length > 0 ? ` · ${serviceNames.slice(0, 2).join(', ')}` : ''}
+              {serviceNames.length > 2 ? ` +${serviceNames.length - 2}` : ''}
+            </p>
+
+            <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+              <div className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-variant-2 px-2 py-1 text-[11px]">
+                <Clock3 className="h-3 w-3 text-text-secondary" />
+                <span className="text-text-secondary">Varighet</span>
+                <span className="font-semibold text-text-primary">{getTotalDuration(appointment)}</span>
+              </div>
+              <div className="inline-flex items-center justify-end gap-1 rounded-full border border-border bg-surface-variant-3 px-2 py-1 text-[11px]">
+                <Wallet className="h-3 w-3 text-text-secondary" />
+                <span className="text-text-secondary">Pris</span>
+                <span className="font-semibold text-text-primary">{getTotalPrice(appointment)}</span>
               </div>
             </div>
-          )}
-        </div>
+          </button>
 
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 md:gap-x-4 pt-1">
-          <div className="flex items-center gap-1.5 text-sm">
-            <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className="text-muted-foreground text-xs md:text-sm">Varighet:</span>
-            <span className="font-semibold text-foreground text-xs md:text-sm">{getTotalDuration(appointment)}</span>
-          </div>
-
-          <div className="flex items-center gap-1.5 text-sm justify-end">
-            <Banknote className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className="text-muted-foreground text-xs md:text-sm">Pris:</span>
-            <span className="font-semibold text-primary text-xs md:text-sm">{getTotalPrice(appointment)}</span>
-          </div>
-
-          <div className="col-span-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-10 md:h-8 w-full justify-start px-3 md:px-2 text-sm md:text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
-                >
-                  <Info className="h-3.5 w-3.5 mr-1.5 shrink-0" />
-                  Se brukerinformasjon
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-4" align="start">
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-foreground border-b border-border pb-2">
-                    Brukerinformasjon
-                  </h4>
-                  <div className="space-y-2.5">
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="text-xs text-muted-foreground uppercase tracking-wide shrink-0">Navn</span>
-                      <span className="text-sm font-medium text-right">
-                        {appointment.user.givenName} {appointment.user.familyName}
-                      </span>
-                    </div>
-
-                    {appointment.user.email && (
-                      <div className="flex items-start justify-between gap-4">
-                        <span className="text-xs text-muted-foreground uppercase tracking-wide shrink-0">E-post</span>
-                        <Link
-                          to={`mailto:${appointment.user.email}`}
-                          className="text-sm font-medium text-primary hover:underline text-right break-all"
-                        >
-                          {appointment.user.email}
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+          <div className="flex items-center gap-1.5 border-t border-border/80 px-0.5 pt-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 flex-1 justify-between rounded-md px-2 text-xs text-text-secondary hover:text-text-primary"
+              onClick={() => setDetailsOpen(true)}
+            >
+              Se detaljer
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+            {!isPast ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 rounded-md text-destructive hover:bg-destructive/10"
+                onClick={() => onDelete(appointment.id!)}
+                disabled={isDeleting}
+                aria-label="Slett avtale"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            ) : null}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Avtaledetaljer</DialogTitle>
+          <DialogDescription>
+            {format(parseISO(appointment.startTime), 'PPPp', { locale: nb })} · {totalServices}{' '}
+            {totalServices === 1 ? 'tjeneste' : 'tjenester'}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-2.5">
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={() => onUploadImage(appointment.id!)}>
+              Last opp bilde
+            </Button>
+          </div>
+
+          <div className="rounded-lg border border-border bg-surface-variant-1 p-2.5">
+            <div className="flex items-center gap-2 text-text-secondary">
+              <CalendarClock className="h-4 w-4" />
+              <Text as="p" variant="body-sm">
+                {format(parseISO(appointment.startTime), "EEEE d. MMMM 'kl.' HH:mm", { locale: nb })}
+              </Text>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border bg-surface-variant-2 p-2.5">
+            <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
+              Kunde
+            </Text>
+            <Text as="p" variant="body-sm" className="mt-1 font-semibold">
+              {appointment.user.givenName} {appointment.user.familyName}
+            </Text>
+            <div className="mt-2 text-sm text-text-secondary">
+              {appointment.user.email ? (
+                <Link to={`mailto:${appointment.user.email}`} className="break-all text-primary hover:underline">
+                  {appointment.user.email}
+                </Link>
+              ) : (
+                'Ingen e-post registrert'
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border bg-surface-variant-3 p-2.5">
+            <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
+              Tjenester
+            </Text>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {serviceNames.length > 0 ? (
+                serviceNames.map((name, idx) => (
+                  <Badge key={`${name}-${idx}`} variant="outline" size="sm" className="rounded-full">
+                    {name}
+                  </Badge>
+                ))
+              ) : (
+                <Text as="p" variant="body-sm" className="text-text-secondary">
+                  Ingen tjenester registrert.
+                </Text>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

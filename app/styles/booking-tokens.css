@@ -1,0 +1,19 @@
+@theme {
+  /* Booking semantic aliases (Phase 1) */
+  --color-booking-background: var(--color-background);
+  --color-booking-surface: var(--color-surface);
+  --color-booking-surface-muted: var(--color-surface);
+  --color-booking-border: var(--color-border);
+
+  --color-booking-text: var(--color-text-primary);
+  --color-booking-text-muted: var(--color-text-secondary);
+  --color-booking-text-inverse: var(--color-text-inverse);
+
+  --color-booking-action: var(--color-interactive);
+  --color-booking-action-hover: var(--color-interactive-hover);
+  --color-booking-action-contrast: var(--color-text-inverse);
+
+  --color-booking-appointment-ongoing-surface: color-mix(in oklab, var(--color-interactive) 10%, var(--color-surface));
+  --color-booking-appointment-ongoing-chip: color-mix(in oklab, var(--color-interactive) 16%, var(--color-background));
+  --color-booking-appointment-recent-surface: color-mix(in oklab, var(--color-secondary) 12%, var(--color-surface));
+}

@@ -84,6 +84,10 @@ export type ApiResponseUnit = {
     timestamp: string;
 };
 
+export type UpdateCompanyDisplayNameDto = {
+    displayName?: string;
+};
+
 export type InviteUserDto = {
     email: string;
     userRoles: Array<'SYSTEM_ADMIN'>;
@@ -286,6 +290,7 @@ export type UserDto = {
     mobileNumber?: string;
     mobileVerified: boolean;
     provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
+    hasPassword: boolean;
 };
 
 export type ContactSearchRequestDto = {
@@ -310,6 +315,28 @@ export type ApiResponseListCompanySummaryDto = {
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
+};
+
+export type ResolveOrCreateAppointmentCustomerRequestDto = {
+    userId?: number;
+    email?: string;
+    mobileNumber?: string;
+    givenName?: string;
+    familyName?: string;
+};
+
+export type ApiResponseResolveOrCreateAppointmentCustomerResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: ResolveOrCreateAppointmentCustomerResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ResolveOrCreateAppointmentCustomerResponseDto = {
+    userId: number;
+    status: 'RESOLVED_BY_ID' | 'RESOLVED_EXISTING' | 'CREATED';
 };
 
 export type CreateContactDto = {
@@ -1054,6 +1081,22 @@ export type EditCompanyUserResponses = {
 
 export type EditCompanyUserResponse = EditCompanyUserResponses[keyof EditCompanyUserResponses];
 
+export type UpdateCompanyDisplayNameData = {
+    body: UpdateCompanyDisplayNameDto;
+    path?: never;
+    query?: never;
+    url: '/admin/companies/display-name';
+};
+
+export type UpdateCompanyDisplayNameResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUnit;
+};
+
+export type UpdateCompanyDisplayNameResponse = UpdateCompanyDisplayNameResponses[keyof UpdateCompanyDisplayNameResponses];
+
 export type InviteUserData = {
     body: InviteUserDto;
     path?: never;
@@ -1315,6 +1358,22 @@ export type GetCompanySummaryByIdsResponses = {
 };
 
 export type GetCompanySummaryByIdsResponse = GetCompanySummaryByIdsResponses[keyof GetCompanySummaryByIdsResponses];
+
+export type ResolveOrCreateAppointmentCustomerData = {
+    body: ResolveOrCreateAppointmentCustomerRequestDto;
+    path?: never;
+    query?: never;
+    url: '/company-user/customers/resolve-or-create';
+};
+
+export type ResolveOrCreateAppointmentCustomerResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseResolveOrCreateAppointmentCustomerResponseDto;
+};
+
+export type ResolveOrCreateAppointmentCustomerResponse = ResolveOrCreateAppointmentCustomerResponses[keyof ResolveOrCreateAppointmentCustomerResponses];
 
 export type GetContactsData = {
     body?: never;

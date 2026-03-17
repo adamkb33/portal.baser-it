@@ -28,7 +28,9 @@ export type ServerPaginatedTableProps<T> = {
   emptyMessage?: React.ReactNode;
   pageSizeOptions?: number[];
   headerSlot?: React.ReactNode;
+  primaryAction?: React.ReactNode;
   mobileHeaderSlot?: React.ReactNode;
+  mobilePrimaryAction?: React.ReactNode;
   className?: string;
 };
 

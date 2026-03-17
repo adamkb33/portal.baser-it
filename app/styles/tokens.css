@@ -15,17 +15,72 @@
   --color-gray-100: #e8e8e8;
   --color-gray-50: #f5f5f5;
   --color-white: #fafafa;
+  --color-byzantium-600: #702963;
 
   /* ─── Semantic Color Aliases ──────────────────── */
   --color-background: var(--color-white);
   --color-surface: var(--color-gray-50);
   --color-border: var(--color-gray-100);
+  --color-overlay-surface: var(--color-white);
+  --color-overlay-border: var(--color-gray-100);
   --color-text-primary: var(--color-gray-900);
   --color-text-secondary: var(--color-gray-500);
   --color-text-disabled: var(--color-gray-300);
   --color-text-inverse: var(--color-white);
+  --color-primary: var(--color-interactive);
+  --color-primary-hover: var(--color-interactive-hover);
+  --color-primary-contrast: var(--color-text-inverse);
+  --color-secondary: #2f7f7b;
+  --color-secondary-hover: color-mix(in oklab, var(--color-secondary) 84%, black);
+  --color-secondary-contrast: var(--color-white);
   --color-interactive: var(--color-black);
   --color-interactive-hover: var(--color-gray-800);
+  --color-tertiary: var(--color-byzantium-600);
+  --color-tertiary-hover: color-mix(in oklab, var(--color-tertiary) 84%, black);
+  --color-tertiary-contrast: var(--color-white);
+  --color-surface-variant-1: color-mix(in oklab, var(--color-surface) 86%, var(--color-background));
+  --color-surface-variant-2: color-mix(in oklab, var(--color-surface) 72%, var(--color-background));
+  --color-surface-variant-3: color-mix(in oklab, var(--color-surface) 58%, var(--color-background));
+  --color-surface-accent-subtle: color-mix(in oklab, var(--color-interactive) 6%, var(--color-surface));
+  --color-surface-accent-strong: color-mix(in oklab, var(--color-interactive) 12%, var(--color-surface));
+  --color-surface-primary-subtle: color-mix(in oklab, var(--color-primary) 8%, var(--color-surface));
+  --color-surface-primary-strong: color-mix(in oklab, var(--color-primary) 16%, var(--color-surface));
+  --color-surface-secondary-subtle: color-mix(in oklab, var(--color-secondary) 10%, var(--color-surface));
+  --color-surface-secondary-strong: color-mix(in oklab, var(--color-secondary) 20%, var(--color-surface));
+  --color-surface-tertiary-subtle: color-mix(in oklab, var(--color-tertiary) 12%, var(--color-surface));
+  --color-surface-tertiary-strong: color-mix(in oklab, var(--color-tertiary) 20%, var(--color-surface));
+  --color-surface-row-even: color-mix(in oklab, var(--color-background) 86%, var(--color-surface));
+  --color-surface-row-odd: color-mix(in oklab, var(--color-surface) 80%, var(--color-background));
+  --color-surface-floating: color-mix(in oklab, var(--color-surface) 82%, var(--color-background));
+  --color-chip-surface: color-mix(in oklab, var(--color-surface) 70%, var(--color-background));
+  --color-chip-surface-hover: color-mix(in oklab, var(--color-surface) 54%, var(--color-background));
+  --color-chip-surface-active: color-mix(in oklab, var(--color-tertiary) 14%, var(--color-surface));
+  --color-chip-surface-active-hover: color-mix(in oklab, var(--color-tertiary) 20%, var(--color-surface));
+
+  /* ─── Flash Message Colors ───────────────────── */
+  --color-flash-error-bg: #fef2f2;
+  --color-flash-error-border: #fecaca;
+  --color-flash-error-text: #7f1d1d;
+  --color-flash-error-icon-bg: #dc2626;
+  --color-flash-error-icon-fg: #ffffff;
+
+  --color-flash-success-bg: #f0fdf4;
+  --color-flash-success-border: #bbf7d0;
+  --color-flash-success-text: #14532d;
+  --color-flash-success-icon-bg: #16a34a;
+  --color-flash-success-icon-fg: #ffffff;
+
+  --color-flash-info-bg: #eff6ff;
+  --color-flash-info-border: #bfdbfe;
+  --color-flash-info-text: #1e3a8a;
+  --color-flash-info-icon-bg: #2563eb;
+  --color-flash-info-icon-fg: #ffffff;
+
+  --color-flash-warning-bg: #fffbeb;
+  --color-flash-warning-border: #fde68a;
+  --color-flash-warning-text: #78350f;
+  --color-flash-warning-icon-bg: #d97706;
+  --color-flash-warning-icon-fg: #ffffff;
 
   /* ─── Spacing ─────────────────────────────────── */
   --spacing-px: 1px;
@@ -43,6 +98,25 @@
   --spacing-20: 80px;
   --spacing-24: 96px;
   --spacing-32: 128px;
+
+  /* ─── Semantic Spacing Aliases ───────────────── */
+  --space-2xs: var(--spacing-1);
+  --space-xs: var(--spacing-2);
+  --space-sm: var(--spacing-3);
+  --space-md: var(--spacing-4);
+  --space-lg: var(--spacing-6);
+  --space-xl: var(--spacing-8);
+  --space-2xl: var(--spacing-12);
+
+  --space-control-gap: var(--space-xs);
+  --space-field-gap: var(--space-sm);
+  --space-section-gap: var(--space-lg);
+  --space-page-gap: var(--space-xl);
+  --space-page-gap-loose: var(--space-2xl);
+  --space-card-padding-sm: var(--space-md);
+  --space-card-padding-md: var(--space-lg);
+  --space-card-padding-lg: var(--space-xl);
+  --space-container-gutter: var(--space-lg);
 
   /* ─── Typography ──────────────────────────────── */
   --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
@@ -108,4 +182,10 @@
   --container-lg: 1024px;
   --container-xl: 1280px;
   --container-2xl: 1440px;
+  --app-header-height: 3.75rem;
+  --app-footer-height: 4rem;
+  --app-sidebar-width: 17rem;
+  --app-shell-inline-padding: 1rem;
+  --app-content-padding-block-mobile: var(--space-lg);
+  --app-content-padding-block-desktop: var(--space-xl);
 }

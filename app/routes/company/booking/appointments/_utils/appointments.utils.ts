@@ -1,5 +1,12 @@
 import type { AppointmentDto } from '~/api/generated/booking';
 
+export const isAppointmentCompleted = (
+  appointment: Pick<AppointmentDto, 'startTime'>,
+  now: Date = new Date(),
+) => {
+  return new Date(appointment.startTime) < now;
+};
+
 export const formatDateTime = (dateTime: string) => {
   return new Date(dateTime).toLocaleString('nb-NO', {
     year: 'numeric',
