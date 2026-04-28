@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetInAppNotificationByIdData, GetInAppNotificationByIdResponses, GetInAppNotificationsData, GetInAppNotificationsResponses, HealthData, HealthResponses, InfoData, InfoResponses, LinksData, LinksResponses, MarkInAppNotificationAsReadData, MarkInAppNotificationAsReadResponses, RootData, RootResponses, SendEmailData, SendEmailResponses, SendInAppData, SendInAppResponses, SendSmsData, SendSmsResponses } from './types.gen';
+import type { GetInAppNotificationByIdData, GetInAppNotificationByIdResponses, GetInAppNotificationsData, GetInAppNotificationsResponses, MarkInAppNotificationAsReadData, MarkInAppNotificationAsReadResponses, SendEmailData, SendEmailResponses, SendInAppData, SendInAppResponses, SendSmsData, SendSmsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -18,11 +18,11 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
     meta?: Record<string, unknown>;
 };
 
-export class InternalNotificationController {
+export class Notification {
     public static sendSms<ThrowOnError extends boolean = false>(options: Options<SendSmsData, ThrowOnError>) {
         return (options.client ?? client).post<SendSmsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/notifications/sms',
+            url: '/notification-service/internal/notifications/sms',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ export class InternalNotificationController {
     public static sendInApp<ThrowOnError extends boolean = false>(options: Options<SendInAppData, ThrowOnError>) {
         return (options.client ?? client).post<SendInAppResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/notifications/in-app',
+            url: '/notification-service/internal/notifications/in-app',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ export class InternalNotificationController {
     public static sendEmail<ThrowOnError extends boolean = false>(options: Options<SendEmailData, ThrowOnError>) {
         return (options.client ?? client).post<SendEmailResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/notifications/email',
+            url: '/notification-service/internal/notifications/email',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -54,13 +54,11 @@ export class InternalNotificationController {
             }
         });
     }
-}
-
-export class CompanyUserInAppNotificationController {
+    
     public static markInAppNotificationAsRead<ThrowOnError extends boolean = false>(options: Options<MarkInAppNotificationAsReadData, ThrowOnError>) {
         return (options.client ?? client).post<MarkInAppNotificationAsReadResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/notifications/in-app/{id}/read',
+            url: '/notification-service/company-user/notifications/in-app/{id}/read',
             ...options
         });
     }
@@ -68,7 +66,7 @@ export class CompanyUserInAppNotificationController {
     public static getInAppNotifications<ThrowOnError extends boolean = false>(options: Options<GetInAppNotificationsData, ThrowOnError>) {
         return (options.client ?? client).get<GetInAppNotificationsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/notifications/in-app',
+            url: '/notification-service/company-user/notifications/in-app',
             ...options
         });
     }
@@ -76,55 +74,7 @@ export class CompanyUserInAppNotificationController {
     public static getInAppNotificationById<ThrowOnError extends boolean = false>(options: Options<GetInAppNotificationByIdData, ThrowOnError>) {
         return (options.client ?? client).get<GetInAppNotificationByIdResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/notifications/in-app/{id}',
-            ...options
-        });
-    }
-}
-
-export class Actuator {
-    /**
-     * Actuator root web endpoint
-     */
-    public static links<ThrowOnError extends boolean = false>(options?: Options<LinksData, ThrowOnError>) {
-        return (options?.client ?? client).get<LinksResponses, unknown, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator',
-            ...options
-        });
-    }
-    
-    /**
-     * Actuator web endpoint 'info'
-     */
-    public static info<ThrowOnError extends boolean = false>(options?: Options<InfoData, ThrowOnError>) {
-        return (options?.client ?? client).get<InfoResponses, unknown, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator/info',
-            ...options
-        });
-    }
-    
-    /**
-     * Actuator web endpoint 'health'
-     */
-    public static health<ThrowOnError extends boolean = false>(options?: Options<HealthData, ThrowOnError>) {
-        return (options?.client ?? client).get<HealthResponses, unknown, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator/health',
-            ...options
-        });
-    }
-}
-
-export class RootController {
-    public static root<ThrowOnError extends boolean = false>(options?: Options<RootData, ThrowOnError>) {
-        return (options?.client ?? client).get<RootResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/',
+            url: '/notification-service/company-user/notifications/in-app/{id}',
             ...options
         });
     }

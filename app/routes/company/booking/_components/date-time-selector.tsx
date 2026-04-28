@@ -131,7 +131,7 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
               <CalendarIcon className="h-4 w-4 text-text-secondary" />
             </LegacyButton>
           </PopoverTrigger>
-          <PopoverContent className="w-auto overflow-hidden border-border bg-overlay-surface p-0 text-text-primary" align="start">
+          <PopoverContent className="w-auto overflow-hidden border-border bg-background p-0 text-text-primary" align="start">
             <Calendar
               mode="single"
               selected={selectedDate || undefined}
@@ -139,7 +139,7 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
               disabled={isDateDisabled}
               month={calendarMonth}
               onMonthChange={setCalendarMonth}
-              className="bg-overlay-surface"
+              className="bg-background"
             />
           </PopoverContent>
         </Popover>
@@ -151,7 +151,7 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
           <Clock className="h-4 w-4" />
           <span>Velg tid</span>
         </Label>
-        <div className="border rounded-lg p-3 md:p-4 h-[320px] md:h-[250px] overflow-y-auto">
+        <div className="h-[320px] overflow-y-auto rounded-lg border border-border bg-surface-variant-1 p-3 md:h-[250px] md:p-4">
           {!selectedDate ? (
             <div className="py-12 md:py-8 text-center">
               <Clock className="h-12 w-12 md:h-10 md:w-10 mx-auto text-muted-foreground/50 mb-3 md:mb-2" />

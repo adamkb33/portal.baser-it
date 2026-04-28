@@ -1,13 +1,13 @@
 // openapi-ts.config.ts
 import { defineConfig } from '@hey-api/openapi-ts';
 
-const gatewayUrl = (process.env.VITE_API_GATEWAY_URL || 'http://localhost:8080').replace(/\/+$/, '');
-const serviceDocsUrl = (serviceName: string) => `${gatewayUrl}/${serviceName}/api-docs`;
+const gatewayUrl = (process.env.VITE_API_GATEWAY_URL || 'http://localhost:8010').replace(/\/+$/, '');
+const groupedDocsUrl = (groupName: string) => `${gatewayUrl}/v3/api-docs/${groupName}`;
 
 export default defineConfig([
   {
     client: '@hey-api/client-axios',
-    input: serviceDocsUrl('base-service'),
+    input: groupedDocsUrl('base-service'),
     output: './app/api/generated/base',
     plugins: [
       {
@@ -22,7 +22,7 @@ export default defineConfig([
   },
   {
     client: '@hey-api/client-axios',
-    input: serviceDocsUrl('booking-service'),
+    input: groupedDocsUrl('booking-service'),
     output: './app/api/generated/booking',
     plugins: [
       {
@@ -37,7 +37,7 @@ export default defineConfig([
   },
   {
     client: '@hey-api/client-axios',
-    input: serviceDocsUrl('timesheet-service'),
+    input: groupedDocsUrl('timesheet-service'),
     output: './app/api/generated/timesheet',
     plugins: [
       {
@@ -52,7 +52,7 @@ export default defineConfig([
   },
   {
     client: '@hey-api/client-axios',
-    input: serviceDocsUrl('notification-service'),
+    input: groupedDocsUrl('notification-service'),
     output: './app/api/generated/notification',
     plugins: [
       {

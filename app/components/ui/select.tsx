@@ -111,7 +111,7 @@ function SelectContent({
           'min-w-[8rem] max-h-(--radix-select-content-available-height)',
           'overflow-x-hidden overflow-y-auto',
           'rounded-sm border border-border',
-          'bg-popover text-popover-foreground',
+          'bg-surface-variant-1 text-text-primary',
           'shadow-lg', // Use your warm shadow system
           'origin-(--radix-select-content-transform-origin)',
 

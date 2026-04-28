@@ -4,11 +4,11 @@ export type ClientOptions = {
     baseURL: 'http://localhost:8010' | (string & {});
 };
 
-export type UpdateContactDto = {
-    givenName: string;
-    familyName: string;
-    email?: string;
-    mobileNumber?: string;
+export type UpdateRangeEntryRequest = {
+    date: string;
+    fromTime: string;
+    toTime: string;
+    note?: string;
 };
 
 export type ApiError = {
@@ -30,22 +30,13 @@ export type ApiMeta = {
     requestId?: string;
 };
 
-export type ApiResponseContactDto = {
+export type ApiResponseTimesheetDayEntryDto = {
     success: boolean;
     message: ApiMessage;
-    data?: ContactDto;
+    data?: TimesheetDayEntryDto;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
-};
-
-export type ContactDto = {
-    id: number;
-    companyId: number;
-    givenName: string;
-    familyName: string;
-    email?: string;
-    mobileNumber?: string;
 };
 
 export type FilteringMeta = {
@@ -72,6 +63,132 @@ export type SortingMeta = {
     direction: string;
 };
 
+export type TimesheetDayEntryDto = {
+    id?: number;
+    userId: number;
+    companyId: number;
+    date: string;
+    entryMode: 'RANGE' | 'HOURS';
+    fromTime?: string;
+    toTime?: string;
+    durationMinutes: number;
+    note?: string;
+    declineReason?: string;
+    status: 'SUBMITTED' | 'ACCEPTED' | 'DECLINED';
+    submittedAt?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string;
+};
+
+export type UpdateHoursEntryRequest = {
+    date: string;
+    hours: number;
+    note?: string;
+};
+
+export type Delete = Omit<ImageAction, 'type'> & {
+    imageId: number;
+    type: 'Delete';
+};
+
+export type ImageAction = {
+    type: string;
+};
+
+export type ImageUpload = {
+    fileName: string;
+    label: string;
+    contentType: string;
+    data: string;
+};
+
+export type UpdateServiceDto = {
+    id: number;
+    serviceGroupId: number;
+    name: string;
+    price: number;
+    duration: number;
+    imageActions: Array<Delete | Upload>;
+};
+
+export type Upload = Omit<ImageAction, 'type'> & {
+    data: ImageUpload;
+    type: 'Upload';
+};
+
+export type ApiResponseServiceDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: ServiceDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ImageDto = {
+    id?: number;
+    url: string;
+    label?: string;
+    contentType?: string;
+    size: number;
+};
+
+export type ServiceDto = {
+    id: number;
+    companyId: number;
+    serviceGroupId: number;
+    name: string;
+    price: number;
+    duration: number;
+    images?: Array<ImageDto>;
+};
+
+export type UpdateServiceGroupDto = {
+    id: number;
+    name: string;
+};
+
+export type ApiResponseServiceGroupDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: ServiceGroupDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ServiceGroupDto = {
+    id: number;
+    companyId: number;
+    name: string;
+};
+
+export type UpdateContactDto = {
+    givenName: string;
+    familyName: string;
+    email?: string;
+    mobileNumber?: string;
+};
+
+export type ApiResponseContactDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: ContactDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ContactDto = {
+    id: number;
+    companyId: number;
+    givenName: string;
+    familyName: string;
+    email?: string;
+    mobileNumber?: string;
+};
+
 export type EditCompanyUserDto = {
     roles: Array<'ADMIN' | 'EMPLOYEE'>;
 };
@@ -86,6 +203,329 @@ export type ApiResponseUnit = {
 
 export type UpdateCompanyDisplayNameDto = {
     displayName?: string;
+};
+
+export type CreateRangeEntriesRequest = {
+    note?: string;
+    days: Array<RangeDayRequest>;
+};
+
+export type RangeDayRequest = {
+    date: string;
+    fromTime: string;
+    toTime: string;
+};
+
+export type ApiResponseListTimesheetDayEntryDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<TimesheetDayEntryDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type CreateHoursEntriesRequest = {
+    note?: string;
+    days: Array<HoursDayRequest>;
+};
+
+export type HoursDayRequest = {
+    date: string;
+    hours: number;
+};
+
+export type DeclineTimesheetEntriesRequest = {
+    entryIds: Array<number>;
+    reason: string;
+};
+
+export type AcceptTimesheetEntriesRequest = {
+    entryIds: Array<number>;
+};
+
+export type SendSmsNotificationRequestDto = {
+    companyId: number;
+    senderUserId?: number;
+    recipientUserId?: number;
+    recipientAddress: string;
+    content: string;
+    sourceService: string;
+    sourceRefType?: string;
+    sourceRefId?: string;
+};
+
+export type ApiResponseBoolean = {
+    success: boolean;
+    message: ApiMessage;
+    data?: boolean;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type SendInAppNotificationRequestDto = {
+    companyId: number;
+    senderUserId?: number;
+    recipientUserId: number;
+    subject: string;
+    content: string;
+    sourceService: string;
+    sourceRefType?: string;
+    sourceRefId?: string;
+};
+
+export type SendEmailNotificationRequestDto = {
+    companyId: number;
+    senderUserId?: number;
+    recipientUserId?: number;
+    recipientAddress: string;
+    subject: string;
+    content: string;
+    html: boolean;
+    sourceService: string;
+    sourceRefType?: string;
+    sourceRefId?: string;
+};
+
+export type ApiResponseInAppNotificationDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: InAppNotificationDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type InAppNotificationDto = {
+    id: number;
+    companyId: number;
+    senderUserId?: number;
+    recipientUserId: number;
+    subject?: string;
+    content: string;
+    sourceService: string;
+    sourceRefType?: string;
+    sourceRefId?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    readAt?: string;
+};
+
+export type ApiResponsePublicPendingUserResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PublicPendingUserResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PublicPendingUserResponseDto = {
+    sessionId: string;
+    userDto?: UserDto;
+    nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
+};
+
+export type UserDto = {
+    id: number;
+    givenName?: string;
+    familyName?: string;
+    email?: string;
+    emailVerified: boolean;
+    mobileNumber?: string;
+    mobileVerified: boolean;
+    provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
+    hasPassword: boolean;
+};
+
+export type ApiResponseAppointmentDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: AppointmentDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type AppointmentDto = {
+    id: number;
+    profileId: number;
+    userId: number;
+    user: UserDto;
+    startTime: string;
+    endTime: string;
+    groupedServiceGroups: Array<GroupedServiceGroupDto>;
+    images: Array<ImageDto>;
+};
+
+export type GroupedServiceDto = {
+    id: number;
+    name: string;
+    price: number;
+    duration: number;
+    images?: Array<ImageDto>;
+};
+
+export type GroupedServiceGroupDto = {
+    id: number;
+    companyId: number;
+    name: string;
+    services: Array<GroupedServiceDto>;
+};
+
+export type ApiResponseAppointmentSessionDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: AppointmentSessionDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type AppointmentSessionDto = {
+    sessionId: string;
+    companyId: number;
+    userId?: number;
+    selectedServices?: Array<number>;
+    selectedProfileId?: number;
+    selectedStartTime?: string;
+    steps?: Array<AppointmentSessionStepDto>;
+};
+
+export type AppointmentSessionStepDto = {
+    appointmentSessionStepId: 'ADD_USER' | 'SELECT_SERVICES' | 'SELECT_PROFILE' | 'SELECT_START_TIME' | 'OVERVIEW';
+    order: number;
+    name: string;
+    isComplete: boolean;
+};
+
+export type CreateServiceDto = {
+    serviceGroupId: number;
+    name: string;
+    price: number;
+    duration: number;
+    imageActions: Array<Delete | Upload>;
+};
+
+export type CreateServiceGroupDto = {
+    name: string;
+};
+
+export type GetCompanyUserScheduleDto = {
+    selectedServiceIds: Array<number>;
+    fromDate?: string;
+    toDate?: string;
+};
+
+export type ApiResponseListScheduleDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<ScheduleDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ScheduleDto = {
+    profileId: number;
+    date: string;
+    timeSlots: Array<ScheduleTimeSlot>;
+};
+
+export type ScheduleTimeSlot = {
+    startTime: string;
+    endTime: string;
+};
+
+export type ScheduleUnavailabilityRangeDto = {
+    from: string;
+    to: string;
+};
+
+export type ApiResponseListScheduleUnavailabilityDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<ScheduleUnavailabilityDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ScheduleUnavailabilityDto = {
+    profileId: number;
+    startTime: string;
+    endTime: string;
+};
+
+export type CreateOrUpdateCompanyUserProfile = {
+    imageAction?: Delete | Upload;
+    dailySchedules?: Array<DailyScheduleDto>;
+    description?: string;
+    serviceIds: Array<number>;
+};
+
+export type DailyScheduleDto = {
+    id: number;
+    dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+    startTime: string;
+    endTime: string;
+};
+
+export type ApiResponseBookingProfileDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: BookingProfileDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type BookingProfileDto = {
+    id: number;
+    userId: number;
+    companyId: number;
+    givenName: string;
+    familyName: string;
+    image?: ImageDto;
+    description?: string;
+    dailySchedule: Array<DailyScheduleDto>;
+    services: Array<GroupedServiceGroupDto>;
+};
+
+export type CreateOrUpdateDailySchedulesDto = {
+    id?: number;
+    dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+    startTime: string;
+    endTime: string;
+};
+
+export type ApiResponseListDailyScheduleDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<DailyScheduleDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type CompanyUserCreateAppointmentDto = {
+    userId: number;
+    serviceIds: Array<number>;
+    startTime: string;
+};
+
+export type CompanyUserUploadAppointmentImageDto = {
+    image: ImageUpload;
+};
+
+export type ApiResponseLong = {
+    success: boolean;
+    message: ApiMessage;
+    data?: number;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
 };
 
 export type InviteUserDto = {
@@ -209,15 +649,6 @@ export type GetCreateOrUpdateContactDto = {
     mobileNumber?: string;
 };
 
-export type ApiResponseBoolean = {
-    success: boolean;
-    message: ApiMessage;
-    data?: boolean;
-    errors?: Array<ApiError>;
-    meta?: ApiMeta;
-    timestamp: string;
-};
-
 export type UserSearchRequestDto = {
     search?: string;
     limit?: number;
@@ -279,18 +710,6 @@ export type ApiResponseListUserDto = {
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
-};
-
-export type UserDto = {
-    id: number;
-    givenName?: string;
-    familyName?: string;
-    email?: string;
-    emailVerified: boolean;
-    mobileNumber?: string;
-    mobileVerified: boolean;
-    provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
-    hasPassword: boolean;
 };
 
 export type ContactSearchRequestDto = {
@@ -692,6 +1111,432 @@ export type InviteCompanyUserDto = {
     roles: Array<'ADMIN' | 'EMPLOYEE'>;
 };
 
+export type CompanyAdminSetAppointmentNoShowDto = {
+    noShow: boolean;
+};
+
+export type GetTimesheetEntriesRequest = {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: 'ASC' | 'DESC';
+    fromDate?: string;
+    toDate?: string;
+    entryMode?: 'RANGE' | 'HOURS';
+    statuses?: Array<'SUBMITTED' | 'ACCEPTED' | 'DECLINED'>;
+};
+
+export type ApiResponsePageTimesheetDayEntryDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PageTimesheetDayEntryDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PageTimesheetDayEntryDto = {
+    totalPages?: number;
+    totalElements?: number;
+    number?: number;
+    size?: number;
+    numberOfElements?: number;
+    content?: Array<TimesheetDayEntryDto>;
+    sort?: SortObject;
+    first?: boolean;
+    last?: boolean;
+    pageable?: PageableObject;
+    empty?: boolean;
+};
+
+export type PageableObject = {
+    paged?: boolean;
+    unpaged?: boolean;
+    pageNumber?: number;
+    pageSize?: number;
+    offset?: number;
+    sort?: SortObject;
+};
+
+export type SortObject = {
+    sorted?: boolean;
+    empty?: boolean;
+    unsorted?: boolean;
+};
+
+export type AdminEmployeeTimesheetEntriesDto = {
+    user: UserDto;
+    entries: Array<TimesheetDayEntryDto>;
+};
+
+export type ApiResponseListAdminEmployeeTimesheetEntriesDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<AdminEmployeeTimesheetEntriesDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type GetInAppNotificationsRequest = {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: 'ASC' | 'DESC';
+    fromDateTime?: string;
+    toDateTime?: string;
+    read?: boolean;
+};
+
+export type ApiResponsePaginatedResponseInAppNotificationDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PaginatedResponseInAppNotificationDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PaginatedResponseInAppNotificationDto = {
+    content: Array<InAppNotificationDto>;
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+};
+
+export type ApiResponsePublicSessionUserStatusDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PublicSessionUserStatusDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PublicSessionUserStatusDto = {
+    sessionId: string;
+    userId?: number;
+    attached: boolean;
+    nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
+    provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
+};
+
+export type ApiResponsePublicSessionRequirementsDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PublicSessionRequirementsDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PublicSessionRequirementsDto = {
+    needsUser: boolean;
+    needsEmail: boolean;
+    needsMobile: boolean;
+    nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
+};
+
+export type ApiResponseListBookingProfileDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<BookingProfileDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ApiResponseListGroupedServiceGroupDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<GroupedServiceGroupDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ApiResponseAppointmentSessionOverviewDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: AppointmentSessionOverviewDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type AppointmentSessionOverviewDto = {
+    sessionId: string;
+    companyId: number;
+    user: UserDto;
+    selectedProfile: BookingProfileDto;
+    selectedServices: Array<AppointmentSessionSelectedServicesDto>;
+    selectedStartTime: string;
+};
+
+export type AppointmentSessionSelectedServicesDto = {
+    serviceGroup: ServiceGroupDto;
+    services: ServiceDto;
+};
+
+export type ApiResponsePaginatedResponseServiceDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PaginatedResponseServiceDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PaginatedResponseServiceDto = {
+    content: Array<ServiceDto>;
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+};
+
+export type ApiResponsePaginatedResponseServiceGroupDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PaginatedResponseServiceGroupDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PaginatedResponseServiceGroupDto = {
+    content: Array<ServiceGroupDto>;
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+};
+
+export type ApiResponseBookingDashboardMetrics = {
+    success: boolean;
+    message: ApiMessage;
+    data?: BookingDashboardMetrics;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type BookingActivityMetrics = {
+    upcomingSevenDays: number;
+    appointmentsToday: number;
+    appointmentsThisMonth: number;
+    appointmentsLastMonth: number;
+    monthOverMonthChangePercent: number;
+    peakBookingTimes: Array<PeakTime>;
+    trendLast30Days: Array<DailyBookingCount>;
+};
+
+export type BookingDashboardMetrics = {
+    summary: CompanySummary;
+    profiles: Array<ProfileBreakdown>;
+};
+
+export type BookingSessionMetrics = {
+    activeSessions: number;
+    abandonedSessionsLast30Days: number;
+    completedSessionsLast30Days: number;
+    sessionToBookingConversionRate: number;
+    averageSessionDurationMinutes: number;
+};
+
+export type CompanySummary = {
+    revenue: RevenueMetrics;
+    bookings: BookingActivityMetrics;
+    services: ServicePerformanceMetrics;
+    customers: CustomerInsightsMetrics;
+    sessions: BookingSessionMetrics;
+};
+
+export type CustomerInsightsMetrics = {
+    uniqueCustomersThisMonth: number;
+    totalUniqueCustomers: number;
+    returningCustomers: number;
+    averageAppointmentsPerCustomer: number;
+    customersWithUpcomingAppointments: number;
+};
+
+export type DailyBookingCount = {
+    date: string;
+    count: number;
+};
+
+export type NeverBookedService = {
+    serviceId: number;
+    serviceName: string;
+    groupName: string;
+    price: number;
+    createdAt: string;
+};
+
+export type PeakTime = {
+    dayOfWeek: string;
+    hour: number;
+    bookingCount: number;
+};
+
+export type PopularService = {
+    serviceId: number;
+    serviceName: string;
+    groupName: string;
+    bookingCount: number;
+    totalRevenue: number;
+};
+
+export type ProfileBreakdown = {
+    profileId: number;
+    userId: number;
+    profileName?: string;
+    profileImageUrl?: string;
+    revenueThisMonth: number;
+    revenueLastMonth: number;
+    projectedRevenue: number;
+    averageAppointmentValue: number;
+    appointmentsThisMonth: number;
+    appointmentsLastMonth: number;
+    upcomingSevenDays: number;
+    totalHoursThisMonth: number;
+    hasSchedule: boolean;
+    upcomingUnavailability: Array<UnavailabilityPeriod>;
+    uniqueCustomersThisMonth: number;
+    totalUniqueCustomers: number;
+    returningCustomerCount: number;
+};
+
+export type RevenueMetrics = {
+    revenueToday: number;
+    revenueThisMonth: number;
+    revenueLastMonth: number;
+    monthOverMonthChangePercent: number;
+    projectedRevenue: number;
+    averageAppointmentValue: number;
+    revenueByServiceGroup: Array<ServiceGroupRevenue>;
+};
+
+export type ServiceGroupRevenue = {
+    groupId: number;
+    groupName: string;
+    totalRevenue: number;
+    appointmentCount: number;
+};
+
+export type ServicePerformanceMetrics = {
+    totalActiveServices: number;
+    totalServiceGroups: number;
+    servicesWithoutImages: number;
+    mostPopularServices: Array<PopularService>;
+    neverBookedServices: Array<NeverBookedService>;
+};
+
+export type UnavailabilityPeriod = {
+    startTime: string;
+    endTime: string;
+    reason?: string;
+};
+
+export type ApiResponseCompanyBookingInfoDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: CompanyBookingInfoDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type CompanyBookingInfoDto = {
+    bookingProfilesAmount: number;
+    bookingProfileServicesAmount: number;
+    bookingProfileDailySchedulesAmount: number;
+    serviceGroupsAmount: number;
+    servicesAmount: number;
+};
+
+export type ApiResponsePaginatedResponseAppointmentDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PaginatedResponseAppointmentDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PaginatedResponseAppointmentDto = {
+    content: Array<AppointmentDto>;
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+};
+
+export type ApiResponsePaginatedResponseUserDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PaginatedResponseUserDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PaginatedResponseUserDto = {
+    content: Array<UserDto>;
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+};
+
+export type ApiResponsePaginatedResponseMyAppointmentDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PaginatedResponseMyAppointmentDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type MyAppointmentDto = {
+    id: number;
+    company: CompanySummaryDto;
+    profileId: number;
+    startTime: string;
+    endTime: string;
+    groupedServiceGroups: Array<GroupedServiceGroupDto>;
+};
+
+export type PaginatedResponseMyAppointmentDto = {
+    content: Array<MyAppointmentDto>;
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+};
+
+export type ApiResponseMyAppointmentDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: MyAppointmentDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
 export type ApiResponseSmtpDiagnosticsResponse = {
     success: boolean;
     message: ApiMessage;
@@ -1022,9 +1867,23 @@ export type UserMetrics = {
     averageAccountAgeDays: number;
 };
 
-export type Link = {
-    href?: string;
-    templated?: boolean;
+export type ApiResponsePublicPendingUserClearedResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PublicPendingUserClearedResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PublicPendingUserClearedResponseDto = {
+    sessionId: string;
+    pendingUserId?: number;
+    nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
+};
+
+export type CompanyAdminCancelAppointmentDto = {
+    reason: string;
 };
 
 export type DeleteContactData = {
@@ -1033,7 +1892,7 @@ export type DeleteContactData = {
         id: number;
     };
     query?: never;
-    url: '/company-user/contacts/{id}';
+    url: '/base-service/company-user/contacts/{id}';
 };
 
 export type DeleteContactResponses = {
@@ -1051,7 +1910,7 @@ export type UpdateContactData = {
         id: number;
     };
     query?: never;
-    url: '/company-user/contacts/{id}';
+    url: '/base-service/company-user/contacts/{id}';
 };
 
 export type UpdateContactResponses = {
@@ -1069,7 +1928,7 @@ export type EditCompanyUserData = {
     query: {
         userId: number;
     };
-    url: '/admin/companies/user';
+    url: '/base-service/admin/companies/user';
 };
 
 export type EditCompanyUserResponses = {
@@ -1085,7 +1944,7 @@ export type UpdateCompanyDisplayNameData = {
     body: UpdateCompanyDisplayNameDto;
     path?: never;
     query?: never;
-    url: '/admin/companies/display-name';
+    url: '/base-service/admin/companies/display-name';
 };
 
 export type UpdateCompanyDisplayNameResponses = {
@@ -1101,7 +1960,7 @@ export type InviteUserData = {
     body: InviteUserDto;
     path?: never;
     query?: never;
-    url: '/system-admin/users';
+    url: '/base-service/system-admin/users';
 };
 
 export type InviteUserResponses = {
@@ -1117,7 +1976,7 @@ export type CreateCompanyData = {
     body: CreateCompanyDto;
     path?: never;
     query?: never;
-    url: '/system-admin/companies';
+    url: '/base-service/system-admin/companies';
 };
 
 export type CreateCompanyResponses = {
@@ -1133,7 +1992,7 @@ export type AddCompanyRoleData = {
     body: AddCompanyRoleDto;
     path?: never;
     query?: never;
-    url: '/system-admin/companies/add-role';
+    url: '/base-service/system-admin/companies/add-role';
 };
 
 export type AddCompanyRoleResponses = {
@@ -1149,7 +2008,7 @@ export type AddProductsToCompanyData = {
     body: AddProductToCompanyDto;
     path?: never;
     query?: never;
-    url: '/system-admin/companies/add-products';
+    url: '/base-service/system-admin/companies/add-products';
 };
 
 export type AddProductsToCompanyResponses = {
@@ -1167,7 +2026,7 @@ export type PublicGetCompanyByIdData = {
         companyId: number;
     };
     query?: never;
-    url: '/public/company/{companyId}';
+    url: '/base-service/public/company/{companyId}';
 };
 
 export type PublicGetCompanyByIdResponses = {
@@ -1183,7 +2042,7 @@ export type GetCompanyUsersByIdsData = {
     body: GetCompanyUsersByIdDto;
     path?: never;
     query?: never;
-    url: '/public/company/users/by-ids';
+    url: '/base-service/public/company/users/by-ids';
 };
 
 export type GetCompanyUsersByIdsResponses = {
@@ -1199,7 +2058,7 @@ export type PublicGetCreateOrUpdateContactData = {
     body: GetCreateOrUpdateContactDto;
     path?: never;
     query?: never;
-    url: '/public/company/contact/get-or-create';
+    url: '/base-service/public/company/contact/get-or-create';
 };
 
 export type PublicGetCreateOrUpdateContactResponses = {
@@ -1217,7 +2076,7 @@ export type ValidateCompanyUsersData = {
         companyId: number;
     };
     query?: never;
-    url: '/internal/users/validate-company-users/{companyId}';
+    url: '/base-service/internal/users/validate-company-users/{companyId}';
 };
 
 export type ValidateCompanyUsersResponses = {
@@ -1233,7 +2092,7 @@ export type SearchUsersData = {
     body: UserSearchRequestDto;
     path?: never;
     query?: never;
-    url: '/internal/users/search';
+    url: '/base-service/internal/users/search';
 };
 
 export type SearchUsersResponses = {
@@ -1249,7 +2108,7 @@ export type ResolveOrCreatePendingUserData = {
     body: ResolveOrCreatePendingUserRequestDto;
     path?: never;
     query?: never;
-    url: '/internal/users/resolve-or-create-pending';
+    url: '/base-service/internal/users/resolve-or-create-pending';
 };
 
 export type ResolveOrCreatePendingUserResponses = {
@@ -1265,7 +2124,7 @@ export type CreateUserInviteData = {
     body: UserInviteRequestDto;
     path?: never;
     query?: never;
-    url: '/internal/users/invite';
+    url: '/base-service/internal/users/invite';
 };
 
 export type CreateUserInviteResponses = {
@@ -1281,7 +2140,7 @@ export type FindByIdsData = {
     body: Array<number>;
     path?: never;
     query?: never;
-    url: '/internal/users/batch';
+    url: '/base-service/internal/users/batch';
 };
 
 export type FindByIdsResponses = {
@@ -1297,7 +2156,7 @@ export type SearchContactsData = {
     body: ContactSearchRequestDto;
     path?: never;
     query?: never;
-    url: '/internal/contacts/search';
+    url: '/base-service/internal/contacts/search';
 };
 
 export type SearchContactsResponses = {
@@ -1313,7 +2172,7 @@ export type FindByIds1Data = {
     body: Array<number>;
     path?: never;
     query?: never;
-    url: '/internal/contacts/batch';
+    url: '/base-service/internal/contacts/batch';
 };
 
 export type FindByIds1Responses = {
@@ -1331,7 +2190,7 @@ export type ValidateContactsData = {
         companyId: number;
     };
     query?: never;
-    url: '/internal/company-contact/validate/contacts/{companyId}';
+    url: '/base-service/internal/company-contact/validate/contacts/{companyId}';
 };
 
 export type ValidateContactsResponses = {
@@ -1347,7 +2206,7 @@ export type GetCompanySummaryByIdsData = {
     body: Array<number>;
     path?: never;
     query?: never;
-    url: '/internal/companies/summary/by-ids';
+    url: '/base-service/internal/companies/summary/by-ids';
 };
 
 export type GetCompanySummaryByIdsResponses = {
@@ -1363,7 +2222,7 @@ export type ResolveOrCreateAppointmentCustomerData = {
     body: ResolveOrCreateAppointmentCustomerRequestDto;
     path?: never;
     query?: never;
-    url: '/company-user/customers/resolve-or-create';
+    url: '/base-service/company-user/customers/resolve-or-create';
 };
 
 export type ResolveOrCreateAppointmentCustomerResponses = {
@@ -1384,7 +2243,7 @@ export type GetContactsData = {
         sort?: string;
         search?: string;
     };
-    url: '/company-user/contacts';
+    url: '/base-service/company-user/contacts';
 };
 
 export type GetContactsResponses = {
@@ -1400,7 +2259,7 @@ export type CreateContactData = {
     body: CreateContactDto;
     path?: never;
     query?: never;
-    url: '/company-user/contacts';
+    url: '/base-service/company-user/contacts';
 };
 
 export type CreateContactResponses = {
@@ -1416,7 +2275,7 @@ export type GetContactsByIdsData = {
     body: GetContactsByIdsDto;
     path?: never;
     query?: never;
-    url: '/company-user/contacts/by-ids';
+    url: '/base-service/company-user/contacts/by-ids';
 };
 
 export type GetContactsByIdsResponses = {
@@ -1434,7 +2293,7 @@ export type UpdateMobileData = {
     query: {
         companyId: number;
     };
-    url: '/company-user/contact-info/mobile';
+    url: '/base-service/company-user/contact-info/mobile';
 };
 
 export type UpdateMobileResponses = {
@@ -1450,7 +2309,7 @@ export type VerifyMobileData = {
     body: VerifyMobileDto;
     path?: never;
     query?: never;
-    url: '/auth/verify-mobile';
+    url: '/base-service/auth/verify-mobile';
 };
 
 export type VerifyMobileResponses = {
@@ -1468,7 +2327,7 @@ export type SignUpData = {
     query?: {
         redirectUrl?: string;
     };
-    url: '/auth/sign-up';
+    url: '/base-service/auth/sign-up';
 };
 
 export type SignUpResponses = {
@@ -1484,7 +2343,7 @@ export type SignOutData = {
     body: SignOutDto;
     path?: never;
     query?: never;
-    url: '/auth/sign-out';
+    url: '/base-service/auth/sign-out';
 };
 
 export type SignOutResponses = {
@@ -1502,7 +2361,7 @@ export type SignInData = {
     query?: {
         redirectUrl?: string;
     };
-    url: '/auth/sign-in';
+    url: '/base-service/auth/sign-in';
 };
 
 export type SignInResponses = {
@@ -1520,7 +2379,7 @@ export type RespondToUserInviteData = {
         inviteToken: string;
     };
     query?: never;
-    url: '/auth/respond-user-invite/{inviteToken}';
+    url: '/base-service/auth/respond-user-invite/{inviteToken}';
 };
 
 export type RespondToUserInviteResponses = {
@@ -1538,7 +2397,7 @@ export type RespondToInviteData = {
         inviteToken: string;
     };
     query?: never;
-    url: '/auth/respond-invite/{inviteToken}';
+    url: '/base-service/auth/respond-invite/{inviteToken}';
 };
 
 export type RespondToInviteResponses = {
@@ -1554,7 +2413,7 @@ export type ResetPasswordData = {
     body: ResetPasswordDto;
     path?: never;
     query?: never;
-    url: '/auth/reset-password';
+    url: '/base-service/auth/reset-password';
 };
 
 export type ResetPasswordResponses = {
@@ -1572,7 +2431,7 @@ export type ResendVerificationData = {
     query?: {
         redirectUrl?: string;
     };
-    url: '/auth/resend-verification';
+    url: '/base-service/auth/resend-verification';
 };
 
 export type ResendVerificationResponses = {
@@ -1590,7 +2449,7 @@ export type ResendVerificationMobileOnlyData = {
     query?: {
         redirectUrl?: string;
     };
-    url: '/auth/resend-verification/mobile';
+    url: '/base-service/auth/resend-verification/mobile';
 };
 
 export type ResendVerificationMobileOnlyResponses = {
@@ -1608,7 +2467,7 @@ export type ResendVerificationEmailOnlyData = {
     query?: {
         redirectUrl?: string;
     };
-    url: '/auth/resend-verification/email';
+    url: '/base-service/auth/resend-verification/email';
 };
 
 export type ResendVerificationEmailOnlyResponses = {
@@ -1626,7 +2485,7 @@ export type RefreshData = {
     query?: {
         companyId?: number;
     };
-    url: '/auth/refresh';
+    url: '/base-service/auth/refresh';
 };
 
 export type RefreshResponses = {
@@ -1642,7 +2501,7 @@ export type ProviderCompleteProfileData = {
     body: ProviderCompleteProfileDto;
     path?: never;
     query?: never;
-    url: '/auth/provider/complete-profile';
+    url: '/base-service/auth/provider/complete-profile';
 };
 
 export type ProviderCompleteProfileResponses = {
@@ -1658,7 +2517,7 @@ export type JwtClaimsData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/auth/jwt-claims';
+    url: '/base-service/auth/jwt-claims';
 };
 
 export type JwtClaimsResponses = {
@@ -1674,7 +2533,7 @@ export type VerifyGoogleTokenData = {
     body: GoogleVerifyTokenDto;
     path?: never;
     query?: never;
-    url: '/auth/google/verify';
+    url: '/base-service/auth/google/verify';
 };
 
 export type VerifyGoogleTokenResponses = {
@@ -1690,7 +2549,7 @@ export type ForgotPasswordData = {
     body: ForgotPasswordDto;
     path?: never;
     query?: never;
-    url: '/auth/forgot-password';
+    url: '/base-service/auth/forgot-password';
 };
 
 export type ForgotPasswordResponses = {
@@ -1706,7 +2565,7 @@ export type CompanySignInData = {
     body: CompanySignInDto;
     path?: never;
     query?: never;
-    url: '/auth/company-sign-in';
+    url: '/base-service/auth/company-sign-in';
 };
 
 export type CompanySignInResponses = {
@@ -1722,7 +2581,7 @@ export type ChangeUnverifiedMobileData = {
     body: ChangeUnverifiedMobileDto;
     path?: never;
     query?: never;
-    url: '/auth/change-unverified-mobile';
+    url: '/base-service/auth/change-unverified-mobile';
 };
 
 export type ChangeUnverifiedMobileResponses = {
@@ -1740,7 +2599,7 @@ export type ChangeUnverifiedEmailData = {
     query?: {
         redirectUrl?: string;
     };
-    url: '/auth/change-unverified-email';
+    url: '/base-service/auth/change-unverified-email';
 };
 
 export type ChangeUnverifiedEmailResponses = {
@@ -1758,7 +2617,7 @@ export type RequestDeleteRoleData = {
     query: {
         companyId: number;
     };
-    url: '/admin/companies/request-role-delete';
+    url: '/base-service/admin/companies/request-role-delete';
 };
 
 export type RequestDeleteRoleResponses = {
@@ -1774,7 +2633,7 @@ export type InviteCompanyUserData = {
     body: InviteCompanyUserDto;
     path?: never;
     query?: never;
-    url: '/admin/companies/invite';
+    url: '/base-service/admin/companies/invite';
 };
 
 export type InviteCompanyUserResponses = {
@@ -1792,7 +2651,7 @@ export type GetUserData = {
         userId: number;
     };
     query?: never;
-    url: '/system-admin/users/{userId}';
+    url: '/base-service/system-admin/users/{userId}';
 };
 
 export type GetUserResponses = {
@@ -1808,7 +2667,7 @@ export type DiagnosticsData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/system-admin/smtp/diagnostics';
+    url: '/base-service/system-admin/smtp/diagnostics';
 };
 
 export type DiagnosticsResponses = {
@@ -1826,7 +2685,7 @@ export type GetUserByEmailData = {
     query: {
         email: string;
     };
-    url: '/public/user';
+    url: '/base-service/public/user';
 };
 
 export type GetUserByEmailResponses = {
@@ -1844,7 +2703,7 @@ export type GetUserByIdData = {
         userId: number;
     };
     query?: never;
-    url: '/public/user/{userId}';
+    url: '/base-service/public/user/{userId}';
 };
 
 export type GetUserByIdResponses = {
@@ -1863,7 +2722,7 @@ export type GetContactData = {
         contactId: number;
     };
     query?: never;
-    url: '/public/company/contact/{companyId}/{contactId}';
+    url: '/base-service/public/company/contact/{companyId}/{contactId}';
 };
 
 export type GetContactResponses = {
@@ -1881,7 +2740,7 @@ export type FindByIdData = {
         userId: number;
     };
     query?: never;
-    url: '/internal/users/{userId}';
+    url: '/base-service/internal/users/{userId}';
 };
 
 export type FindByIdResponses = {
@@ -1899,7 +2758,7 @@ export type ValidateCompanyData = {
         companyId: number;
     };
     query?: never;
-    url: '/internal/users/validate-company/{companyId}';
+    url: '/base-service/internal/users/validate-company/{companyId}';
 };
 
 export type ValidateCompanyResponses = {
@@ -1918,7 +2777,7 @@ export type ValidateCompanyUserData = {
         userId: number;
     };
     query?: never;
-    url: '/internal/users/validate-company-user/{companyId}/{userId}';
+    url: '/base-service/internal/users/validate-company-user/{companyId}/{userId}';
 };
 
 export type ValidateCompanyUserResponses = {
@@ -1937,7 +2796,7 @@ export type GetCompanyRoleData = {
         userId: number;
     };
     query?: never;
-    url: '/internal/users/company-role/{companyId}/{userId}';
+    url: '/base-service/internal/users/company-role/{companyId}/{userId}';
 };
 
 export type GetCompanyRoleResponses = {
@@ -1955,7 +2814,7 @@ export type FindById1Data = {
         contactId: number;
     };
     query?: never;
-    url: '/internal/contacts/{contactId}';
+    url: '/base-service/internal/contacts/{contactId}';
 };
 
 export type FindById1Responses = {
@@ -1974,7 +2833,7 @@ export type ValidateProductData = {
         product: 'BOOKING' | 'EVENT' | 'TIMESHEET';
     };
     query?: never;
-    url: '/internal/company-contact/validate/product/{companyId}/{product}';
+    url: '/base-service/internal/company-contact/validate/product/{companyId}/{product}';
 };
 
 export type ValidateProductResponses = {
@@ -1993,7 +2852,7 @@ export type ValidateContactData = {
         contactId: number;
     };
     query?: never;
-    url: '/internal/company-contact/validate/contact/{companyId}/{contactId}';
+    url: '/base-service/internal/company-contact/validate/contact/{companyId}/{contactId}';
 };
 
 export type ValidateContactResponses = {
@@ -2011,7 +2870,7 @@ export type GetCompanyProductsData = {
         companyId: number;
     };
     query?: never;
-    url: '/internal/company-contact/products/{companyId}';
+    url: '/base-service/internal/company-contact/products/{companyId}';
 };
 
 export type GetCompanyProductsResponses = {
@@ -2030,7 +2889,7 @@ export type GetCompanyUserData = {
         companyId: number;
         userId: number;
     };
-    url: '/company-user/user';
+    url: '/base-service/company-user/user';
 };
 
 export type GetCompanyUserResponses = {
@@ -2046,7 +2905,7 @@ export type GetUser1Data = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/company-user/self';
+    url: '/base-service/company-user/self';
 };
 
 export type GetUser1Responses = {
@@ -2062,7 +2921,7 @@ export type GetCompanyData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/company-user/company';
+    url: '/base-service/company-user/company';
 };
 
 export type GetCompanyResponses = {
@@ -2078,7 +2937,7 @@ export type GetCompanySummaryData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/company-user/company-summary';
+    url: '/base-service/company-user/company-summary';
 };
 
 export type GetCompanySummaryResponses = {
@@ -2096,7 +2955,7 @@ export type VerifyEmailData = {
     query: {
         token: string;
     };
-    url: '/auth/verify-email';
+    url: '/base-service/auth/verify-email';
 };
 
 export type VerifyEmailResponses = {
@@ -2114,7 +2973,7 @@ export type VerificationStatusData = {
     query: {
         verificationSessionToken: string;
     };
-    url: '/auth/verification-status';
+    url: '/base-service/auth/verification-status';
 };
 
 export type VerificationStatusResponses = {
@@ -2130,7 +2989,7 @@ export type UserStatusData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/auth/user-status';
+    url: '/base-service/auth/user-status';
 };
 
 export type UserStatusResponses = {
@@ -2146,7 +3005,7 @@ export type GetUserContextData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/auth/user-context';
+    url: '/base-service/auth/user-context';
 };
 
 export type GetUserContextResponses = {
@@ -2164,7 +3023,7 @@ export type DecodeUserInviteData = {
     query: {
         token: string;
     };
-    url: '/auth/decode-user-invite';
+    url: '/base-service/auth/decode-user-invite';
 };
 
 export type DecodeUserInviteResponses = {
@@ -2182,7 +3041,7 @@ export type DecodeInviteData = {
     query: {
         token: string;
     };
-    url: '/auth/decode-invite';
+    url: '/base-service/auth/decode-invite';
 };
 
 export type DecodeInviteResponses = {
@@ -2198,7 +3057,7 @@ export type GetCompanyContextsData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/auth/company-contexts';
+    url: '/base-service/auth/company-contexts';
 };
 
 export type GetCompanyContextsResponses = {
@@ -2221,7 +3080,7 @@ export type GetCompanyUsersData = {
         includeDeleted?: boolean;
         search?: string;
     };
-    url: '/admin/company-user/users';
+    url: '/base-service/admin/company-user/users';
 };
 
 export type GetCompanyUsersResponses = {
@@ -2237,7 +3096,7 @@ export type GetInvitationsData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/admin/company-user/invitations';
+    url: '/base-service/admin/company-user/invitations';
 };
 
 export type GetInvitationsResponses = {
@@ -2253,7 +3112,7 @@ export type GetDashboardMetricsData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/admin/companies/dashboard/metrics';
+    url: '/base-service/admin/companies/dashboard/metrics';
 };
 
 export type GetDashboardMetricsResponses = {
@@ -2265,87 +3124,13 @@ export type GetDashboardMetricsResponses = {
 
 export type GetDashboardMetricsResponse = GetDashboardMetricsResponses[keyof GetDashboardMetricsResponses];
 
-export type LinksData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/actuator';
-};
-
-export type LinksResponses = {
-    /**
-     * OK
-     */
-    200: {
-        [key: string]: {
-            [key: string]: Link;
-        };
-    };
-};
-
-export type LinksResponse = LinksResponses[keyof LinksResponses];
-
-export type InfoData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/actuator/info';
-};
-
-export type InfoResponses = {
-    /**
-     * OK
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type InfoResponse = InfoResponses[keyof InfoResponses];
-
-export type HealthData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/actuator/health';
-};
-
-export type HealthResponses = {
-    /**
-     * OK
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type HealthResponse = HealthResponses[keyof HealthResponses];
-
-export type RootData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/';
-};
-
-export type RootResponses = {
-    /**
-     * OK
-     */
-    200: {
-        [key: string]: string;
-    };
-};
-
-export type RootResponse = RootResponses[keyof RootResponses];
-
 export type DeleteCompanyUserData = {
     body?: never;
     path: {
         userId: number;
     };
     query?: never;
-    url: '/admin/company-user/{userId}';
+    url: '/base-service/admin/company-user/{userId}';
 };
 
 export type DeleteCompanyUserResponses = {
@@ -2363,7 +3148,7 @@ export type CancelCompanyUserInviteData = {
         inviteTokenId: number;
     };
     query?: never;
-    url: '/admin/companies/cancel-invite/{inviteTokenId}';
+    url: '/base-service/admin/companies/cancel-invite/{inviteTokenId}';
 };
 
 export type CancelCompanyUserInviteResponses = {

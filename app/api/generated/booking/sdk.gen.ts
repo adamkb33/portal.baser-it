@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CancelAppointmentData, CancelAppointmentResponses, ClearAppointmentSessionUserData, ClearAppointmentSessionUserResponses, CompanyUserCreateAppointmentData, CompanyUserCreateAppointmentResponses, CompanyUserCreateUnavailabilityRangesData, CompanyUserCreateUnavailabilityRangesResponses, CompanyUserGetUnavailabilityRangesData, CompanyUserGetUnavailabilityRangesResponses, CreateAppointmentSessionData, CreateAppointmentSessionResponses, CreateOrUpdateDailySchedulesData, CreateOrUpdateDailySchedulesResponses, CreateOrUpdateProfileData, CreateOrUpdateProfileResponses, CreateServiceData, CreateServiceGroupData, CreateServiceGroupResponses, CreateServiceResponses, DeleteAppointmentData, DeleteAppointmentImageData, DeleteAppointmentImageResponses, DeleteAppointmentResponses, DeleteAppointmentSessionData, DeleteAppointmentSessionResponses, DeleteDailyScheduleData, DeleteDailyScheduleResponses, DeleteServiceData, DeleteServiceGroupData, DeleteServiceGroupResponses, DeleteServiceResponses, GetAppointmentByIdData, GetAppointmentByIdResponses, GetAppointmentCustomersData, GetAppointmentCustomersResponses, GetAppointmentsData, GetAppointmentSessionData, GetAppointmentSessionOverviewData, GetAppointmentSessionOverviewResponses, GetAppointmentSessionProfilesData, GetAppointmentSessionProfileServicesData, GetAppointmentSessionProfileServicesResponses, GetAppointmentSessionProfilesResponses, GetAppointmentSessionRequirementsData, GetAppointmentSessionRequirementsResponses, GetAppointmentSessionResponses, GetAppointmentSessionSchedulesData, GetAppointmentSessionSchedulesResponses, GetAppointmentSessionUserStatusData, GetAppointmentSessionUserStatusResponses, GetAppointmentsResponses, GetBookingProfileData, GetBookingProfileResponses, GetBookingReadyCompaniesData, GetBookingReadyCompaniesResponses, GetCompanyBookingInfoData, GetCompanyBookingInfoResponses, GetCompanyBookingMetricsData, GetCompanyBookingMetricsResponses, GetDailySchedulesData, GetDailySchedulesResponses, GetGroupedServiceGroupsData, GetGroupedServiceGroupsResponses, GetMyCompletedAppointmentsData, GetMyCompletedAppointmentsResponses, GetMyNearestAppointmentData, GetMyNearestAppointmentResponses, GetMyUpcomingAppointmentsData, GetMyUpcomingAppointmentsResponses, GetScheduleData, GetScheduleResponses, GetServiceGroupsData, GetServiceGroupsResponses, GetServicesData, GetServicesResponses, HealthData, HealthResponses, InfoData, InfoResponses, LinksData, LinksResponses, RootData, RootResponses, SelectAppointmentSessionProfileData, SelectAppointmentSessionProfileResponses, SelectAppointmentSessionProfileServicesData, SelectAppointmentSessionProfileServicesResponses, SetAppointmentNoShowData, SetAppointmentNoShowResponses, SetPendingAppointmentSessionUserData, SetPendingAppointmentSessionUserResponses, SubmitAppointmentSessionData, SubmitAppointmentSessionResponses, SubmitAppointmentSessionStartTimeData, SubmitAppointmentSessionStartTimeResponses, UpdateServiceData, UpdateServiceGroupData, UpdateServiceGroupResponses, UpdateServiceResponses, UploadAppointmentImageData, UploadAppointmentImageResponses, ValidateCompanyBookingData, ValidateCompanyBookingResponses } from './types.gen';
+import type { CancelAppointmentData, CancelAppointmentResponses, ClearAppointmentSessionUserData, ClearAppointmentSessionUserResponses, CompanyUserCreateAppointmentData, CompanyUserCreateAppointmentResponses, CompanyUserCreateUnavailabilityRangesData, CompanyUserCreateUnavailabilityRangesResponses, CompanyUserGetUnavailabilityRangesData, CompanyUserGetUnavailabilityRangesResponses, CreateAppointmentSessionData, CreateAppointmentSessionResponses, CreateOrUpdateDailySchedulesData, CreateOrUpdateDailySchedulesResponses, CreateOrUpdateProfileData, CreateOrUpdateProfileResponses, CreateServiceData, CreateServiceGroupData, CreateServiceGroupResponses, CreateServiceResponses, DeleteAppointmentData, DeleteAppointmentImageData, DeleteAppointmentImageResponses, DeleteAppointmentResponses, DeleteAppointmentSessionData, DeleteAppointmentSessionResponses, DeleteDailyScheduleData, DeleteDailyScheduleResponses, DeleteServiceData, DeleteServiceGroupData, DeleteServiceGroupResponses, DeleteServiceResponses, GetAppointmentByIdData, GetAppointmentByIdResponses, GetAppointmentCustomersData, GetAppointmentCustomersResponses, GetAppointmentsData, GetAppointmentSessionData, GetAppointmentSessionOverviewData, GetAppointmentSessionOverviewResponses, GetAppointmentSessionProfilesData, GetAppointmentSessionProfileServicesData, GetAppointmentSessionProfileServicesResponses, GetAppointmentSessionProfilesResponses, GetAppointmentSessionRequirementsData, GetAppointmentSessionRequirementsResponses, GetAppointmentSessionResponses, GetAppointmentSessionSchedulesData, GetAppointmentSessionSchedulesResponses, GetAppointmentSessionUserStatusData, GetAppointmentSessionUserStatusResponses, GetAppointmentsResponses, GetBookingProfileData, GetBookingProfileResponses, GetBookingReadyCompaniesData, GetBookingReadyCompaniesResponses, GetCompanyBookingInfoData, GetCompanyBookingInfoResponses, GetCompanyBookingMetricsData, GetCompanyBookingMetricsResponses, GetDailySchedulesData, GetDailySchedulesResponses, GetGroupedServiceGroupsData, GetGroupedServiceGroupsResponses, GetMyCompletedAppointmentsData, GetMyCompletedAppointmentsResponses, GetMyNearestAppointmentData, GetMyNearestAppointmentResponses, GetMyUpcomingAppointmentsData, GetMyUpcomingAppointmentsResponses, GetScheduleData, GetScheduleResponses, GetServiceGroupsData, GetServiceGroupsResponses, GetServicesData, GetServicesResponses, SelectAppointmentSessionProfileData, SelectAppointmentSessionProfileResponses, SelectAppointmentSessionProfileServicesData, SelectAppointmentSessionProfileServicesResponses, SetAppointmentNoShowData, SetAppointmentNoShowResponses, SetPendingAppointmentSessionUserData, SetPendingAppointmentSessionUserResponses, SubmitAppointmentSessionData, SubmitAppointmentSessionResponses, SubmitAppointmentSessionStartTimeData, SubmitAppointmentSessionStartTimeResponses, UpdateServiceData, UpdateServiceGroupData, UpdateServiceGroupResponses, UpdateServiceResponses, UploadAppointmentImageData, UploadAppointmentImageResponses, ValidateCompanyBookingData, ValidateCompanyBookingResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -18,11 +18,11 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
     meta?: Record<string, unknown>;
 };
 
-export class ServiceController {
+export class Booking {
     public static deleteService<ThrowOnError extends boolean = false>(options: Options<DeleteServiceData, ThrowOnError>) {
         return (options.client ?? client).delete<DeleteServiceResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/services/{id}',
+            url: '/booking-service/company-user/services/{id}',
             ...options
         });
     }
@@ -30,7 +30,7 @@ export class ServiceController {
     public static updateService<ThrowOnError extends boolean = false>(options: Options<UpdateServiceData, ThrowOnError>) {
         return (options.client ?? client).put<UpdateServiceResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/services/{id}',
+            url: '/booking-service/company-user/services/{id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -39,32 +39,10 @@ export class ServiceController {
         });
     }
     
-    public static getServices<ThrowOnError extends boolean = false>(options?: Options<GetServicesData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetServicesResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/services',
-            ...options
-        });
-    }
-    
-    public static createService<ThrowOnError extends boolean = false>(options: Options<CreateServiceData, ThrowOnError>) {
-        return (options.client ?? client).post<CreateServiceResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/services',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-}
-
-export class CompanyUserServiceGroupController {
     public static deleteServiceGroup<ThrowOnError extends boolean = false>(options: Options<DeleteServiceGroupData, ThrowOnError>) {
         return (options.client ?? client).delete<DeleteServiceGroupResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/service-groups/{id}',
+            url: '/booking-service/company-user/service-groups/{id}',
             ...options
         });
     }
@@ -72,7 +50,55 @@ export class CompanyUserServiceGroupController {
     public static updateServiceGroup<ThrowOnError extends boolean = false>(options: Options<UpdateServiceGroupData, ThrowOnError>) {
         return (options.client ?? client).put<UpdateServiceGroupResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/service-groups/{id}',
+            url: '/booking-service/company-user/service-groups/{id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    public static clearAppointmentSessionUser<ThrowOnError extends boolean = false>(options: Options<ClearAppointmentSessionUserData, ThrowOnError>) {
+        return (options.client ?? client).delete<ClearAppointmentSessionUserResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/{sessionId}/user', ...options });
+    }
+    
+    public static setPendingAppointmentSessionUser<ThrowOnError extends boolean = false>(options: Options<SetPendingAppointmentSessionUserData, ThrowOnError>) {
+        return (options.client ?? client).post<SetPendingAppointmentSessionUserResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/{sessionId}/user', ...options });
+    }
+    
+    public static submitAppointmentSession<ThrowOnError extends boolean = false>(options: Options<SubmitAppointmentSessionData, ThrowOnError>) {
+        return (options.client ?? client).post<SubmitAppointmentSessionResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/submit', ...options });
+    }
+    
+    public static submitAppointmentSessionStartTime<ThrowOnError extends boolean = false>(options: Options<SubmitAppointmentSessionStartTimeData, ThrowOnError>) {
+        return (options.client ?? client).post<SubmitAppointmentSessionStartTimeResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/submit-start-time', ...options });
+    }
+    
+    public static selectAppointmentSessionProfile<ThrowOnError extends boolean = false>(options: Options<SelectAppointmentSessionProfileData, ThrowOnError>) {
+        return (options.client ?? client).post<SelectAppointmentSessionProfileResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/select-profile', ...options });
+    }
+    
+    public static selectAppointmentSessionProfileServices<ThrowOnError extends boolean = false>(options: Options<SelectAppointmentSessionProfileServicesData, ThrowOnError>) {
+        return (options.client ?? client).post<SelectAppointmentSessionProfileServicesResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/select-profile-services', ...options });
+    }
+    
+    public static createAppointmentSession<ThrowOnError extends boolean = false>(options: Options<CreateAppointmentSessionData, ThrowOnError>) {
+        return (options.client ?? client).post<CreateAppointmentSessionResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/create-session', ...options });
+    }
+    
+    public static getServices<ThrowOnError extends boolean = false>(options?: Options<GetServicesData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetServicesResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/company-user/services',
+            ...options
+        });
+    }
+    
+    public static createService<ThrowOnError extends boolean = false>(options: Options<CreateServiceData, ThrowOnError>) {
+        return (options.client ?? client).post<CreateServiceResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/company-user/services',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -84,7 +110,7 @@ export class CompanyUserServiceGroupController {
     public static getServiceGroups<ThrowOnError extends boolean = false>(options?: Options<GetServiceGroupsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetServiceGroupsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/service-groups',
+            url: '/booking-service/company-user/service-groups',
             ...options
         });
     }
@@ -92,7 +118,7 @@ export class CompanyUserServiceGroupController {
     public static createServiceGroup<ThrowOnError extends boolean = false>(options: Options<CreateServiceGroupData, ThrowOnError>) {
         return (options.client ?? client).post<CreateServiceGroupResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/service-groups',
+            url: '/booking-service/company-user/service-groups',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -101,158 +127,10 @@ export class CompanyUserServiceGroupController {
         });
     }
     
-    public static getGroupedServiceGroups<ThrowOnError extends boolean = false>(options?: Options<GetGroupedServiceGroupsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetGroupedServiceGroupsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/service-groups/grouped-service-groups',
-            ...options
-        });
-    }
-}
-
-export class PublicAppointmentSessionController {
-    public static clearAppointmentSessionUser<ThrowOnError extends boolean = false>(options: Options<ClearAppointmentSessionUserData, ThrowOnError>) {
-        return (options.client ?? client).delete<ClearAppointmentSessionUserResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/{sessionId}/user',
-            ...options
-        });
-    }
-    
-    public static setPendingAppointmentSessionUser<ThrowOnError extends boolean = false>(options: Options<SetPendingAppointmentSessionUserData, ThrowOnError>) {
-        return (options.client ?? client).post<SetPendingAppointmentSessionUserResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/{sessionId}/user',
-            ...options
-        });
-    }
-    
-    public static submitAppointmentSession<ThrowOnError extends boolean = false>(options: Options<SubmitAppointmentSessionData, ThrowOnError>) {
-        return (options.client ?? client).post<SubmitAppointmentSessionResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/submit',
-            ...options
-        });
-    }
-    
-    public static submitAppointmentSessionStartTime<ThrowOnError extends boolean = false>(options: Options<SubmitAppointmentSessionStartTimeData, ThrowOnError>) {
-        return (options.client ?? client).post<SubmitAppointmentSessionStartTimeResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/submit-start-time',
-            ...options
-        });
-    }
-    
-    public static selectAppointmentSessionProfile<ThrowOnError extends boolean = false>(options: Options<SelectAppointmentSessionProfileData, ThrowOnError>) {
-        return (options.client ?? client).post<SelectAppointmentSessionProfileResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/select-profile',
-            ...options
-        });
-    }
-    
-    public static selectAppointmentSessionProfileServices<ThrowOnError extends boolean = false>(options: Options<SelectAppointmentSessionProfileServicesData, ThrowOnError>) {
-        return (options.client ?? client).post<SelectAppointmentSessionProfileServicesResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/select-profile-services',
-            ...options
-        });
-    }
-    
-    public static createAppointmentSession<ThrowOnError extends boolean = false>(options: Options<CreateAppointmentSessionData, ThrowOnError>) {
-        return (options.client ?? client).post<CreateAppointmentSessionResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/create-session',
-            ...options
-        });
-    }
-    
-    public static getAppointmentSessionUserStatus<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionUserStatusData, ThrowOnError>) {
-        return (options.client ?? client).get<GetAppointmentSessionUserStatusResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/{sessionId}/user-status',
-            ...options
-        });
-    }
-    
-    public static getAppointmentSessionRequirements<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionRequirementsData, ThrowOnError>) {
-        return (options.client ?? client).get<GetAppointmentSessionRequirementsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/{sessionId}/requirements',
-            ...options
-        });
-    }
-    
-    public static getAppointmentSession<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionData, ThrowOnError>) {
-        return (options.client ?? client).get<GetAppointmentSessionResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/get-session',
-            ...options
-        });
-    }
-    
-    public static getAppointmentSessionSchedules<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionSchedulesData, ThrowOnError>) {
-        return (options.client ?? client).get<GetAppointmentSessionSchedulesResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/get-schedules',
-            ...options
-        });
-    }
-    
-    public static getAppointmentSessionProfiles<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionProfilesData, ThrowOnError>) {
-        return (options.client ?? client).get<GetAppointmentSessionProfilesResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/get-profiles',
-            ...options
-        });
-    }
-    
-    public static getAppointmentSessionProfileServices<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionProfileServicesData, ThrowOnError>) {
-        return (options.client ?? client).get<GetAppointmentSessionProfileServicesResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/get-profile-services',
-            ...options
-        });
-    }
-    
-    public static getAppointmentSessionOverview<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionOverviewData, ThrowOnError>) {
-        return (options.client ?? client).get<GetAppointmentSessionOverviewResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/get-overview',
-            ...options
-        });
-    }
-    
-    public static getAppointmentById<ThrowOnError extends boolean = false>(options: Options<GetAppointmentByIdData, ThrowOnError>) {
-        return (options.client ?? client).get<GetAppointmentByIdResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/get-appointment',
-            ...options
-        });
-    }
-    
-    public static deleteAppointmentSession<ThrowOnError extends boolean = false>(options: Options<DeleteAppointmentSessionData, ThrowOnError>) {
-        return (options.client ?? client).delete<DeleteAppointmentSessionResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/delete-session',
-            ...options
-        });
-    }
-    
-    public static cancelAppointment<ThrowOnError extends boolean = false>(options: Options<CancelAppointmentData, ThrowOnError>) {
-        return (options.client ?? client).delete<CancelAppointmentResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/appointment-session/cancel-appointment',
-            ...options
-        });
-    }
-}
-
-export class CompanyUserScheduleController {
     public static getSchedule<ThrowOnError extends boolean = false>(options: Options<GetScheduleData, ThrowOnError>) {
         return (options.client ?? client).post<GetScheduleResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/schedules',
+            url: '/booking-service/company-user/schedules',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -260,13 +138,11 @@ export class CompanyUserScheduleController {
             }
         });
     }
-}
-
-export class CompanyUserScheduleUnavailabilityController {
+    
     public static companyUserGetUnavailabilityRanges<ThrowOnError extends boolean = false>(options?: Options<CompanyUserGetUnavailabilityRangesData, ThrowOnError>) {
         return (options?.client ?? client).get<CompanyUserGetUnavailabilityRangesResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/schedule-unavailability',
+            url: '/booking-service/company-user/schedule-unavailability',
             ...options
         });
     }
@@ -274,7 +150,7 @@ export class CompanyUserScheduleUnavailabilityController {
     public static companyUserCreateUnavailabilityRanges<ThrowOnError extends boolean = false>(options: Options<CompanyUserCreateUnavailabilityRangesData, ThrowOnError>) {
         return (options.client ?? client).post<CompanyUserCreateUnavailabilityRangesResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/schedule-unavailability',
+            url: '/booking-service/company-user/schedule-unavailability',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -282,13 +158,11 @@ export class CompanyUserScheduleUnavailabilityController {
             }
         });
     }
-}
-
-export class CompanyUserBookingProfileController {
+    
     public static getBookingProfile<ThrowOnError extends boolean = false>(options?: Options<GetBookingProfileData, ThrowOnError>) {
         return (options?.client ?? client).get<GetBookingProfileResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/profile',
+            url: '/booking-service/company-user/profile',
             ...options
         });
     }
@@ -296,7 +170,7 @@ export class CompanyUserBookingProfileController {
     public static createOrUpdateProfile<ThrowOnError extends boolean = false>(options: Options<CreateOrUpdateProfileData, ThrowOnError>) {
         return (options.client ?? client).post<CreateOrUpdateProfileResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/profile',
+            url: '/booking-service/company-user/profile',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -304,13 +178,11 @@ export class CompanyUserBookingProfileController {
             }
         });
     }
-}
-
-export class DailyScheduleController {
+    
     public static createOrUpdateDailySchedules<ThrowOnError extends boolean = false>(options: Options<CreateOrUpdateDailySchedulesData, ThrowOnError>) {
         return (options.client ?? client).post<CreateOrUpdateDailySchedulesResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/daily-schedules/create-or-update',
+            url: '/booking-service/company-user/daily-schedules/create-or-update',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -319,28 +191,10 @@ export class DailyScheduleController {
         });
     }
     
-    public static getDailySchedules<ThrowOnError extends boolean = false>(options?: Options<GetDailySchedulesData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetDailySchedulesResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/daily-schedules',
-            ...options
-        });
-    }
-    
-    public static deleteDailySchedule<ThrowOnError extends boolean = false>(options: Options<DeleteDailyScheduleData, ThrowOnError>) {
-        return (options.client ?? client).delete<DeleteDailyScheduleResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/daily-schedules/{id}',
-            ...options
-        });
-    }
-}
-
-export class CompanyUserAppointmentController {
     public static getAppointments<ThrowOnError extends boolean = false>(options?: Options<GetAppointmentsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetAppointmentsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/appointments',
+            url: '/booking-service/company-user/appointments',
             ...options
         });
     }
@@ -348,7 +202,7 @@ export class CompanyUserAppointmentController {
     public static companyUserCreateAppointment<ThrowOnError extends boolean = false>(options: Options<CompanyUserCreateAppointmentData, ThrowOnError>) {
         return (options.client ?? client).post<CompanyUserCreateAppointmentResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/appointments',
+            url: '/booking-service/company-user/appointments',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -360,7 +214,7 @@ export class CompanyUserAppointmentController {
     public static uploadAppointmentImage<ThrowOnError extends boolean = false>(options: Options<UploadAppointmentImageData, ThrowOnError>) {
         return (options.client ?? client).post<UploadAppointmentImageResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/appointments/{id}/images',
+            url: '/booking-service/company-user/appointments/{id}/images',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -372,7 +226,7 @@ export class CompanyUserAppointmentController {
     public static setAppointmentNoShow<ThrowOnError extends boolean = false>(options: Options<SetAppointmentNoShowData, ThrowOnError>) {
         return (options.client ?? client).patch<SetAppointmentNoShowResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/appointments/{id}/no-show',
+            url: '/booking-service/company-user/appointments/{id}/no-show',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -381,10 +235,130 @@ export class CompanyUserAppointmentController {
         });
     }
     
+    public static getAppointmentSessionUserStatus<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionUserStatusData, ThrowOnError>) {
+        return (options.client ?? client).get<GetAppointmentSessionUserStatusResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/{sessionId}/user-status', ...options });
+    }
+    
+    public static getAppointmentSessionRequirements<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionRequirementsData, ThrowOnError>) {
+        return (options.client ?? client).get<GetAppointmentSessionRequirementsResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/{sessionId}/requirements', ...options });
+    }
+    
+    public static getAppointmentSession<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionData, ThrowOnError>) {
+        return (options.client ?? client).get<GetAppointmentSessionResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/get-session', ...options });
+    }
+    
+    public static getAppointmentSessionSchedules<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionSchedulesData, ThrowOnError>) {
+        return (options.client ?? client).get<GetAppointmentSessionSchedulesResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/get-schedules', ...options });
+    }
+    
+    public static getAppointmentSessionProfiles<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionProfilesData, ThrowOnError>) {
+        return (options.client ?? client).get<GetAppointmentSessionProfilesResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/get-profiles', ...options });
+    }
+    
+    public static getAppointmentSessionProfileServices<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionProfileServicesData, ThrowOnError>) {
+        return (options.client ?? client).get<GetAppointmentSessionProfileServicesResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/get-profile-services', ...options });
+    }
+    
+    public static getAppointmentSessionOverview<ThrowOnError extends boolean = false>(options: Options<GetAppointmentSessionOverviewData, ThrowOnError>) {
+        return (options.client ?? client).get<GetAppointmentSessionOverviewResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/get-overview', ...options });
+    }
+    
+    public static getAppointmentById<ThrowOnError extends boolean = false>(options: Options<GetAppointmentByIdData, ThrowOnError>) {
+        return (options.client ?? client).get<GetAppointmentByIdResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/get-appointment', ...options });
+    }
+    
+    public static getGroupedServiceGroups<ThrowOnError extends boolean = false>(options?: Options<GetGroupedServiceGroupsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetGroupedServiceGroupsResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/company-user/service-groups/grouped-service-groups',
+            ...options
+        });
+    }
+    
+    public static getDailySchedules<ThrowOnError extends boolean = false>(options?: Options<GetDailySchedulesData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetDailySchedulesResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/company-user/daily-schedules',
+            ...options
+        });
+    }
+    
+    public static getCompanyBookingMetrics<ThrowOnError extends boolean = false>(options?: Options<GetCompanyBookingMetricsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetCompanyBookingMetricsResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/company-user/booking/metrics',
+            ...options
+        });
+    }
+    
+    public static getCompanyBookingInfo<ThrowOnError extends boolean = false>(options?: Options<GetCompanyBookingInfoData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetCompanyBookingInfoResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/company-user/booking/booking-info',
+            ...options
+        });
+    }
+    
     public static getAppointmentCustomers<ThrowOnError extends boolean = false>(options?: Options<GetAppointmentCustomersData, ThrowOnError>) {
         return (options?.client ?? client).get<GetAppointmentCustomersResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/appointments/customers',
+            url: '/booking-service/company-user/appointments/customers',
+            ...options
+        });
+    }
+    
+    public static validateCompanyBooking<ThrowOnError extends boolean = false>(options: Options<ValidateCompanyBookingData, ThrowOnError>) {
+        return (options.client ?? client).get<ValidateCompanyBookingResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/appointments/validate-company/{companyId}',
+            ...options
+        });
+    }
+    
+    public static getMyUpcomingAppointments<ThrowOnError extends boolean = false>(options?: Options<GetMyUpcomingAppointmentsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetMyUpcomingAppointmentsResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/appointments/my-upcoming-appointments',
+            ...options
+        });
+    }
+    
+    public static getMyNearestAppointment<ThrowOnError extends boolean = false>(options?: Options<GetMyNearestAppointmentData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetMyNearestAppointmentResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/appointments/my-nearest-appointment',
+            ...options
+        });
+    }
+    
+    public static getMyCompletedAppointments<ThrowOnError extends boolean = false>(options?: Options<GetMyCompletedAppointmentsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetMyCompletedAppointmentsResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/appointments/my-completed-appointments',
+            ...options
+        });
+    }
+    
+    public static getBookingReadyCompanies<ThrowOnError extends boolean = false>(options?: Options<GetBookingReadyCompaniesData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetBookingReadyCompaniesResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/appointments/booking-ready-companies',
+            ...options
+        });
+    }
+    
+    public static deleteAppointmentSession<ThrowOnError extends boolean = false>(options: Options<DeleteAppointmentSessionData, ThrowOnError>) {
+        return (options.client ?? client).delete<DeleteAppointmentSessionResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/delete-session', ...options });
+    }
+    
+    public static cancelAppointment<ThrowOnError extends boolean = false>(options: Options<CancelAppointmentData, ThrowOnError>) {
+        return (options.client ?? client).delete<CancelAppointmentResponses, unknown, ThrowOnError>({ url: '/booking-service/public/appointment-session/cancel-appointment', ...options });
+    }
+    
+    public static deleteDailySchedule<ThrowOnError extends boolean = false>(options: Options<DeleteDailyScheduleData, ThrowOnError>) {
+        return (options.client ?? client).delete<DeleteDailyScheduleResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/booking-service/company-user/daily-schedules/{id}',
             ...options
         });
     }
@@ -392,7 +366,7 @@ export class CompanyUserAppointmentController {
     public static deleteAppointment<ThrowOnError extends boolean = false>(options: Options<DeleteAppointmentData, ThrowOnError>) {
         return (options.client ?? client).delete<DeleteAppointmentResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/appointments/{id}',
+            url: '/booking-service/company-user/appointments/{id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -404,115 +378,7 @@ export class CompanyUserAppointmentController {
     public static deleteAppointmentImage<ThrowOnError extends boolean = false>(options: Options<DeleteAppointmentImageData, ThrowOnError>) {
         return (options.client ?? client).delete<DeleteAppointmentImageResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/appointments/{id}/images/{imageId}',
-            ...options
-        });
-    }
-}
-
-export class CompanyUserBookingController {
-    public static getCompanyBookingMetrics<ThrowOnError extends boolean = false>(options?: Options<GetCompanyBookingMetricsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetCompanyBookingMetricsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/booking/metrics',
-            ...options
-        });
-    }
-    
-    public static getCompanyBookingInfo<ThrowOnError extends boolean = false>(options?: Options<GetCompanyBookingInfoData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetCompanyBookingInfoResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/booking/booking-info',
-            ...options
-        });
-    }
-}
-
-export class AppointmentsController {
-    public static validateCompanyBooking<ThrowOnError extends boolean = false>(options: Options<ValidateCompanyBookingData, ThrowOnError>) {
-        return (options.client ?? client).get<ValidateCompanyBookingResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/appointments/validate-company/{companyId}',
-            ...options
-        });
-    }
-    
-    public static getMyUpcomingAppointments<ThrowOnError extends boolean = false>(options?: Options<GetMyUpcomingAppointmentsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetMyUpcomingAppointmentsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/appointments/my-upcoming-appointments',
-            ...options
-        });
-    }
-    
-    public static getMyNearestAppointment<ThrowOnError extends boolean = false>(options?: Options<GetMyNearestAppointmentData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetMyNearestAppointmentResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/appointments/my-nearest-appointment',
-            ...options
-        });
-    }
-    
-    public static getMyCompletedAppointments<ThrowOnError extends boolean = false>(options?: Options<GetMyCompletedAppointmentsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetMyCompletedAppointmentsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/appointments/my-completed-appointments',
-            ...options
-        });
-    }
-    
-    public static getBookingReadyCompanies<ThrowOnError extends boolean = false>(options?: Options<GetBookingReadyCompaniesData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetBookingReadyCompaniesResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/appointments/booking-ready-companies',
-            ...options
-        });
-    }
-}
-
-export class Actuator {
-    /**
-     * Actuator root web endpoint
-     */
-    public static links<ThrowOnError extends boolean = false>(options?: Options<LinksData, ThrowOnError>) {
-        return (options?.client ?? client).get<LinksResponses, unknown, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator',
-            ...options
-        });
-    }
-    
-    /**
-     * Actuator web endpoint 'info'
-     */
-    public static info<ThrowOnError extends boolean = false>(options?: Options<InfoData, ThrowOnError>) {
-        return (options?.client ?? client).get<InfoResponses, unknown, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator/info',
-            ...options
-        });
-    }
-    
-    /**
-     * Actuator web endpoint 'health'
-     */
-    public static health<ThrowOnError extends boolean = false>(options?: Options<HealthData, ThrowOnError>) {
-        return (options?.client ?? client).get<HealthResponses, unknown, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator/health',
-            ...options
-        });
-    }
-}
-
-export class RootController {
-    public static root<ThrowOnError extends boolean = false>(options?: Options<RootData, ThrowOnError>) {
-        return (options?.client ?? client).get<RootResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/',
+            url: '/booking-service/company-user/appointments/{id}/images/{imageId}',
             ...options
         });
     }

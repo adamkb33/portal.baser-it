@@ -708,15 +708,6 @@ export const ROUTE_TREE: RouteBranch[] = [
     hidden: true,
     excludeLayout: true,
   },
-  {
-    id: 'embed-host-demo',
-    href: '/embed-host-demo',
-    label: 'Embed Host Demo',
-    category: BrachCategory.PUBLIC,
-    accessType: Access.PUBLIC,
-    hidden: true,
-    excludeLayout: true,
-  },
 ];
 
 export type ApiRoute = {
@@ -890,7 +881,6 @@ export const API_ROUTES_TREE = [
       },
     ],
   },
-
 ];
 export const API_ROUTES_MAP: Record<string, { id: string; url: string }> = (() => {
   const map: Record<string, { id: string; url: string }> = {};

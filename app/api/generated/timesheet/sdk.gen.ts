@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AcceptEntriesData, AcceptEntriesResponses, CreateHoursEntriesData, CreateHoursEntriesResponses, CreateRangeEntriesData, CreateRangeEntriesResponses, DeclineEntriesData, DeclineEntriesResponses, DeleteEntryData, DeleteEntryResponses, GetEmployeeTimesheetEntriesData, GetEmployeeTimesheetEntriesResponses, GetEntriesData, GetEntriesResponses, GetEntryByIdData, GetEntryByIdResponses, GetTimesheetsData, GetTimesheetsResponses, HealthData, HealthResponses, InfoData, InfoResponses, LinksData, LinksResponses, UpdateHoursEntryData, UpdateHoursEntryResponses, UpdateRangeEntryData, UpdateRangeEntryResponses } from './types.gen';
+import type { AcceptEntriesData, AcceptEntriesResponses, CreateHoursEntriesData, CreateHoursEntriesResponses, CreateRangeEntriesData, CreateRangeEntriesResponses, DeclineEntriesData, DeclineEntriesResponses, DeleteEntryData, DeleteEntryResponses, GetEmployeeTimesheetEntriesData, GetEmployeeTimesheetEntriesResponses, GetEntriesData, GetEntriesResponses, GetEntryByIdData, GetEntryByIdResponses, GetTimesheetsData, GetTimesheetsResponses, UpdateHoursEntryData, UpdateHoursEntryResponses, UpdateRangeEntryData, UpdateRangeEntryResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -18,11 +18,11 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
     meta?: Record<string, unknown>;
 };
 
-export class CompanyUserTimesheetEntryController {
+export class Timesheet {
     public static updateRangeEntry<ThrowOnError extends boolean = false>(options: Options<UpdateRangeEntryData, ThrowOnError>) {
         return (options.client ?? client).put<UpdateRangeEntryResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/timesheet-entries/range/{id}',
+            url: '/timesheet-service/company-user/timesheet-entries/range/{id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ export class CompanyUserTimesheetEntryController {
     public static updateHoursEntry<ThrowOnError extends boolean = false>(options: Options<UpdateHoursEntryData, ThrowOnError>) {
         return (options.client ?? client).put<UpdateHoursEntryResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/timesheet-entries/hours/{id}',
+            url: '/timesheet-service/company-user/timesheet-entries/hours/{id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ export class CompanyUserTimesheetEntryController {
     public static createRangeEntries<ThrowOnError extends boolean = false>(options: Options<CreateRangeEntriesData, ThrowOnError>) {
         return (options.client ?? client).post<CreateRangeEntriesResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/timesheet-entries/range',
+            url: '/timesheet-service/company-user/timesheet-entries/range',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export class CompanyUserTimesheetEntryController {
     public static createHoursEntries<ThrowOnError extends boolean = false>(options: Options<CreateHoursEntriesData, ThrowOnError>) {
         return (options.client ?? client).post<CreateHoursEntriesResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/timesheet-entries/hours',
+            url: '/timesheet-service/company-user/timesheet-entries/hours',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -67,36 +67,10 @@ export class CompanyUserTimesheetEntryController {
         });
     }
     
-    public static getEntries<ThrowOnError extends boolean = false>(options: Options<GetEntriesData, ThrowOnError>) {
-        return (options.client ?? client).get<GetEntriesResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/timesheet-entries',
-            ...options
-        });
-    }
-    
-    public static deleteEntry<ThrowOnError extends boolean = false>(options: Options<DeleteEntryData, ThrowOnError>) {
-        return (options.client ?? client).delete<DeleteEntryResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/timesheet-entries/{id}',
-            ...options
-        });
-    }
-    
-    public static getEntryById<ThrowOnError extends boolean = false>(options: Options<GetEntryByIdData, ThrowOnError>) {
-        return (options.client ?? client).get<GetEntryByIdResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/timesheet-entries/{id}',
-            ...options
-        });
-    }
-}
-
-export class AdminTimeSheetEntryController {
     public static declineEntries<ThrowOnError extends boolean = false>(options: Options<DeclineEntriesData, ThrowOnError>) {
         return (options.client ?? client).post<DeclineEntriesResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/timesheet-entries/decline',
+            url: '/timesheet-service/admin/timesheet-entries/decline',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -108,7 +82,7 @@ export class AdminTimeSheetEntryController {
     public static acceptEntries<ThrowOnError extends boolean = false>(options: Options<AcceptEntriesData, ThrowOnError>) {
         return (options.client ?? client).post<AcceptEntriesResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/timesheet-entries/accept',
+            url: '/timesheet-service/admin/timesheet-entries/accept',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -117,58 +91,42 @@ export class AdminTimeSheetEntryController {
         });
     }
     
-    public static getEmployeeTimesheetEntries<ThrowOnError extends boolean = false>(options: Options<GetEmployeeTimesheetEntriesData, ThrowOnError>) {
-        return (options.client ?? client).get<GetEmployeeTimesheetEntriesResponses, unknown, ThrowOnError>({
+    public static getEntries<ThrowOnError extends boolean = false>(options: Options<GetEntriesData, ThrowOnError>) {
+        return (options.client ?? client).get<GetEntriesResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/timesheet-entries',
+            url: '/timesheet-service/company-user/timesheet-entries',
             ...options
         });
     }
-}
-
-export class TimesheetController {
+    
+    public static deleteEntry<ThrowOnError extends boolean = false>(options: Options<DeleteEntryData, ThrowOnError>) {
+        return (options.client ?? client).delete<DeleteEntryResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/timesheet-service/company-user/timesheet-entries/{id}',
+            ...options
+        });
+    }
+    
+    public static getEntryById<ThrowOnError extends boolean = false>(options: Options<GetEntryByIdData, ThrowOnError>) {
+        return (options.client ?? client).get<GetEntryByIdResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/timesheet-service/company-user/timesheet-entries/{id}',
+            ...options
+        });
+    }
+    
     public static getTimesheets<ThrowOnError extends boolean = false>(options?: Options<GetTimesheetsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetTimesheetsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/timesheets',
-            ...options
-        });
-    }
-}
-
-export class Actuator {
-    /**
-     * Actuator root web endpoint
-     */
-    public static links<ThrowOnError extends boolean = false>(options?: Options<LinksData, ThrowOnError>) {
-        return (options?.client ?? client).get<LinksResponses, unknown, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator',
+            url: '/timesheet-service/api/timesheets',
             ...options
         });
     }
     
-    /**
-     * Actuator web endpoint 'info'
-     */
-    public static info<ThrowOnError extends boolean = false>(options?: Options<InfoData, ThrowOnError>) {
-        return (options?.client ?? client).get<InfoResponses, unknown, ThrowOnError>({
-            responseType: 'json',
+    public static getEmployeeTimesheetEntries<ThrowOnError extends boolean = false>(options: Options<GetEmployeeTimesheetEntriesData, ThrowOnError>) {
+        return (options.client ?? client).get<GetEmployeeTimesheetEntriesResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator/info',
-            ...options
-        });
-    }
-    
-    /**
-     * Actuator web endpoint 'health'
-     */
-    public static health<ThrowOnError extends boolean = false>(options?: Options<HealthData, ThrowOnError>) {
-        return (options?.client ?? client).get<HealthResponses, unknown, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator/health',
+            url: '/timesheet-service/admin/timesheet-entries',
             ...options
         });
     }

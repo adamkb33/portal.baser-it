@@ -114,6 +114,21 @@ describe('company.booking.appointments.create.route', () => {
     });
   });
 
+  it('falls back to default contact size when contact-size is 0', async () => {
+    const request = new Request('http://localhost/company/booking/appointments/create?contact-page=0&contact-size=0');
+
+    await loader({ request } as never);
+
+    expect(mocks.getAppointmentCustomers).toHaveBeenCalledWith({
+      query: {
+        page: 0,
+        size: 10,
+        sort: 'familyName',
+        direction: 'ASC',
+      },
+    });
+  });
+
   it('resolves customer then creates appointment successfully', async () => {
     mocks.resolveOrCreateAppointmentCustomer.mockResolvedValueOnce({
       data: { data: { userId: 44, status: 'RESOLVED_EXISTING' } },

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddCompanyRoleData, AddCompanyRoleResponses, AddProductsToCompanyData, AddProductsToCompanyResponses, CancelCompanyUserInviteData, CancelCompanyUserInviteResponses, ChangeUnverifiedEmailData, ChangeUnverifiedEmailResponses, ChangeUnverifiedMobileData, ChangeUnverifiedMobileResponses, CompanySignInData, CompanySignInResponses, CreateCompanyData, CreateCompanyResponses, CreateContactData, CreateContactResponses, CreateUserInviteData, CreateUserInviteResponses, DecodeInviteData, DecodeInviteResponses, DecodeUserInviteData, DecodeUserInviteResponses, DeleteCompanyUserData, DeleteCompanyUserResponses, DeleteContactData, DeleteContactResponses, DiagnosticsData, DiagnosticsResponses, EditCompanyUserData, EditCompanyUserResponses, FindById1Data, FindById1Responses, FindByIdData, FindByIdResponses, FindByIds1Data, FindByIds1Responses, FindByIdsData, FindByIdsResponses, ForgotPasswordData, ForgotPasswordResponses, GetCompanyContextsData, GetCompanyContextsResponses, GetCompanyData, GetCompanyProductsData, GetCompanyProductsResponses, GetCompanyResponses, GetCompanyRoleData, GetCompanyRoleResponses, GetCompanySummaryByIdsData, GetCompanySummaryByIdsResponses, GetCompanySummaryData, GetCompanySummaryResponses, GetCompanyUserData, GetCompanyUserResponses, GetCompanyUsersByIdsData, GetCompanyUsersByIdsResponses, GetCompanyUsersData, GetCompanyUsersResponses, GetContactData, GetContactResponses, GetContactsByIdsData, GetContactsByIdsResponses, GetContactsData, GetContactsResponses, GetDashboardMetricsData, GetDashboardMetricsResponses, GetInvitationsData, GetInvitationsResponses, GetUser1Data, GetUser1Responses, GetUserByEmailData, GetUserByEmailResponses, GetUserByIdData, GetUserByIdResponses, GetUserContextData, GetUserContextResponses, GetUserData, GetUserResponses, HealthData, HealthResponses, InfoData, InfoResponses, InviteCompanyUserData, InviteCompanyUserResponses, InviteUserData, InviteUserResponses, JwtClaimsData, JwtClaimsResponses, LinksData, LinksResponses, ProviderCompleteProfileData, ProviderCompleteProfileResponses, PublicGetCompanyByIdData, PublicGetCompanyByIdResponses, PublicGetCreateOrUpdateContactData, PublicGetCreateOrUpdateContactResponses, RefreshData, RefreshResponses, RequestDeleteRoleData, RequestDeleteRoleResponses, ResendVerificationData, ResendVerificationEmailOnlyData, ResendVerificationEmailOnlyResponses, ResendVerificationMobileOnlyData, ResendVerificationMobileOnlyResponses, ResendVerificationResponses, ResetPasswordData, ResetPasswordResponses, ResolveOrCreateAppointmentCustomerData, ResolveOrCreateAppointmentCustomerResponses, ResolveOrCreatePendingUserData, ResolveOrCreatePendingUserResponses, RespondToInviteData, RespondToInviteResponses, RespondToUserInviteData, RespondToUserInviteResponses, RootData, RootResponses, SearchContactsData, SearchContactsResponses, SearchUsersData, SearchUsersResponses, SignInData, SignInResponses, SignOutData, SignOutResponses, SignUpData, SignUpResponses, UpdateCompanyDisplayNameData, UpdateCompanyDisplayNameResponses, UpdateContactData, UpdateContactResponses, UpdateMobileData, UpdateMobileResponses, UserStatusData, UserStatusResponses, ValidateCompanyData, ValidateCompanyResponses, ValidateCompanyUserData, ValidateCompanyUserResponses, ValidateCompanyUsersData, ValidateCompanyUsersResponses, ValidateContactData, ValidateContactResponses, ValidateContactsData, ValidateContactsResponses, ValidateProductData, ValidateProductResponses, VerificationStatusData, VerificationStatusResponses, VerifyEmailData, VerifyEmailResponses, VerifyGoogleTokenData, VerifyGoogleTokenResponses, VerifyMobileData, VerifyMobileResponses } from './types.gen';
+import type { AddCompanyRoleData, AddCompanyRoleResponses, AddProductsToCompanyData, AddProductsToCompanyResponses, CancelCompanyUserInviteData, CancelCompanyUserInviteResponses, ChangeUnverifiedEmailData, ChangeUnverifiedEmailResponses, ChangeUnverifiedMobileData, ChangeUnverifiedMobileResponses, CompanySignInData, CompanySignInResponses, CreateCompanyData, CreateCompanyResponses, CreateContactData, CreateContactResponses, CreateUserInviteData, CreateUserInviteResponses, DecodeInviteData, DecodeInviteResponses, DecodeUserInviteData, DecodeUserInviteResponses, DeleteCompanyUserData, DeleteCompanyUserResponses, DeleteContactData, DeleteContactResponses, DiagnosticsData, DiagnosticsResponses, EditCompanyUserData, EditCompanyUserResponses, FindById1Data, FindById1Responses, FindByIdData, FindByIdResponses, FindByIds1Data, FindByIds1Responses, FindByIdsData, FindByIdsResponses, ForgotPasswordData, ForgotPasswordResponses, GetCompanyContextsData, GetCompanyContextsResponses, GetCompanyData, GetCompanyProductsData, GetCompanyProductsResponses, GetCompanyResponses, GetCompanyRoleData, GetCompanyRoleResponses, GetCompanySummaryByIdsData, GetCompanySummaryByIdsResponses, GetCompanySummaryData, GetCompanySummaryResponses, GetCompanyUserData, GetCompanyUserResponses, GetCompanyUsersByIdsData, GetCompanyUsersByIdsResponses, GetCompanyUsersData, GetCompanyUsersResponses, GetContactData, GetContactResponses, GetContactsByIdsData, GetContactsByIdsResponses, GetContactsData, GetContactsResponses, GetDashboardMetricsData, GetDashboardMetricsResponses, GetInvitationsData, GetInvitationsResponses, GetUser1Data, GetUser1Responses, GetUserByEmailData, GetUserByEmailResponses, GetUserByIdData, GetUserByIdResponses, GetUserContextData, GetUserContextResponses, GetUserData, GetUserResponses, InviteCompanyUserData, InviteCompanyUserResponses, InviteUserData, InviteUserResponses, JwtClaimsData, JwtClaimsResponses, ProviderCompleteProfileData, ProviderCompleteProfileResponses, PublicGetCompanyByIdData, PublicGetCompanyByIdResponses, PublicGetCreateOrUpdateContactData, PublicGetCreateOrUpdateContactResponses, RefreshData, RefreshResponses, RequestDeleteRoleData, RequestDeleteRoleResponses, ResendVerificationData, ResendVerificationEmailOnlyData, ResendVerificationEmailOnlyResponses, ResendVerificationMobileOnlyData, ResendVerificationMobileOnlyResponses, ResendVerificationResponses, ResetPasswordData, ResetPasswordResponses, ResolveOrCreateAppointmentCustomerData, ResolveOrCreateAppointmentCustomerResponses, ResolveOrCreatePendingUserData, ResolveOrCreatePendingUserResponses, RespondToInviteData, RespondToInviteResponses, RespondToUserInviteData, RespondToUserInviteResponses, SearchContactsData, SearchContactsResponses, SearchUsersData, SearchUsersResponses, SignInData, SignInResponses, SignOutData, SignOutResponses, SignUpData, SignUpResponses, UpdateCompanyDisplayNameData, UpdateCompanyDisplayNameResponses, UpdateContactData, UpdateContactResponses, UpdateMobileData, UpdateMobileResponses, UserStatusData, UserStatusResponses, ValidateCompanyData, ValidateCompanyResponses, ValidateCompanyUserData, ValidateCompanyUserResponses, ValidateCompanyUsersData, ValidateCompanyUsersResponses, ValidateContactData, ValidateContactResponses, ValidateContactsData, ValidateContactsResponses, ValidateProductData, ValidateProductResponses, VerificationStatusData, VerificationStatusResponses, VerifyEmailData, VerifyEmailResponses, VerifyGoogleTokenData, VerifyGoogleTokenResponses, VerifyMobileData, VerifyMobileResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -18,11 +18,11 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
     meta?: Record<string, unknown>;
 };
 
-export class CompanyUserContactController {
+export class Base {
     public static deleteContact<ThrowOnError extends boolean = false>(options: Options<DeleteContactData, ThrowOnError>) {
         return (options.client ?? client).delete<DeleteContactResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/contacts/{id}',
+            url: '/base-service/company-user/contacts/{id}',
             ...options
         });
     }
@@ -30,7 +30,7 @@ export class CompanyUserContactController {
     public static updateContact<ThrowOnError extends boolean = false>(options: Options<UpdateContactData, ThrowOnError>) {
         return (options.client ?? client).put<UpdateContactResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/contacts/{id}',
+            url: '/base-service/company-user/contacts/{id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -39,44 +39,10 @@ export class CompanyUserContactController {
         });
     }
     
-    public static getContacts<ThrowOnError extends boolean = false>(options?: Options<GetContactsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetContactsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/contacts',
-            ...options
-        });
-    }
-    
-    public static createContact<ThrowOnError extends boolean = false>(options: Options<CreateContactData, ThrowOnError>) {
-        return (options.client ?? client).post<CreateContactResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/contacts',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-    
-    public static getContactsByIds<ThrowOnError extends boolean = false>(options: Options<GetContactsByIdsData, ThrowOnError>) {
-        return (options.client ?? client).post<GetContactsByIdsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/contacts/by-ids',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-}
-
-export class AdminCompanyController {
     public static editCompanyUser<ThrowOnError extends boolean = false>(options: Options<EditCompanyUserData, ThrowOnError>) {
         return (options.client ?? client).put<EditCompanyUserResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/companies/user',
+            url: '/base-service/admin/companies/user',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -88,7 +54,7 @@ export class AdminCompanyController {
     public static updateCompanyDisplayName<ThrowOnError extends boolean = false>(options: Options<UpdateCompanyDisplayNameData, ThrowOnError>) {
         return (options.client ?? client).put<UpdateCompanyDisplayNameResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/companies/display-name',
+            url: '/base-service/admin/companies/display-name',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -97,52 +63,10 @@ export class AdminCompanyController {
         });
     }
     
-    public static requestDeleteRole<ThrowOnError extends boolean = false>(options: Options<RequestDeleteRoleData, ThrowOnError>) {
-        return (options.client ?? client).post<RequestDeleteRoleResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/companies/request-role-delete',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-    
-    public static inviteCompanyUser<ThrowOnError extends boolean = false>(options: Options<InviteCompanyUserData, ThrowOnError>) {
-        return (options.client ?? client).post<InviteCompanyUserResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/companies/invite',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-    
-    public static getDashboardMetrics<ThrowOnError extends boolean = false>(options?: Options<GetDashboardMetricsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetDashboardMetricsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/companies/dashboard/metrics',
-            ...options
-        });
-    }
-    
-    public static cancelCompanyUserInvite<ThrowOnError extends boolean = false>(options: Options<CancelCompanyUserInviteData, ThrowOnError>) {
-        return (options.client ?? client).delete<CancelCompanyUserInviteResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/companies/cancel-invite/{inviteTokenId}',
-            ...options
-        });
-    }
-}
-
-export class SystemAdminUserController {
     public static inviteUser<ThrowOnError extends boolean = false>(options: Options<InviteUserData, ThrowOnError>) {
         return (options.client ?? client).post<InviteUserResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/system-admin/users',
+            url: '/base-service/system-admin/users',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -151,20 +75,10 @@ export class SystemAdminUserController {
         });
     }
     
-    public static getUser<ThrowOnError extends boolean = false>(options: Options<GetUserData, ThrowOnError>) {
-        return (options.client ?? client).get<GetUserResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/system-admin/users/{userId}',
-            ...options
-        });
-    }
-}
-
-export class SystemAdminCompanyController {
     public static createCompany<ThrowOnError extends boolean = false>(options: Options<CreateCompanyData, ThrowOnError>) {
         return (options.client ?? client).post<CreateCompanyResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/system-admin/companies',
+            url: '/base-service/system-admin/companies',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -176,7 +90,7 @@ export class SystemAdminCompanyController {
     public static addCompanyRole<ThrowOnError extends boolean = false>(options: Options<AddCompanyRoleData, ThrowOnError>) {
         return (options.client ?? client).post<AddCompanyRoleResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/system-admin/companies/add-role',
+            url: '/base-service/system-admin/companies/add-role',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -188,7 +102,7 @@ export class SystemAdminCompanyController {
     public static addProductsToCompany<ThrowOnError extends boolean = false>(options: Options<AddProductsToCompanyData, ThrowOnError>) {
         return (options.client ?? client).post<AddProductsToCompanyResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/system-admin/companies/add-products',
+            url: '/base-service/system-admin/companies/add-products',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -196,35 +110,14 @@ export class SystemAdminCompanyController {
             }
         });
     }
-}
-
-export class PublicCompanyController {
+    
     public static publicGetCompanyById<ThrowOnError extends boolean = false>(options: Options<PublicGetCompanyByIdData, ThrowOnError>) {
-        return (options.client ?? client).post<PublicGetCompanyByIdResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/company/{companyId}',
-            ...options
-        });
+        return (options.client ?? client).post<PublicGetCompanyByIdResponses, unknown, ThrowOnError>({ url: '/base-service/public/company/{companyId}', ...options });
     }
     
     public static getCompanyUsersByIds<ThrowOnError extends boolean = false>(options: Options<GetCompanyUsersByIdsData, ThrowOnError>) {
         return (options.client ?? client).post<GetCompanyUsersByIdsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/company/users/by-ids',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-}
-
-export class PublicCompanyContactController {
-    public static publicGetCreateOrUpdateContact<ThrowOnError extends boolean = false>(options: Options<PublicGetCreateOrUpdateContactData, ThrowOnError>) {
-        return (options.client ?? client).post<PublicGetCreateOrUpdateContactResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/company/contact/get-or-create',
+            url: '/base-service/public/company/users/by-ids',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -233,20 +126,21 @@ export class PublicCompanyContactController {
         });
     }
     
-    public static getContact<ThrowOnError extends boolean = false>(options: Options<GetContactData, ThrowOnError>) {
-        return (options.client ?? client).get<GetContactResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/company/contact/{companyId}/{contactId}',
-            ...options
+    public static publicGetCreateOrUpdateContact<ThrowOnError extends boolean = false>(options: Options<PublicGetCreateOrUpdateContactData, ThrowOnError>) {
+        return (options.client ?? client).post<PublicGetCreateOrUpdateContactResponses, unknown, ThrowOnError>({
+            url: '/base-service/public/company/contact/get-or-create',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
         });
     }
-}
-
-export class InternalCompanyController {
+    
     public static validateCompanyUsers<ThrowOnError extends boolean = false>(options: Options<ValidateCompanyUsersData, ThrowOnError>) {
         return (options.client ?? client).post<ValidateCompanyUsersResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/users/validate-company-users/{companyId}',
+            url: '/base-service/internal/users/validate-company-users/{companyId}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -255,84 +149,10 @@ export class InternalCompanyController {
         });
     }
     
-    public static validateContacts<ThrowOnError extends boolean = false>(options: Options<ValidateContactsData, ThrowOnError>) {
-        return (options.client ?? client).post<ValidateContactsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/company-contact/validate/contacts/{companyId}',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-    
-    public static getCompanySummaryByIds<ThrowOnError extends boolean = false>(options: Options<GetCompanySummaryByIdsData, ThrowOnError>) {
-        return (options.client ?? client).post<GetCompanySummaryByIdsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/companies/summary/by-ids',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-    
-    public static validateCompany<ThrowOnError extends boolean = false>(options: Options<ValidateCompanyData, ThrowOnError>) {
-        return (options.client ?? client).get<ValidateCompanyResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/users/validate-company/{companyId}',
-            ...options
-        });
-    }
-    
-    public static validateCompanyUser<ThrowOnError extends boolean = false>(options: Options<ValidateCompanyUserData, ThrowOnError>) {
-        return (options.client ?? client).get<ValidateCompanyUserResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/users/validate-company-user/{companyId}/{userId}',
-            ...options
-        });
-    }
-    
-    public static getCompanyRole<ThrowOnError extends boolean = false>(options: Options<GetCompanyRoleData, ThrowOnError>) {
-        return (options.client ?? client).get<GetCompanyRoleResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/users/company-role/{companyId}/{userId}',
-            ...options
-        });
-    }
-    
-    public static validateProduct<ThrowOnError extends boolean = false>(options: Options<ValidateProductData, ThrowOnError>) {
-        return (options.client ?? client).get<ValidateProductResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/company-contact/validate/product/{companyId}/{product}',
-            ...options
-        });
-    }
-    
-    public static validateContact<ThrowOnError extends boolean = false>(options: Options<ValidateContactData, ThrowOnError>) {
-        return (options.client ?? client).get<ValidateContactResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/company-contact/validate/contact/{companyId}/{contactId}',
-            ...options
-        });
-    }
-    
-    public static getCompanyProducts<ThrowOnError extends boolean = false>(options: Options<GetCompanyProductsData, ThrowOnError>) {
-        return (options.client ?? client).get<GetCompanyProductsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/company-contact/products/{companyId}',
-            ...options
-        });
-    }
-}
-
-export class InternalUserController {
     public static searchUsers<ThrowOnError extends boolean = false>(options: Options<SearchUsersData, ThrowOnError>) {
         return (options.client ?? client).post<SearchUsersResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/users/search',
+            url: '/base-service/internal/users/search',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -344,7 +164,7 @@ export class InternalUserController {
     public static resolveOrCreatePendingUser<ThrowOnError extends boolean = false>(options: Options<ResolveOrCreatePendingUserData, ThrowOnError>) {
         return (options.client ?? client).post<ResolveOrCreatePendingUserResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/users/resolve-or-create-pending',
+            url: '/base-service/internal/users/resolve-or-create-pending',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -356,7 +176,7 @@ export class InternalUserController {
     public static createUserInvite<ThrowOnError extends boolean = false>(options: Options<CreateUserInviteData, ThrowOnError>) {
         return (options.client ?? client).post<CreateUserInviteResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/users/invite',
+            url: '/base-service/internal/users/invite',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -368,7 +188,7 @@ export class InternalUserController {
     public static findByIds<ThrowOnError extends boolean = false>(options: Options<FindByIdsData, ThrowOnError>) {
         return (options.client ?? client).post<FindByIdsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/users/batch',
+            url: '/base-service/internal/users/batch',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -377,20 +197,10 @@ export class InternalUserController {
         });
     }
     
-    public static findById<ThrowOnError extends boolean = false>(options: Options<FindByIdData, ThrowOnError>) {
-        return (options.client ?? client).get<FindByIdResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/users/{userId}',
-            ...options
-        });
-    }
-}
-
-export class InternalContactController {
     public static searchContacts<ThrowOnError extends boolean = false>(options: Options<SearchContactsData, ThrowOnError>) {
         return (options.client ?? client).post<SearchContactsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/contacts/search',
+            url: '/base-service/internal/contacts/search',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -402,7 +212,7 @@ export class InternalContactController {
     public static findByIds1<ThrowOnError extends boolean = false>(options: Options<FindByIds1Data, ThrowOnError>) {
         return (options.client ?? client).post<FindByIds1Responses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/contacts/batch',
+            url: '/base-service/internal/contacts/batch',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -411,20 +221,66 @@ export class InternalContactController {
         });
     }
     
-    public static findById1<ThrowOnError extends boolean = false>(options: Options<FindById1Data, ThrowOnError>) {
-        return (options.client ?? client).get<FindById1Responses, unknown, ThrowOnError>({
+    public static validateContacts<ThrowOnError extends boolean = false>(options: Options<ValidateContactsData, ThrowOnError>) {
+        return (options.client ?? client).post<ValidateContactsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/internal/contacts/{contactId}',
-            ...options
+            url: '/base-service/internal/company-contact/validate/contacts/{companyId}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
         });
     }
-}
-
-export class CompanyUserController {
+    
+    public static getCompanySummaryByIds<ThrowOnError extends boolean = false>(options: Options<GetCompanySummaryByIdsData, ThrowOnError>) {
+        return (options.client ?? client).post<GetCompanySummaryByIdsResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/internal/companies/summary/by-ids',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
     public static resolveOrCreateAppointmentCustomer<ThrowOnError extends boolean = false>(options: Options<ResolveOrCreateAppointmentCustomerData, ThrowOnError>) {
         return (options.client ?? client).post<ResolveOrCreateAppointmentCustomerResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/customers/resolve-or-create',
+            url: '/base-service/company-user/customers/resolve-or-create',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    public static getContacts<ThrowOnError extends boolean = false>(options?: Options<GetContactsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetContactsResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/company-user/contacts',
+            ...options
+        });
+    }
+    
+    public static createContact<ThrowOnError extends boolean = false>(options: Options<CreateContactData, ThrowOnError>) {
+        return (options.client ?? client).post<CreateContactResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/company-user/contacts',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    public static getContactsByIds<ThrowOnError extends boolean = false>(options: Options<GetContactsByIdsData, ThrowOnError>) {
+        return (options.client ?? client).post<GetContactsByIdsResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/company-user/contacts/by-ids',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -436,7 +292,7 @@ export class CompanyUserController {
     public static updateMobile<ThrowOnError extends boolean = false>(options: Options<UpdateMobileData, ThrowOnError>) {
         return (options.client ?? client).post<UpdateMobileResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/contact-info/mobile',
+            url: '/base-service/company-user/contact-info/mobile',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -445,44 +301,9 @@ export class CompanyUserController {
         });
     }
     
-    public static getCompanyUser<ThrowOnError extends boolean = false>(options: Options<GetCompanyUserData, ThrowOnError>) {
-        return (options.client ?? client).get<GetCompanyUserResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/user',
-            ...options
-        });
-    }
-    
-    public static getUser1<ThrowOnError extends boolean = false>(options?: Options<GetUser1Data, ThrowOnError>) {
-        return (options?.client ?? client).get<GetUser1Responses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/self',
-            ...options
-        });
-    }
-    
-    public static getCompany<ThrowOnError extends boolean = false>(options?: Options<GetCompanyData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetCompanyResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/company',
-            ...options
-        });
-    }
-    
-    public static getCompanySummary<ThrowOnError extends boolean = false>(options?: Options<GetCompanySummaryData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetCompanySummaryResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/company-user/company-summary',
-            ...options
-        });
-    }
-}
-
-export class AuthController {
     public static verifyMobile<ThrowOnError extends boolean = false>(options: Options<VerifyMobileData, ThrowOnError>) {
         return (options.client ?? client).post<VerifyMobileResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/verify-mobile',
+            url: '/base-service/auth/verify-mobile',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -493,8 +314,7 @@ export class AuthController {
     
     public static signUp<ThrowOnError extends boolean = false>(options: Options<SignUpData, ThrowOnError>) {
         return (options.client ?? client).post<SignUpResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/sign-up',
+            url: '/base-service/auth/sign-up',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -505,8 +325,7 @@ export class AuthController {
     
     public static signOut<ThrowOnError extends boolean = false>(options: Options<SignOutData, ThrowOnError>) {
         return (options.client ?? client).post<SignOutResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/sign-out',
+            url: '/base-service/auth/sign-out',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -517,8 +336,7 @@ export class AuthController {
     
     public static signIn<ThrowOnError extends boolean = false>(options: Options<SignInData, ThrowOnError>) {
         return (options.client ?? client).post<SignInResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/sign-in',
+            url: '/base-service/auth/sign-in',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -529,8 +347,7 @@ export class AuthController {
     
     public static respondToUserInvite<ThrowOnError extends boolean = false>(options: Options<RespondToUserInviteData, ThrowOnError>) {
         return (options.client ?? client).post<RespondToUserInviteResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/respond-user-invite/{inviteToken}',
+            url: '/base-service/auth/respond-user-invite/{inviteToken}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -541,8 +358,7 @@ export class AuthController {
     
     public static respondToInvite<ThrowOnError extends boolean = false>(options: Options<RespondToInviteData, ThrowOnError>) {
         return (options.client ?? client).post<RespondToInviteResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/respond-invite/{inviteToken}',
+            url: '/base-service/auth/respond-invite/{inviteToken}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -553,8 +369,7 @@ export class AuthController {
     
     public static resetPassword<ThrowOnError extends boolean = false>(options: Options<ResetPasswordData, ThrowOnError>) {
         return (options.client ?? client).post<ResetPasswordResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/reset-password',
+            url: '/base-service/auth/reset-password',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -565,8 +380,7 @@ export class AuthController {
     
     public static resendVerification<ThrowOnError extends boolean = false>(options: Options<ResendVerificationData, ThrowOnError>) {
         return (options.client ?? client).post<ResendVerificationResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/resend-verification',
+            url: '/base-service/auth/resend-verification',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -577,8 +391,7 @@ export class AuthController {
     
     public static resendVerificationMobileOnly<ThrowOnError extends boolean = false>(options: Options<ResendVerificationMobileOnlyData, ThrowOnError>) {
         return (options.client ?? client).post<ResendVerificationMobileOnlyResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/resend-verification/mobile',
+            url: '/base-service/auth/resend-verification/mobile',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -589,8 +402,7 @@ export class AuthController {
     
     public static resendVerificationEmailOnly<ThrowOnError extends boolean = false>(options: Options<ResendVerificationEmailOnlyData, ThrowOnError>) {
         return (options.client ?? client).post<ResendVerificationEmailOnlyResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/resend-verification/email',
+            url: '/base-service/auth/resend-verification/email',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -601,8 +413,7 @@ export class AuthController {
     
     public static refresh<ThrowOnError extends boolean = false>(options: Options<RefreshData, ThrowOnError>) {
         return (options.client ?? client).post<RefreshResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/refresh',
+            url: '/base-service/auth/refresh',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -613,8 +424,7 @@ export class AuthController {
     
     public static providerCompleteProfile<ThrowOnError extends boolean = false>(options: Options<ProviderCompleteProfileData, ThrowOnError>) {
         return (options.client ?? client).post<ProviderCompleteProfileResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/provider/complete-profile',
+            url: '/base-service/auth/provider/complete-profile',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -624,17 +434,12 @@ export class AuthController {
     }
     
     public static jwtClaims<ThrowOnError extends boolean = false>(options?: Options<JwtClaimsData, ThrowOnError>) {
-        return (options?.client ?? client).post<JwtClaimsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/jwt-claims',
-            ...options
-        });
+        return (options?.client ?? client).post<JwtClaimsResponses, unknown, ThrowOnError>({ url: '/base-service/auth/jwt-claims', ...options });
     }
     
     public static verifyGoogleToken<ThrowOnError extends boolean = false>(options: Options<VerifyGoogleTokenData, ThrowOnError>) {
         return (options.client ?? client).post<VerifyGoogleTokenResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/google/verify',
+            url: '/base-service/auth/google/verify',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -645,8 +450,7 @@ export class AuthController {
     
     public static forgotPassword<ThrowOnError extends boolean = false>(options: Options<ForgotPasswordData, ThrowOnError>) {
         return (options.client ?? client).post<ForgotPasswordResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/forgot-password',
+            url: '/base-service/auth/forgot-password',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -657,8 +461,7 @@ export class AuthController {
     
     public static companySignIn<ThrowOnError extends boolean = false>(options: Options<CompanySignInData, ThrowOnError>) {
         return (options.client ?? client).post<CompanySignInResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/company-sign-in',
+            url: '/base-service/auth/company-sign-in',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -669,8 +472,7 @@ export class AuthController {
     
     public static changeUnverifiedMobile<ThrowOnError extends boolean = false>(options: Options<ChangeUnverifiedMobileData, ThrowOnError>) {
         return (options.client ?? client).post<ChangeUnverifiedMobileResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/change-unverified-mobile',
+            url: '/base-service/auth/change-unverified-mobile',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -681,8 +483,7 @@ export class AuthController {
     
     public static changeUnverifiedEmail<ThrowOnError extends boolean = false>(options: Options<ChangeUnverifiedEmailData, ThrowOnError>) {
         return (options.client ?? client).post<ChangeUnverifiedEmailResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/change-unverified-email',
+            url: '/base-service/auth/change-unverified-email',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -691,96 +492,186 @@ export class AuthController {
         });
     }
     
-    public static verifyEmail<ThrowOnError extends boolean = false>(options: Options<VerifyEmailData, ThrowOnError>) {
-        return (options.client ?? client).get<VerifyEmailResponses, unknown, ThrowOnError>({
+    public static requestDeleteRole<ThrowOnError extends boolean = false>(options: Options<RequestDeleteRoleData, ThrowOnError>) {
+        return (options.client ?? client).post<RequestDeleteRoleResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/verify-email',
+            url: '/base-service/admin/companies/request-role-delete',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    public static inviteCompanyUser<ThrowOnError extends boolean = false>(options: Options<InviteCompanyUserData, ThrowOnError>) {
+        return (options.client ?? client).post<InviteCompanyUserResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/admin/companies/invite',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    public static getUser<ThrowOnError extends boolean = false>(options: Options<GetUserData, ThrowOnError>) {
+        return (options.client ?? client).get<GetUserResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/system-admin/users/{userId}',
             ...options
         });
     }
     
-    public static verificationStatus<ThrowOnError extends boolean = false>(options: Options<VerificationStatusData, ThrowOnError>) {
-        return (options.client ?? client).get<VerificationStatusResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/verification-status',
-            ...options
-        });
-    }
-    
-    public static userStatus<ThrowOnError extends boolean = false>(options?: Options<UserStatusData, ThrowOnError>) {
-        return (options?.client ?? client).get<UserStatusResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/user-status',
-            ...options
-        });
-    }
-    
-    public static getUserContext<ThrowOnError extends boolean = false>(options?: Options<GetUserContextData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetUserContextResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/user-context',
-            ...options
-        });
-    }
-    
-    public static decodeUserInvite<ThrowOnError extends boolean = false>(options: Options<DecodeUserInviteData, ThrowOnError>) {
-        return (options.client ?? client).get<DecodeUserInviteResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/decode-user-invite',
-            ...options
-        });
-    }
-    
-    public static decodeInvite<ThrowOnError extends boolean = false>(options: Options<DecodeInviteData, ThrowOnError>) {
-        return (options.client ?? client).get<DecodeInviteResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/decode-invite',
-            ...options
-        });
-    }
-    
-    public static getCompanyContexts<ThrowOnError extends boolean = false>(options?: Options<GetCompanyContextsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetCompanyContextsResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/auth/company-contexts',
-            ...options
-        });
-    }
-}
-
-export class SmtpDiagnosticsController {
     public static diagnostics<ThrowOnError extends boolean = false>(options?: Options<DiagnosticsData, ThrowOnError>) {
         return (options?.client ?? client).get<DiagnosticsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/system-admin/smtp/diagnostics',
-            ...options
-        });
-    }
-}
-
-export class PublicUserController {
-    public static getUserByEmail<ThrowOnError extends boolean = false>(options: Options<GetUserByEmailData, ThrowOnError>) {
-        return (options.client ?? client).get<GetUserByEmailResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/user',
+            url: '/base-service/system-admin/smtp/diagnostics',
             ...options
         });
     }
     
+    public static getUserByEmail<ThrowOnError extends boolean = false>(options: Options<GetUserByEmailData, ThrowOnError>) {
+        return (options.client ?? client).get<GetUserByEmailResponses, unknown, ThrowOnError>({ url: '/base-service/public/user', ...options });
+    }
+    
     public static getUserById<ThrowOnError extends boolean = false>(options: Options<GetUserByIdData, ThrowOnError>) {
-        return (options.client ?? client).get<GetUserByIdResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).get<GetUserByIdResponses, unknown, ThrowOnError>({ url: '/base-service/public/user/{userId}', ...options });
+    }
+    
+    public static getContact<ThrowOnError extends boolean = false>(options: Options<GetContactData, ThrowOnError>) {
+        return (options.client ?? client).get<GetContactResponses, unknown, ThrowOnError>({ url: '/base-service/public/company/contact/{companyId}/{contactId}', ...options });
+    }
+    
+    public static findById<ThrowOnError extends boolean = false>(options: Options<FindByIdData, ThrowOnError>) {
+        return (options.client ?? client).get<FindByIdResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/public/user/{userId}',
+            url: '/base-service/internal/users/{userId}',
             ...options
         });
     }
-}
-
-export class AdminCompanyUserController {
+    
+    public static validateCompany<ThrowOnError extends boolean = false>(options: Options<ValidateCompanyData, ThrowOnError>) {
+        return (options.client ?? client).get<ValidateCompanyResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/internal/users/validate-company/{companyId}',
+            ...options
+        });
+    }
+    
+    public static validateCompanyUser<ThrowOnError extends boolean = false>(options: Options<ValidateCompanyUserData, ThrowOnError>) {
+        return (options.client ?? client).get<ValidateCompanyUserResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/internal/users/validate-company-user/{companyId}/{userId}',
+            ...options
+        });
+    }
+    
+    public static getCompanyRole<ThrowOnError extends boolean = false>(options: Options<GetCompanyRoleData, ThrowOnError>) {
+        return (options.client ?? client).get<GetCompanyRoleResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/internal/users/company-role/{companyId}/{userId}',
+            ...options
+        });
+    }
+    
+    public static findById1<ThrowOnError extends boolean = false>(options: Options<FindById1Data, ThrowOnError>) {
+        return (options.client ?? client).get<FindById1Responses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/internal/contacts/{contactId}',
+            ...options
+        });
+    }
+    
+    public static validateProduct<ThrowOnError extends boolean = false>(options: Options<ValidateProductData, ThrowOnError>) {
+        return (options.client ?? client).get<ValidateProductResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/internal/company-contact/validate/product/{companyId}/{product}',
+            ...options
+        });
+    }
+    
+    public static validateContact<ThrowOnError extends boolean = false>(options: Options<ValidateContactData, ThrowOnError>) {
+        return (options.client ?? client).get<ValidateContactResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/internal/company-contact/validate/contact/{companyId}/{contactId}',
+            ...options
+        });
+    }
+    
+    public static getCompanyProducts<ThrowOnError extends boolean = false>(options: Options<GetCompanyProductsData, ThrowOnError>) {
+        return (options.client ?? client).get<GetCompanyProductsResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/internal/company-contact/products/{companyId}',
+            ...options
+        });
+    }
+    
+    public static getCompanyUser<ThrowOnError extends boolean = false>(options: Options<GetCompanyUserData, ThrowOnError>) {
+        return (options.client ?? client).get<GetCompanyUserResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/company-user/user',
+            ...options
+        });
+    }
+    
+    public static getUser1<ThrowOnError extends boolean = false>(options?: Options<GetUser1Data, ThrowOnError>) {
+        return (options?.client ?? client).get<GetUser1Responses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/company-user/self',
+            ...options
+        });
+    }
+    
+    public static getCompany<ThrowOnError extends boolean = false>(options?: Options<GetCompanyData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetCompanyResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/company-user/company',
+            ...options
+        });
+    }
+    
+    public static getCompanySummary<ThrowOnError extends boolean = false>(options?: Options<GetCompanySummaryData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetCompanySummaryResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/company-user/company-summary',
+            ...options
+        });
+    }
+    
+    public static verifyEmail<ThrowOnError extends boolean = false>(options: Options<VerifyEmailData, ThrowOnError>) {
+        return (options.client ?? client).get<VerifyEmailResponses, unknown, ThrowOnError>({ url: '/base-service/auth/verify-email', ...options });
+    }
+    
+    public static verificationStatus<ThrowOnError extends boolean = false>(options: Options<VerificationStatusData, ThrowOnError>) {
+        return (options.client ?? client).get<VerificationStatusResponses, unknown, ThrowOnError>({ url: '/base-service/auth/verification-status', ...options });
+    }
+    
+    public static userStatus<ThrowOnError extends boolean = false>(options?: Options<UserStatusData, ThrowOnError>) {
+        return (options?.client ?? client).get<UserStatusResponses, unknown, ThrowOnError>({ url: '/base-service/auth/user-status', ...options });
+    }
+    
+    public static getUserContext<ThrowOnError extends boolean = false>(options?: Options<GetUserContextData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetUserContextResponses, unknown, ThrowOnError>({ url: '/base-service/auth/user-context', ...options });
+    }
+    
+    public static decodeUserInvite<ThrowOnError extends boolean = false>(options: Options<DecodeUserInviteData, ThrowOnError>) {
+        return (options.client ?? client).get<DecodeUserInviteResponses, unknown, ThrowOnError>({ url: '/base-service/auth/decode-user-invite', ...options });
+    }
+    
+    public static decodeInvite<ThrowOnError extends boolean = false>(options: Options<DecodeInviteData, ThrowOnError>) {
+        return (options.client ?? client).get<DecodeInviteResponses, unknown, ThrowOnError>({ url: '/base-service/auth/decode-invite', ...options });
+    }
+    
+    public static getCompanyContexts<ThrowOnError extends boolean = false>(options?: Options<GetCompanyContextsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetCompanyContextsResponses, unknown, ThrowOnError>({ url: '/base-service/auth/company-contexts', ...options });
+    }
+    
     public static getCompanyUsers<ThrowOnError extends boolean = false>(options?: Options<GetCompanyUsersData, ThrowOnError>) {
         return (options?.client ?? client).get<GetCompanyUsersResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/company-user/users',
+            url: '/base-service/admin/company-user/users',
             ...options
         });
     }
@@ -788,7 +679,15 @@ export class AdminCompanyUserController {
     public static getInvitations<ThrowOnError extends boolean = false>(options?: Options<GetInvitationsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetInvitationsResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/company-user/invitations',
+            url: '/base-service/admin/company-user/invitations',
+            ...options
+        });
+    }
+    
+    public static getDashboardMetrics<ThrowOnError extends boolean = false>(options?: Options<GetDashboardMetricsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetDashboardMetricsResponses, unknown, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/base-service/admin/companies/dashboard/metrics',
             ...options
         });
     }
@@ -796,55 +695,15 @@ export class AdminCompanyUserController {
     public static deleteCompanyUser<ThrowOnError extends boolean = false>(options: Options<DeleteCompanyUserData, ThrowOnError>) {
         return (options.client ?? client).delete<DeleteCompanyUserResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/admin/company-user/{userId}',
-            ...options
-        });
-    }
-}
-
-export class Actuator {
-    /**
-     * Actuator root web endpoint
-     */
-    public static links<ThrowOnError extends boolean = false>(options?: Options<LinksData, ThrowOnError>) {
-        return (options?.client ?? client).get<LinksResponses, unknown, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator',
+            url: '/base-service/admin/company-user/{userId}',
             ...options
         });
     }
     
-    /**
-     * Actuator web endpoint 'info'
-     */
-    public static info<ThrowOnError extends boolean = false>(options?: Options<InfoData, ThrowOnError>) {
-        return (options?.client ?? client).get<InfoResponses, unknown, ThrowOnError>({
-            responseType: 'json',
+    public static cancelCompanyUserInvite<ThrowOnError extends boolean = false>(options: Options<CancelCompanyUserInviteData, ThrowOnError>) {
+        return (options.client ?? client).delete<CancelCompanyUserInviteResponses, unknown, ThrowOnError>({
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator/info',
-            ...options
-        });
-    }
-    
-    /**
-     * Actuator web endpoint 'health'
-     */
-    public static health<ThrowOnError extends boolean = false>(options?: Options<HealthData, ThrowOnError>) {
-        return (options?.client ?? client).get<HealthResponses, unknown, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/actuator/health',
-            ...options
-        });
-    }
-}
-
-export class RootController {
-    public static root<ThrowOnError extends boolean = false>(options?: Options<RootData, ThrowOnError>) {
-        return (options?.client ?? client).get<RootResponses, unknown, ThrowOnError>({
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/',
+            url: '/base-service/admin/companies/cancel-invite/{inviteTokenId}',
             ...options
         });
     }

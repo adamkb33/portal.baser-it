@@ -113,7 +113,7 @@ export function ServicesSelector({
 
       <div
         className={cn(
-          'rounded-md border border-border bg-background',
+          'rounded-md border border-border bg-surface-variant-1',
           compact ? 'max-h-[300px] overflow-y-auto p-2' : 'max-h-[360px] overflow-y-auto p-3',
         )}
       >
@@ -132,7 +132,7 @@ export function ServicesSelector({
                   type="button"
                   onClick={() => toggleGroup(group.id)}
                   className={cn(
-                    'flex w-full items-center justify-between rounded-sm bg-surface text-left transition-colors hover:bg-background',
+                    'flex w-full items-center justify-between rounded-sm bg-surface-variant-2 text-left transition-colors hover:bg-surface-variant-3',
                     compact ? 'px-2 py-1.5' : 'px-3 py-2',
                   )}
                 >
@@ -165,8 +165,8 @@ export function ServicesSelector({
                             'flex w-full items-start gap-2 rounded-sm border text-left transition-colors',
                             compact ? 'px-2 py-1.5' : 'px-3 py-2',
                             isSelected
-                              ? 'border-border bg-surface text-text-primary'
-                              : 'border-border bg-background text-text-primary hover:bg-surface',
+                              ? 'border-border bg-surface-variant-2 text-text-primary'
+                              : 'border-border bg-background text-text-primary hover:bg-surface-variant-2',
                           )}
                         >
                           <div

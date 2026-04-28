@@ -2,7 +2,11 @@ import { formatISO } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { Form, Link, useNavigate, useNavigation, useSearchParams } from 'react-router';
 import { CompanyUserController } from '~/api/generated/base';
-import { CompanyUserAppointmentController, CompanyUserBookingProfileController, CompanyUserScheduleController } from '~/api/generated/booking';
+import {
+  CompanyUserAppointmentController,
+  CompanyUserBookingProfileController,
+  CompanyUserScheduleController,
+} from '~/api/generated/booking';
 import type { UserDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
@@ -12,7 +16,12 @@ import { DateTimeSelector } from '~/routes/company/booking/_components/date-time
 import { ServicesSelector } from '~/routes/company/booking/_components/services-selector';
 import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
 import type { Route } from './+types/company.booking.appointments.create.route';
-import { parseCreateFlowQueryState, parseListPageParam, withCreateFlowQueryState } from './_utils/create-flow-query-params';
+import {
+  parseCreateFlowQueryState,
+  parseListPageParam,
+  parseListSizeParam,
+  withCreateFlowQueryState,
+} from './_utils/create-flow-query-params';
 import {
   Accordion,
   AccordionContent,
@@ -24,7 +33,7 @@ import {
   Label,
 } from '~/ui';
 
-const CONTACT_PAGE_SIZE = 5;
+const CONTACT_PAGE_SIZE = 10;
 
 const parsePositiveInt = (value: FormDataEntryValue | null): number | null => {
   const parsed = Number(value);
@@ -44,21 +53,44 @@ export async function loader({ request }: Route.LoaderArgs) {
     const url = new URL(request.url);
     const state = parseCreateFlowQueryState(url.searchParams);
     const contactPage = parseListPageParam(url.searchParams.get('contact-page'), 0);
-    const contactSize = parseListPageParam(url.searchParams.get('contact-size'), CONTACT_PAGE_SIZE);
+    const contactSize = parseListSizeParam(url.searchParams.get('contact-size'), CONTACT_PAGE_SIZE);
     const contactSearch = url.searchParams.get('customer-search') || url.searchParams.get('contact-search') || '';
     const serviceSearch = url.searchParams.get('service-search') || '';
-    const contactDirectionParam = url.searchParams.get('customer-direction') || url.searchParams.get('contact-direction');
+    const contactDirectionParam =
+      url.searchParams.get('customer-direction') || url.searchParams.get('contact-direction');
     const contactDirection = contactDirectionParam === 'DESC' ? 'DESC' : 'ASC';
+    const contactsQuery = {
+      page: contactPage,
+      size: contactSize,
+      sort: 'familyName',
+      direction: contactDirection,
+      ...(contactSearch && { search: contactSearch }),
+    } as const;
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[appointments.create.loader] customers: incoming params', {
+        requestUrl: url.toString(),
+        raw: {
+          customerSearch: url.searchParams.get('customer-search'),
+          contactSearch: url.searchParams.get('contact-search'),
+          contactPage: url.searchParams.get('contact-page'),
+          contactSize: url.searchParams.get('contact-size'),
+          customerDirection: url.searchParams.get('customer-direction'),
+          contactDirection: url.searchParams.get('contact-direction'),
+        },
+        parsed: {
+          contactSearch,
+          contactPage,
+          contactSize,
+          contactDirection,
+        },
+      });
+      console.log('[appointments.create.loader] customers: api query', contactsQuery);
+    }
 
     const apiResponses = await withAuth(request, async () => {
       const contactsResponse = await CompanyUserAppointmentController.getAppointmentCustomers({
-        query: {
-          page: contactPage,
-          size: contactSize,
-          sort: 'familyName',
-          direction: contactDirection,
-          ...(contactSearch && { search: contactSearch }),
-        },
+        query: contactsQuery,
       });
 
       const bookingProfileResponse = await CompanyUserBookingProfileController.getBookingProfile();
@@ -84,23 +116,28 @@ export async function loader({ request }: Route.LoaderArgs) {
       provider: user.provider,
     })) as UserDto[];
 
-    console.log('[appointments.create.loader] getAppointmentCustomers response', {
-      query: {
-        page: contactPage,
-        size: contactSize,
-        sort: 'familyName',
-        direction: contactDirection,
-        search: contactSearch || null,
-      },
-      pagination: {
-        page: contactsData?.page ?? 0,
-        size: contactsData?.size ?? contactSize,
-        totalElements: contactsData?.totalElements ?? 0,
-        totalPages: contactsData?.totalPages ?? 1,
-      },
-      customerIds: customers.map((customer) => customer.id),
-      rawContent: contactsData?.content ?? [],
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[appointments.create.loader] customers: response summary', {
+        requestedQuery: contactsQuery,
+        pagination: {
+          page: contactsData?.page ?? 0,
+          size: contactsData?.size ?? contactSize,
+          totalElements: contactsData?.totalElements ?? 0,
+          totalPages: contactsData?.totalPages ?? 1,
+        },
+        returnedCount: contactsData?.content?.length ?? 0,
+      });
+      console.log(
+        '[appointments.create.loader] customers: returned users',
+        (contactsData?.content ?? []).map((user) => ({
+          id: user.id,
+          givenName: user.givenName,
+          familyName: user.familyName,
+          email: user.email,
+          mobileNumber: user.mobileNumber,
+        })),
+      );
+    }
 
     return {
       customers,
@@ -280,7 +317,8 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData, actio
   const [draftStartTime, setDraftStartTime] = useState<string>(state.startTime);
   const [customerMode, setCustomerMode] = useState<CustomerMode>(() => {
     if (state.userId) return 'existing';
-    if (state.email.trim() || state.mobileNumber.trim() || state.givenName.trim() || state.familyName.trim()) return 'new';
+    if (state.email.trim() || state.mobileNumber.trim() || state.givenName.trim() || state.familyName.trim())
+      return 'new';
     return 'existing';
   });
   const stateServiceIdsKey = state.serviceIds.join(',');
@@ -295,7 +333,8 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData, actio
     setDraftStartTime(state.startTime);
     setCustomerMode(() => {
       if (state.userId) return 'existing';
-      if (state.email.trim() || state.mobileNumber.trim() || state.givenName.trim() || state.familyName.trim()) return 'new';
+      if (state.email.trim() || state.mobileNumber.trim() || state.givenName.trim() || state.familyName.trim())
+        return 'new';
       return 'existing';
     });
     setOpenStep(defaultStep);
@@ -322,6 +361,18 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData, actio
     } else {
       next.set(key, value);
     }
+    navigate(`?${next.toString()}`, { replace: true, preventScrollReset: true });
+  };
+
+  const updateParams = (updates: Array<{ key: string; value: string | null }>) => {
+    const next = new URLSearchParams(searchParams);
+    updates.forEach(({ key, value }) => {
+      if (!value) {
+        next.delete(key);
+      } else {
+        next.set(key, value);
+      }
+    });
     navigate(`?${next.toString()}`, { replace: true, preventScrollReset: true });
   };
 
@@ -356,47 +407,49 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData, actio
           if (value === 'submit' && submitUnlocked) setOpenStep('submit');
         }}
       >
-          <AccordionItem value="contact">
-            <AccordionTrigger>1. Kunde og brukerinfo</AccordionTrigger>
-            <AccordionContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="grid w-full grid-cols-2 rounded-md border border-border bg-surface p-1">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={customerMode === 'existing' ? 'outline' : 'ghost'}
-                    className={customerMode === 'existing' ? 'bg-background' : ''}
-                    onClick={() => setCustomerMode('existing')}
-                  >
-                    Eksisterende kunde
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={customerMode === 'new' ? 'outline' : 'ghost'}
-                    className={customerMode === 'new' ? 'bg-background' : ''}
-                    onClick={() => {
-                      setCustomerMode('new');
-                      setDraftUserId(null);
-                    }}
-                  >
-                    Ny kunde
-                  </Button>
-                </div>
+        <AccordionItem value="contact">
+          <AccordionTrigger>1. Kunde og brukerinfo</AccordionTrigger>
+          <AccordionContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="grid w-full grid-cols-2 rounded-md border border-border bg-surface p-1">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={customerMode === 'existing' ? 'outline' : 'ghost'}
+                  className={customerMode === 'existing' ? 'bg-background' : ''}
+                  onClick={() => setCustomerMode('existing')}
+                >
+                  Eksisterende kunde
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={customerMode === 'new' ? 'outline' : 'ghost'}
+                  className={customerMode === 'new' ? 'bg-background' : ''}
+                  onClick={() => {
+                    setCustomerMode('new');
+                    setDraftUserId(null);
+                  }}
+                >
+                  Ny kunde
+                </Button>
+              </div>
 
-                {customerMode === 'existing' ? (
-                  <div className="space-y-3">
-                    <CustomerSelector
-                      customers={loaderData.customers}
-                      selectedCustomerId={draftUserId}
-                      onSelectCustomer={(customer) => {
-                        setDraftUserId(customer?.id ?? null);
-                      }}
+              {customerMode === 'existing' ? (
+                <div className="space-y-3">
+                  <CustomerSelector
+                    customers={loaderData.customers}
+                    selectedCustomerId={draftUserId}
+                    onSelectCustomer={(customer) => {
+                      setDraftUserId(customer?.id ?? null);
+                    }}
                       pagination={loaderData.contactPagination}
                       onPageChange={(page) => updateParam('contact-page', String(Math.max(0, page)))}
                       onSearchChange={(search) => {
-                        updateParam('contact-page', '0');
-                        updateParam('customer-search', search || null);
+                        updateParams([
+                          { key: 'contact-page', value: '0' },
+                          { key: 'customer-search', value: search || null },
+                        ]);
                       }}
                       initialSearch={loaderData.contactSearch}
                     />
@@ -417,10 +470,9 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData, actio
                   >
                     Fortsett med valgt kunde
                   </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-
+                </div>
+              ) : (
+                <div className="space-y-3">
                   <div className="space-y-3 rounded-md border border-border bg-background p-3">
                     <p className="text-sm font-medium text-text-primary">Oppgi ny kunde</p>
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -487,92 +539,92 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData, actio
                   >
                     Fortsett med ny kunde
                   </Button>
-                  </div>
-                )}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
 
-          <AccordionItem value="services">
-            <AccordionTrigger disabled={!servicesUnlocked}>2. Velg tjenester</AccordionTrigger>
-            <AccordionContent className="space-y-3">
-              <ServicesSelector
-                serviceGroups={filteredServices}
-                selectedServiceIds={draftServiceIds}
-                onSelectService={(serviceId) =>
-                  setDraftServiceIds((prev) => (prev.includes(serviceId) ? prev : [...prev, serviceId]))
-                }
-                onDeselectService={(serviceId) => setDraftServiceIds((prev) => prev.filter((id) => id !== serviceId))}
-                onSearchChange={(value) => updateParam('service-search', value || null)}
-                initialSearch={loaderData.serviceSearch}
-              />
-              <Button
-                className="w-full"
-                disabled={draftServiceIds.length === 0}
-                onClick={() => {
-                  if (draftServiceIds.length === 0) return;
-                  updateState({ serviceIds: draftServiceIds });
-                  setOpenStep('time');
-                }}
-              >
-                Lagre og fortsett
+        <AccordionItem value="services">
+          <AccordionTrigger disabled={!servicesUnlocked}>2. Velg tjenester</AccordionTrigger>
+          <AccordionContent className="space-y-3">
+            <ServicesSelector
+              serviceGroups={filteredServices}
+              selectedServiceIds={draftServiceIds}
+              onSelectService={(serviceId) =>
+                setDraftServiceIds((prev) => (prev.includes(serviceId) ? prev : [...prev, serviceId]))
+              }
+              onDeselectService={(serviceId) => setDraftServiceIds((prev) => prev.filter((id) => id !== serviceId))}
+              onSearchChange={(value) => updateParam('service-search', value || null)}
+              initialSearch={loaderData.serviceSearch}
+            />
+            <Button
+              className="w-full"
+              disabled={draftServiceIds.length === 0}
+              onClick={() => {
+                if (draftServiceIds.length === 0) return;
+                updateState({ serviceIds: draftServiceIds });
+                setOpenStep('time');
+              }}
+            >
+              Lagre og fortsett
+            </Button>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="time">
+          <AccordionTrigger disabled={!timeUnlocked}>3. Velg tidspunkt</AccordionTrigger>
+          <AccordionContent className="space-y-3">
+            <DateTimeSelector
+              schedules={loaderData.schedules}
+              selectedDateTime={draftStartTime ? new Date(draftStartTime) : null}
+              onSelectDateTime={(date) => setDraftStartTime(formatISO(date))}
+            />
+            <Button
+              className="w-full"
+              disabled={!draftStartTime}
+              onClick={() => {
+                if (!draftStartTime) return;
+                updateState({ startTime: draftStartTime });
+                setOpenStep('submit');
+              }}
+            >
+              Lagre og fortsett
+            </Button>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="submit">
+          <AccordionTrigger disabled={!submitUnlocked}>4. Opprett time</AccordionTrigger>
+          <AccordionContent className="space-y-2">
+            {actionData?.error ? (
+              <p className="text-sm text-destructive">
+                <strong>Feil:</strong> {actionData.error}
+              </p>
+            ) : null}
+            <Form method="post" className="space-y-2">
+              <input type="hidden" name="userId" value={state.userId ?? ''} />
+              <input type="hidden" name="email" value={state.email} />
+              <input type="hidden" name="mobileNumber" value={state.mobileNumber} />
+              <input type="hidden" name="givenName" value={state.givenName} />
+              <input type="hidden" name="familyName" value={state.familyName} />
+              <input type="hidden" name="serviceIds" value={state.serviceIds.join(',')} />
+              <input type="hidden" name="startTime" value={state.startTime} />
+              <Button type="submit" className="w-full" disabled={!isValid || isSubmitting}>
+                {isSubmitting ? 'Oppretter time...' : 'Opprett time'}
               </Button>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="time">
-            <AccordionTrigger disabled={!timeUnlocked}>3. Velg tidspunkt</AccordionTrigger>
-            <AccordionContent className="space-y-3">
-              <DateTimeSelector
-                schedules={loaderData.schedules}
-                selectedDateTime={draftStartTime ? new Date(draftStartTime) : null}
-                onSelectDateTime={(date) => setDraftStartTime(formatISO(date))}
-              />
               <Button
+                type="button"
+                variant="ghost"
                 className="w-full"
-                disabled={!draftStartTime}
-                onClick={() => {
-                  if (!draftStartTime) return;
-                  updateState({ startTime: draftStartTime });
-                  setOpenStep('submit');
-                }}
+                onClick={() => navigate(ROUTES_MAP['company.booking.appointments'].href)}
+                disabled={isSubmitting}
               >
-                Lagre og fortsett
+                Avbryt
               </Button>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="submit">
-            <AccordionTrigger disabled={!submitUnlocked}>4. Opprett time</AccordionTrigger>
-            <AccordionContent className="space-y-2">
-              {actionData?.error ? (
-                <p className="text-sm text-destructive">
-                  <strong>Feil:</strong> {actionData.error}
-                </p>
-              ) : null}
-              <Form method="post" className="space-y-2">
-                <input type="hidden" name="userId" value={state.userId ?? ''} />
-                <input type="hidden" name="email" value={state.email} />
-                <input type="hidden" name="mobileNumber" value={state.mobileNumber} />
-                <input type="hidden" name="givenName" value={state.givenName} />
-                <input type="hidden" name="familyName" value={state.familyName} />
-                <input type="hidden" name="serviceIds" value={state.serviceIds.join(',')} />
-                <input type="hidden" name="startTime" value={state.startTime} />
-                <Button type="submit" className="w-full" disabled={!isValid || isSubmitting}>
-                  {isSubmitting ? 'Oppretter time...' : 'Opprett time'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() => navigate(ROUTES_MAP['company.booking.appointments'].href)}
-                  disabled={isSubmitting}
-                >
-                  Avbryt
-                </Button>
-              </Form>
-            </AccordionContent>
-          </AccordionItem>
+            </Form>
+          </AccordionContent>
+        </AccordionItem>
       </Accordion>
     </CompanyPageTemplate>
   );

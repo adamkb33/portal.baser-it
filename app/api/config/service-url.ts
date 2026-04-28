@@ -1,4 +1,4 @@
-const DEFAULT_GATEWAY_URL = 'http://localhost:8080';
+const DEFAULT_GATEWAY_URL = 'http://localhost:8010';
 
 function normalizeBaseUrl(url: string): string {
   return url.replace(/\/+$/, '');

@@ -83,3 +83,11 @@ export const parseListPageParam = (value: string | null, fallback: number): numb
   }
   return parsed;
 };
+
+export const parseListSizeParam = (value: string | null, fallback: number): number => {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return parsed;
+};
