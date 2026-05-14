@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Clock, CalendarIcon } from 'lucide-react';
 import type { ScheduleDto, ScheduleTimeSlot } from '~/api/generated/booking';
-import { Button as LegacyButton } from '~/components/ui/button';
-import { Calendar } from '~/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { Button, Label, cn } from '~/ui';
+import { Button, Calendar, Label, Popover, PopoverContent, PopoverTrigger, cn } from '~/ui';
 import { format } from 'date-fns';
 
 type DateTimeSelectorProps = {
@@ -120,7 +117,7 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
         </Label>
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
-            <LegacyButton
+            <Button
               variant="outline"
               id="appointment-date"
               className="h-12 w-full justify-between rounded-sm border border-border bg-background px-3 text-left text-sm font-normal text-text-primary shadow-none md:h-10"
@@ -129,7 +126,7 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
                 {selectedDate ? format(selectedDate, 'yyyy-MM-dd') : 'Velg dato'}
               </span>
               <CalendarIcon className="h-4 w-4 text-text-secondary" />
-            </LegacyButton>
+            </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto overflow-hidden border-border bg-background p-0 text-text-primary" align="start">
             <Calendar

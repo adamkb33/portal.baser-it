@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button } from '~/components/ui/button';
+import { Button } from '~/ui';
 
 export interface UserProfileCardProps {
   givenName: string;
@@ -66,10 +66,10 @@ export const UserProfileCard = React.forwardRef<HTMLElement, UserProfileCardProp
 
         {/* Actions */}
         <div className={['border-t border-border', 'pt-4', 'flex items-center justify-between', 'gap-3'].join(' ')}>
-          <Button type="button" variant="default" size="default" onClick={onEditDetails}>
+          <Button type="button" variant="primary" size="md" onClick={onEditDetails}>
             Rediger detaljer
           </Button>
-          <Button type="button" variant="link" size="default" onClick={onSwitchAccount}>
+          <Button type="button" variant="ghost" size="md" className="px-0 underline-offset-2 hover:underline" onClick={onSwitchAccount}>
             Bruk en annen konto
           </Button>
         </div>

@@ -188,6 +188,96 @@ export const ROUTE_TREE: RouteBranch[] = [
     ],
   },
   {
+    id: 'system-admin',
+    href: '/system-admin',
+    label: 'Systemadministrasjon',
+    category: BrachCategory.USER,
+    placement: RoutePlaceMent.SIDEBAR,
+    accessType: Access.AUTHENTICATED,
+    userRoles: [UserRole.SYSTEM_ADMIN],
+    iconName: 'Settings',
+    children: [
+      {
+        id: 'system-admin.users',
+        href: '/system-admin/users',
+        label: 'Brukere',
+        category: BrachCategory.USER,
+        accessType: Access.AUTHENTICATED,
+        userRoles: [UserRole.SYSTEM_ADMIN],
+        children: [
+          {
+            id: 'system-admin.users.invite',
+            href: '/system-admin/users/invite',
+            label: 'Inviter bruker',
+            category: BrachCategory.USER,
+            accessType: Access.AUTHENTICATED,
+            userRoles: [UserRole.SYSTEM_ADMIN],
+          },
+          {
+            id: 'system-admin.users.details',
+            href: '/system-admin/users/details',
+            label: 'Hent bruker',
+            category: BrachCategory.USER,
+            accessType: Access.AUTHENTICATED,
+            userRoles: [UserRole.SYSTEM_ADMIN],
+          },
+        ],
+      },
+      {
+        id: 'system-admin.companies',
+        href: '/system-admin/companies',
+        label: 'Selskaper',
+        category: BrachCategory.USER,
+        accessType: Access.AUTHENTICATED,
+        userRoles: [UserRole.SYSTEM_ADMIN],
+        children: [
+          {
+            id: 'system-admin.companies.create',
+            href: '/system-admin/companies/create',
+            label: 'Opprett selskap',
+            category: BrachCategory.USER,
+            accessType: Access.AUTHENTICATED,
+            userRoles: [UserRole.SYSTEM_ADMIN],
+          },
+          {
+            id: 'system-admin.companies.roles',
+            href: '/system-admin/companies/roles',
+            label: 'Tildel roller',
+            category: BrachCategory.USER,
+            accessType: Access.AUTHENTICATED,
+            userRoles: [UserRole.SYSTEM_ADMIN],
+          },
+          {
+            id: 'system-admin.companies.products',
+            href: '/system-admin/companies/products',
+            label: 'Tildel produkter',
+            category: BrachCategory.USER,
+            accessType: Access.AUTHENTICATED,
+            userRoles: [UserRole.SYSTEM_ADMIN],
+          },
+        ],
+      },
+      {
+        id: 'system-admin.smtp',
+        href: '/system-admin/smtp',
+        label: 'SMTP',
+        category: BrachCategory.USER,
+        accessType: Access.AUTHENTICATED,
+        userRoles: [UserRole.SYSTEM_ADMIN],
+        children: [
+          {
+            id: 'system-admin.smtp.diagnostics',
+            href: '/system-admin/smtp/diagnostics',
+            label: 'Diagnostikk',
+            category: BrachCategory.USER,
+            accessType: Access.AUTHENTICATED,
+            userRoles: [UserRole.SYSTEM_ADMIN],
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'company',
     href: '/company',
     label: 'Mitt selskap',
@@ -400,24 +490,25 @@ export const ROUTE_TREE: RouteBranch[] = [
                 companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
                 hidden: true,
               },
+            ],
+          },
+          {
+            id: 'company.booking.schedule-unavailability',
+            href: '/company/booking/schedule-unavailability',
+            label: 'Mitt ferie avik',
+            category: BrachCategory.COMPANY,
+            accessType: Access.PRODUCT,
+            companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
+            iconName: 'CalendarX2',
+            children: [
               {
-                id: 'company.booking.profile.schedule-unavailability',
-                href: '/company/booking/profile/schedule-unavailability',
-                label: 'Mitt ferie avik',
+                id: 'company.booking.schedule-unavailability.create',
+                href: '/company/booking/schedule-unavailability/create',
+                label: 'Legg til fravær',
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
                 companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
-                children: [
-                  {
-                    id: 'company.booking.profile.schedule-unavailability.create',
-                    href: '/company/booking/profile/schedule-unavailability/create',
-                    label: 'Legg til fravær',
-                    category: BrachCategory.COMPANY,
-                    accessType: Access.PRODUCT,
-                    companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
-                    hidden: true,
-                  },
-                ],
+                hidden: true,
               },
             ],
           },
@@ -443,6 +534,35 @@ export const ROUTE_TREE: RouteBranch[] = [
                 id: 'company.booking.appointments.upload-image',
                 href: '/company/booking/appointments/upload-image',
                 label: 'Last opp bilde',
+                category: BrachCategory.COMPANY,
+                accessType: Access.PRODUCT,
+                companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
+                hidden: true,
+              },
+            ],
+          },
+          {
+            id: 'company.booking.schedule',
+            href: '/company/booking/schedule',
+            label: 'Kalenderoversikt',
+            category: BrachCategory.COMPANY,
+            accessType: Access.PRODUCT,
+            companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
+            iconName: 'Clock',
+            children: [
+              {
+                id: 'company.booking.schedule.availabilities',
+                href: '/company/booking/schedule/availabilities',
+                label: 'Tilgjengeligheter',
+                category: BrachCategory.COMPANY,
+                accessType: Access.PRODUCT,
+                companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
+                hidden: true,
+              },
+              {
+                id: 'company.booking.schedule.availabilities.edit',
+                href: '/company/booking/schedule/availabilities/edit',
+                label: 'Rediger tilgjengelighet',
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
                 companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
@@ -690,14 +810,6 @@ export const ROUTE_TREE: RouteBranch[] = [
         ],
       },
     ],
-  },
-  {
-    id: 'ui',
-    href: '/ui',
-    label: 'Design System',
-    category: BrachCategory.NONE,
-    accessType: Access.PUBLIC,
-    hidden: true,
   },
   {
     id: 'embed',
@@ -958,8 +1070,12 @@ const hasProductAccessAcrossCompanies = (
   });
 };
 
-export const createNavigation = (userContext?: UserContextDto | null): UserNavigation => {
-  const isAuthenticated = !!userContext?.user;
+export const createNavigation = (
+  userContext?: UserContextDto | null,
+  userRoles: string[] = [],
+  isAuthenticatedOverride = false,
+): UserNavigation => {
+  const isAuthenticated = isAuthenticatedOverride || !!userContext?.user;
   const hasCompanyMembership = (userContext?.companies?.length ?? 0) > 0;
 
   const hasAccess = (branch: RouteBranch): boolean => {
@@ -982,17 +1098,19 @@ export const createNavigation = (userContext?: UserContextDto | null): UserNavig
       return false;
     }
 
+    if (branch.userRoles?.length) {
+      const hasUserRole = branch.userRoles.some((requiredRole) => userRoles.includes(requiredRole));
+      if (!hasUserRole) {
+        return false;
+      }
+    }
+
     if (branch.accessType === Access.AUTHENTICATED) {
       return true;
     }
 
     // Level 3/4: ROLE/PRODUCT - require company membership + role checks
     if (!userContext || !hasCompanyMembership) {
-      return false;
-    }
-
-    // UserContextDto does not currently include system-level roles.
-    if (branch.userRoles?.length) {
       return false;
     }
 

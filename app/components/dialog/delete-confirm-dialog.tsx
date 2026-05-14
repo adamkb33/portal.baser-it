@@ -8,6 +8,8 @@ interface DeleteConfirmDialogProps {
   description?: string;
   cancelText?: string;
   confirmText?: string;
+  confirmDisabled?: boolean;
+  children?: React.ReactNode;
 }
 
 export function DeleteConfirmDialog({
@@ -18,6 +20,8 @@ export function DeleteConfirmDialog({
   description = 'Denne handlingen kan ikke angres.',
   cancelText = 'Avbryt',
   confirmText = 'Slett',
+  confirmDisabled = false,
+  children,
 }: DeleteConfirmDialogProps) {
   return (
     <ConfirmDialog
@@ -31,10 +35,12 @@ export function DeleteConfirmDialog({
         </Button>
       }
       confirmAction={
-        <Button type="button" variant="destructive" onClick={onConfirm}>
+        <Button type="button" variant="destructive" onClick={onConfirm} disabled={confirmDisabled}>
           {confirmText}
         </Button>
       }
-    />
+    >
+      {children}
+    </ConfirmDialog>
   );
 }

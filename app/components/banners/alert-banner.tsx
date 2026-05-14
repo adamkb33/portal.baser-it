@@ -1,6 +1,5 @@
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, AlertTriangle, Info, CheckCircle2 } from 'lucide-react';
-import { cn } from '@/lib/utils'; // optional, if you have a `cn` helper for class merging
+import { Card, Text, cn } from '~/ui';
 
 interface AlertBannerProps {
   title: string;
@@ -11,44 +10,46 @@ interface AlertBannerProps {
 
 const variantConfig = {
   error: {
-    variant: 'destructive' as const,
     icon: AlertCircle,
-    className: 'border-red-200 bg-red-50 text-red-800 [&>svg]:text-red-600',
+    className: 'border-flash-error-border bg-flash-error-bg text-flash-error-text [&>svg]:text-flash-error-icon-bg',
   },
   warning: {
-    variant: 'default' as const,
     icon: AlertTriangle,
-    className: 'border-orange-200 bg-orange-50 text-orange-800 [&>svg]:text-orange-600',
+    className: 'border-flash-warning-border bg-flash-warning-bg text-flash-warning-text [&>svg]:text-flash-warning-icon-bg',
   },
   info: {
-    variant: 'default' as const,
     icon: Info,
-    className: 'border-blue-200 bg-blue-50 text-blue-800 [&>svg]:text-blue-600',
+    className: 'border-flash-info-border bg-flash-info-bg text-flash-info-text [&>svg]:text-flash-info-icon-bg',
   },
   success: {
-    variant: 'default' as const,
     icon: CheckCircle2,
-    className: 'border-green-200 bg-green-50 text-green-800 [&>svg]:text-green-600',
+    className: 'border-flash-success-border bg-flash-success-bg text-flash-success-text [&>svg]:text-flash-success-icon-bg',
   },
 };
 
 export function AlertBanner({ title, description, variant = 'info', className = '' }: AlertBannerProps) {
-  const { icon: Icon, variant: alertVariant, className: variantClasses } = variantConfig[variant];
+  const { icon: Icon, className: variantClasses } = variantConfig[variant];
 
   return (
-    <Alert
-      variant={alertVariant}
+    <Card
+      size="sm"
       className={cn(
-        'flex items-start gap-2 py-1.5 px-2 text-xs leading-tight rounded-md shadow-sm',
+        'flex flex-row items-start gap-2 rounded-md px-2 py-1.5 text-xs leading-tight shadow-sm',
         variantClasses,
         className,
       )}
     >
       <Icon className="h-3.5 w-3.5 shrink-0" />
       <div>
-        <AlertTitle className="font-medium text-sm">{title}</AlertTitle>
-        {description && <AlertDescription className="text-[11px] text-gray-700 mt-0.5">{description}</AlertDescription>}
+        <Text as="p" variant="body-sm" className="font-medium text-current">
+          {title}
+        </Text>
+        {description ? (
+          <Text as="p" variant="caption" className="mt-0.5 text-current">
+            {description}
+          </Text>
+        ) : null}
       </div>
-    </Alert>
+    </Card>
   );
 }

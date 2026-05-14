@@ -1,6 +1,6 @@
 import { formatISO } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
-import { Form, Link, useNavigate, useNavigation, useSearchParams } from 'react-router';
+import { data, Form, Link, useNavigate, useNavigation, useSearchParams } from 'react-router';
 import { CompanyUserController } from '~/api/generated/base';
 import {
   CompanyUserAppointmentController,
@@ -14,7 +14,7 @@ import { ROUTES_MAP } from '~/lib/route-tree';
 import { CustomerSelector } from '~/routes/company/booking/_components/customer-selector';
 import { DateTimeSelector } from '~/routes/company/booking/_components/date-time-selector';
 import { ServicesSelector } from '~/routes/company/booking/_components/services-selector';
-import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
 import type { Route } from './+types/company.booking.appointments.create.route';
 import {
   parseCreateFlowQueryState,
@@ -190,15 +190,21 @@ export async function action({ request }: Route.ActionArgs) {
   const startTime = formData.get('startTime')?.toString() || '';
 
   if (!userId && !email && !mobileNumber) {
-    return { error: 'Velg kunde eller oppgi e-post/mobilnummer.' };
+    const error = 'Velg kunde eller oppgi e-post/mobilnummer.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+    return data({ error }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 
   if (serviceIds.length === 0) {
-    return { error: 'Velg minst en tjeneste.' };
+    const error = 'Velg minst en tjeneste.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+    return data({ error }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 
   if (!startTime) {
-    return { error: 'Velg tidspunkt.' };
+    const error = 'Velg tidspunkt.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+    return data({ error }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 
   if (userId) {
@@ -220,10 +226,13 @@ export async function action({ request }: Route.ActionArgs) {
       );
     } catch (error) {
       if (getStatusCode(error) === 409) {
-        return { error: 'Valgt tidspunkt ble nettopp opptatt. Velg et annet tidspunkt.' };
+        const conflictError = 'Valgt tidspunkt ble nettopp opptatt. Velg et annet tidspunkt.';
+        const flashCookie = await setFlashMessage(request, { type: 'error', text: conflictError });
+        return data({ error: conflictError }, { status: 409, headers: { 'Set-Cookie': flashCookie } });
       }
       const { message } = resolveErrorPayload(error, 'Kunne ikke opprette avtale');
-      return { error: message };
+      const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
+      return data({ error: message }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
     }
   }
 
@@ -244,7 +253,9 @@ export async function action({ request }: Route.ActionArgs) {
     const resolverStatus = resolvedCustomer.data?.data?.status;
 
     if (!resolvedUserId || !Number.isInteger(resolvedUserId)) {
-      return { error: 'Klarte ikke å finne eller opprette kunde. Prøv igjen.' };
+      const error = 'Klarte ikke å finne eller opprette kunde. Prøv igjen.';
+      const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+      return data({ error }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
     }
 
     try {
@@ -265,21 +276,27 @@ export async function action({ request }: Route.ActionArgs) {
       return redirectWithSuccess(request, ROUTES_MAP['company.booking.appointments'].href, successMessage);
     } catch (error) {
       if (getStatusCode(error) === 409) {
-        return { error: 'Valgt tidspunkt ble nettopp opptatt. Velg et annet tidspunkt.' };
+        const conflictError = 'Valgt tidspunkt ble nettopp opptatt. Velg et annet tidspunkt.';
+        const flashCookie = await setFlashMessage(request, { type: 'error', text: conflictError });
+        return data({ error: conflictError }, { status: 409, headers: { 'Set-Cookie': flashCookie } });
       }
       const { message } = resolveErrorPayload(error, 'Kunne ikke opprette avtale');
-      return { error: message };
+      const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
+      return data({ error: message }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
     }
   } catch (error) {
     if (getStatusCode(error) === 409) {
-      return { error: 'Email and mobile belong to different customers. Please use only one or correct contact info.' };
+      const conflictError = 'Email and mobile belong to different customers. Please use only one or correct contact info.';
+      const flashCookie = await setFlashMessage(request, { type: 'error', text: conflictError });
+      return data({ error: conflictError }, { status: 409, headers: { 'Set-Cookie': flashCookie } });
     }
     const { message } = resolveErrorPayload(error, 'Kunne ikke finne eller opprette kunde');
-    return { error: message };
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
+    return data({ error: message }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 }
 
-export default function CompanyBookingAppointmentsCreatePage({ loaderData, actionData }: Route.ComponentProps) {
+export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Route.ComponentProps) {
   type CreateStep = 'contact' | 'services' | 'time' | 'submit';
   type CustomerMode = 'existing' | 'new';
   const navigate = useNavigate();
@@ -443,16 +460,16 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData, actio
                     onSelectCustomer={(customer) => {
                       setDraftUserId(customer?.id ?? null);
                     }}
-                      pagination={loaderData.contactPagination}
-                      onPageChange={(page) => updateParam('contact-page', String(Math.max(0, page)))}
-                      onSearchChange={(search) => {
-                        updateParams([
-                          { key: 'contact-page', value: '0' },
-                          { key: 'customer-search', value: search || null },
-                        ]);
-                      }}
-                      initialSearch={loaderData.contactSearch}
-                    />
+                    pagination={loaderData.contactPagination}
+                    onPageChange={(page) => updateParam('contact-page', String(Math.max(0, page)))}
+                    onSearchChange={(search) => {
+                      updateParams([
+                        { key: 'contact-page', value: '0' },
+                        { key: 'customer-search', value: search || null },
+                      ]);
+                    }}
+                    initialSearch={loaderData.contactSearch}
+                  />
                   <Button
                     className="w-full"
                     disabled={!draftUserId}
@@ -597,11 +614,6 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData, actio
         <AccordionItem value="submit">
           <AccordionTrigger disabled={!submitUnlocked}>4. Opprett time</AccordionTrigger>
           <AccordionContent className="space-y-2">
-            {actionData?.error ? (
-              <p className="text-sm text-destructive">
-                <strong>Feil:</strong> {actionData.error}
-              </p>
-            ) : null}
             <Form method="post" className="space-y-2">
               <input type="hidden" name="userId" value={state.userId ?? ''} />
               <input type="hidden" name="email" value={state.email} />

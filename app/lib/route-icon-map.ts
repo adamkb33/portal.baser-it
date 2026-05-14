@@ -1,6 +1,7 @@
 // app/lib/icon-map.ts
 import {
   Calendar,
+  CalendarX2,
   Users,
   Settings,
   Home,
@@ -20,6 +21,7 @@ import {
 
 export const ICON_MAP = {
   Calendar,
+  CalendarX2,
   Users,
   Settings,
   Home,

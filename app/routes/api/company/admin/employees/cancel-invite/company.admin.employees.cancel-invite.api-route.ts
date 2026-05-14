@@ -1,6 +1,6 @@
 import { type ActionFunctionArgs } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess } from '~/lib/flash-message.server';
 import { AdminCompanyController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 

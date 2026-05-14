@@ -2,22 +2,22 @@ import * as React from 'react';
 import { Link, Outlet, data, isRouteErrorResponse, useLocation, useRouteError } from 'react-router';
 
 import { Navbar } from '~/components/layout/navbar';
-import { type RouteBranch, type UserNavigation, RoutePlaceMent } from '~/lib/route-tree';
+import { type UserNavigation, RoutePlaceMent } from '~/lib/route-tree';
 import { Sidebar } from './_components/sidebar';
-import { MobileSidebar } from './_components/mobile-sidebar';
+import { MobileSidebar } from './_components/mobile-sidebar/mobile-sidebar';
 import type { Route } from './+types/root.layout';
 import { authService, AuthenticationError } from '~/lib/auth-service';
 import { logger } from '~/lib/logger';
 import { defaultResponse, refreshAndBuildResponse, buildResponseData } from './_features/root.loader';
-import { getFlashMessage } from './company/_lib/flash-message.server';
+import { getFlashMessage } from '../lib/flash-message.server';
 import { FlashMessageBanner } from './_components/flash-message-banner';
 import { Footer } from './_components/footer';
+import { AppShellBackground } from './_components/backgrounds/app-shell-background';
 import type { CompanySummaryDto } from '~/api/generated/base';
 import { logRouteError, logRouteStart, logRouteSuccess } from '~/lib/route-log';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { type EmbedThemeKey } from '~/lib/embed-shell';
-import { getIcon } from '~/lib/route-icon-map';
-import { cn } from '~/ui';
+import { SimpleShinyBackground } from './_components/backgrounds/simple-shiny.background';
 
 function resolveParentOrigin(): string | null {
   if (typeof document === 'undefined') return null;
@@ -127,6 +127,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const contentRef = React.useRef<HTMLElement | null>(null);
   const hasSentReadyRef = React.useRef(false);
   const lastHeightRef = React.useRef(0);
+  const keepMobileMenuOpenOnNextRouteChangeRef = React.useRef(false);
   const isEmbedMode = loaderData.embedMode === true;
   const embedTheme = (loaderData.embedTheme ?? 'pitell') as EmbedThemeKey;
   const isEmbeddedRequest = loaderData.isEmbeddedRequest === true;
@@ -138,11 +139,8 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const setCompanyContext: RootOutletContext['setCompanyContext'] = (_value) => undefined;
 
   const sidebarBranches = userNav?.[RoutePlaceMent.SIDEBAR] || [];
-  const mobilePrimaryBranches = React.useMemo(
-    () => pickMobilePrimaryBranches(sidebarBranches, location.pathname),
-    [location.pathname, sidebarBranches],
-  );
-  const hasSidebar = sidebarBranches.length > 0 && Boolean(companyContext);
+  const hasSystemAdminSidebar = sidebarBranches.some((branch) => branch.id === 'system-admin');
+  const hasSidebar = sidebarBranches.length > 0 && (Boolean(companyContext) || hasSystemAdminSidebar);
   const isBookingPublicPath = location.pathname.startsWith('/booking/public');
   const useEmbedShell = isEmbedMode && isEmbedded && isBookingPublicPath;
 
@@ -186,6 +184,15 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
     };
   }, [location.pathname, location.search, useEmbedShell]);
 
+  React.useEffect(() => {
+    if (keepMobileMenuOpenOnNextRouteChangeRef.current) {
+      keepMobileMenuOpenOnNextRouteChangeRef.current = false;
+      return;
+    }
+
+    setMobileMenuOpen(false);
+  }, [location.pathname, location.search]);
+
   if (useEmbedShell) {
     return (
       <div className="flex min-h-screen flex-col bg-background text-text-primary">
@@ -215,10 +222,13 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-text-primary">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-text-primary">
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <SimpleShinyBackground />
+      </div>
       <FlashMessageBanner message={loaderData.flashMessage} />
 
-      <header className="h-[var(--app-header-height)] shrink-0 border-b border-border bg-surface">
+      <header className="relative z-10 h-[var(--app-header-height)] shrink-0 border-b border-border bg-surface/92 backdrop-blur-sm">
         <div className="mx-auto flex h-full w-full max-w-[var(--container-xl)] items-center px-[var(--app-shell-inline-padding)]">
           <Navbar
             navRoutes={userNav}
@@ -228,47 +238,11 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
           />
         </div>
       </header>
-      {hasSidebar && mobilePrimaryBranches.length > 0 ? (
-        <div className="border-b border-border bg-surface lg:hidden">
-          <div className="mx-auto w-full max-w-[var(--container-xl)] px-[var(--app-shell-inline-padding)] py-2">
-            <nav className="flex items-center gap-2 overflow-x-auto pb-1" aria-label="Primærnavigasjon">
-              {mobilePrimaryBranches.map((branch) => {
-                const Icon = getIcon(branch.iconName);
-                const isActive = isBranchActive(location.pathname, branch.href);
 
-                return (
-                  <Link
-                    key={branch.id}
-                    to={branch.href}
-                    aria-current={isActive ? 'page' : undefined}
-                    className={cn(
-                      'inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition-colors',
-                      isActive
-                        ? 'border-sidebar-accent bg-sidebar-accent text-sidebar-accent-foreground'
-                        : 'border-border bg-surface text-text-secondary hover:bg-sidebar-accent/10 hover:text-text-primary',
-                    )}
-                  >
-                    {Icon ? <Icon className="h-4 w-4" aria-hidden="true" /> : null}
-                    <span>{branch.label ?? branch.id}</span>
-                  </Link>
-                );
-              })}
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(true)}
-                className="inline-flex shrink-0 items-center rounded-full border border-border bg-surface px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-sidebar-accent/10 hover:text-text-primary"
-              >
-                Mer
-              </button>
-            </nav>
-          </div>
-        </div>
-      ) : null}
-
-      <main className="flex flex-1">
+      <main className="relative z-10 flex flex-1">
         <div className="mx-auto flex min-h-full w-full max-w-[var(--container-xl)] flex-1">
           {hasSidebar ? (
-            <aside className="hidden w-[calc(var(--app-sidebar-width)+var(--app-shell-inline-padding))] shrink-0 border-r border-border bg-surface lg:flex lg:flex-col">
+            <aside className="hidden w-[calc(var(--app-sidebar-width)+var(--app-shell-inline-padding))] shrink-0 border-r border-border bg-surface/88 backdrop-blur-sm lg:flex lg:flex-col">
               <div className="flex flex-1 p-6">
                 <Sidebar branches={sidebarBranches} />
               </div>
@@ -280,10 +254,19 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
               branches={sidebarBranches}
               isOpen={mobileMenuOpen}
               onClose={() => setMobileMenuOpen(false)}
+              onNavigateWithinMenu={() => {
+                keepMobileMenuOpenOnNextRouteChangeRef.current = true;
+              }}
             />
           ) : null}
 
-          <section className="min-w-0 flex-1 bg-background py-[var(--app-content-padding-block-mobile)] lg:py-[var(--app-content-padding-block-desktop)]  px-4">
+          <section
+            className={
+              hasSidebar
+                ? 'min-w-0 flex-1 bg-background/72 px-3 pt-3 pb-[calc(0.75rem+6rem)] backdrop-blur-[2px] sm:px-4 lg:py-[var(--app-content-padding-block-desktop)]'
+                : 'min-w-0 flex-1 bg-background/72 px-3 py-3 backdrop-blur-[2px] sm:px-4 lg:py-[var(--app-content-padding-block-desktop)]'
+            }
+          >
             <Outlet
               context={{
                 userNav,
@@ -299,32 +282,17 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
         </div>
       </main>
 
-      <footer className="h-[var(--app-footer-height)] shrink-0 border-t border-border bg-surface">
+      <footer
+        className={
+          hasSidebar
+            ? 'relative z-10 mb-[calc(env(safe-area-inset-bottom)+5.5rem)] h-[var(--app-footer-height)] shrink-0 border-t border-border bg-surface/92 backdrop-blur-sm lg:mb-0'
+            : 'relative z-10 h-[var(--app-footer-height)] shrink-0 border-t border-border bg-surface/92 backdrop-blur-sm'
+        }
+      >
         <Footer />
       </footer>
     </div>
   );
-}
-
-function isBranchActive(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-function pickMobilePrimaryBranches(branches: RouteBranch[], pathname: string): RouteBranch[] {
-  const visibleTopLevel = branches.filter((branch) => !branch.hidden);
-
-  if (visibleTopLevel.length <= 1) {
-    return visibleTopLevel;
-  }
-
-  const activeIndex = visibleTopLevel.findIndex((branch) => isBranchActive(pathname, branch.href));
-  if (activeIndex <= 0) {
-    return visibleTopLevel.slice(0, 4);
-  }
-
-  const activeBranch = visibleTopLevel[activeIndex];
-  const nextBranches = visibleTopLevel.filter((branch) => branch.id !== activeBranch.id).slice(0, 3);
-  return [activeBranch, ...nextBranches];
 }
 
 export function ErrorBoundary() {
@@ -345,7 +313,10 @@ export function ErrorBoundary() {
               <Link to="/" className="text-sm font-medium text-text-primary hover:underline">
                 Gå til forsiden
               </Link>
-              <Link to={ROUTES_MAP['auth.sign-in'].href} className="text-sm font-medium text-text-primary hover:underline">
+              <Link
+                to={ROUTES_MAP['auth.sign-in'].href}
+                className="text-sm font-medium text-text-primary hover:underline"
+              >
                 Logg inn på nytt
               </Link>
             </div>
@@ -367,7 +338,10 @@ export function ErrorBoundary() {
             <Link to="/" className="text-sm font-medium text-text-primary hover:underline">
               Gå til forsiden
             </Link>
-            <Link to={ROUTES_MAP['auth.sign-in'].href} className="text-sm font-medium text-text-primary hover:underline">
+            <Link
+              to={ROUTES_MAP['auth.sign-in'].href}
+              className="text-sm font-medium text-text-primary hover:underline"
+            >
               Logg inn på nytt
             </Link>
           </div>

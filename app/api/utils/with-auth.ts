@@ -4,6 +4,7 @@ import { client as timesheetClient } from '~/api/generated/timesheet/client.gen'
 import { client as notificationClient } from '~/api/generated/notification/client.gen';
 import { accessTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { logger } from '~/lib/logger';
+import { toJwtClaims } from '~/routes/auth/_utils/token-payload';
 
 let authClientQueue: Promise<void> = Promise.resolve();
 
@@ -45,11 +46,41 @@ export async function withAuth<T>(request: Request, callback: () => Promise<T> |
       });
       return result;
     } catch (error) {
-      logger.error('[with-auth] Authenticated request failed', {
-        requestMethod: request.method,
-        requestUrl: request.url,
-        error,
-      });
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 401 || status === 403) {
+        let tokenClaims: Record<string, unknown> | null = null;
+        try {
+          if (accessToken) {
+            const claims = toJwtClaims(accessToken) as Record<string, unknown>;
+            tokenClaims = {
+              sub: claims.sub,
+              companyId: claims.companyId,
+              email: claims.email,
+              userRoles: claims.userRoles,
+              roles: claims.roles,
+              authorities: claims.authorities,
+              scope: claims.scope,
+              exp: claims.exp,
+              iat: claims.iat,
+            };
+          }
+        } catch {
+          tokenClaims = null;
+        }
+
+        logger.info('[with-auth] Authenticated request denied', {
+          requestMethod: request.method,
+          requestUrl: request.url,
+          status,
+          tokenClaims,
+        });
+      } else {
+        logger.error('[with-auth] Authenticated request failed', {
+          requestMethod: request.method,
+          requestUrl: request.url,
+          error,
+        });
+      }
       throw error;
     } finally {
       setAuthorizationHeader(undefined);

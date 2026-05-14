@@ -3,7 +3,7 @@ import type { Route } from './+types/company.booking.admin.service-groups.servic
 import { CompanyUserServiceGroupController, ServiceController, type ServiceDto } from '~/api/generated/booking';
 import type { Delete, Upload } from '~/api/generated/booking/types.gen';
 import { withAuth } from '~/api/utils/with-auth';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithInfo, setFlashMessage } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ServiceFormPage, type ServiceFormValues } from '../_components/service-form-page';
@@ -13,7 +13,11 @@ export async function loader({ request }: Route.LoaderArgs) {
   const id = Number(url.searchParams.get('id'));
 
   if (!Number.isFinite(id) || id <= 0) {
-    return redirectWithInfo(request, ROUTES_MAP['company.booking.admin.service-groups.services'].href, 'Velg en tjeneste som skal redigeres.');
+    return redirectWithInfo(
+      request,
+      ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+      'Velg en tjeneste som skal redigeres.',
+    );
   }
 
   try {
@@ -38,7 +42,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     const service = (servicesResponse.data?.data?.content ?? []).find((item: ServiceDto) => item.id === id) ?? null;
 
     if (!service) {
-      return redirectWithInfo(request, ROUTES_MAP['company.booking.admin.service-groups.services'].href, 'Fant ikke tjenesten du prøvde å redigere.');
+      return redirectWithInfo(
+        request,
+        ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+        'Fant ikke tjenesten du prøvde å redigere.',
+      );
     }
 
     return data({
@@ -134,7 +142,9 @@ export async function action({ request }: Route.ActionArgs) {
     !Number.isFinite(values.price) ||
     !Number.isFinite(values.duration)
   ) {
-    return data({ error: 'Fyll ut alle feltene før du lagrer.', values }, { status: 400 });
+    const error = 'Fyll ut alle feltene før du lagrer.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+    return data({ error, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 
   try {
@@ -151,7 +161,8 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect(ROUTES_MAP['company.booking.admin.service-groups.services'].href);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke oppdatere tjeneste');
-    return data({ error: message, values }, { status: 400 });
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
+    return data({ error: message, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 }
 

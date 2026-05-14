@@ -1,11 +1,13 @@
 import type { Route } from './+types/company.admin.route';
 import { Activity, Clock, Contact, KeyRound, Mail, Shield, Users } from 'lucide-react';
 import { AdminCompanyController } from '~/api/generated/base';
+import { withAuth } from '~/api/utils/with-auth';
+import { resolveErrorPayload } from '~/lib/api-error';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, CompanyEmptyState, CompanyMetricCard, CompanyPageTemplate, Panel, Text } from '~/ui';
 
-export async function loader({ request: _request }: Route.LoaderArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const metrics = await AdminCompanyController.getDashboardMetrics();
+    const metrics = await withAuth(request, async () => AdminCompanyController.getDashboardMetrics());
     if (!metrics.data) {
       throw Error('Det sjekke en feil, kontakt support');
     }
@@ -13,13 +15,9 @@ export async function loader({ request: _request }: Route.LoaderArgs) {
     return {
       metrics: metrics.data.data,
     };
-  } catch (error: any) {
-    console.error(JSON.stringify(error, null, 2));
-    if (error as unknown as { body?: { message?: string } }) {
-      return { error: error.body.message };
-    }
-
-    throw error;
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente administrasjonsdata.');
+    return { error: message };
   }
 }
 

@@ -1,9 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '../ui/textarea';
+import { Button, Input, Label, Textarea, type ButtonVariant } from '~/ui';
 import * as React from 'react';
 
 export interface FormFieldRenderProps<T> {
@@ -56,6 +53,12 @@ interface FormDialogProps<T> {
   actions?: DialogAction[];
   errors?: Partial<Record<keyof T, string>>;
 }
+
+const toButtonVariant = (variant: DialogAction['variant']): ButtonVariant => {
+  if (variant === 'default' || !variant) return 'primary';
+  if (variant === 'link') return 'ghost';
+  return variant;
+};
 
 export function FormDialog<T>({
   open,
@@ -291,9 +294,11 @@ export function FormDialog<T>({
                   <Button
                     key={index}
                     type={action.type || 'button'}
-                    variant={action.variant || 'outline'}
+                    variant={toButtonVariant(action.variant || 'outline')}
                     onClick={action.onClick}
-                    className={`min-h-[44px] w-full text-sm sm:w-auto sm:min-h-[40px] sm:px-6 ${action.className || ''}`}
+                    className={`min-h-[44px] w-full text-sm sm:w-auto sm:min-h-[40px] sm:px-6 ${
+                      action.variant === 'link' ? 'px-0 underline-offset-2 hover:underline' : ''
+                    } ${action.className || ''}`}
                   >
                     {action.label}
                   </Button>

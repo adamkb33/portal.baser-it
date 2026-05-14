@@ -5,7 +5,7 @@ import { AdminCompanyController, AdminCompanyUserController, type CompanyUserDto
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithInfo, setFlashMessage } from '~/lib/flash-message.server';
 import { EmployeeFormPage, type EmployeeFormValues } from '../_components/employee-form-page';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -30,7 +30,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     const user = (response.data?.data?.content ?? []).find((item: CompanyUserDto) => item.userId === userId) ?? null;
 
     if (!user) {
-      return redirectWithInfo(request, ROUTES_MAP['company.admin.employees'].href, 'Fant ikke den ansatte du prøvde å redigere.');
+      return redirectWithInfo(
+        request,
+        ROUTES_MAP['company.admin.employees'].href,
+        'Fant ikke den ansatte du prøvde å redigere.',
+      );
     }
 
     return data({
@@ -70,7 +74,9 @@ export async function action({ request }: Route.ActionArgs) {
   const values: EmployeeFormValues = { userId, email, roles };
 
   if (!Number.isFinite(userId) || userId <= 0 || roles.length === 0) {
-    return data({ error: 'Velg minst én rolle før du lagrer.', values }, { status: 400 });
+    const error = 'Velg minst én rolle før du lagrer.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+    return data({ error, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 
   try {
@@ -88,7 +94,8 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect(ROUTES_MAP['company.admin.employees'].href);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke oppdatere ansatt');
-    return data({ error: message, values }, { status: 400 });
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
+    return data({ error: message, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 }
 

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Filter, Search, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
-import type { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
-import { Calendar } from '~/components/ui/calendar';
+import { Calendar, type CalendarDateRange } from '~/ui';
 import { toDateInputFromOffsetDateTime } from '~/lib/query';
 import {
   AppointmentPaginationQuickFilter,
@@ -166,7 +165,7 @@ export function AppointmentTableHeaderSlot() {
                       from: localFromDate ? new Date(localFromDate) : undefined,
                       to: localToDate ? new Date(localToDate) : undefined,
                     }}
-                    onSelect={(range: DateRange | undefined) => {
+                    onSelect={(range: CalendarDateRange | undefined) => {
                       setLocalFromDate(range?.from ? format(range.from, 'yyyy-MM-dd') : '');
                       setLocalToDate(range?.to ? format(range.to, 'yyyy-MM-dd') : '');
                     }}

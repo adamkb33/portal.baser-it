@@ -11,8 +11,8 @@
     "dev": "npx kill-port 5173 && react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
-    "gen:api": "tsx scripts/openapi/generate.ts",
-    "generate:api": "openapi-ts"
+    "gen:api": "openapi-ts && tsx scripts/openapi/post-generate-aliases.ts",
+    "generate:api": "openapi-ts && tsx scripts/openapi/post-generate-aliases.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -45,7 +45,6 @@
     "ol": "^10.7.0",
     "radix-ui": "^1.4.3",
     "react": "^19.1.1",
-    "react-day-picker": "^9.11.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.64.0",
     "react-leaflet": "^5.0.0",

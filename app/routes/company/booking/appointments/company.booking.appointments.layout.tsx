@@ -2,7 +2,7 @@ import { Outlet } from 'react-router';
 import type { Route } from './+types/company.booking.appointments.layout';
 import { CompanyUserBookingProfileController, type ApiMessage } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithInfo } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 
 export async function loader({ request }: Route.LoaderArgs) {

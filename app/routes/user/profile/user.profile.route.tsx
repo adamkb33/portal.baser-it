@@ -1,15 +1,109 @@
-import { data } from 'react-router';
+import { Form, data } from 'react-router';
+import { AuthController } from '~/api/generated/base';
+import type { UserDto } from '~/api/generated/base';
+import { withAuth } from '~/api/utils/with-auth';
+import { resolveErrorPayload } from '~/lib/api-error';
 import { authService } from '~/lib/auth-service';
+import { redirectWithError, redirectWithSuccess } from '~/lib/flash-message.server';
+import { ROUTES_MAP } from '~/lib/route-tree';
+import { Button, FormField, PageTemplate, Panel, Text } from '~/ui';
 import type { Route } from './+types/user.profile.route';
 
 export async function loader({ request }: Route.LoaderArgs) {
   await authService.requireAuth(request);
+  const session = await authService.getUserSession(request);
+  const fallbackUser: UserDto = {
+    id: session.user.id,
+    email: session.user.email,
+    emailVerified: false,
+    mobileVerified: false,
+    hasPassword: true,
+  };
+
+  const userContextResponse = await withAuth(request, async () => AuthController.getUserContext(), session.accessToken).catch(
+    () => null,
+  );
+  const user = userContextResponse?.data?.data?.user ?? fallbackUser;
 
   return data({
-    user: null,
+    user,
   });
 }
 
-export default function Profile() {
-  return <div></div>;
+export async function action({ request }: Route.ActionArgs) {
+  await authService.requireAuth(request);
+  const formData = await request.formData();
+  const currentPassword = String(formData.get('currentPassword') ?? '');
+  const newPassword = String(formData.get('newPassword') ?? '');
+  const newPassword2 = String(formData.get('newPassword2') ?? '');
+
+  if (!currentPassword || !newPassword || !newPassword2) {
+    return redirectWithError(request, ROUTES_MAP['user.profile'].href, 'Alle passordfeltene må fylles ut.');
+  }
+
+  try {
+    await withAuth(request, async () =>
+      AuthController.changePassword({
+        body: {
+          currentPassword,
+          newPassword,
+          newPassword2,
+        },
+      }),
+    );
+
+    return redirectWithSuccess(request, ROUTES_MAP['user.profile'].href, 'Passordet ble oppdatert.');
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke oppdatere passord.');
+    return redirectWithError(request, ROUTES_MAP['user.profile'].href, message);
+  }
+}
+
+export default function Profile({ loaderData }: Route.ComponentProps) {
+  const user = loaderData.user;
+  const fullName = [user.givenName, user.familyName].filter(Boolean).join(' ').trim();
+
+  return (
+    <PageTemplate
+      title="Min profil"
+      description="Profilinformasjon og passordhåndtering."
+      label="Bruker"
+      hero={
+        <Panel title="Brukerinfo" description="Informasjon fra autentiseringskontekst.">
+          <div className="grid gap-2">
+            <Text as="p" variant="body-sm">
+              Navn: {fullName || 'Ikke registrert'}
+            </Text>
+            <Text as="p" variant="body-sm">
+              E-post: {user.email || 'Ikke registrert'}
+            </Text>
+            <Text as="p" variant="body-sm">
+              Mobil: {user.mobileNumber || 'Ikke registrert'}
+            </Text>
+          </div>
+        </Panel>
+      }
+    >
+      <Panel title="Oppdater passord" description="Endre passord for innlogget bruker.">
+        <Form method="post" className="space-y-3">
+          <FormField
+            label="Nåværende passord"
+            name="currentPassword"
+            type="password"
+            autoComplete="current-password"
+            required
+          />
+          <FormField label="Nytt passord" name="newPassword" type="password" autoComplete="new-password" required />
+          <FormField
+            label="Gjenta nytt passord"
+            name="newPassword2"
+            type="password"
+            autoComplete="new-password"
+            required
+          />
+          <Button type="submit">Oppdater passord</Button>
+        </Form>
+      </Panel>
+    </PageTemplate>
+  );
 }

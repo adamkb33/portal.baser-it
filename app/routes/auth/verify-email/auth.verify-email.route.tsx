@@ -8,6 +8,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { verificationSessionToken } from '~/lib/auth.server';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { authService } from '~/lib/auth-service';
+import { redirectWithError } from '~/lib/flash-message.server';
 import { Button, FormPageTemplate } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -75,8 +76,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       redirectUrl,
     }, { headers: headers.entries().next().done ? undefined : headers });
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Ugyldig eller utløpt verifiseringslenke.');
-    return data({ error: message }, { status: status ?? 400 });
+    const { message } = resolveErrorPayload(error, 'Ugyldig eller utløpt verifiseringslenke.');
+    return redirectWithError(request, ROUTES_MAP['auth.sign-in'].href, message);
   }
 }
 

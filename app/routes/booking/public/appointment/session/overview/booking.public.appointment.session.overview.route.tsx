@@ -3,19 +3,10 @@ import type { Route } from './+types/booking.public.appointment.session.overview
 import { Calendar, User, Mail, DollarSign, CheckCircle2 } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError } from '~/lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { requireAuthenticatedBookingFlow } from '../_utils/require-authenticated-booking-flow.server';
-import {
-  BookingStepTemplate,
-  Button,
-  Container,
-  KeyValueList,
-  PageHeader,
-  Panel,
-  Stack,
-  Text,
-} from '~/ui';
+import { BookingStepTemplate, Button, Container, KeyValueList, PageHeader, Panel, Stack, Text } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -161,105 +152,117 @@ export default function BookingPublicAppointmentSessionOverviewRoute({ loaderDat
       }
     >
       <Stack space="lg">
-          <Panel title="Oversikt" description="Kontroller informasjonen før bekreftelse.">
-            <div className="space-y-4">
+        <Panel title="Oversikt" description="Kontroller informasjonen før bekreftelse.">
+          <div className="space-y-4">
+            <div className="rounded-md border border-border bg-background p-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <Text as="p" variant="label">
+                  Tidspunkt
+                </Text>
+                <a
+                  href={ROUTES_MAP['booking.public.appointment.session.select-time'].href}
+                  className="text-xs text-text-secondary"
+                >
+                  Endre
+                </a>
+              </div>
+              <KeyValueList
+                items={[
+                  { label: 'Dato', value: dateTime.full, icon: <Calendar className="size-4" /> },
+                  { label: 'Varighet', value: `${totalDuration} min` },
+                  { label: 'Pris', value: `${totalPrice} kr`, icon: <DollarSign className="size-4" /> },
+                ]}
+              />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-md border border-border bg-background p-3">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <Text as="p" variant="label">
-                    Tidspunkt
+                    Kontakt
                   </Text>
-                  <a href={ROUTES_MAP['booking.public.appointment.session.select-time'].href} className="text-xs text-text-secondary">
+                  <a
+                    href={ROUTES_MAP['booking.public.appointment.session.contact'].href}
+                    className="text-xs text-text-secondary"
+                  >
                     Endre
                   </a>
                 </div>
                 <KeyValueList
+                  layout="stacked"
                   items={[
-                    { label: 'Dato', value: dateTime.full, icon: <Calendar className="size-4" /> },
-                    { label: 'Varighet', value: `${totalDuration} min` },
-                    { label: 'Pris', value: `${totalPrice} kr`, icon: <DollarSign className="size-4" /> },
+                    {
+                      label: 'Navn',
+                      value: `${sessionOverview.user.givenName} ${sessionOverview.user.familyName}`,
+                      icon: <User className="size-4" />,
+                    },
+                    ...(sessionOverview.user.email
+                      ? [{ label: 'E-post', value: sessionOverview.user.email, icon: <Mail className="size-4" /> }]
+                      : []),
                   ]}
                 />
               </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-md border border-border bg-background p-3">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <Text as="p" variant="label">
-                      Kontakt
-                    </Text>
-                    <a href={ROUTES_MAP['booking.public.appointment.session.contact'].href} className="text-xs text-text-secondary">
-                      Endre
-                    </a>
-                  </div>
-                  <KeyValueList
-                    layout="stacked"
-                    items={[
-                      {
-                        label: 'Navn',
-                        value: `${sessionOverview.user.givenName} ${sessionOverview.user.familyName}`,
-                        icon: <User className="size-4" />,
-                      },
-                      ...(sessionOverview.user.email
-                        ? [{ label: 'E-post', value: sessionOverview.user.email, icon: <Mail className="size-4" /> }]
-                        : []),
-                    ]}
-                  />
-                </div>
-                <div className="rounded-md border border-border bg-background p-3">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <Text as="p" variant="label">
-                      Behandler
-                    </Text>
-                    <a href={ROUTES_MAP['booking.public.appointment.session.employee'].href} className="text-xs text-text-secondary">
-                      Endre
-                    </a>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    {sessionOverview.selectedProfile.image ? (
-                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-sm border border-border bg-surface">
-                        <img
-                          src={sessionOverview.selectedProfile.image.url}
-                          alt={`${sessionOverview.selectedProfile.givenName} ${sessionOverview.selectedProfile.familyName}`}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    ) : null}
-                    <Text as="p" variant="body-sm" className="font-semibold">
-                      {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
-                    </Text>
-                  </div>
-                </div>
-              </div>
-
               <div className="rounded-md border border-border bg-background p-3">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <Text as="p" variant="label">
-                    Tjenester
+                    Behandler
                   </Text>
-                  <a href={ROUTES_MAP['booking.public.appointment.session.select-services'].href} className="text-xs text-text-secondary">
+                  <a
+                    href={ROUTES_MAP['booking.public.appointment.session.employee'].href}
+                    className="text-xs text-text-secondary"
+                  >
                     Endre
                   </a>
                 </div>
-                <div className="grid gap-2 md:grid-cols-2">
-                  {sessionOverview.selectedServices.map((item, index) => (
-                    <div key={index} className="rounded-md border border-border bg-background p-2.5">
-                      <div className="flex items-center justify-between gap-3">
-                        <Text as="p" variant="body-sm" className="font-medium">
-                          {item.services.name}
-                        </Text>
-                        <Text as="p" variant="body-sm" className="text-text-secondary">
-                          {item.services.price} kr
-                        </Text>
-                      </div>
-                      <Text as="p" variant="caption" className="mt-0.5 text-text-secondary">
-                        {item.services.duration} min
-                      </Text>
+                <div className="flex items-start gap-3">
+                  {sessionOverview.selectedProfile.image ? (
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-sm border border-border bg-surface">
+                      <img
+                        src={sessionOverview.selectedProfile.image.url}
+                        alt={`${sessionOverview.selectedProfile.givenName} ${sessionOverview.selectedProfile.familyName}`}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
-                  ))}
+                  ) : null}
+                  <Text as="p" variant="body-sm" className="font-semibold">
+                    {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
+                  </Text>
                 </div>
               </div>
             </div>
-          </Panel>
+
+            <div className="rounded-md border border-border bg-background p-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <Text as="p" variant="label">
+                  Tjenester
+                </Text>
+                <a
+                  href={ROUTES_MAP['booking.public.appointment.session.select-services'].href}
+                  className="text-xs text-text-secondary"
+                >
+                  Endre
+                </a>
+              </div>
+              <div className="grid gap-2 md:grid-cols-2">
+                {sessionOverview.selectedServices.map((item, index) => (
+                  <div key={index} className="rounded-md border border-border bg-background p-2.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <Text as="p" variant="body-sm" className="font-medium">
+                        {item.services.name}
+                      </Text>
+                      <Text as="p" variant="body-sm" className="text-text-secondary">
+                        {item.services.price} kr
+                      </Text>
+                    </div>
+                    <Text as="p" variant="caption" className="mt-0.5 text-text-secondary">
+                      {item.services.duration} min
+                    </Text>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Panel>
       </Stack>
     </BookingStepTemplate>
   );

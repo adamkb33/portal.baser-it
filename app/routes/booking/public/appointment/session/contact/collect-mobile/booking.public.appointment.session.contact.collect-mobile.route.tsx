@@ -3,7 +3,7 @@ import type { Route } from './+types/booking.public.appointment.session.contact.
 import { Smartphone } from 'lucide-react';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { redirectWithError, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
 import { Button, Input, PageHeader, Panel, Stack } from '~/ui';
 import { resolveAuthNextStepHref } from '../_utils/auth.utils';
 import { resolveMappedAuthError } from '../_utils/auth-step-error';

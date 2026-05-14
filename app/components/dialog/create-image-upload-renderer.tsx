@@ -1,6 +1,6 @@
 // components/dialog/create-image-upload-renderer.tsx
 import type { FormFieldRenderProps } from '~/components/dialog/form-dialog';
-import { Input } from '~/components/ui/input';
+import { Input } from '~/ui';
 import { X } from 'lucide-react';
 
 interface ImageData {

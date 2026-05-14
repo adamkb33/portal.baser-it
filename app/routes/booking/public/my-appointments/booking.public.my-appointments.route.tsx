@@ -16,11 +16,11 @@ import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import {
-  AlertBanner as BookingErrorBanner,
   Badge,
   Button,
   Card as BookingCard,
   Container as BookingContainer,
+  Notice,
   PageHeader as BookingPageHeader,
   Panel as BookingSection,
   Stack,
@@ -243,7 +243,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
     <BookingContainer>
       <Stack space="md">
         <BookingPageHeader title="Mine bookinger" description="Her kan du se dine bookinger." />
-        {loaderData.error && <BookingErrorBanner message={loaderData.error} />}
+        {loaderData.error && <Notice tone="emphasis" title="Kunne ikke hente bookinger" message={loaderData.error} />}
 
         {nearestUpcomingAppointment && (
           <BookingCard variant="emphasis" className="space-y-4">

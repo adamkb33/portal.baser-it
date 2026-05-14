@@ -2,7 +2,7 @@ import { data, Form, redirect, useNavigation, Link } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.session.contact.sign-up.route';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { ChevronLeft, UserPlus } from 'lucide-react';
-import { redirectWithError, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { resolveAuthNextStepHref } from '../_utils/auth.utils';
@@ -134,11 +134,7 @@ export default function BookingPublicAppointmentSessionContactSignUpRoute({ load
   return (
     <>
       <Stack space="xl">
-        <PageHeader
-          label="Kontakt"
-          title="Opprett konto"
-          description="Opprett en konto for å fortsette booking."
-        />
+        <PageHeader label="Kontakt" title="Opprett konto" description="Opprett en konto for å fortsette booking." />
         <div>
           <Link
             to={ROUTES_MAP['booking.public.appointment.session.contact'].href}

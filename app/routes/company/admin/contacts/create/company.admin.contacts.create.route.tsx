@@ -6,6 +6,7 @@ import { CompanyUserContactController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { setFlashMessage } from '~/lib/flash-message.server';
 
 const emptyValues: ContactFormData = {
   givenName: '',
@@ -39,7 +40,9 @@ export async function action({ request }: Route.ActionArgs) {
       const path = issue.path[0] as keyof ContactFormData | undefined;
       if (path) fieldErrors[path] = issue.message;
     }
-    return data({ error: 'Kontroller feltene og prøv igjen.', fieldErrors, values }, { status: 400 });
+    const error = 'Kontroller feltene og prøv igjen.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+    return data({ error, fieldErrors, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 
   try {
@@ -57,7 +60,8 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect(returnTo || ROUTES_MAP['company.admin.contacts'].href);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke opprette kontakt');
-    return data({ error: message, values }, { status: 400 });
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
+    return data({ error: message, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 }
 

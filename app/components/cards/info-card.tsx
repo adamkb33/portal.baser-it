@@ -1,6 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import { Card, CardContent, CardHeader, CardTitle, cn } from '~/ui';
 
 interface InfoCardProps {
   title: string;

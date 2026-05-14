@@ -4,7 +4,7 @@ import type { Route } from './+types/auth.forgot-password.route';
 
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { AuthController } from '~/api/generated/base';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { Button, FormField, FormPageTemplate } from '~/ui';
 
@@ -19,28 +19,19 @@ export async function action({ request }: Route.ActionArgs) {
 
     return redirectWithInfo(request, '/', 'Vi har sendt deg en e-post');
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Noe gikk galt. Prøv igjen.');
-    return data(
-      {
-        error: message,
-        values: { email },
-      },
-      { status: status ?? 400 },
-    );
+    const { message } = resolveErrorPayload(error, 'Noe gikk galt. Prøv igjen.');
+    return redirectWithError(request, ROUTES_MAP['auth.forgot-password'].href, message);
   }
 }
 
-export default function AuthForgotPassword({ actionData }: Route.ComponentProps) {
+export default function AuthForgotPassword({}: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const errorMessage = actionData?.error;
-  const actionValues = actionData?.values;
 
   return (
     <FormPageTemplate
       title="Glemt passord"
       description="Oppgi din e-post for å tilbakestille ditt passord. Følg lenken du får tilsendt på din e-post adresse."
-      error={errorMessage}
       variant="subtle"
       actions={
         <>
@@ -65,7 +56,6 @@ export default function AuthForgotPassword({ actionData }: Route.ComponentProps)
           type="email"
           autoComplete="email"
           placeholder="e-post"
-          defaultValue={actionValues?.email}
           required
           disabled={isSubmitting}
         />

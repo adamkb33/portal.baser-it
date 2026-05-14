@@ -2,7 +2,7 @@ import { Form, useNavigate, useNavigation } from 'react-router';
 import { useEffect, useState } from 'react';
 import { CompanyRole } from '~/api/clients/types';
 import { RoleCheckboxes } from '~/routes/company/_components/role-checkboxes';
-import { CompanyFormPageTemplate, FormField, Notice, Text, Button } from '~/ui';
+import { CompanyFormPageTemplate, FormField, Text, Button } from '~/ui';
 import { ROUTES_MAP } from '~/lib/route-tree';
 
 export type EmployeeFormValues = {
@@ -37,7 +37,6 @@ export function EmployeeFormPage({ mode, values, actionData }: EmployeeFormPageP
       title={isEdit ? 'Rediger ansatt' : 'Inviter ansatt'}
       description="Flytt medarbeiderskjemaet ut av dialog og inn på en egen ruteside med samme kompakte struktur som resten av selskapssonen."
       backLink={{ to: ROUTES_MAP['company.admin.employees'].href, label: 'Tilbake til ansatte' }}
-      notices={actionData?.error ? <Notice tone="emphasis" title="Kunne ikke lagre ansatt" message={actionData.error} /> : null}
       footer={
         <>
           <Button type="button" variant="outline" onClick={() => navigate(ROUTES_MAP['company.admin.employees'].href)}>

@@ -2,7 +2,7 @@ import { Notice, Tabs, TabsContent, TabsList, TabsTrigger } from '~/ui';
 import { EmployeesTable } from './tables/employees.table';
 import { InvitesTable } from './tables/invites.table';
 import type { Route } from './+types/company.admin.employees.route';
-import { getFlashMessage } from '../../_lib/flash-message.server';
+import { getFlashMessage } from '../../../../lib/flash-message.server';
 import { AdminCompanyUserController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { logRouteError, logRouteStart, logRouteSuccess } from '~/lib/route-log';
@@ -83,9 +83,7 @@ export async function loader(args: Route.LoaderArgs) {
 
 export default function CompanyAdminEmployees({ loaderData }: Route.ComponentProps) {
   if ('error' in loaderData) {
-    return (
-      <Notice tone="emphasis" title="Kunne ikke hente ansatte" message={loaderData.error} />
-    );
+    return <Notice tone="emphasis" title="Kunne ikke hente ansatte" message={loaderData.error} />;
   }
 
   const { users, pagination, invites } = loaderData;

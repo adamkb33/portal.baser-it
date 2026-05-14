@@ -3,25 +3,11 @@ import { data, Link, useNavigation, useSubmit } from 'react-router';
 import type { Route } from './+types/company.timesheet.register.route';
 import { CompanyUserTimesheetEntryController } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
-import { TimePicker } from '~/components/pickers/time-picker';
+import { StartEndTimeSelector } from '~/components/pickers/start-end-time-selector';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithSuccess, setFlashMessage } from '~/routes/company/_lib/flash-message.server';
-import {
-  Button,
-  Calendar,
-  CompanyPageTemplate,
-  Input,
-  Notice,
-  Panel,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  Textarea,
-} from '~/ui';
+import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
+import { Button, Calendar, CompanyPageTemplate, Input, Panel, Popover, PopoverContent, PopoverTrigger, Tabs, TabsList, TabsTrigger, Textarea } from '~/ui';
 import { formatDateInputToZonedISOString, normalizeNote, parseBulkEntries, splitBulkEntries } from '../_utils';
 
 type EntryMode = 'hours' | 'range';
@@ -103,7 +89,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function CompanyTimeSheetsRegisterRoute({ actionData }: Route.ComponentProps) {
+export default function CompanyTimeSheetsRegisterRoute() {
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
@@ -151,11 +137,10 @@ export default function CompanyTimeSheetsRegisterRoute({ actionData }: Route.Com
         </Link>
       }
     >
-      {actionData?.ok === false && actionData.error ? (
-        <Notice tone="emphasis" title="Kunne ikke lagre registreringen" message={actionData.error} />
-      ) : null}
-
-      <Panel title="Ny registrering" description="Legg inn en eller flere timer eller intervaller og send dem inn samlet.">
+      <Panel
+        title="Ny registrering"
+        description="Legg inn en eller flere timer eller intervaller og send dem inn samlet."
+      >
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -327,38 +312,17 @@ type RangeTimeInputsProps = {
 };
 
 function RangeTimeInputs({ entryId, fromTime, toTime, onChange }: RangeTimeInputsProps) {
-  const [activePicker, setActivePicker] = React.useState<'from' | 'to' | null>(null);
-
   return (
     <div className="flex w-full gap-2">
-      <div className="flex-1">
-        <TimePicker
-          value={fromTime}
-          placeholder="Fra"
-          isOpen={activePicker === 'from'}
-          onOpenChange={(open) => setActivePicker(open ? 'from' : null)}
-          onChange={(next) => {
-            onChange(entryId, { fromTime: next });
-            setActivePicker(null);
-          }}
-          zIndex={80}
-          className="w-full"
-        />
-      </div>
-      <div className="flex-1">
-        <TimePicker
-          value={toTime}
-          placeholder="Til"
-          isOpen={activePicker === 'to'}
-          onOpenChange={(open) => setActivePicker(open ? 'to' : null)}
-          onChange={(next) => {
-            onChange(entryId, { toTime: next });
-            setActivePicker(null);
-          }}
-          zIndex={80}
-          className="w-full"
-        />
-      </div>
+      <StartEndTimeSelector
+        startValue={fromTime}
+        endValue={toTime}
+        onStartChange={(next) => onChange(entryId, { fromTime: next })}
+        onEndChange={(next) => onChange(entryId, { toTime: next })}
+        startPlaceholder="Fra"
+        endPlaceholder="Til"
+        zIndex={80}
+      />
     </div>
   );
 }

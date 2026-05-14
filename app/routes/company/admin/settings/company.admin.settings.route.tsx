@@ -5,7 +5,7 @@ import { AdminCompanyController, CompanyUserController } from '~/api/generated/b
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
 import { Button, CompanyMetricCard, CompanyPageTemplate, Input, Notice, Panel, Text } from '~/ui';
 
 type SettingsActionValues = {
@@ -41,11 +41,15 @@ export async function action({ request }: Route.ActionArgs) {
   const values: SettingsActionValues = { displayName };
 
   if (intent !== 'update-company-name') {
-    return data({ error: 'Ugyldig handling.', values }, { status: 400 });
+    const error = 'Ugyldig handling.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+    return data({ error, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 
   if (!displayName) {
-    return data({ error: 'Selskapsnavn kan ikke være tomt.', values }, { status: 400 });
+    const error = 'Selskapsnavn kan ikke være tomt.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+    return data({ error, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 
   try {
@@ -60,7 +64,8 @@ export async function action({ request }: Route.ActionArgs) {
     return redirectWithSuccess(request, ROUTES_MAP['company.admin.settings'].href, 'Selskapsnavn oppdatert');
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke oppdatere selskapsnavn');
-    return data({ error: message, values }, { status: 400 });
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
+    return data({ error: message, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 }
 
@@ -131,9 +136,6 @@ export default function CompanySettings({ loaderData, actionData }: Route.Compon
                   placeholder="Skriv nytt selskapsnavn"
                 />
               </div>
-              {actionData?.error ? (
-                <Notice tone="emphasis" title="Kunne ikke oppdatere navn" message={actionData.error} />
-              ) : null}
               <div className="flex items-center justify-end">
                 <Button type="submit">Oppdater navn</Button>
               </div>

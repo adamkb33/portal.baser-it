@@ -21,7 +21,7 @@ import {
 } from '~/ui';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { requireAuthenticatedBookingFlow } from '../_utils/require-authenticated-booking-flow.server';
-import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError } from '~/lib/flash-message.server';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {

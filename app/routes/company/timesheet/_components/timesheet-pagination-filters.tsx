@@ -1,7 +1,20 @@
 import { useEffect, useMemo, useState, type RefObject } from 'react';
-import type { DateRange } from 'react-day-picker';
 import { Form, Link } from 'react-router';
-import { Button, Calendar, Card, CardContent, CardHeader, CardTitle, Checkbox, Input, Label, Popover, PopoverContent, PopoverTrigger } from '~/ui';
+import {
+  Button,
+  Calendar,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  type CalendarDateRange,
+  Checkbox,
+  Input,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '~/ui';
 
 type TimesheetPaginationFilters = {
   fromDate?: string | null;
@@ -22,13 +35,13 @@ type Props = {
   filters: TimesheetPaginationFilters;
   fromDate: string;
   toDate: string;
-  dateRange: DateRange | undefined;
+  dateRange: CalendarDateRange | undefined;
   resetHref: string;
   selectedStatuses?: Set<string>;
   statusOptions?: StatusOption[];
   showDateRange?: boolean;
   showEntryMode?: boolean;
-  onRangeSelect: (range: DateRange | undefined) => void;
+  onRangeSelect: (range: CalendarDateRange | undefined) => void;
   onSubmitDebounced: () => void;
 };
 

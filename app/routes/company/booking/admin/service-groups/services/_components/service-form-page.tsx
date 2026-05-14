@@ -8,7 +8,6 @@ import {
   Button,
   CompanyFormPageTemplate,
   FormField,
-  Notice,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -94,7 +93,6 @@ export function ServiceFormPage({ mode, values, serviceGroups, actionData }: Ser
       title={isEdit ? 'Rediger tjeneste' : 'Ny tjeneste'}
       description="Bruk samme kompakte ruteside for tjenestedata som resten av bookingadministrasjonen."
       backLink={{ to: ROUTES_MAP['company.booking.admin.service-groups.services'].href, label: 'Tilbake til tjenester' }}
-      notices={actionData?.error ? <Notice tone="emphasis" title="Kunne ikke lagre tjeneste" message={actionData.error} /> : null}
       footer={
         <>
           <Button

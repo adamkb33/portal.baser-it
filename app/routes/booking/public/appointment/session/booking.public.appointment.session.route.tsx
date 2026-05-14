@@ -2,7 +2,7 @@ import { redirect } from 'react-router';
 import { Loader2 } from 'lucide-react';
 import { AppointmentsController } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError } from '~/lib/flash-message.server';
 import type { Route } from './+types/booking.public.appointment.session.route';
 
 export async function loader(args: Route.LoaderArgs) {

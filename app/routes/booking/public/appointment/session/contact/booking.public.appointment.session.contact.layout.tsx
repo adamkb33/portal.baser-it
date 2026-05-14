@@ -1,14 +1,15 @@
 import { data, Outlet } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.session.contact.layout';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError } from '~/lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { Container } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const { ContactSessionService } = await import('./_services/contact-session.service.server');
-    const { session, sessionUser, auth, verificationSessionToken } = await ContactSessionService.getContactContext(request);
+    const { session, sessionUser, auth, verificationSessionToken } =
+      await ContactSessionService.getContactContext(request);
 
     if (!session) {
       return redirectWithError(

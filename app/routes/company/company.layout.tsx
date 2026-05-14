@@ -4,8 +4,8 @@ import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import type { RootOutletContext } from '../root.layout';
 import type { Route } from './+types/company.route';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
-import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithInfo } from '~/lib/flash-message.server';
+import { redirectWithError } from '~/lib/flash-message.server';
 import type { ApiMessage } from '~/api/generated/base';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -42,7 +42,7 @@ export default function CompanyLayout() {
         </div>
       </header>
 
-      <main className="container mx-auto flex-1 px-2 py-2 md:px-6 md:py-3">
+      <main className="container mx-auto flex-1 px-2 py-2">
         <Outlet context={context} />
       </main>
     </div>

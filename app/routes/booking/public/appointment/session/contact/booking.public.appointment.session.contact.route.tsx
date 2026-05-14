@@ -4,7 +4,7 @@ import { data, Form, redirect, useNavigate } from 'react-router';
 import { ProviderButtons } from '~/routes/auth/_components/provider-buttons';
 import type { UserAuthStatusDto } from '~/api/generated/base';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithError, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { Route } from './+types/booking.public.appointment.session.contact.route';
 import { resolveAuthNextStepHref, resolveAuthStatusNextStepHref } from './_utils/auth.utils';
@@ -12,7 +12,19 @@ import { authService } from '~/lib/auth-service';
 import { ContactSessionService } from './_services/contact-session.service.server';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { logger } from '~/lib/logger';
-import { Button, Card, CardDescription, CardFooter, CardHeader, CardTitle, Grid, PageHeader, Panel, Stack, Text } from '~/ui';
+import {
+  Button,
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Grid,
+  PageHeader,
+  Panel,
+  Stack,
+  Text,
+} from '~/ui';
 
 const ACTION_INTENT = {
   CONTINUE_WITH_SESSION_USER: 'continue-with-session-user',
@@ -51,7 +63,9 @@ function ContinueCard({ title, description, cta, initials, intentValue }: Contin
               ) : null}
               <div className="flex flex-col">
                 <CardTitle className="text-booking-text">{title}</CardTitle>
-                {description ? <CardDescription className="text-booking-text-muted">{description}</CardDescription> : null}
+                {description ? (
+                  <CardDescription className="text-booking-text-muted">{description}</CardDescription>
+                ) : null}
               </div>
             </div>
           </CardHeader>
@@ -303,7 +317,7 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
             )}
             {auth && !isSameSessionAndAuthenticatedUser && (
               <ContinueCard
-                title={auth.email}
+                title={auth.email ?? ''}
                 cta="Fortsett med innlogget bruker"
                 intentValue={ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER}
               />
@@ -325,13 +339,7 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
 
             <Grid columns={2} gap="md">
               <div className="space-y-2">
-                <Button
-                  type="button"
-                  size="lg"
-                  fullWidth
-                  onClick={() => goToSignIn()}
-                  className="gap-3"
-                >
+                <Button type="button" size="lg" fullWidth onClick={() => goToSignIn()} className="gap-3">
                   <LogIn className="size-5" />
                   Logg inn
                 </Button>
@@ -340,14 +348,7 @@ export default function BookingPublicAppointmentSessionContactRoute({ loaderData
                 </Text>
               </div>
               <div className="space-y-2">
-                <Button
-                  type="button"
-                  size="lg"
-                  fullWidth
-                  variant="outline"
-                  onClick={goToSignUp}
-                  className="gap-3"
-                >
+                <Button type="button" size="lg" fullWidth variant="outline" onClick={goToSignUp} className="gap-3">
                   <UserPlus className="size-5" />
                   Opprett konto
                 </Button>

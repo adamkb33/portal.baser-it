@@ -4,7 +4,7 @@ import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { Route } from '../+types/booking.public.appointment.session.select-time.route';
 import { requireAuthenticatedBookingFlow } from '../../_utils/require-authenticated-booking-flow.server';
-import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError } from '~/lib/flash-message.server';
 
 export async function appointmentSessionSelectTimeAction(args: Route.ActionArgs) {
   const guardResult = await requireAuthenticatedBookingFlow(args.request);

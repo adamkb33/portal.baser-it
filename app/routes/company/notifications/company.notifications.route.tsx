@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { data, useNavigate, useSearchParams, useSubmit } from 'react-router';
-import type { DateRange } from 'react-day-picker';
 import { BellRing, Eye, Inbox } from 'lucide-react';
 import type { Route } from './+types/company.notifications.route';
 import { CompanyUserInAppNotificationController, type InAppNotificationDto } from '~/api/generated/notification';
@@ -16,6 +15,7 @@ import { NotificationTableRow } from './_components/notification-table-row';
 import { NotificationPaginationService } from './_utils/pagination-service';
 import { parseNotificationListRequest } from './_utils/query';
 import { parseIsoDate, toIsoDate } from '../timesheet/_utils';
+import type { CalendarDateRange } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -70,7 +70,7 @@ export default function CompanyNotificationsRoute({ loaderData }: Route.Componen
   const [fromDate, setFromDate] = useState(filters.fromDate ?? '');
   const [toDate, setToDate] = useState(filters.toDate ?? '');
   const [readFilter, setReadFilter] = useState(filters.read);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+  const [dateRange, setDateRange] = useState<CalendarDateRange | undefined>({
     from: parseIsoDate(filters.fromDate),
     to: parseIsoDate(filters.toDate),
   });
@@ -120,7 +120,7 @@ export default function CompanyNotificationsRoute({ loaderData }: Route.Componen
     }, 1000);
   };
 
-  const handleRangeSelect = (nextRange: DateRange | undefined) => {
+  const handleRangeSelect = (nextRange: CalendarDateRange | undefined) => {
     setDateRange(nextRange);
     setFromDate(toIsoDate(nextRange?.from));
     setToDate(toIsoDate(nextRange?.to));

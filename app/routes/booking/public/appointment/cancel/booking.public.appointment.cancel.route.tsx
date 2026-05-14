@@ -3,11 +3,10 @@ import { useState } from 'react';
 import type { Route } from './+types/booking.public.appointment.cancel.route';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithInfo } from '~/lib/flash-message.server';
 import { Calendar, Clock, User, Mail, Phone, Sparkles, XCircle } from 'lucide-react';
 import { decodeCancelAppointmentToken } from '~/routes/booking/public/_utils/cancel-appointment-token';
 import {
-  AlertBanner,
   Button,
   Card,
   ConfirmDialog,
@@ -284,7 +283,7 @@ export default function BookingPublicAppointmentCancelRoute() {
     return (
       <Container size="lg">
         <PageHeader label="Avbestilling" title="Avbestill time" description={error} />
-        <AlertBanner message={error} />
+        <Notice tone="emphasis" title="Kunne ikke hente avtalen" message={error} />
       </Container>
     );
   }
@@ -327,86 +326,111 @@ export default function BookingPublicAppointmentCancelRoute() {
           />
           {appointment && !error ? (
             <Card variant="emphasis" className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-surface">
-                <XCircle className="size-5 text-text-primary" strokeWidth={2.5} />
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-full bg-surface">
+                  <XCircle className="size-5 text-text-primary" strokeWidth={2.5} />
+                </div>
+                <div>
+                  <Text as="p" variant="label">
+                    Avbestillingsforespørsel
+                  </Text>
+                  <Text as="p" variant="body-sm" className="text-text-secondary">
+                    {expiresAtLabel ? `Lenken er gyldig til ${expiresAtLabel}.` : 'Kontroller opplysningene under.'}
+                  </Text>
+                </div>
               </div>
-              <div>
-                <Text as="p" variant="label">
-                  Avbestillingsforespørsel
-                </Text>
-                <Text as="p" variant="body-sm" className="text-text-secondary">
-                  {expiresAtLabel ? `Lenken er gyldig til ${expiresAtLabel}.` : 'Kontroller opplysningene under.'}
-                </Text>
-              </div>
-            </div>
-            <KeyValueList
-              items={[
-                { label: 'Dato', value: dateTime?.date ?? '—', icon: <Calendar className="size-4" /> },
-                { label: 'Tid', value: timeRange ?? dateTime?.time ?? '—', icon: <Clock className="size-4" /> },
-                { label: 'Varighet', value: durationMinutes ? `${durationMinutes} min` : '—' },
-                { label: 'Pris', value: totalPrice ? `${totalPrice} kr` : '—', icon: <Sparkles className="size-4" /> },
-              ]}
-            />
+              <KeyValueList
+                items={[
+                  { label: 'Dato', value: dateTime?.date ?? '—', icon: <Calendar className="size-4" /> },
+                  { label: 'Tid', value: timeRange ?? dateTime?.time ?? '—', icon: <Clock className="size-4" /> },
+                  { label: 'Varighet', value: durationMinutes ? `${durationMinutes} min` : '—' },
+                  {
+                    label: 'Pris',
+                    value: totalPrice ? `${totalPrice} kr` : '—',
+                    icon: <Sparkles className="size-4" />,
+                  },
+                ]}
+              />
             </Card>
           ) : null}
 
-          {error || actionError ? <AlertBanner message={actionError ?? error} /> : null}
+          {error || actionError ? (
+            <Notice tone="emphasis" title="Kunne ikke avbestille" message={actionError ?? error} />
+          ) : null}
 
           {actionData?.success ? <Notice title="Avbestillingen er registrert" message={actionData.message} /> : null}
 
           {appointment ? (
             <Stack space="lg">
-            <Panel title="Kontaktinformasjon">
-              <KeyValueList
-                layout="stacked"
-                items={[
-                  {
-                    label: 'Navn',
-                    value: `${contact?.givenName ?? ''} ${contact?.familyName ?? ''}`.trim() || '—',
-                    icon: <User className="size-4" />,
-                  },
-                  ...(contact?.email ? [{ label: 'E-post', value: contact.email, icon: <Mail className="size-4" /> }] : []),
-                  ...(contact?.mobileNumber
-                    ? [{ label: 'Mobilnummer', value: contact.mobileNumber, icon: <Phone className="size-4" /> }]
-                    : []),
-                ]}
-              />
-            </Panel>
+              <Panel title="Kontaktinformasjon">
+                <KeyValueList
+                  layout="stacked"
+                  items={[
+                    {
+                      label: 'Navn',
+                      value: `${contact?.givenName ?? ''} ${contact?.familyName ?? ''}`.trim() || '—',
+                      icon: <User className="size-4" />,
+                    },
+                    ...(contact?.email
+                      ? [{ label: 'E-post', value: contact.email, icon: <Mail className="size-4" /> }]
+                      : []),
+                    ...(contact?.mobileNumber
+                      ? [{ label: 'Mobilnummer', value: contact.mobileNumber, icon: <Phone className="size-4" /> }]
+                      : []),
+                  ]}
+                />
+              </Panel>
 
-            <Panel title="Tidspunkt">
-              <KeyValueList
-                layout="stacked"
-                items={[
-                  { label: 'Dato', value: dateTime?.date ?? appointment.startTime, icon: <Calendar className="size-4" /> },
-                  { label: 'Tid', value: timeRange ?? dateTime?.time ?? appointment.startTime, icon: <Clock className="size-4" /> },
-                  { label: 'Varighet', value: durationMinutes ? `${durationMinutes} min` : '—', icon: <Clock className="size-4" /> },
-                ]}
-              />
-            </Panel>
+              <Panel title="Tidspunkt">
+                <KeyValueList
+                  layout="stacked"
+                  items={[
+                    {
+                      label: 'Dato',
+                      value: dateTime?.date ?? appointment.startTime,
+                      icon: <Calendar className="size-4" />,
+                    },
+                    {
+                      label: 'Tid',
+                      value: timeRange ?? dateTime?.time ?? appointment.startTime,
+                      icon: <Clock className="size-4" />,
+                    },
+                    {
+                      label: 'Varighet',
+                      value: durationMinutes ? `${durationMinutes} min` : '—',
+                      icon: <Clock className="size-4" />,
+                    },
+                  ]}
+                />
+              </Panel>
 
-            <Panel title="Tjenester">
-              {services.length ? (
-                <div className="space-y-2">
-                  {services.map((service) => (
-                    <div key={service.id} className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
-                      <span className="text-sm font-medium text-text-primary md:text-base">{service.name}</span>
-                      <div className="flex shrink-0 items-center gap-3 text-xs text-text-secondary md:text-sm">
-                        <span className="flex items-center gap-1">
-                          <Clock className="size-3 md:size-3.5" />
-                          {service.duration} min
-                        </span>
-                        <span className="flex items-center gap-1 font-semibold text-text-primary">{service.price} kr</span>
+              <Panel title="Tjenester">
+                {services.length ? (
+                  <div className="space-y-2">
+                    {services.map((service) => (
+                      <div
+                        key={service.id}
+                        className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3"
+                      >
+                        <span className="text-sm font-medium text-text-primary md:text-base">{service.name}</span>
+                        <div className="flex shrink-0 items-center gap-3 text-xs text-text-secondary md:text-sm">
+                          <span className="flex items-center gap-1">
+                            <Clock className="size-3 md:size-3.5" />
+                            {service.duration} min
+                          </span>
+                          <span className="flex items-center gap-1 font-semibold text-text-primary">
+                            {service.price} kr
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <Text as="p" variant="body-sm" className="text-text-secondary">
-                  Ingen tjenester funnet.
-                </Text>
-              )}
-            </Panel>
+                    ))}
+                  </div>
+                ) : (
+                  <Text as="p" variant="body-sm" className="text-text-secondary">
+                    Ingen tjenester funnet.
+                  </Text>
+                )}
+              </Panel>
             </Stack>
           ) : (
             <Panel tone="muted">
@@ -431,7 +455,14 @@ export default function BookingPublicAppointmentCancelRoute() {
         confirmAction={
           <Form method="post" className="w-full sm:w-auto">
             <input type="hidden" name="token" value={cancelToken ?? ''} />
-            <Button type="submit" variant="destructive" size="md" fullWidth loading={isSubmitting} disabled={!canCancel || isSubmitting}>
+            <Button
+              type="submit"
+              variant="destructive"
+              size="md"
+              fullWidth
+              loading={isSubmitting}
+              disabled={!canCancel || isSubmitting}
+            >
               Ja, avbestill
             </Button>
           </Form>

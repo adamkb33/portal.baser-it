@@ -2,7 +2,10 @@ import { data, redirect } from 'react-router';
 import { Building2, Mail, MapPin } from 'lucide-react';
 import type { BrregEnhetResponse } from '~/api/brreg/types';
 import { CompanyUserController, type AddressDto } from '~/api/generated/base';
+import { withAuth } from '~/api/utils/with-auth';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
+import { resolveErrorPayload } from '~/lib/api-error';
+import { redirectWithError } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import type { Route } from './+types/company.route';
 import { CompanyEmptyState, CompanyMetricCard, CompanyPageTemplate, Panel, Text } from '~/ui';
@@ -18,11 +21,24 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect(ROUTES_MAP['user.company-context'].href);
   }
 
-  const companSummaryResponse = await CompanyUserController.getCompanySummary();
+  try {
+    const companSummaryResponse = await withAuth(request, async () => CompanyUserController.getCompanySummary());
 
-  return data({
-    companySummary: companSummaryResponse.data?.data,
-  });
+    return data({
+      companySummary: companSummaryResponse.data?.data,
+    });
+  } catch (error) {
+    const { status, message } = resolveErrorPayload(error, 'Kunne ikke hente selskapsinformasjon.');
+    if (status === 401 || status === 403) {
+      return redirectWithError(
+        request,
+        ROUTES_MAP['user.company-context'].href,
+        'Du har ikke tilgang til valgt selskapskontekst. Velg selskap på nytt.',
+      );
+    }
+
+    return redirectWithError(request, ROUTES_MAP['user.company-context'].href, message);
+  }
 }
 
 export default function CompanyIndex({ loaderData }: Route.ComponentProps) {

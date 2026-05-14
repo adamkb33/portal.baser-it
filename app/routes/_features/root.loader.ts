@@ -2,7 +2,7 @@ import { data } from 'react-router';
 import { createNavigation } from '~/lib/route-tree';
 import { authService } from '~/lib/auth-service';
 import { logger } from '~/lib/logger';
-import type { FlashMessage } from '~/routes/company/_lib/flash-message.server';
+import type { FlashMessage } from '~/lib/flash-message.server';
 import { AuthController } from '~/api/generated/base';
 import type { UserContextDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
@@ -76,6 +76,7 @@ export const refreshAndBuildResponse = async (
 export const buildResponseData = async (request: Request, accessToken: string, flashMessage: FlashMessage | null) => {
   const authPayload = authService.verifyAndDecodeToken(accessToken);
   let userContext: UserContextDto | undefined = undefined;
+  let systemRoles: string[] = [];
   let companySummary = undefined;
 
   if (authPayload) {
@@ -83,14 +84,16 @@ export const buildResponseData = async (request: Request, accessToken: string, f
       request,
       async () => {
         try {
-          const userContextResponse = await AuthController.getUserContext();
-          userContext = userContextResponse.data?.data ?? undefined;
+          const meResponse = await AuthController.getMe();
+          userContext = meResponse.data?.data?.userContext ?? undefined;
+          systemRoles = meResponse.data?.data?.permissions?.systemRoles ?? [];
         } catch (err) {
           logger.info('Failed to fetch user context', {
             userId: authPayload.id,
             error: err instanceof Error ? err.message : String(err),
           });
           userContext = undefined;
+          systemRoles = [];
         }
       },
       accessToken,
@@ -102,7 +105,7 @@ export const buildResponseData = async (request: Request, accessToken: string, f
     companySummary = companyContexts.find((entry) => entry.company.id === authPayload.companyId)?.company;
   }
 
-  const navigation = createNavigation(userContext);
+  const navigation = createNavigation(userContext, systemRoles, Boolean(authPayload));
   const cookieHeader = request.headers.get('Cookie') ?? '';
 
   return {
@@ -128,7 +131,7 @@ export const defaultResponse = async (
     {
       user: null,
       companyContext: null,
-      userNavigation: createNavigation(undefined),
+      userNavigation: createNavigation(undefined, [], false),
       flashMessage,
       embedMode: readEmbedModeFromCookieString(cookieHeader),
       embedTheme: readEmbedThemeFromCookieString(cookieHeader),

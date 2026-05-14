@@ -1,5 +1,5 @@
 import { Form, useNavigate, useNavigation } from 'react-router';
-import { CompanyFormPageTemplate, FormField, Notice, Text, Button } from '~/ui';
+import { CompanyFormPageTemplate, FormField, Text, Button } from '~/ui';
 import type { ContactFormData, FieldErrors } from '../_schemas/contact.form.schema';
 import { ROUTES_MAP } from '~/lib/route-tree';
 
@@ -28,7 +28,6 @@ export function ContactFormPage({ mode, values, actionData, returnTo }: ContactF
       title={isEdit ? 'Rediger kontakt' : 'Ny kontakt'}
       description="Bruk en egen ruteside for kontaktdata i stedet for modal. Hold skjemaet kompakt og konsistent med resten av selskapssonen."
       backLink={{ to: backHref, label: 'Tilbake til kontakter' }}
-      notices={actionData?.error ? <Notice tone="emphasis" title="Kunne ikke lagre kontakt" message={actionData.error} /> : null}
       footer={
         <>
           <Button type="button" variant="outline" onClick={() => navigate(backHref)}>

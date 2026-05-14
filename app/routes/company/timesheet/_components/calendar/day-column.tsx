@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import type { TimesheetDayEntryDto } from '~/api/generated/timesheet';
-import { TimePicker } from '~/components/pickers/time-picker';
+import { StartEndTimeSelector } from '~/components/pickers/start-end-time-selector';
 import { cn } from '~/lib/utils';
 import type { DayFormState } from '../../_types/timesheet.types';
 import { buildEditHref } from '../../_utils';
@@ -56,36 +56,14 @@ export function TimesheetDayColumn({
                 <p className="text-xs font-semibold text-muted-foreground">Ny registrering</p>
                 {entryMode === 'RANGE' ? (
                   <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <p className="mb-1 text-[10px] font-medium text-muted-foreground">Fra</p>
-                      <TimePicker
-                        value={formState.fromTime}
-                        placeholder="00:00"
-                        isOpen={!inputsDisabled && formState.activePicker === 'from'}
-                        onOpenChange={(open) =>
-                          !inputsDisabled && onDayFormChange(dateKey, { activePicker: open ? 'from' : null })
-                        }
-                        onChange={(value) =>
-                          !inputsDisabled && onDayFormChange(dateKey, { fromTime: value, activePicker: null })
-                        }
-                        disabled={inputsDisabled}
-                      />
-                    </div>
-                    <div>
-                      <p className="mb-1 text-[10px] font-medium text-muted-foreground">Til</p>
-                      <TimePicker
-                        value={formState.toTime}
-                        placeholder="00:00"
-                        isOpen={!inputsDisabled && formState.activePicker === 'to'}
-                        onOpenChange={(open) =>
-                          !inputsDisabled && onDayFormChange(dateKey, { activePicker: open ? 'to' : null })
-                        }
-                        onChange={(value) =>
-                          !inputsDisabled && onDayFormChange(dateKey, { toTime: value, activePicker: null })
-                        }
-                        disabled={inputsDisabled}
-                      />
-                    </div>
+                    <StartEndTimeSelector
+                      startValue={formState.fromTime}
+                      endValue={formState.toTime}
+                      onStartChange={(value) => !inputsDisabled && onDayFormChange(dateKey, { fromTime: value })}
+                      onEndChange={(value) => !inputsDisabled && onDayFormChange(dateKey, { toTime: value })}
+                      startPlaceholder="00:00"
+                      endPlaceholder="00:00"
+                    />
                   </div>
                 ) : (
                   <div>

@@ -4,7 +4,7 @@ import type { Route } from './+types/booking.public.appointment.session.contact.
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { ProviderButtons } from '~/routes/auth/_components/provider-buttons';
 import { ChevronLeft, LogIn } from 'lucide-react';
-import { redirectWithError, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { logger } from '~/lib/logger';
 import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
@@ -119,9 +119,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function BookingPublicAppointmentSessionContactSignInRoute({
-  loaderData,
-}: Route.ComponentProps) {
+export default function BookingPublicAppointmentSessionContactSignInRoute({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const location = useLocation();
   const isSubmitting = navigation.state === 'submitting';

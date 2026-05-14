@@ -4,7 +4,7 @@ import { CompanyUserBookingProfileController, CompanyUserServiceGroupController 
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
 
 export type BookingProfileFormLoaderData = {
   bookingProfile: BookingProfileDto | null;
@@ -41,7 +41,10 @@ export async function submitBookingProfileForm(request: Request) {
 
   try {
     const description = String(formData.get('description') ?? '').trim();
-    const serviceIds = formData.getAll('services[]').map((value) => Number(value)).filter((value) => Number.isInteger(value));
+    const serviceIds = formData
+      .getAll('services[]')
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value));
     const dailySchedulesRaw = String(formData.get('dailySchedules') ?? '[]');
     const removeImage = String(formData.get('removeImage') ?? '') === 'true';
     const existingImageId = Number(formData.get('existingImageId') ?? '');
@@ -51,18 +54,20 @@ export async function submitBookingProfileForm(request: Request) {
       description?: string;
       serviceIds: number[];
       dailySchedules?: DailyScheduleDto[];
-      imageAction?: {
-        type: 'Upload';
-        data: {
-          fileName: string;
-          label: string;
-          contentType: string;
-          data: string;
-        };
-      } | {
-        type: 'Delete';
-        imageId: number;
-      };
+      imageAction?:
+        | {
+            type: 'Upload';
+            data: {
+              fileName: string;
+              label: string;
+              contentType: string;
+              data: string;
+            };
+          }
+        | {
+            type: 'Delete';
+            imageId: number;
+          };
     } = {
       description: description || undefined,
       serviceIds,
@@ -100,6 +105,7 @@ export async function submitBookingProfileForm(request: Request) {
     return redirectWithSuccess(request, ROUTES_MAP['company.booking.profile'].href, 'Bookingprofil lagret');
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre bookingprofil');
-    return data({ error: message }, { status: status ?? 400 });
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
+    return data({ error: message }, { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } });
   }
 }

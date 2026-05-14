@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '~/ui';
 import type { ScheduleDto, ScheduleTimeSlot } from '~/api/generated/booking';
 
 export type TimeSlotPickerProps = {
@@ -54,7 +54,7 @@ export function TimeSlotPicker({ schedule, selectedTimeSlot, onChange, isSlotAll
                 <Button
                   key={startDateTime}
                   type="button"
-                  variant={selected ? 'default' : 'outline'}
+                  variant={selected ? 'primary' : 'outline'}
                   className={[
                     'justify-center rounded-md px-3 py-2 text-sm',
                     'transition-all duration-150',

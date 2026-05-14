@@ -1,7 +1,7 @@
 import { useSubmit, useRevalidator } from 'react-router';
 import { useState } from 'react';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '~/components/ui/select'; // your wrappers
-import { Button } from '~/components/ui/button';
+import { Button } from '~/ui';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { toast } from 'sonner';
 import { ROUTES_MAP } from '~/lib/route-tree';

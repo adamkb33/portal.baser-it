@@ -107,7 +107,7 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
             Oversikt
           </NavLink>
           <NavLink
-            to={ROUTES_MAP['company.booking.profile.schedule-unavailability'].href}
+            to={ROUTES_MAP['company.booking.schedule-unavailability'].href}
             className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
           >
             Mitt fravik

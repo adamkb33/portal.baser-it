@@ -10,6 +10,7 @@ import { requireVerificationToken } from '~/routes/booking/public/appointment/se
 import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { authService } from '~/lib/auth-service';
+import { redirectWithError } from '~/lib/flash-message.server';
 import { Button, FormPageTemplate, Label, Notice, VerificationCodeInput } from '~/ui';
 
 type VerifyMobileLoaderData = {
@@ -18,15 +19,9 @@ type VerifyMobileLoaderData = {
   error?: string | null;
 };
 
-type VerifyMobileActionData =
-  | {
-      error: string;
-      message?: never;
-    }
-  | {
-      error?: never;
-      message: string;
-    };
+type VerifyMobileActionData = {
+  message: string;
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
   const verificationSessionToken = await requireVerificationToken(request);
@@ -74,13 +69,15 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  const currentHref = new URL(request.url);
+  const currentPath = `${currentHref.pathname}${currentHref.search}`;
   const formData = await request.formData();
   const intent = String(formData.get('intent') || 'verify');
 
   const verificationSessionToken = await VerificationTokenService.readVerificationToken(request);
 
   if (!verificationSessionToken) {
-    return data({ error: 'Mangler verifiseringsinformasjon. Prøv igjen.' }, { status: 400 });
+    return redirectWithError(request, currentPath, 'Mangler verifiseringsinformasjon. Prøv igjen.');
   }
 
   try {
@@ -132,28 +129,24 @@ export async function action({ request }: Route.ActionArgs) {
     const nextStepHref = resolveAuthNextStepHref(payload?.nextStep ?? null);
     return redirect(nextStepHref ?? ROUTES_MAP['auth.sign-in'].href);
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke bekrefte mobilnummer. Prøv igjen.');
-    return data({ error: message } satisfies VerifyMobileActionData, { status: status ?? 400 });
+    const { message } = resolveErrorPayload(error, 'Kunne ikke bekrefte mobilnummer. Prøv igjen.');
+    return redirectWithError(request, currentPath, message);
   }
 }
 
 export default function AuthVerifyMobile({ loaderData }: Route.ComponentProps) {
   const dataValues = loaderData as VerifyMobileLoaderData;
-  const actionData = useActionData<typeof action>();
+  const actionData = useActionData<typeof action>() as VerifyMobileActionData | undefined;
   const navigation = useNavigation();
   const [code, setCode] = React.useState('');
 
   const isSubmitting = navigation.state === 'submitting';
-  const errorMessage =
-    actionData && typeof actionData === 'object' && 'error' in actionData ? actionData.error : dataValues.error;
+  const errorMessage = dataValues.error;
   const isMobileVerified = false;
   const status = dataValues.status;
   const canVerifyMobile =
     status?.emailVerified && status?.mobileRequired && !status.mobileVerified && !isMobileVerified;
-  const resendMessage =
-    actionData && typeof actionData === 'object' && 'message' in actionData
-      ? String(actionData.message)
-      : null;
+  const resendMessage = actionData?.message ? String(actionData.message) : null;
   const description = !status?.emailVerified
     ? 'Bekreft e-posten din før du verifiserer mobilnummer.'
     : status?.mobileRequired

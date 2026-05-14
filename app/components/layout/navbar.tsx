@@ -1,12 +1,21 @@
 import { Link, NavLink } from 'react-router';
+import { useLocation } from 'react-router';
 import type { UserNavigation } from '~/lib/route-tree';
 import { BrachCategory, ROUTES_MAP, RoutePlaceMent } from '~/lib/route-tree';
 import type { CompanySummaryDto } from '~/api/generated/base';
 import CompanyHeader from './company-header';
-import { Loader2, Menu, User } from 'lucide-react';
+import { Loader2, Settings, User } from 'lucide-react';
 import PTLLogo from '../logos/PTL.logo';
 import { NavbarNotificationBell } from './navbar-notification-bell';
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '~/ui';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '~/ui';
 
 export type NavbarProps = {
   navRoutes: UserNavigation | undefined;
@@ -15,16 +24,19 @@ export type NavbarProps = {
   onOpenSidebar?: () => void;
 };
 
-export function Navbar({ navRoutes, companyContext, hasSidebar = false, onOpenSidebar }: NavbarProps) {
+export function Navbar({ navRoutes, companyContext }: NavbarProps) {
+  const location = useLocation();
   const navigationBranches = navRoutes?.[RoutePlaceMent.NAVIGATION] || [];
   const sidebarBranches = navRoutes?.[RoutePlaceMent.SIDEBAR] || [];
   const userBranches = navigationBranches.filter((branch) => branch.category === BrachCategory.USER);
   const authBranches = navigationBranches.filter((branch) => branch.category === BrachCategory.AUTH);
   const hasMobileMenuLinks = userBranches.length > 0 || authBranches.length > 0;
   const canAccessCompanyContext = navigationBranches.some((branch) => branch.id === 'user.company-context');
+  const canAccessSystemAdmin = hasBranch(sidebarBranches, 'system-admin');
   const canAccessNotifications = !!companyContext && hasBranch(sidebarBranches, 'company.notifications');
   const isLoggedInCompanyUser = !!companyContext;
   const showCompanyHeader = companyContext !== null || canAccessCompanyContext;
+  const showSystemAdminHeader = canAccessSystemAdmin && !location.pathname.startsWith('/system-admin');
 
   return (
     <div className="flex h-full w-full items-stretch">
@@ -41,6 +53,20 @@ export function Navbar({ navRoutes, companyContext, hasSidebar = false, onOpenSi
             canAccessCompanyContext={canAccessCompanyContext}
             className="min-w-0 w-full max-w-none"
           />
+        ) : null}
+
+        {showSystemAdminHeader ? (
+          <Link
+            to={ROUTES_MAP['system-admin'].href}
+            className="group ml-2 flex min-w-0 items-center gap-2 border-l border-navbar-border py-2 pr-0 pl-2 transition-all duration-200 hover:border-primary hover:bg-navbar-accent focus:outline-none focus:ring-2 focus:ring-navbar-ring focus:ring-inset md:ml-3 md:gap-3 md:border-l-2 md:px-4 md:py-3"
+          >
+            <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded bg-navbar-icon-bg transition-colors duration-200 group-hover:bg-navbar-accent md:flex">
+              <Settings className="h-5 w-5 text-primary" />
+            </div>
+            <span className="text-sm font-medium text-navbar-text transition-colors duration-200 group-hover:text-primary">
+              Gå til systemadmin
+            </span>
+          </Link>
         ) : null}
       </section>
 
@@ -68,58 +94,50 @@ export function Navbar({ navRoutes, companyContext, hasSidebar = false, onOpenSi
 
         {canAccessNotifications ? <NavbarNotificationBell /> : null}
 
-        {hasSidebar ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onOpenSidebar}
-            className="h-11 w-11 border border-navbar-border text-navbar-accent-foreground lg:hidden"
-            aria-label="Open menu"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        ) : null}
-
-        {hasMobileMenuLinks && !hasSidebar ? (
+        {hasMobileMenuLinks ? (
           <div className="md:hidden">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label="Meny"
-                  className="h-11 w-11 rounded-md border border-navbar-border bg-navbar-icon-bg text-navbar-text hover:bg-navbar-accent hover:border-primary hover:text-primary transition-all duration-200"
+                  aria-label="Brukermeny"
+                  className="h-11 w-11 rounded-xl border border-navbar-border/35 bg-navbar-accent/35 text-navbar-text shadow-sm transition-all duration-200 hover:border-primary/30 hover:bg-navbar-accent hover:text-primary"
                 >
-                  <Menu className="h-5 w-5" />
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 text-current transition-colors">
+                    <User className="h-5 w-5" />
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="min-w-[220px] p-4">
-                <div className="space-y-4">
-                  {userBranches.length > 0 ? (
-                    <div className="space-y-2">
-                      {userBranches.map((link) => (
-                        <DropdownMenuItem key={link.id} asChild className="px-3 py-3">
-                          <Link to={link.href} className="cursor-pointer text-sm font-medium">
-                            {link.label}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </div>
-                  ) : null}
+              <DropdownMenuContent align="end" className="min-w-[220px] p-2">
+                {userBranches.length > 0 ? (
+                  <>
+                    <DropdownMenuLabel>Konto</DropdownMenuLabel>
+                    {userBranches.map((link) => (
+                      <DropdownMenuItem key={link.id} asChild className="min-h-11 rounded-lg px-3 py-3">
+                        <Link to={link.href} className="cursor-pointer text-sm font-medium">
+                          {link.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </>
+                ) : null}
 
-                  {authBranches.length > 0 ? (
-                    <div className="space-y-2">
-                      {authBranches.map((link) => (
-                        <DropdownMenuItem key={link.id} asChild className="px-3 py-3">
-                          <Link to={link.href} className="cursor-pointer text-sm font-medium text-navbar-text-muted">
-                            {link.label}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
+                {userBranches.length > 0 && authBranches.length > 0 ? <DropdownMenuSeparator /> : null}
+
+                {authBranches.length > 0 ? (
+                  <>
+                    {userBranches.length === 0 ? <DropdownMenuLabel>Konto</DropdownMenuLabel> : null}
+                    {authBranches.map((link) => (
+                      <DropdownMenuItem key={link.id} asChild className="min-h-11 rounded-lg px-3 py-3">
+                        <Link to={link.href} className="cursor-pointer text-sm font-medium text-navbar-text-muted">
+                          {link.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </>
+                ) : null}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -133,9 +151,11 @@ export function Navbar({ navRoutes, companyContext, hasSidebar = false, onOpenSi
                   variant="ghost"
                   size="icon"
                   aria-label="User menu"
-                  className="h-11 w-11 rounded-md border border-navbar-border bg-navbar-icon-bg text-navbar-text hover:bg-navbar-accent hover:border-primary hover:text-primary transition-all duration-200"
+                  className="h-11 w-11 rounded-xl border border-navbar-border/35 bg-navbar-accent/35 text-navbar-text shadow-sm transition-all duration-200 hover:border-primary/30 hover:bg-navbar-accent hover:text-primary"
                 >
-                  <User className="h-5 w-5" />
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 text-current transition-colors">
+                    <User className="h-5 w-5" />
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
 

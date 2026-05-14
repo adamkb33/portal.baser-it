@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
-import type { FlashMessage } from '~/routes/company/_lib/flash-message.server';
+import type { FlashMessage } from '~/lib/flash-message.server';
 
 interface FlashMessageProps {
   message: FlashMessage | null;

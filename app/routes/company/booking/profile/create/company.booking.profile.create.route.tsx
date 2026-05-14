@@ -1,6 +1,6 @@
 import type { Route } from './+types/company.booking.profile.create.route';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithInfo } from '~/lib/flash-message.server';
 import { BookingProfileForm } from '../_components/booking-profile-form';
 import { loadBookingProfileFormData, submitBookingProfileForm } from '../_lib/booking-profile-form.server';
 
@@ -22,14 +22,13 @@ export async function action({ request }: Route.ActionArgs) {
   return submitBookingProfileForm(request);
 }
 
-export default function CompanyBookingProfileCreatePage({ loaderData, actionData }: Route.ComponentProps) {
+export default function CompanyBookingProfileCreatePage({ loaderData }: Route.ComponentProps) {
   return (
     <BookingProfileForm
       mode="create"
       bookingProfile={loaderData.bookingProfile}
       groupedServiceGroups={loaderData.groupedServiceGroups}
       loaderError={loaderData.error}
-      actionError={actionData?.error ?? null}
     />
   );
 }

@@ -46,7 +46,6 @@ type BookingProfileFormProps = {
   bookingProfile: BookingProfileDto | null;
   groupedServiceGroups: GroupedServiceGroupDto[];
   loaderError: string | null;
-  actionError?: string | null;
 };
 
 export function BookingProfileForm({
@@ -54,7 +53,6 @@ export function BookingProfileForm({
   bookingProfile,
   groupedServiceGroups,
   loaderError,
-  actionError,
 }: BookingProfileFormProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
@@ -125,7 +123,7 @@ export function BookingProfileForm({
             Tilbake til bookingprofil
           </NavLink>
           <NavLink
-            to={ROUTES_MAP['company.booking.profile.schedule-unavailability'].href}
+            to={ROUTES_MAP['company.booking.schedule-unavailability'].href}
             className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
           >
             Mitt fravik
@@ -190,7 +188,6 @@ export function BookingProfileForm({
     >
       <Form method="post" encType="multipart/form-data" className="space-y-3">
         {loaderError ? <Notice tone="emphasis" title="Kunne ikke hente data" message={loaderError} /> : null}
-        {actionError ? <Notice tone="emphasis" title="Kunne ikke lagre" message={actionError} /> : null}
 
         <Accordion type="multiple" defaultValue={['profile', 'services', 'schedule']} className="space-y-2">
           <AccordionItem value="profile">

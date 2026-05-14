@@ -1,6 +1,6 @@
 import type { GroupedServiceGroupDto } from '~/api/generated/booking';
 import type { FormFieldRenderProps } from '~/components/dialog/form-dialog';
-import { Button } from '../ui/button';
+import { Button } from '~/ui';
 
 interface ServicesSelectionRendererProps {
   services: GroupedServiceGroupDto[];

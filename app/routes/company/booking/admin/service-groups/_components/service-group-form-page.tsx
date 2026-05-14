@@ -1,5 +1,5 @@
 import { Form, useNavigate, useNavigation } from 'react-router';
-import { Button, CompanyFormPageTemplate, FormField, Notice, Text } from '~/ui';
+import { Button, CompanyFormPageTemplate, FormField, Text } from '~/ui';
 import { ROUTES_MAP } from '~/lib/route-tree';
 
 export type ServiceGroupFormValues = {
@@ -28,9 +28,6 @@ export function ServiceGroupFormPage({ mode, values, actionData }: ServiceGroupF
       title={isEdit ? 'Rediger tjenestegruppe' : 'Ny tjenestegruppe'}
       description="Bruk samme kompakte route-skall for bookingadministrasjon i stedet for et dialogskjema."
       backLink={{ to: ROUTES_MAP['company.booking.admin.service-groups'].href, label: 'Tilbake til tjenestegrupper' }}
-      notices={
-        actionData?.error ? <Notice tone="emphasis" title="Kunne ikke lagre tjenestegruppe" message={actionData.error} /> : null
-      }
       footer={
         <>
           <Button type="button" variant="outline" onClick={() => navigate(ROUTES_MAP['company.booking.admin.service-groups'].href)}>

@@ -3,11 +3,12 @@ import { Link, Outlet } from 'react-router';
 import type { Route } from './+types/company.booking.layout';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { CompanyUserBookingController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 
-export async function loader({ request: _request }: Route.LoaderArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const bookingInfoResponse = await CompanyUserBookingController.getCompanyBookingInfo();
+    const bookingInfoResponse = await withAuth(request, async () => CompanyUserBookingController.getCompanyBookingInfo());
 
     return { bookingInfo: bookingInfoResponse.data?.data ?? null, error: null as string | null };
   } catch (error) {

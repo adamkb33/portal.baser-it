@@ -1,8 +1,7 @@
 // components/table/scroll-hint.tsx
 import * as React from 'react';
 import { Info } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { cn } from '@/lib/utils';
+import { Card, Text, cn } from '~/ui';
 
 type ScrollHintProps = {
   show: boolean;
@@ -30,10 +29,10 @@ export function ScrollHint({ show, onDismiss, className }: ScrollHintProps) {
         className,
       )}
     >
-      <Alert className="border-border bg-background shadow-lg">
+      <Card size="sm" className="flex flex-row items-center gap-2 bg-background shadow-lg">
         <Info className="h-4 w-4" />
-        <AlertDescription className="ml-2 text-sm">Scroll ned for å se alle.</AlertDescription>
-      </Alert>
+        <Text as="p" variant="body-sm">Scroll ned for å se alle.</Text>
+      </Card>
     </div>
   );
 }

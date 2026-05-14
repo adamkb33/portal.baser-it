@@ -6,12 +6,9 @@ import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { loader as userStatusLoader } from '~/routes/api/auth/user-status/auth.user-status.api-route';
 import type { action as resendVerificationAction } from '~/routes/api/auth/resend-verification/email/auth.resend-verification.email.api-route';
-import {
-  redirectAuthStatusNextStepHref,
-  resolveAuthNextStepHref,
-} from '../_utils/auth.utils';
-import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
-import { AlertBanner, Button, Notice, PageHeader, Panel, Stack, Text } from '~/ui';
+import { redirectAuthStatusNextStepHref, resolveAuthNextStepHref } from '../_utils/auth.utils';
+import { redirectWithError } from '~/lib/flash-message.server';
+import { Button, Notice, PageHeader, Panel, Stack, Text } from '~/ui';
 
 export const handle = {
   contactFlow: true,
@@ -147,92 +144,96 @@ export default function BookingPublicAppointmentSessionContactAuthVerifyEmailRou
         ) : null}
         <Panel title="Venter på verifisering" tone="muted">
           <Stack space="md">
-          {statusFetcherError && errorCountRef.current >= 3 ? (
-            <AlertBanner title="Kunne ikke sjekke verifiseringsstatus automatisk" />
-          ) : null}
-          {resendError ? <AlertBanner title={resendError} /> : null}
-          {resendSuccess ? <Notice title="Ny e-post sendt" message={resendSuccess} /> : null}
-          <div className="rounded-md border border-border bg-background p-4 md:p-5">
-            <div className="flex items-start gap-3">
-              <Loader2 className="size-10 animate-spin text-primary" />
-              <div className="space-y-1">
-                <Text as="p" variant="heading-sm">
-                  Vi venter på bekreftelse
-                </Text>
-                <Text as="p" className="text-text-secondary">
-                  Når du bekrefter e-posten, tar vi deg videre automatisk.
-                </Text>
+            {statusFetcherError && errorCountRef.current >= 3 ? (
+              <Notice
+                tone="muted"
+                title="Kunne ikke sjekke verifiseringsstatus automatisk"
+                message="Prøv igjen om litt, eller oppdater siden."
+              />
+            ) : null}
+            {resendError ? <Notice tone="emphasis" title="Kunne ikke sende ny e-post" message={resendError} /> : null}
+            {resendSuccess ? <Notice title="Ny e-post sendt" message={resendSuccess} /> : null}
+            <div className="rounded-md border border-border bg-background p-4 md:p-5">
+              <div className="flex items-start gap-3">
+                <Loader2 className="size-10 animate-spin text-primary" />
+                <div className="space-y-1">
+                  <Text as="p" variant="heading-sm">
+                    Vi venter på bekreftelse
+                  </Text>
+                  <Text as="p" className="text-text-secondary">
+                    Når du bekrefter e-posten, tar vi deg videre automatisk.
+                  </Text>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-md border border-border bg-background p-3 md:p-4">
-            <div className="flex items-start gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-surface text-text-secondary">
-                <Mail className="size-5" />
-              </div>
-              <div className="space-y-1">
-                <Text as="p" variant="label">
-                  E-post sendt
-                </Text>
-                <Text as="p" variant="body-sm" className="text-text-secondary">
-                  {email ? `Sjekk innboksen til ${email}.` : 'Sjekk innboksen din for verifiseringslenken.'}
-                </Text>
+            <div className="rounded-md border border-border bg-background p-3 md:p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex size-10 items-center justify-center rounded-full bg-surface text-text-secondary">
+                  <Mail className="size-5" />
+                </div>
+                <div className="space-y-1">
+                  <Text as="p" variant="label">
+                    E-post sendt
+                  </Text>
+                  <Text as="p" variant="body-sm" className="text-text-secondary">
+                    {email ? `Sjekk innboksen til ${email}.` : 'Sjekk innboksen din for verifiseringslenken.'}
+                  </Text>
+                </div>
               </div>
             </div>
-          </div>
 
-          <ol className="space-y-3 rounded-md border border-border bg-background p-4">
-            <li className="flex items-start gap-3">
-              <div className="mt-0.5 flex size-6 items-center justify-center rounded-full bg-surface text-text-primary">
-                <Mail className="size-3.5" />
-              </div>
-              <div>
-                <Text as="p" variant="label">
-                  Åpne e-posten og klikk på lenken
-                </Text>
-                <Text as="p" variant="body-sm" className="text-text-secondary">
-                  Bekreft e-postadressen din for å fortsette.
-                </Text>
-              </div>
-            </li>
-            <li className="flex items-start gap-3">
-              <div className="mt-0.5 flex size-6 items-center justify-center rounded-full bg-surface text-text-primary">
-                <CheckCircle2 className="size-3.5" />
-              </div>
-              <div>
-                <Text as="p" variant="label">
-                  Kom tilbake hit
-                </Text>
-                <Text as="p" variant="body-sm" className="text-text-secondary">
-                  Vi sjekker status automatisk og sender deg videre.
-                </Text>
-              </div>
-            </li>
-          </ol>
+            <ol className="space-y-3 rounded-md border border-border bg-background p-4">
+              <li className="flex items-start gap-3">
+                <div className="mt-0.5 flex size-6 items-center justify-center rounded-full bg-surface text-text-primary">
+                  <Mail className="size-3.5" />
+                </div>
+                <div>
+                  <Text as="p" variant="label">
+                    Åpne e-posten og klikk på lenken
+                  </Text>
+                  <Text as="p" variant="body-sm" className="text-text-secondary">
+                    Bekreft e-postadressen din for å fortsette.
+                  </Text>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
+                <div className="mt-0.5 flex size-6 items-center justify-center rounded-full bg-surface text-text-primary">
+                  <CheckCircle2 className="size-3.5" />
+                </div>
+                <div>
+                  <Text as="p" variant="label">
+                    Kom tilbake hit
+                  </Text>
+                  <Text as="p" variant="body-sm" className="text-text-secondary">
+                    Vi sjekker status automatisk og sender deg videre.
+                  </Text>
+                </div>
+              </li>
+            </ol>
 
-          <div>
-            <resendFetcher.Form method="post" action={API_ROUTES_MAP['auth.resend-verification.email'].url}>
-              <Stack space="sm">
-              <input type="hidden" name="redirectUrl" value="booking" />
-              <input type="hidden" name="email" value={email} />
-              <input type="hidden" name="sendEmail" value="true" />
-              <input type="hidden" name="sendMobile" value="false" />
-              <Button
-                type="submit"
-                size="lg"
-                fullWidth
-                variant="secondary"
-                className="gap-3"
-                loading={resendFetcher.state !== 'idle'}
-                disabled={!email}
-                >
-                  <MailCheck className="size-5" />
-                  Send e-posten på nytt
-                </Button>
-              </Stack>
-            </resendFetcher.Form>
-          </div>
+            <div>
+              <resendFetcher.Form method="post" action={API_ROUTES_MAP['auth.resend-verification.email'].url}>
+                <Stack space="sm">
+                  <input type="hidden" name="redirectUrl" value="booking" />
+                  <input type="hidden" name="email" value={email} />
+                  <input type="hidden" name="sendEmail" value="true" />
+                  <input type="hidden" name="sendMobile" value="false" />
+                  <Button
+                    type="submit"
+                    size="lg"
+                    fullWidth
+                    variant="secondary"
+                    className="gap-3"
+                    loading={resendFetcher.state !== 'idle'}
+                    disabled={!email}
+                  >
+                    <MailCheck className="size-5" />
+                    Send e-posten på nytt
+                  </Button>
+                </Stack>
+              </resendFetcher.Form>
+            </div>
           </Stack>
         </Panel>
       </Stack>

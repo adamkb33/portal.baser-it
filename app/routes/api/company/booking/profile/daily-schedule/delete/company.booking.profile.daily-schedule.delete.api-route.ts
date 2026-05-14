@@ -1,7 +1,7 @@
 // app/routes/api/company/booking/profile/daily-schedule/delete.api-route.ts
 import { type ActionFunctionArgs } from 'react-router';
 import { DailyScheduleController } from '~/api/generated/booking';
-import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess, redirectWithError } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
 

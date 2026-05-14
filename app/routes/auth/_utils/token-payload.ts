@@ -27,7 +27,6 @@ export function toAuthPayload(accessToken?: string): AuthenticatedUserPayload | 
 
   return {
     id: Number(claims.sub) || 0,
-    email: claims.email || '',
     companyId: claims.companyId ? Number(claims.companyId) : undefined,
   };
 }

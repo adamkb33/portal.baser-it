@@ -6,8 +6,21 @@ import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { authService } from '~/lib/auth-service';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithError, redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
-import { AlertBanner, Button, Card, ConfirmDialog, Container, KeyValueList, PageHeader, Panel, Stack, StickyFooterPageTemplate, StickySummaryBar, Text } from '~/ui';
+import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
+import {
+  Button,
+  Card,
+  ConfirmDialog,
+  Container,
+  KeyValueList,
+  Notice,
+  PageHeader,
+  Panel,
+  Stack,
+  StickyFooterPageTemplate,
+  StickySummaryBar,
+  Text,
+} from '~/ui';
 import { Calendar, Clock, DollarSign, Mail, Sparkles, User, XCircle } from 'lucide-react';
 import { useState } from 'react';
 
@@ -53,7 +66,8 @@ function resolveCancelToken(appointment: AppointmentDto): string | null {
     token?: string;
   };
   if (typeof runtime.cancelToken === 'string' && runtime.cancelToken.length > 0) return runtime.cancelToken;
-  if (typeof runtime.cancellationToken === 'string' && runtime.cancellationToken.length > 0) return runtime.cancellationToken;
+  if (typeof runtime.cancellationToken === 'string' && runtime.cancellationToken.length > 0)
+    return runtime.cancellationToken;
   if (typeof runtime.token === 'string' && runtime.token.length > 0) return runtime.token;
   return null;
 }
@@ -157,7 +171,11 @@ export async function action({ request, params }: Route.ActionArgs) {
       });
     }
 
-    return redirectWithInfo(request, ROUTES_MAP['booking.public.my-appointments'].href, 'Avbestillingen er registrert.');
+    return redirectWithInfo(
+      request,
+      ROUTES_MAP['booking.public.my-appointments'].href,
+      'Avbestillingen er registrert.',
+    );
   } catch (error) {
     if (error instanceof Response) throw error;
     const { message } = resolveErrorPayload(error, 'Kunne ikke avbestille avtalen.');
@@ -173,8 +191,16 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
   if (loaderData.error || !loaderData.appointment) {
     return (
       <Container size="lg">
-        <PageHeader label="Avbestilling" title="Avbestill time" description={loaderData.error ?? 'Kunne ikke hente avtalen.'} />
-        <AlertBanner message={loaderData.error ?? 'Vi fant ikke en gyldig avtale for avbestilling.'} />
+        <PageHeader
+          label="Avbestilling"
+          title="Avbestill time"
+          description={loaderData.error ?? 'Kunne ikke hente avtalen.'}
+        />
+        <Notice
+          tone="emphasis"
+          title="Kunne ikke hente avtalen"
+          message={loaderData.error ?? 'Vi fant ikke en gyldig avtale for avbestilling.'}
+        />
       </Container>
     );
   }
@@ -192,7 +218,10 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
           title="Avbestill"
           items={[
             { label: 'Dato', value: startsFull },
-            { label: 'Kontaktinformasjon', value: `${appointment.user.givenName} ${appointment.user.familyName}`.trim() || '—' },
+            {
+              label: 'Kontaktinformasjon',
+              value: `${appointment.user.givenName} ${appointment.user.familyName}`.trim() || '—',
+            },
           ]}
           primaryAction={
             <Button
@@ -246,7 +275,11 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
           </Card>
 
           {!canCancel ? (
-            <AlertBanner message="Denne avtalen kan ikke avbestilles fordi tidspunktet allerede har startet." />
+            <Notice
+              tone="muted"
+              title="Avbestilling ikke tilgjengelig"
+              message="Denne avtalen kan ikke avbestilles fordi tidspunktet allerede har startet."
+            />
           ) : null}
 
           <Stack space="lg">
@@ -259,7 +292,9 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
                     value: `${appointment.user.givenName} ${appointment.user.familyName}`.trim() || '—',
                     icon: <User className="size-4" />,
                   },
-                  ...(appointment.user.email ? [{ label: 'E-post', value: appointment.user.email, icon: <Mail className="size-4" /> }] : []),
+                  ...(appointment.user.email
+                    ? [{ label: 'E-post', value: appointment.user.email, icon: <Mail className="size-4" /> }]
+                    : []),
                 ]}
               />
             </Panel>
@@ -280,14 +315,19 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
               {services.length ? (
                 <div className="space-y-2">
                   {services.map((service) => (
-                    <div key={service.id} className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
+                    <div
+                      key={service.id}
+                      className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3"
+                    >
                       <span className="text-sm font-medium text-text-primary md:text-base">{service.name}</span>
                       <div className="flex shrink-0 items-center gap-3 text-xs text-text-secondary md:text-sm">
                         <span className="flex items-center gap-1">
                           <Clock className="size-3 md:size-3.5" />
                           {service.duration} min
                         </span>
-                        <span className="flex items-center gap-1 font-semibold text-text-primary">{service.price} kr</span>
+                        <span className="flex items-center gap-1 font-semibold text-text-primary">
+                          {service.price} kr
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -314,7 +354,14 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
         }
         confirmAction={
           <Form method="post" className="w-full sm:w-auto">
-            <Button type="submit" variant="destructive" size="md" fullWidth loading={isSubmitting} disabled={!canCancel || isSubmitting}>
+            <Button
+              type="submit"
+              variant="destructive"
+              size="md"
+              fullWidth
+              loading={isSubmitting}
+              disabled={!canCancel || isSubmitting}
+            >
               Ja, avbestill
             </Button>
           </Form>

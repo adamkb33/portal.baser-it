@@ -10,7 +10,7 @@ import {
   type ServiceDto,
   type ServiceGroupDto,
 } from '~/api/generated/booking';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithInfo } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import type { Route } from './+types/company.booking.admin.service-groups.services.route';
 import { servicesActions } from './_features/services.feature';

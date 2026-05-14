@@ -4,7 +4,7 @@ import { Stack } from '../layout/stack';
 import { cn } from '../lib/cn';
 
 export interface PageTemplateProps extends React.HTMLAttributes<HTMLDivElement> {
-  title: string;
+  title?: string;
   description?: string;
   label?: string;
   routeLinks?: React.ReactNode;

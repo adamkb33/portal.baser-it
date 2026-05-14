@@ -6,6 +6,7 @@ import { decodeResetPasswordToken } from './_utils/auth.reset-password.utils';
 import { AuthController } from '~/api/generated/base';
 import { authService } from '~/lib/auth-service';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { redirectWithError } from '~/lib/flash-message.server';
 import { Button, FormField, FormPageTemplate } from '~/ui';
 
 function toMessageValue(message: unknown, fallback: string) {
@@ -34,6 +35,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  const currentHref = new URL(request.url);
+  const currentPath = `${currentHref.pathname}${currentHref.search}`;
   const formData = await request.formData();
   const resetPasswordToken = String(formData.get('resetPasswordToken'));
   const password = String(formData.get('password'));
@@ -50,12 +53,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     if (!response.data || !response.data.data) {
       const message = toMessageValue(response.data?.message, 'Noe gikk galt. Prøv igjen.');
-      return data(
-        {
-          error: message,
-        },
-        { status: 400 },
-      );
+      return redirectWithError(request, currentPath, message);
     }
 
     const { headers } = await authService.processTokenRefresh({
@@ -67,26 +65,19 @@ export async function action({ request }: Route.ActionArgs) {
 
     return redirect('/', { headers });
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Noe gikk galt. Prøv igjen.');
-    return data(
-      {
-        error: message,
-      },
-      { status: status ?? 400 },
-    );
+    const { message } = resolveErrorPayload(error, 'Noe gikk galt. Prøv igjen.');
+    return redirectWithError(request, currentPath, message);
   }
 }
 
-export default function AuthResetPassword({ loaderData, actionData }: Route.ComponentProps) {
+export default function AuthResetPassword({ loaderData }: Route.ComponentProps) {
   const { resetPasswordToken, email } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const errorMessage = actionData?.error;
   return (
     <FormPageTemplate
       title="Tilbakestill passord"
       description="Opprett et nytt passord for din konto."
-      error={errorMessage}
       variant="emphasis"
       actions={
         <Link to="/" className="mt-2 block text-center text-sm font-medium text-foreground hover:underline">

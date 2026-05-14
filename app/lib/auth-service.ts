@@ -6,8 +6,10 @@ import type { AuthenticationTokenDto } from '~/api/generated/base';
 
 export interface AuthenticatedUserPayload {
   id: number;
-  email: string;
+  email?: string;
   companyId?: number;
+  companyRoles?: Array<'ADMIN' | 'EMPLOYEE'>;
+  companyProducts?: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
 }
 
 export type UserSession = {
@@ -26,7 +28,6 @@ export class AuthenticationError extends Error {
 }
 
 interface JwtClaimsPayload extends JwtPayload {
-  email?: string;
   companyId?: number;
 }
 
@@ -71,12 +72,10 @@ export class AuthService {
 
   private mapToAuthPayload(claims: JwtClaimsPayload): AuthenticatedUserPayload {
     const id = this.parseIdentifier(claims.sub);
-    const email = typeof claims.email === 'string' ? claims.email : '';
     const companyId = claims.companyId ? Number(claims.companyId) : undefined;
 
     return {
       id,
-      email,
       companyId,
     };
   }

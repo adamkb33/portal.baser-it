@@ -1,9 +1,8 @@
 import { NavLink, useFetcher, useNavigate, useSearchParams } from 'react-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CalendarClock } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { nb } from 'date-fns/locale';
-import { toast } from 'sonner';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { withAuth } from '~/api/utils/with-auth';
@@ -14,6 +13,7 @@ import { AppointmentTableHeaderSlot } from './_components/appointment.table-head
 import { AppointmentTableRow } from './_components/appointment.table-row';
 import { AppointmentPaginationService } from './_services/appointment.pagination-service';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { redirectWithError, redirectWithSuccess } from '~/lib/flash-message.server';
 import { formatCurrentDateTimeInTimeZone } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import {
@@ -26,8 +26,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  Label,
   Notice,
   Text,
+  Textarea,
 } from '~/ui';
 import { getTotalDuration, getTotalPrice, getTotalServiceCount, isAppointmentCompleted } from './_utils/appointments.utils';
 
@@ -95,44 +97,46 @@ export async function action({ request }: Route.ActionArgs) {
   if (intent === 'delete') {
     const id = formData.get('id');
     const startTime = formData.get('startTime')?.toString();
+    const reason = formData.get('reason')?.toString().trim();
     if (!id) {
-      return { success: false, message: 'Mangler ID' };
+      return redirectWithError(request, request.url, 'Mangler ID');
     }
     if (!startTime) {
-      return { success: false, message: 'Mangler tidspunkt for avtalen' };
+      return redirectWithError(request, request.url, 'Mangler tidspunkt for avtalen');
+    }
+    if (!reason) {
+      return redirectWithError(request, request.url, 'Skriv en årsak til slettingen');
     }
     if (isAppointmentCompleted({ startTime })) {
-      return { success: false, message: 'Fullførte avtaler kan ikke slettes' };
+      return redirectWithError(request, request.url, 'Fullførte avtaler kan ikke slettes');
     }
 
     try {
       await withAuth(request, async () => {
         return CompanyUserAppointmentController.deleteAppointment({
           path: { id: Number(id) },
-          body: { reason: 'Slettet av behandler' },
+          body: { reason },
         });
       });
 
-      return { success: true, message: 'Timebestilling slettet' };
+      return redirectWithSuccess(request, request.url, 'Timebestilling slettet');
     } catch (error) {
       const { message } = resolveErrorPayload(error, 'Kunne ikke slette timebestilling');
-      return {
-        success: false,
-        message,
-      };
+      return redirectWithError(request, request.url, message);
     }
   }
 
-  return { success: false, message: 'Ukjent handling' };
+  return redirectWithError(request, request.url, 'Ukjent handling');
 }
 
 export default function CompanyBookingAppointmentsPage({ loaderData }: Route.ComponentProps) {
   const { appointments, pagination, error } = loaderData;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const fetcher = useFetcher<{ success?: boolean; message?: string }>();
+  const fetcher = useFetcher();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingAppointmentId, setDeletingAppointmentId] = useState<number | null>(null);
+  const [deleteReason, setDeleteReason] = useState('');
   const [selectedSpotlightAppointment, setSelectedSpotlightAppointment] = useState<AppointmentDto | null>(null);
   const [isSpotlightDetailsOpen, setIsSpotlightDetailsOpen] = useState(false);
 
@@ -168,18 +172,6 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
     [sortedByStart, now],
   );
 
-  useEffect(() => {
-    if (fetcher.state !== 'idle' || !fetcher.data) return;
-
-    if (fetcher.data.success) {
-      toast.success(fetcher.data.message ?? 'Handling fullført');
-      setIsDeleteDialogOpen(false);
-      setDeletingAppointmentId(null);
-    } else if (fetcher.data.message) {
-      toast.error(fetcher.data.message);
-    }
-  }, [fetcher.state, fetcher.data]);
-
   const handleDeleteClick = (id: number) => {
     const appointment = appointments.find((item) => item.id === id);
     if (!appointment || isAppointmentCompleted(appointment)) {
@@ -187,11 +179,16 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
     }
 
     setDeletingAppointmentId(id);
+    setDeleteReason('');
     setIsDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = () => {
     if (!deletingAppointmentId) return;
+    const trimmedReason = deleteReason.trim();
+    if (!trimmedReason) {
+      return;
+    }
     const deletingAppointment = appointments.find((appointment) => appointment.id === deletingAppointmentId);
     if (!deletingAppointment) return;
 
@@ -199,8 +196,18 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
     fd.append('intent', 'delete');
     fd.append('id', String(deletingAppointmentId));
     fd.append('startTime', deletingAppointment.startTime);
+    fd.append('reason', trimmedReason);
 
+    setIsDeleteDialogOpen(false);
     fetcher.submit(fd, { method: 'post' });
+  };
+
+  const handleDeleteDialogOpenChange = (next: boolean) => {
+    setIsDeleteDialogOpen(next);
+    if (!next && fetcher.state === 'idle') {
+      setDeletingAppointmentId(null);
+      setDeleteReason('');
+    }
   };
 
   const openSpotlightDetails = (appointment: AppointmentDto) => {
@@ -326,16 +333,38 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
 
         <DeleteConfirmDialog
           open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
+          onOpenChange={handleDeleteDialogOpenChange}
           onConfirm={handleDeleteConfirm}
           title="Slett timebestilling?"
           description="Er du sikker på at du vil slette denne timebestillingen? Denne handlingen kan ikke angres."
-        />
+          confirmDisabled={fetcher.state !== 'idle' || deleteReason.trim().length === 0}
+        >
+          <div className="grid gap-2">
+            <Label htmlFor="delete-appointment-reason">Årsak til sletting</Label>
+            <Textarea
+              id="delete-appointment-reason"
+              name="reason"
+              size="sm"
+              value={deleteReason}
+              onChange={(event) => setDeleteReason(event.target.value)}
+              placeholder="Skriv kort hvorfor avtalen slettes"
+              className="rounded-md"
+              disabled={fetcher.state !== 'idle'}
+              required
+            />
+          </div>
+        </DeleteConfirmDialog>
       </CompanyPageTemplate>
 
       <SpotlightAppointmentDetailsDialog
         appointment={selectedSpotlightAppointment}
         onUploadImage={openUploadImagePage}
+        onDelete={(id) => {
+          setIsSpotlightDetailsOpen(false);
+          setSelectedSpotlightAppointment(null);
+          handleDeleteClick(id);
+        }}
+        isDeleting={fetcher.state !== 'idle' && deletingAppointmentId === selectedSpotlightAppointment?.id}
         open={isSpotlightDetailsOpen}
         onOpenChange={(next) => {
           setIsSpotlightDetailsOpen(next);
@@ -443,17 +472,22 @@ function SpotlightAppointmentCard({
 function SpotlightAppointmentDetailsDialog({
   appointment,
   onUploadImage,
+  onDelete,
+  isDeleting,
   open,
   onOpenChange,
 }: {
   appointment: AppointmentDto | null;
   onUploadImage: (appointmentId: number) => void;
+  onDelete: (appointmentId: number) => void;
+  isDeleting?: boolean;
   open: boolean;
   onOpenChange: (next: boolean) => void;
 }) {
   if (!appointment) return null;
 
   const totalServices = getTotalServiceCount(appointment);
+  const isCompleted = isAppointmentCompleted(appointment);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -467,13 +501,22 @@ function SpotlightAppointmentDetailsDialog({
         </DialogHeader>
 
         <div className="space-y-3">
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
             <button
               type="button"
               className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
               onClick={() => onUploadImage(appointment.id)}
             >
               Last opp bilde
+            </button>
+            <button
+              type="button"
+              className="inline-flex h-8 items-center justify-center rounded-sm px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => onDelete(appointment.id)}
+              disabled={isDeleting || isCompleted}
+              title={isCompleted ? 'Fullførte avtaler kan ikke slettes' : undefined}
+            >
+              Slett
             </button>
           </div>
 

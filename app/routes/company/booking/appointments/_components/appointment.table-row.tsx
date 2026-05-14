@@ -103,13 +103,26 @@ export function AppointmentTableRow({ appointment, onDelete, onUploadImage, isDe
         </DialogHeader>
 
         <div className="grid gap-3">
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onUploadImage(appointment.id!)}
             >
               Last opp bilde
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => {
+                setDetailsDialogOpen(false);
+                onDelete(appointment.id!);
+              }}
+              disabled={isDeleting || isCompleted}
+              title={isCompleted ? 'Fullførte avtaler kan ikke slettes' : undefined}
+            >
+              Slett
             </Button>
           </div>
 

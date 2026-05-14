@@ -4,7 +4,7 @@ import type { Route } from './+types/auth.respond-invite.route';
 
 import { accessTokenCookie, refreshTokenCookie } from '../_features/auth.cookies.server';
 import { toAuthTokens } from '../_utils/token.utils';
-import { redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess } from '~/lib/flash-message.server';
 import type { CompanySummaryDto } from '~/api/generated/base';
 import { AuthController, PublicCompanyController, PublicUserController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';

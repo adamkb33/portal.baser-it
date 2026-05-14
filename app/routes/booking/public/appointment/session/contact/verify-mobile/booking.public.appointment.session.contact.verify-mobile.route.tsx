@@ -7,8 +7,8 @@ import type { action as verifyMobileAction } from '~/routes/api/auth/verify-mobi
 import type { loader as userStatusLoader } from '~/routes/api/auth/user-status/auth.user-status.api-route';
 import { redirectAuthStatusNextStepHref, resolveAuthNextStepHref } from '../_utils/auth.utils';
 import React from 'react';
-import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
-import { AlertBanner, Button, Notice, PageHeader, Panel, Stack, VerificationCodeInput } from '~/ui';
+import { redirectWithError } from '~/lib/flash-message.server';
+import { Button, Notice, PageHeader, Panel, Stack, VerificationCodeInput } from '~/ui';
 
 const CODE_LENGTH = 6;
 
@@ -118,8 +118,10 @@ export default function BookingPublicAppointmentSessionContactAuthVerifyMobileRo
         />
         <Panel title="Bekreft kode" tone="muted">
           <Stack space="md">
-            {errorMessage ? <AlertBanner title={String(errorMessage)} /> : null}
-            {resendError ? <AlertBanner title={String(resendError)} /> : null}
+            {errorMessage ? (
+              <Notice tone="emphasis" title="Kunne ikke bekrefte kode" message={String(errorMessage)} />
+            ) : null}
+            {resendError ? <Notice tone="emphasis" title="Kunne ikke sende ny SMS" message={String(resendError)} /> : null}
             {resendMessage ? <Notice title="Ny kode sendt" message={resendMessage} /> : null}
             <fetcher.Form method="post" action={API_ROUTES_MAP['auth.verify-mobile'].url}>
               <Stack space="md">

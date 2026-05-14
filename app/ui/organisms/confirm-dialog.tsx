@@ -15,6 +15,7 @@ export interface ConfirmDialogProps {
   description: string;
   confirmAction: React.ReactNode;
   cancelAction?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function ConfirmDialog({
@@ -24,6 +25,7 @@ export function ConfirmDialog({
   description,
   confirmAction,
   cancelAction,
+  children,
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -32,6 +34,7 @@ export function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {children ? <div>{children}</div> : null}
         <DialogFooter>
           {cancelAction ? <DialogClose asChild>{cancelAction}</DialogClose> : null}
           {confirmAction}

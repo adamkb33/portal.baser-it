@@ -42,6 +42,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return data(payload);
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente varsler');
-    return data({ items: [], hasUnread: false, error: message }, { status: status ?? 401 });
+    // Degrade gracefully for auth/authorization failures to avoid noisy UI churn.
+    if (status === 401 || status === 403) {
+      return data({ items: [], hasUnread: false, error: null }, { status: 200 });
+    }
+
+    return data({ items: [], hasUnread: false, error: message }, { status: status ?? 500 });
   }
 }

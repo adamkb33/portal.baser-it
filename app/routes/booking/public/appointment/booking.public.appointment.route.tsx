@@ -5,7 +5,6 @@ import { AppointmentsController, type CompanySummaryDto } from '~/api/generated/
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import {
-  AlertBanner,
   Container,
   Card,
   CardContent,
@@ -13,6 +12,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  Notice,
   Grid,
   PageHeader,
   Panel,
@@ -225,7 +225,7 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
           description="Velg en bedrift for å starte timebestilling."
         />
 
-        {errorMessage ? <AlertBanner message={errorMessage} sticky /> : null}
+        {errorMessage ? <Notice tone="emphasis" title="Kunne ikke hente timebestillinger" message={errorMessage} /> : null}
 
         {companies.length > 0 && (
           <Panel title="Kart" tone="muted">

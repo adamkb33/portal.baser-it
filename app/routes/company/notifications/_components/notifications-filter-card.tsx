@@ -1,22 +1,31 @@
 import { Form, Link } from 'react-router';
 import type { RefObject } from 'react';
-import type { DateRange } from 'react-day-picker';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { Button as LegacyButton } from '~/components/ui/button';
-import { Calendar } from '~/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '~/components/ui/popover';
-import { Button, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/ui';
+import {
+  Button,
+  Calendar,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  type CalendarDateRange,
+} from '~/ui';
 import type { NotificationReadFilter } from '../_utils/query';
 
 type Props = {
   formRef: RefObject<HTMLFormElement | null>;
   fromDate: string;
   toDate: string;
-  dateRange: DateRange | undefined;
+  dateRange: CalendarDateRange | undefined;
   readFilter: NotificationReadFilter;
   pageSize: number;
   resetHref: string;
-  onRangeSelect: (range: DateRange | undefined) => void;
+  onRangeSelect: (range: CalendarDateRange | undefined) => void;
   onReadFilterChange: (value: NotificationReadFilter) => void;
 };
 
@@ -38,7 +47,7 @@ export function NotificationsFilterCard({
           <Label className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Dato</Label>
           <Popover>
             <PopoverTrigger asChild>
-              <LegacyButton
+              <Button
                 variant="outline"
                 type="button"
                 className="h-10 w-full justify-between rounded-sm border border-border bg-background px-3 text-left text-sm font-normal text-text-primary shadow-none"
@@ -47,7 +56,7 @@ export function NotificationsFilterCard({
                   {fromDate ? (toDate ? `${fromDate} - ${toDate}` : `${fromDate} -`) : 'Velg fra- og til-dato'}
                 </span>
                 <CalendarIcon className="h-4 w-4 text-text-secondary" />
-              </LegacyButton>
+              </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto overflow-hidden border-border bg-overlay-surface p-0 text-text-primary" align="start">
               <Calendar

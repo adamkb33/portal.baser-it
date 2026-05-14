@@ -18,7 +18,7 @@ export type ApiError = {
 };
 
 export type ApiMessage = {
-    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'EMAIL_ALREADY_IN_USE' | 'MOBILE_ALREADY_IN_USE' | 'AUTH_PROVIDER_MISMATCH_LOCAL' | 'AUTH_PROVIDER_MISMATCH_GOOGLE' | 'AUTH_PROVIDER_MISMATCH_FACEBOOK' | 'MOBILE_INVALID' | 'EMAIL_ALREADY_VERIFIED' | 'MOBILE_ALREADY_VERIFIED' | 'SIGNUP_OK' | 'SIGNIN_OK' | 'EMAIL_VERIFIED' | 'MOBILE_VERIFIED' | 'VERIFICATION_STATUS' | 'VERIFICATION_RESENT_EMAIL' | 'VERIFICATION_RESENT_MOBILE' | 'PROFILE_UPDATED' | 'SESSION_PENDING_USER_SET' | 'SESSION_PENDING_USER_CLEARED' | 'SESSION_USER_REMOVED' | 'SESSION_ALREADY_ATTACHED' | 'SESSION_USER_ATTACHED' | 'SESSION_REQUIREMENTS' | 'INVALID_PROVIDER_TOKEN' | 'EMAIL_REQUIRED' | 'MOBILE_REQUIRED' | 'USER_NOT_FOUND' | 'INVALID_TOKEN' | 'TOKEN_EXPIRED' | 'OTP_INVALID' | 'OTP_EXPIRED' | 'MOBILE_OTP_TOO_MANY_ATTEMPTS' | 'EMAIL_NOT_VERIFIED' | 'MOBILE_NOT_VERIFIED' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'CONTACT_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
+    id: 'SUCCESS' | 'CREATED' | 'VALIDATION_ERROR' | 'BAD_REQUEST' | 'INVALID_INPUT' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'UNAUTHENTICATED' | 'INVALID_CURRENT_PASSWORD' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'ACCESS_DENIED' | 'CONFLICT' | 'EMAIL_ALREADY_IN_USE' | 'MOBILE_ALREADY_IN_USE' | 'AUTH_PROVIDER_MISMATCH_LOCAL' | 'AUTH_PROVIDER_MISMATCH_GOOGLE' | 'AUTH_PROVIDER_MISMATCH_FACEBOOK' | 'MOBILE_INVALID' | 'EMAIL_ALREADY_VERIFIED' | 'MOBILE_ALREADY_VERIFIED' | 'SIGNUP_OK' | 'SIGNIN_OK' | 'EMAIL_VERIFIED' | 'MOBILE_VERIFIED' | 'VERIFICATION_STATUS' | 'VERIFICATION_RESENT_EMAIL' | 'VERIFICATION_RESENT_MOBILE' | 'PROFILE_UPDATED' | 'PASSWORD_CHANGED' | 'SESSION_PENDING_USER_SET' | 'SESSION_PENDING_USER_CLEARED' | 'SESSION_USER_REMOVED' | 'SESSION_ALREADY_ATTACHED' | 'SESSION_USER_ATTACHED' | 'SESSION_REQUIREMENTS' | 'INVALID_PROVIDER_TOKEN' | 'EMAIL_REQUIRED' | 'MOBILE_REQUIRED' | 'USER_NOT_FOUND' | 'INVALID_TOKEN' | 'TOKEN_EXPIRED' | 'OTP_INVALID' | 'OTP_EXPIRED' | 'MOBILE_OTP_TOO_MANY_ATTEMPTS' | 'EMAIL_NOT_VERIFIED' | 'MOBILE_NOT_VERIFIED' | 'DATA_INTEGRITY_VIOLATION' | 'CONCURRENT_UPDATE_CONFLICT' | 'METHOD_NOT_ALLOWED' | 'UNSUPPORTED_MEDIA_TYPE' | 'NOT_ACCEPTABLE' | 'MALFORMED_JSON' | 'INVALID_REQUEST_BODY' | 'INVALID_REQUEST_PARAMETERS' | 'REQUEST_TIMEOUT' | 'INTERNAL_SERVER_ERROR' | 'PROFILE_NOT_FOUND' | 'CONTACT_NOT_FOUND' | 'COMPANY_NOT_FOUND' | 'COMPANY_VALIDATION_FAILED' | 'SESSION_NOT_FOUND' | 'COMPANY_HAS_NO_PROFILES' | 'PROFILE_DELETED' | 'START_TIME_MUST_BE_BEFORE_END' | 'START_TIME_MUST_BE_IN_THE_FUTURE' | 'BOOKING_PROFILE_REQUIRED' | 'COMPANY_CONTEXT_REQUIRED' | 'INVALID_USER_ID' | 'CUSTOM_ERROR';
     value: string;
 };
 
@@ -453,6 +453,27 @@ export type ApiResponseListScheduleUnavailabilityDto = {
 };
 
 export type ScheduleUnavailabilityDto = {
+    profileId: number;
+    startTime: string;
+    endTime: string;
+};
+
+export type ScheduleAvailabilityRangeDto = {
+    from: string;
+    to: string;
+};
+
+export type ApiResponseListScheduleAvailabilityDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<ScheduleAvailabilityDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ScheduleAvailabilityDto = {
+    id: number;
     profileId: number;
     startTime: string;
     endTime: string;
@@ -1013,7 +1034,6 @@ export type ApiResponseJwtClaims = {
 
 export type JwtClaims = {
     sub?: number;
-    email?: string;
     companyId?: number;
     exp?: number;
     iat?: number;
@@ -1101,6 +1121,12 @@ export type ChangeUnverifiedEmailResponseDto = {
     emailSent: boolean;
 };
 
+export type ChangePasswordDto = {
+    currentPassword: string;
+    newPassword: string;
+    newPassword2: string;
+};
+
 export type RequestCompanyRoleDeleteDto = {
     userId: number;
     rolesToDelete: Array<'ADMIN' | 'EMPLOYEE'>;
@@ -1109,6 +1135,20 @@ export type RequestCompanyRoleDeleteDto = {
 export type InviteCompanyUserDto = {
     email: string;
     roles: Array<'ADMIN' | 'EMPLOYEE'>;
+};
+
+export type UpdateScheduleAvailabilityDto = {
+    startTime: string;
+    endTime: string;
+};
+
+export type ApiResponseScheduleAvailabilityDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: ScheduleAvailabilityDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
 };
 
 export type CompanyAdminSetAppointmentNoShowDto = {
@@ -1311,6 +1351,52 @@ export type ApiResponsePaginatedResponseServiceGroupDto = {
 
 export type PaginatedResponseServiceGroupDto = {
     content: Array<ServiceGroupDto>;
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+};
+
+export type ApiResponseCompanyUserScheduleOverviewDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: CompanyUserScheduleOverviewDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type CompanyUserScheduleOverviewDto = {
+    profileId: number;
+    dailySchedules: Array<DailyScheduleDto>;
+    appointments: Array<ScheduleAppointmentDto>;
+    unavailabilities: Array<ScheduleUnavailabilityDto>;
+    availabilities: Array<ScheduleAvailabilityDto>;
+};
+
+export type ScheduleAppointmentDto = {
+    id: number;
+    profileId: number;
+    userId: number;
+    startTime: string;
+    endTime: string;
+    cancelledAt?: string;
+    noShow: boolean;
+};
+
+export type ApiResponsePaginatedResponseScheduleAvailabilityDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PaginatedResponseScheduleAvailabilityDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type PaginatedResponseScheduleAvailabilityDto = {
+    content: Array<ScheduleAvailabilityDto>;
     page: number;
     size: number;
     totalElements: number;
@@ -1719,6 +1805,46 @@ export type UserCompanyContextDto = {
 export type UserContextDto = {
     user: UserDto;
     companies: Array<UserCompanyContextDto>;
+};
+
+export type ApiResponseAuthPermissionsDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: AuthPermissionsDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type AuthPermissionFlagsDto = {
+    canAccessCompany: boolean;
+    canAccessBooking: boolean;
+    canAccessTimesheet: boolean;
+    canAccessSystemAdmin: boolean;
+};
+
+export type AuthPermissionsDto = {
+    userId: number;
+    companyId?: number;
+    systemRoles: Array<'SYSTEM_ADMIN'>;
+    companyRoles: Array<'ADMIN' | 'EMPLOYEE'>;
+    products: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+    flags: AuthPermissionFlagsDto;
+    permissionsVersion: number;
+};
+
+export type ApiResponseAuthMeDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: AuthMeDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type AuthMeDto = {
+    userContext: UserContextDto;
+    permissions: AuthPermissionsDto;
 };
 
 export type ApiResponseUserInviteTokenDto = {
@@ -2214,6 +2340,45 @@ export type CompanyUserCreateUnavailabilityRangesResponses = {
 
 export type CompanyUserCreateUnavailabilityRangesResponse = CompanyUserCreateUnavailabilityRangesResponses[keyof CompanyUserCreateUnavailabilityRangesResponses];
 
+export type GetAvailabilitiesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        size?: number;
+        sort?: string;
+        direction?: 'ASC' | 'DESC';
+        fromDateTime?: string;
+        toDateTime?: string;
+    };
+    url: '/booking-service/company-user/schedule-availability';
+};
+
+export type GetAvailabilitiesResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponsePaginatedResponseScheduleAvailabilityDto;
+};
+
+export type GetAvailabilitiesResponse = GetAvailabilitiesResponses[keyof GetAvailabilitiesResponses];
+
+export type CreateAvailabilitiesData = {
+    body: Array<ScheduleAvailabilityRangeDto>;
+    path?: never;
+    query?: never;
+    url: '/booking-service/company-user/schedule-availability';
+};
+
+export type CreateAvailabilitiesResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseListScheduleAvailabilityDto;
+};
+
+export type CreateAvailabilitiesResponse = CreateAvailabilitiesResponses[keyof CreateAvailabilitiesResponses];
+
 export type GetBookingProfileData = {
     body?: never;
     path?: never;
@@ -2319,6 +2484,60 @@ export type UploadAppointmentImageResponses = {
 };
 
 export type UploadAppointmentImageResponse = UploadAppointmentImageResponses[keyof UploadAppointmentImageResponses];
+
+export type DeleteAvailabilityData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/booking-service/company-user/schedule-availability/{id}';
+};
+
+export type DeleteAvailabilityResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUnit;
+};
+
+export type DeleteAvailabilityResponse = DeleteAvailabilityResponses[keyof DeleteAvailabilityResponses];
+
+export type GetAvailabilityData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/booking-service/company-user/schedule-availability/{id}';
+};
+
+export type GetAvailabilityResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseScheduleAvailabilityDto;
+};
+
+export type GetAvailabilityResponse = GetAvailabilityResponses[keyof GetAvailabilityResponses];
+
+export type UpdateAvailabilityData = {
+    body: UpdateScheduleAvailabilityDto;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/booking-service/company-user/schedule-availability/{id}';
+};
+
+export type UpdateAvailabilityResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseScheduleAvailabilityDto;
+};
+
+export type UpdateAvailabilityResponse = UpdateAvailabilityResponses[keyof UpdateAvailabilityResponses];
 
 export type SetAppointmentNoShowData = {
     body: CompanyAdminSetAppointmentNoShowDto;
@@ -2497,6 +2716,25 @@ export type GetGroupedServiceGroupsResponses = {
 };
 
 export type GetGroupedServiceGroupsResponse = GetGroupedServiceGroupsResponses[keyof GetGroupedServiceGroupsResponses];
+
+export type GetScheduleOverviewData = {
+    body?: never;
+    path?: never;
+    query?: {
+        fromDateTime?: string;
+        toDateTime?: string;
+    };
+    url: '/booking-service/company-user/schedules/overview';
+};
+
+export type GetScheduleOverviewResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseCompanyUserScheduleOverviewDto;
+};
+
+export type GetScheduleOverviewResponse = GetScheduleOverviewResponses[keyof GetScheduleOverviewResponses];
 
 export type GetDailySchedulesData = {
     body?: never;

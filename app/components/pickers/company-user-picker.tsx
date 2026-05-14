@@ -1,5 +1,4 @@
-import { Button } from '~/components/ui/button';
-import { Badge } from '~/components/ui/badge';
+import { Badge, Button } from '~/ui';
 import type { PublicCompanyUserDto } from '~/api/generated/base';
 
 export type CompanyUserPickerProps = {
@@ -26,7 +25,7 @@ export function CompanyUserPicker({ companyUsers, selectedUserId, onChange }: Co
               return (
                 <Button
                   key={user.userId}
-                  variant={selected ? 'default' : 'outline'}
+                  variant={selected ? 'primary' : 'outline'}
                   size="sm"
                   onClick={() => toggleUser(user.userId)}
                 >

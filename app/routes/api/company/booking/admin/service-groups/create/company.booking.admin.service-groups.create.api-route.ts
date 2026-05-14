@@ -1,5 +1,5 @@
 import { CompanyUserServiceGroupController } from '~/api/generated/booking';
-import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess, redirectWithError } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import type { Route } from './+types/company.booking.admin.service-groups.create.api-route';
 import { withAuth } from '~/api/utils/with-auth';

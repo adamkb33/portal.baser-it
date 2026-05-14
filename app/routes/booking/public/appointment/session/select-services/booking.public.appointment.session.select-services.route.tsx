@@ -38,7 +38,7 @@ import {
 } from '~/ui';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { requireAuthenticatedBookingFlow } from '../_utils/require-authenticated-booking-flow.server';
-import { redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError } from '~/lib/flash-message.server';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -188,9 +188,7 @@ function ServiceCard({ service, isSelected, onToggle, onViewImages }: ServiceCar
             e.stopPropagation();
             onToggle();
           }}
-          className={cn(
-            'flex-1 gap-2',
-          )}
+          className={cn('flex-1 gap-2')}
           variant={isSelected ? 'secondary' : 'primary'}
         >
           {isSelected ? (
@@ -279,9 +277,7 @@ function ServiceGroup({ group, selectedServices, onToggleService, onViewImages }
    MAIN COMPONENT
    ======================================== */
 
-export default function BookingPublicAppointmentSessionSelectServicesRoute({
-  loaderData,
-}: Route.ComponentProps) {
+export default function BookingPublicAppointmentSessionSelectServicesRoute({ loaderData }: Route.ComponentProps) {
   const serviceGroups = loaderData.serviceGroups ?? [];
   const session = loaderData.session;
   const navigation = useNavigation();
@@ -380,7 +376,13 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({
               {Array.from(selectedServices).map((serviceId) => (
                 <input key={serviceId} type="hidden" name="serviceId" value={serviceId} />
               ))}
-              <Button type="submit" size="lg" fullWidth loading={isSubmitting} disabled={!hasSelections || isSubmitting}>
+              <Button
+                type="submit"
+                size="lg"
+                fullWidth
+                loading={isSubmitting}
+                disabled={!hasSelections || isSubmitting}
+              >
                 <Sparkles className="size-5" />
                 Fortsett til tidspunkt
               </Button>
@@ -397,71 +399,71 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({
       }
     >
       <Stack space="lg">
-          {/* ========================================
+        {/* ========================================
               SEARCH BAR - For many services
               ======================================== */}
-          {totalServices > 6 && (
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                <Search className="size-5 text-booking-text-muted" />
-              </div>
-
-              <Input
-                type="text"
-                placeholder="Søk etter tjenester..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 pr-11"
-              />
-
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-booking-surface-muted"
-                >
-                  <X className="size-4 text-booking-text-muted" />
-                </button>
-              )}
+        {totalServices > 6 && (
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2">
+              <Search className="size-5 text-booking-text-muted" />
             </div>
-          )}
 
-          {/* ========================================
+            <Input
+              type="text"
+              placeholder="Søk etter tjenester..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-11 pr-11"
+            />
+
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-booking-surface-muted"
+              >
+                <X className="size-4 text-booking-text-muted" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ========================================
               SERVICE GROUPS
               ======================================== */}
-          <Stack space="lg">
-            {filteredGroups.length > 0 ? (
-              filteredGroups
-                .filter((group) => group.services.length > 0)
-                .map((group) => (
-                  <ServiceGroup
-                    key={group.id}
-                    group={group}
-                    selectedServices={selectedServices}
-                    onToggleService={toggleService}
-                    onViewImages={setDialogService}
-                  />
-                ))
-            ) : (
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-booking-border bg-booking-surface-muted py-12 text-center">
-                <Search className="size-12 text-booking-text-muted opacity-50" />
-                <p className="mt-4 text-base font-medium text-booking-text">Ingen tjenester funnet</p>
-                <p className="mt-1 text-sm text-booking-text-muted">Prøv et annet søkeord</p>
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="mt-4 text-sm font-medium text-booking-action hover:underline"
-                >
-                  Tilbakestill søk
-                </button>
-              </div>
-            )}
-          </Stack>
+        <Stack space="lg">
+          {filteredGroups.length > 0 ? (
+            filteredGroups
+              .filter((group) => group.services.length > 0)
+              .map((group) => (
+                <ServiceGroup
+                  key={group.id}
+                  group={group}
+                  selectedServices={selectedServices}
+                  onToggleService={toggleService}
+                  onViewImages={setDialogService}
+                />
+              ))
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-booking-border bg-booking-surface-muted py-12 text-center">
+              <Search className="size-12 text-booking-text-muted opacity-50" />
+              <p className="mt-4 text-base font-medium text-booking-text">Ingen tjenester funnet</p>
+              <p className="mt-1 text-sm text-booking-text-muted">Prøv et annet søkeord</p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="mt-4 text-sm font-medium text-booking-action hover:underline"
+              >
+                Tilbakestill søk
+              </button>
+            </div>
+          )}
+        </Stack>
       </Stack>
       {/* ========================================
           IMAGE DIALOG - Mobile-optimized
           ======================================== */}
-        <Dialog open={dialogService !== null} onOpenChange={(open) => !open && setDialogService(null)}>
+      <Dialog open={dialogService !== null} onOpenChange={(open) => !open && setDialogService(null)}>
         <DialogContent className="max-w-3xl gap-0 p-0">
           {dialogService && (
             <>
@@ -511,7 +513,7 @@ export default function BookingPublicAppointmentSessionSelectServicesRoute({
             </>
           )}
         </DialogContent>
-        </Dialog>
+      </Dialog>
     </BookingStepTemplate>
   );
 }

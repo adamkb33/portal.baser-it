@@ -1,11 +1,12 @@
 // auth.sign-up.route.tsx
-import { Link, Form, redirect, data, useActionData, useNavigation } from 'react-router';
+import { Link, Form, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.sign-up.route';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { AuthController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
 import { authService } from '~/lib/auth-service';
+import { redirectWithError } from '~/lib/flash-message.server';
 import { Button, FormField, FormPageTemplate } from '~/ui';
 
 export async function action({ request }: Route.ActionArgs) {
@@ -57,23 +58,20 @@ export async function action({ request }: Route.ActionArgs) {
       headers: headers.entries().next().done ? undefined : headers,
     });
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke opprette konto. Prøv igjen.');
-    return data({ error: message }, { status: status ?? 400 });
+    const { message } = resolveErrorPayload(error, 'Kunne ikke opprette konto. Prøv igjen.');
+    return redirectWithError(request, ROUTES_MAP['auth.sign-up'].href, message);
   }
 }
 
 export default function AuthSignUp() {
-  const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const errorMessage =
-    actionData && typeof actionData === 'object' && 'error' in actionData ? String(actionData.error) : undefined;
 
   return (
     <FormPageTemplate
       title="Opprett konto"
       description="Registrer deg for å få tilgang til selskapet ditt og kundene dine."
-      error={errorMessage}
+      error={undefined}
       variant="airy"
       actions={
         <div className="space-y-2 text-center">

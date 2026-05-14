@@ -1,10 +1,10 @@
-import { data, Form, Link, useActionData, useLoaderData, useNavigation } from 'react-router';
+import { data, Form, Link, useLoaderData, useNavigation } from 'react-router';
 import type { Route } from './+types/company.timesheet.edit-hours.route';
 import { CompanyUserTimesheetEntryController } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { redirectWithSuccess, setFlashMessage } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
 import { Button, CompanyPageTemplate, Input, Label, Notice, Panel, Textarea } from '~/ui';
 import {
   formatDateInputToZonedISOString,
@@ -88,7 +88,6 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 export default function CompanyTimesheetEditHours() {
   const { id, entry, declineReason } = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
@@ -124,8 +123,6 @@ export default function CompanyTimesheetEditHours() {
             <Label htmlFor="note">Notat (valgfritt)</Label>
             <Textarea id="note" name="note" rows={4} placeholder="Oppdater kommentar" defaultValue={entry.note} />
           </div>
-
-          {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke oppdatere" message={actionData.error} /> : null}
 
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Oppdaterer...' : 'Oppdater timer'}

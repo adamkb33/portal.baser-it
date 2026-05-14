@@ -1,7 +1,7 @@
 // routes/api/company/admin/employees/invite.api-route.ts
 import { type ActionFunctionArgs } from 'react-router';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithError, redirectWithSuccess } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError, redirectWithSuccess } from '~/lib/flash-message.server';
 import { AdminCompanyController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 

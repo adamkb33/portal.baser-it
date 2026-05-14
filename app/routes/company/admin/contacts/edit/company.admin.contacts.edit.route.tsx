@@ -6,7 +6,7 @@ import { CompanyUserContactController, type ContactDto } from '~/api/generated/b
 import { withAuth } from '~/api/utils/with-auth';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithInfo, setFlashMessage } from '~/lib/flash-message.server';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -30,7 +30,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     const contact = (response.data?.data?.content ?? []).find((item: ContactDto) => item.id === contactId) ?? null;
 
     if (!contact) {
-      return redirectWithInfo(request, ROUTES_MAP['company.admin.contacts'].href, 'Fant ikke kontakten du prøvde å redigere.');
+      return redirectWithInfo(
+        request,
+        ROUTES_MAP['company.admin.contacts'].href,
+        'Fant ikke kontakten du prøvde å redigere.',
+      );
     }
 
     return data({
@@ -81,7 +85,9 @@ export async function action({ request }: Route.ActionArgs) {
         if (path) fieldErrors[path] = issue.message;
       }
     }
-    return data({ error: 'Kontroller feltene og prøv igjen.', fieldErrors, values }, { status: 400 });
+    const error = 'Kontroller feltene og prøv igjen.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+    return data({ error, fieldErrors, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 
   try {
@@ -100,7 +106,8 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect(returnTo || ROUTES_MAP['company.admin.contacts'].href);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke oppdatere kontakt');
-    return data({ error: message, values }, { status: 400 });
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
+    return data({ error: message, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 }
 

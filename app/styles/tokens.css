@@ -98,6 +98,13 @@
   --spacing-20: 80px;
   --spacing-24: 96px;
   --spacing-32: 128px;
+  --spacing-touch-target: var(--spacing-12);
+  --spacing-touch-target-compact: var(--spacing-10);
+  --spacing-control-pill-min: var(--spacing-20);
+  --spacing-calendar-block: 33rem;
+  --spacing-calendar-block-min-mobile: 26.25rem;
+  --spacing-hero-media-block-mobile: 25rem;
+  --spacing-hero-media-block-desktop: 31.25rem;
 
   /* ─── Semantic Spacing Aliases ───────────────── */
   --space-2xs: var(--spacing-1);
@@ -160,6 +167,9 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 12px 0 rgb(0 0 0 / 0.08);
   --shadow-lg: 0 8px 24px 0 rgb(0 0 0 / 0.1);
+
+  /* ─── Background Effects ─────────────────────── */
+  --opacity-background-shine: 0.34;
 
   /* ─── Transitions ─────────────────────────────── */
   --duration-fast: 100ms;

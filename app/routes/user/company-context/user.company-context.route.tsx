@@ -4,7 +4,9 @@ import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/a
 import { AuthController, type CompanySummaryDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import type { Route } from './+types/user.company-context.route';
-import { Grid, Notice, PageTemplate, Panel, SelectionCard, Text } from '~/ui';
+import { ROUTES_MAP } from '~/lib/route-tree';
+import { redirectWithError } from '~/lib/flash-message.server';
+import { Grid, PageTemplate, Panel, SelectionCard, Text } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   return withAuth(request, async () => {
@@ -27,7 +29,7 @@ export async function action({ request }: Route.ActionArgs) {
   const orgNumber = formData.get('orgNumber');
 
   if (!orgNumber || !companyId) {
-    return data({ error: 'Ikke valgt' }, { status: 400 });
+    return redirectWithError(request, ROUTES_MAP['user.company-context'].href, 'Ikke valgt');
   }
 
   return withAuth(request, async () => {
@@ -41,7 +43,11 @@ export async function action({ request }: Route.ActionArgs) {
       const payload = response.data?.data;
 
       if (!payload) {
-        return data({ error: 'En feil har skjedd ved innlogging til selskap' }, { status: 400 });
+        return redirectWithError(
+          request,
+          ROUTES_MAP['user.company-context'].href,
+          'En feil har skjedd ved innlogging til selskap',
+        );
       }
 
       const accessCookie = await accessTokenCookie.serialize(payload.accessToken, {
@@ -59,24 +65,19 @@ export async function action({ request }: Route.ActionArgs) {
       });
     } catch (error: any) {
       console.error('[company-context] Action error:', error);
-      return data(
-        { error: error?.response?.data?.message || 'Noe gikk galt. Prøv igjen.' },
-        { status: error?.response?.status || 400 },
+      return redirectWithError(
+        request,
+        ROUTES_MAP['user.company-context'].href,
+        error?.response?.data?.message || 'Noe gikk galt. Prøv igjen.',
       );
     }
   });
 }
 
-export default function CompanyContextPage({ loaderData, actionData }: Route.ComponentProps) {
+export default function CompanyContextPage({ loaderData }: Route.ComponentProps) {
   const companies = loaderData?.companyContexts || [];
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const actionError =
-    actionData && typeof actionData === 'object' && 'error' in actionData
-      ? typeof actionData.error === 'string'
-        ? actionData.error
-        : 'Noe gikk galt. Prøv igjen.'
-      : null;
 
   return (
     <PageTemplate
@@ -96,8 +97,6 @@ export default function CompanyContextPage({ loaderData, actionData }: Route.Com
         </Panel>
       }
     >
-      {actionError ? <Notice tone="emphasis" title="Kunne ikke bytte selskapskontekst" message={actionError} /> : null}
-
       {companies.length === 0 ? (
         <Panel title="Ingen selskaper funnet" description="Du har ikke tilgang til noen selskapskontekster enda.">
           <div className="rounded-md border border-border bg-background px-4 py-5 text-center">

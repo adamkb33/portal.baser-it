@@ -1,5 +1,5 @@
 // components/table/table-mobile-pagination.tsx
-import { Button } from '@/components/ui/button';
+import { Button } from '~/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 type TableMobilePaginationProps = {

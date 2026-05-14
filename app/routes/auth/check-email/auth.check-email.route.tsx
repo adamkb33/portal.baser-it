@@ -9,6 +9,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { getVerificationTokenFromRequest } from '~/routes/booking/public/appointment/session/contact/_utils/auth.utils.server';
 import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
+import { redirectWithError } from '~/lib/flash-message.server';
 import { FormPageTemplate, Notice } from '~/ui';
 
 type CheckEmailLoaderData = {
@@ -16,6 +17,13 @@ type CheckEmailLoaderData = {
   mobileDelivery: DeliveryStatusDto['status'] | null;
   verificationSessionToken: string | null;
   nextStep: VerificationStatusResponseDto['nextStep'] | null;
+};
+
+type CheckEmailActionData = {
+  success: true;
+  message: string;
+  emailDelivery: DeliveryStatusDto['status'] | null;
+  mobileDelivery: DeliveryStatusDto['status'] | null;
 };
 
 const DELIVERY_STATUSES = new Set<DeliveryStatusDto['status']>([
@@ -54,10 +62,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  const currentHref = new URL(request.url);
+  const currentPath = `${currentHref.pathname}${currentHref.search}`;
   const verificationToken = await VerificationTokenService.readVerificationToken(request);
 
   if (!verificationToken) {
-    return data({ error: 'Mangler verifiseringsinformasjon. Prøv igjen.' }, { status: 400 });
+    return redirectWithError(request, currentPath, 'Mangler verifiseringsinformasjon. Prøv igjen.');
   }
 
   try {
@@ -89,14 +99,14 @@ export async function action({ request }: Route.ActionArgs) {
       { headers },
     );
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke sende ny kode. Prøv igjen.');
-    return data({ error: message }, { status: status ?? 400 });
+    const { message } = resolveErrorPayload(error, 'Kunne ikke sende ny kode. Prøv igjen.');
+    return redirectWithError(request, currentPath, message);
   }
 }
 
 export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
   const { emailDelivery, mobileDelivery, verificationSessionToken, nextStep } = loaderData;
-  const actionData = useActionData<typeof action>();
+  const actionData = useActionData<typeof action>() as CheckEmailActionData | undefined;
   const effectiveEmailDelivery =
     actionData && typeof actionData === 'object' && 'emailDelivery' in actionData && actionData.emailDelivery
       ? actionData.emailDelivery
@@ -112,14 +122,7 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
   const didNavigateRef = React.useRef(false);
   const isSubmitting = navigation.state === 'submitting';
 
-  const resendError =
-    actionData && typeof actionData === 'object' && 'error' in actionData
-      ? String(actionData.error)
-      : null;
-  const resendSuccess =
-    actionData && typeof actionData === 'object' && 'message' in actionData
-      ? String(actionData.message)
-      : null;
+  const resendSuccess = actionData?.message ? String(actionData.message) : null;
 
   React.useEffect(() => {
     if (!verificationSessionToken || nextStep !== 'VERIFY_EMAIL') {
@@ -185,7 +188,6 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
         {effectiveMobileDelivery === 'SENT' || effectiveMobileDelivery === 'SKIPPED_ALREADY_ACTIVE' ? (
           <p>Etter e-postbekreftelse kan mobilverifisering være neste steg.</p>
         ) : null}
-        {resendError ? <Notice tone="emphasis" message={resendError} /> : null}
         {resendSuccess ? <Notice message={resendSuccess} /> : null}
         <Form method="post">
           <button

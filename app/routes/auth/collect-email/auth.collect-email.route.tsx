@@ -5,6 +5,7 @@ import { AuthController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
+import { redirectWithError } from '~/lib/flash-message.server';
 import { Button, FormField, FormPageTemplate } from '~/ui';
 
 type LoaderData = {
@@ -23,12 +24,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  const currentHref = new URL(request.url);
+  const currentPath = `${currentHref.pathname}${currentHref.search}`;
   const formData = await request.formData();
   const userId = Number(formData.get('userId') || '');
   const email = String(formData.get('email') || '').trim();
 
   if (!userId || Number.isNaN(userId)) {
-    return data({ error: 'Mangler bruker-ID. Prøv igjen.' }, { status: 400 });
+    return redirectWithError(request, currentPath, 'Mangler bruker-ID. Prøv igjen.');
   }
 
   try {
@@ -51,22 +54,19 @@ export async function action({ request }: Route.ActionArgs) {
       headers: headers.has('Set-Cookie') ? headers : undefined,
     });
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke lagre e-post. Prøv igjen.');
-    return data({ error: message }, { status: status ?? 400 });
+    const { message } = resolveErrorPayload(error, 'Kunne ikke lagre e-post. Prøv igjen.');
+    return redirectWithError(request, currentPath, message);
   }
 }
 
-export default function AuthCollectEmail({ loaderData, actionData }: Route.ComponentProps) {
+export default function AuthCollectEmail({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
-  const errorMessage =
-    actionData && typeof actionData === 'object' && 'error' in actionData ? String(actionData.error) : undefined;
 
   return (
     <FormPageTemplate
       title="Legg til e-post"
       description="Vi trenger e-postadressen din for å fullføre registreringen."
-      error={errorMessage}
       variant="default"
       actions={
         <div className="space-y-2 text-center">

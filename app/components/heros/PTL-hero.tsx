@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ArrowRight, CircuitBoard, Cloud, Users } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button } from '~/ui';
 import PTLLogo from '../logos/PTL.logo';
 
 export interface PTLHeroProps extends React.HTMLAttributes<HTMLElement> {

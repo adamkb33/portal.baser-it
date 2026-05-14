@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { data, useSubmit } from 'react-router';
-import type { DateRange } from 'react-day-picker';
 import { ClipboardList, UserCheck, UserX } from 'lucide-react';
 import type { Route } from './+types/company.timesheet.admin.submissions.route';
 import { AdminTimeSheetEntryController, type AdminEmployeeTimesheetEntriesDto } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { redirectWithSuccess, setFlashMessage } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
 import { Accordion, CompanyEmptyState, CompanyMetricCard, CompanyPageTemplate, Notice } from '~/ui';
 import { TimesheetPaginationFilterCard } from '~/routes/company/timesheet/_components/timesheet-pagination-filters';
+import type { CalendarDateRange } from '~/ui';
 import { SubmissionGroupCard } from './_components/submission-group-card';
 import {
   parseIsoDate,
@@ -158,7 +158,7 @@ export default function CompanyTimesheetSubmissionsPage({ loaderData, actionData
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [fromDate, setFromDate] = useState(filters.fromDate ?? '');
   const [toDate, setToDate] = useState(filters.toDate ?? '');
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+  const [dateRange, setDateRange] = useState<CalendarDateRange | undefined>({
     from: parseIsoDate(filters.fromDate),
     to: parseIsoDate(filters.toDate),
   });
@@ -194,7 +194,7 @@ export default function CompanyTimesheetSubmissionsPage({ loaderData, actionData
     }, 1000);
   };
 
-  const handleRangeSelect = (nextRange: DateRange | undefined) => {
+  const handleRangeSelect = (nextRange: CalendarDateRange | undefined) => {
     setDateRange(nextRange);
     setFromDate(toIsoDate(nextRange?.from));
     setToDate(toIsoDate(nextRange?.to));
@@ -247,10 +247,6 @@ export default function CompanyTimesheetSubmissionsPage({ loaderData, actionData
         onRangeSelect={handleRangeSelect}
         onSubmitDebounced={submitDebounced}
       />
-
-      {actionData && 'error' in actionData ? (
-        <Notice tone="emphasis" title="Kunne ikke oppdatere" message={actionData.error} />
-      ) : null}
 
       {error ? (
         <Notice tone="emphasis" title="Kunne ikke hente innsendinger" message={error} />

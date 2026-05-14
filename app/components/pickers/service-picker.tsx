@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Button } from '~/components/ui/button';
-import { Badge } from '~/components/ui/badge';
+import { Badge, Button } from '~/ui';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '~/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '~/components/ui/carousel';
 import type { GroupedServiceDto, GroupedServiceGroupDto, ImageDto } from '~/api/generated/booking';
@@ -103,7 +102,7 @@ export function ServicePicker({
                       return (
                         <div key={service.id} className="flex flex-col items-start gap-1">
                           <Button
-                            variant={selected ? 'default' : 'outline'}
+                            variant={selected ? 'primary' : 'outline'}
                             size="sm"
                             type="button"
                             onClick={() => toggleService(service.id)}

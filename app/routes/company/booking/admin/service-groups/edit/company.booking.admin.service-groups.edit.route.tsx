@@ -4,7 +4,7 @@ import { CompanyUserServiceGroupController, type ServiceGroupDto } from '~/api/g
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/route-tree';
-import { redirectWithInfo } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithInfo, setFlashMessage } from '~/lib/flash-message.server';
 import { ServiceGroupFormPage, type ServiceGroupFormValues } from '../_components/service-group-form-page';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -12,7 +12,11 @@ export async function loader({ request }: Route.LoaderArgs) {
   const id = Number(url.searchParams.get('id'));
 
   if (!Number.isFinite(id) || id <= 0) {
-    return redirectWithInfo(request, ROUTES_MAP['company.booking.admin.service-groups'].href, 'Velg en tjenestegruppe som skal redigeres.');
+    return redirectWithInfo(
+      request,
+      ROUTES_MAP['company.booking.admin.service-groups'].href,
+      'Velg en tjenestegruppe som skal redigeres.',
+    );
   }
 
   try {
@@ -28,7 +32,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     const serviceGroup = (response.data?.data?.content ?? []).find((item: ServiceGroupDto) => item.id === id) ?? null;
 
     if (!serviceGroup) {
-      return redirectWithInfo(request, ROUTES_MAP['company.booking.admin.service-groups'].href, 'Fant ikke tjenestegruppen du prøvde å redigere.');
+      return redirectWithInfo(
+        request,
+        ROUTES_MAP['company.booking.admin.service-groups'].href,
+        'Fant ikke tjenestegruppen du prøvde å redigere.',
+      );
     }
 
     return data({
@@ -59,7 +67,9 @@ export async function action({ request }: Route.ActionArgs) {
   };
 
   if (!Number.isFinite(id) || id <= 0 || !values.name) {
-    return data({ error: 'Navn er påkrevd.', values }, { status: 400 });
+    const error = 'Navn er påkrevd.';
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: error });
+    return data({ error, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 
   try {
@@ -76,7 +86,8 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect(ROUTES_MAP['company.booking.admin.service-groups'].href);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke oppdatere tjenestegruppe');
-    return data({ error: message, values }, { status: 400 });
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
+    return data({ error: message, values }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
   }
 }
 

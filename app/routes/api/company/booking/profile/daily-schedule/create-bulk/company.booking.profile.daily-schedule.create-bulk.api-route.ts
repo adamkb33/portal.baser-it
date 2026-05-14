@@ -1,6 +1,6 @@
 // app/routes/api/company/booking/profile/daily-schedule/create-bulk.api-route.ts
 import { DailyScheduleController } from '~/api/generated/booking';
-import { redirectWithSuccess, redirectWithError } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess, redirectWithError } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
 import type { Route } from './+types/company.booking.profile.daily-schedule.create-bulk.api-route';
@@ -25,7 +25,14 @@ export async function action({ request }: Route.ActionArgs) {
     await withAuth(request, async () => {
       await DailyScheduleController.createOrUpdateDailySchedules({
         body: bulkSchedules.map((schedule) => ({
-          dayOfWeek: schedule.dayOfWeek as unknown as 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY',
+          dayOfWeek: schedule.dayOfWeek as unknown as
+            | 'MONDAY'
+            | 'TUESDAY'
+            | 'WEDNESDAY'
+            | 'THURSDAY'
+            | 'FRIDAY'
+            | 'SATURDAY'
+            | 'SUNDAY',
           startTime: schedule.startTime,
           endTime: schedule.endTime,
         })),

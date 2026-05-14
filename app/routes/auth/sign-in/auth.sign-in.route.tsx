@@ -7,16 +7,11 @@ import { AuthController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { Route } from './+types/auth.sign-in.route';
 import { authService } from '~/lib/auth-service';
-import { redirectWithWarning } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithError, redirectWithWarning } from '~/lib/flash-message.server';
 import { logger } from '~/lib/logger';
 import React from 'react';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
-import {
-  Button,
-  FormField,
-  FormPageTemplate,
-  Stack,
-} from '~/ui';
+import { Button, FormField, FormPageTemplate, Stack } from '~/ui';
 
 function redactEmail(value: string) {
   const normalized = value.trim();
@@ -28,6 +23,15 @@ function redactEmail(value: string) {
     return `${localPart.slice(0, 2)}***`;
   }
   return `${localPart.slice(0, 2)}***@${domain}`;
+}
+
+function buildSignInHref(redirectUrl?: string) {
+  if (!redirectUrl) {
+    return ROUTES_MAP['auth.sign-in'].href;
+  }
+
+  const params = new URLSearchParams({ redirectUrl });
+  return `${ROUTES_MAP['auth.sign-in'].href}?${params.toString()}`;
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -52,7 +56,11 @@ export async function action({ request }: Route.ActionArgs) {
     logger.warn('[auth.sign-in] Missing Google idToken', {
       redirectUrl: redirectUrl || null,
     });
-    return data({ error: 'Kunne ikke logge inn med Google. Prøv igjen.' }, { status: 400 });
+    return redirectWithError(
+      request,
+      buildSignInHref(redirectUrl || undefined),
+      'Kunne ikke logge inn med Google. Prøv igjen.',
+    );
   }
 
   try {
@@ -157,15 +165,15 @@ export async function action({ request }: Route.ActionArgs) {
     });
     return redirectWithWarning(request, ROUTES_MAP['auth.sign-in'].href, 'Kunne ikke logge inn. Prøv igjen.');
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke logge inn. Prøv igjen.');
+    const { message } = resolveErrorPayload(error, 'Kunne ikke logge inn. Prøv igjen.');
     logger.error('[auth.sign-in] Sign-in failed', {
       provider,
       email: redactEmail(email),
       redirectUrl: redirectUrl || null,
-      status: status ?? 400,
+      status: 400,
       error,
     });
-    return data({ error: message }, { status: status ?? 400 });
+    return redirectWithError(request, buildSignInHref(redirectUrl || undefined), message);
   }
 }
 

@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { data, Form, Link, useActionData, useLoaderData, useNavigation } from 'react-router';
+import { data, Form, Link, useLoaderData, useNavigation } from 'react-router';
 import type { Route } from './+types/company.timesheet.edit-range.route';
 import { CompanyUserTimesheetEntryController } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
 import { ROUTES_MAP } from '~/lib/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { redirectWithSuccess, setFlashMessage } from '~/routes/company/_lib/flash-message.server';
+import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
 import { Button, CompanyPageTemplate, Input, Label, Notice, Panel, Textarea } from '~/ui';
-import { TimePicker } from '~/components/pickers/time-picker';
+import { StartEndTimeSelector } from '~/components/pickers/start-end-time-selector';
 import {
   formatDateInputToZonedISOString,
   normalizeNote,
@@ -99,12 +99,10 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 export default function CompanyTimesheetEditRange() {
   const { id, entry, declineReason } = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   const [fromTime, setFromTime] = useState(entry.fromTime);
   const [toTime, setToTime] = useState(entry.toTime);
-  const [activePicker, setActivePicker] = useState<'from' | 'to' | null>(null);
 
   return (
     <CompanyPageTemplate
@@ -138,40 +136,28 @@ export default function CompanyTimesheetEditRange() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Fra kl.</Label>
-              <input type="hidden" name="fromTime" value={fromTime} />
-              <TimePicker
-                value={fromTime}
-                placeholder="Velg start"
-                isOpen={activePicker === 'from'}
-                onOpenChange={(open) => setActivePicker(open ? 'from' : null)}
-                onChange={(next) => {
-                  setFromTime(next);
-                  setActivePicker(null);
-                }}
-              />
-            </div>
-            <div className="space-y-2">
               <Label>Til kl.</Label>
-              <input type="hidden" name="toTime" value={toTime} />
-              <TimePicker
-                value={toTime}
-                placeholder="Velg slutt"
-                isOpen={activePicker === 'to'}
-                onOpenChange={(open) => setActivePicker(open ? 'to' : null)}
-                onChange={(next) => {
-                  setToTime(next);
-                  setActivePicker(null);
-                }}
+              <StartEndTimeSelector
+                startValue={fromTime}
+                endValue={toTime}
+                onStartChange={setFromTime}
+                onEndChange={setToTime}
+                startPlaceholder="Velg start"
+                endPlaceholder="Velg slutt"
               />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="note">Notat (valgfritt)</Label>
-            <Textarea id="note" name="note" rows={4} placeholder="Oppdater eventuell kommentar" defaultValue={entry.note} />
+            <Textarea
+              id="note"
+              name="note"
+              rows={4}
+              placeholder="Oppdater eventuell kommentar"
+              defaultValue={entry.note}
+            />
           </div>
-
-          {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke oppdatere" message={actionData.error} /> : null}
 
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Oppdaterer...' : 'Oppdater tidsintervall'}
