@@ -3,14 +3,14 @@ import * as React from 'react';
 import { Link, data, Form, useActionData, useNavigate, useNavigation, useRevalidator } from 'react-router';
 import type { Route } from './+types/auth.check-email.route';
 
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { AuthController, type DeliveryStatusDto, type VerificationStatusResponseDto } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
-import { getVerificationTokenFromRequest } from '~/routes/booking/public/appointment/session/contact/_utils/auth.utils.server';
-import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
+import { getVerificationTokenFromRequest } from '~/routes/_features/booking/session/contact/_utils/auth.utils.server';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { FormPageTemplate, Notice } from '~/ui';
+import { VerificationTokenService } from '~/routes/_features/booking/session/contact/_services/verification-token.service.server';
 
 type CheckEmailLoaderData = {
   emailDelivery: DeliveryStatusDto['status'] | null;
@@ -85,7 +85,10 @@ export async function action({ request }: Route.ActionArgs) {
     const headers = new Headers();
 
     if (nextToken) {
-      const cookie = await VerificationTokenService.buildVerificationCookieHeader(nextToken, nextTokenExpiresAt ?? undefined);
+      const cookie = await VerificationTokenService.buildVerificationCookieHeader(
+        nextToken,
+        nextTokenExpiresAt ?? undefined,
+      );
       headers.append('Set-Cookie', cookie);
     }
 
@@ -190,11 +193,7 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
         ) : null}
         {resendSuccess ? <Notice message={resendSuccess} /> : null}
         <Form method="post">
-          <button
-            type="submit"
-            className="text-sm font-medium text-foreground hover:underline"
-            disabled={isSubmitting}
-          >
+          <button type="submit" className="text-sm font-medium text-foreground hover:underline" disabled={isSubmitting}>
             Send e-posten på nytt
           </button>
         </Form>

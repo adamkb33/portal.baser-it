@@ -4,7 +4,7 @@ import { Base } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, CompanyPageTemplate, FormField, Notice } from '~/ui';
 
 const PRODUCT_VALUES = ['BOOKING', 'EVENT', 'TIMESHEET'] as const;

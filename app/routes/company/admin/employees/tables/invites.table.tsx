@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useSubmit } from 'react-router';
 import { toast } from 'sonner';
-import { API_ROUTES_MAP } from '~/lib/route-tree';
+import { API_ROUTES_MAP } from '~/lib/routing/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import type { InviteTokenDto } from '~/api/generated/base';
 import { COMPANY_ROLE_LABELS } from '~/lib/constants';

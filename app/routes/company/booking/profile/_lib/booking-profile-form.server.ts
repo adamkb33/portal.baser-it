@@ -3,7 +3,7 @@ import type { BookingProfileDto, DailyScheduleDto, GroupedServiceGroupDto } from
 import { CompanyUserBookingProfileController, CompanyUserServiceGroupController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
 
 export type BookingProfileFormLoaderData = {

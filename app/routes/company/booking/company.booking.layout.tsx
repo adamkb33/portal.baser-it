@@ -1,7 +1,7 @@
 import { Link, Outlet } from 'react-router';
 
 import type { Route } from './+types/company.booking.layout';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { CompanyUserBookingController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
@@ -77,25 +77,25 @@ export default function CompanyBookingLayout({ loaderData }: Route.ComponentProp
             <div className="text-4xl">🎯</div>
             <div className="flex-1 space-y-3">
               <div>
-                <p className="text-sm font-bold uppercase tracking-[0.12em]">Fullfør oppsettet</p>
+                <p className="text-sm font-bold uppercase tracking-wider">Fullfør oppsettet</p>
                 <p className="text-xs mt-1">
                   {completionPercentage}% fullført • {missingItems.length} gjenstående
                 </p>
               </div>
 
               <div className="border-t-2 border-primary-foreground/20 pt-3">
-                <p className="text-xs font-medium mb-2 uppercase tracking-[0.12em]">Kompletter i rekkefølge:</p>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider">Kompletter i rekkefølge:</p>
                 <div className="flex flex-wrap gap-2">
                   {missingItems.map((item, index) => (
                     <div key={item.label} className="relative">
                       {item.disabled ? (
                         <div className="group relative border-2 border-border bg-muted text-muted-foreground px-4 py-2.5 text-xs font-bold rounded-none opacity-50 cursor-not-allowed">
-                          <span className="absolute -top-1.5 -left-1.5 bg-border text-muted w-5 h-5 flex items-center justify-center text-[0.6rem] font-bold rounded-none">
+                          <span className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-none bg-border text-xs font-bold text-muted">
                             {index + 1}
                           </span>
                           {item.label}
                           {item.reason && (
-                            <span className="absolute -bottom-5 left-0 text-[0.65rem] text-muted-foreground whitespace-nowrap">
+                            <span className="absolute -bottom-5 left-0 whitespace-nowrap text-xs text-muted-foreground">
                               {item.reason}
                             </span>
                           )}
@@ -105,7 +105,7 @@ export default function CompanyBookingLayout({ loaderData }: Route.ComponentProp
                           to={item.link}
                           className="group relative border-2 border-foreground bg-background text-foreground px-4 py-2.5 text-xs font-bold rounded-none hover:bg-foreground hover:text-background transition-colors"
                         >
-                          <span className="absolute -top-1.5 -left-1.5 bg-foreground text-background w-5 h-5 flex items-center justify-center text-[0.6rem] font-bold rounded-none">
+                          <span className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-none bg-foreground text-xs font-bold text-background">
                             {index + 1}
                           </span>
                           {item.label}

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { CompanyRole } from '~/api/clients/types';
 import { RoleCheckboxes } from '~/routes/company/_components/role-checkboxes';
 import { CompanyFormPageTemplate, FormField, Text, Button } from '~/ui';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 
 export type EmployeeFormValues = {
   userId?: number;

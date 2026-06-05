@@ -85,7 +85,7 @@ export function CustomerSelector({
         className="h-11 text-sm md:h-10 md:text-sm"
       />
 
-      <div className="h-[450px] overflow-y-auto rounded-lg border border-border bg-surface-variant-1 p-2.5 md:h-[350px] md:p-3">
+      <div className="h-96 overflow-y-auto rounded-lg border border-border bg-surface-variant-1 p-3 md:h-80 md:p-3">
         {customers.length === 0 ? (
           <div className="py-12 md:py-8 text-center">
             <User className="h-12 w-12 md:h-10 md:w-10 mx-auto text-muted-foreground/50 mb-3 md:mb-2" />
@@ -94,7 +94,7 @@ export function CustomerSelector({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-2.5">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-2">
             {customers.map((customer) => {
               const isSelected = customer.id === selectedCustomerId;
               return (
@@ -102,9 +102,9 @@ export function CustomerSelector({
                   type="button"
                   key={customer.id}
                   className={cn(
-                    'group min-h-[98px] w-full cursor-pointer rounded-md border border-border bg-background p-2.5 text-left transition-colors md:min-h-[92px] md:p-2',
+                    'group min-h-24 w-full cursor-pointer rounded-md border border-border bg-background p-3 text-left transition-colors md:min-h-24 md:p-2',
                     'hover:bg-surface-variant-2',
-                    'active:scale-[0.98]',
+                    'active:scale-95',
                     isSelected && 'bg-surface-variant-2 ring-1 ring-interactive/30',
                   )}
                   onClick={() => onSelectCustomer(isSelected ? null : customer)}
@@ -122,23 +122,23 @@ export function CustomerSelector({
                     </div>
 
                     <div className="min-w-0 flex-1 space-y-0.5">
-                      <div className="truncate font-semibold text-xs md:text-[11px]">{formatName(customer)}</div>
+                      <div className="truncate font-semibold text-xs">{formatName(customer)}</div>
 
-                      <div className="min-h-[36px] space-y-0.5 md:min-h-[32px]">
+                      <div className="min-h-9 space-y-0.5 md:min-h-8">
                         {customer.email ? (
-                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <Mail className="h-2.5 w-2.5 flex-shrink-0" />
                             <span className="truncate">{customer.email}</span>
                           </div>
                         ) : null}
                         {customer.mobileNumber ? (
-                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <Phone className="h-2.5 w-2.5 flex-shrink-0" />
                             <span className="truncate">{customer.mobileNumber}</span>
                           </div>
                         ) : null}
                         {!customer.email && !customer.mobileNumber ? (
-                          <div className="text-[10px] italic text-muted-foreground">
+                          <div className="text-xs italic text-muted-foreground">
                             Ingen kontaktinformasjon
                           </div>
                         ) : null}
@@ -164,7 +164,7 @@ export function CustomerSelector({
         )}
       </div>
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-xs md:text-[10px] text-muted-foreground pt-3 md:pt-1.5 border-t">
+      <div className="flex flex-col gap-3 border-t pt-3 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between md:pt-2">
         <div className="font-medium text-center md:text-left">
           Side {pagination.page + 1} av {pagination.totalPages}
           <span className="text-muted-foreground/70 ml-1">({pagination.totalElements} totalt)</span>

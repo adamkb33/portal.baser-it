@@ -3,7 +3,7 @@ import { SidebarBreadcrumbs } from '~/components/layout/sidebar-breadcrums';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import type { RootOutletContext } from '../root.layout';
 import type { Route } from './+types/company.route';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithInfo } from '~/lib/flash-message.server';
 import { redirectWithError } from '~/lib/flash-message.server';
 import type { ApiMessage } from '~/api/generated/base';

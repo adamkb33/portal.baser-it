@@ -6,7 +6,7 @@ import { withAuth } from '~/api/utils/with-auth';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import type { Route } from './+types/company.route';
 import { CompanyEmptyState, CompanyMetricCard, CompanyPageTemplate, Panel, Text } from '~/ui';
 

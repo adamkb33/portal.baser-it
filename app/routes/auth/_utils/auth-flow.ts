@@ -5,7 +5,7 @@ import type {
   SignUpResponseDto,
   UserAuthStatusDto,
 } from '~/api/generated/base';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 
 type NextStep =
   | SignInResponseDto['nextStep']

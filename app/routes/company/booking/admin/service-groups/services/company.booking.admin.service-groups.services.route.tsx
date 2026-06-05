@@ -11,7 +11,7 @@ import {
   type ServiceGroupDto,
 } from '~/api/generated/booking';
 import { redirectWithInfo } from '~/lib/flash-message.server';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import type { Route } from './+types/company.booking.admin.service-groups.services.route';
 import { servicesActions } from './_features/services.feature';
 import { resolveErrorPayload } from '~/lib/api-error';

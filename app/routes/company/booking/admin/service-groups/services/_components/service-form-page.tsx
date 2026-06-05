@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Form, useNavigate, useNavigation, useSubmit } from 'react-router';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { fileToBase64 } from '~/lib/file.utils';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { ImagesField, type ImageField } from '~/routes/company/_components/images-field';
 import {
   Button,
@@ -143,7 +143,7 @@ export function ServiceFormPage({ mode, values, serviceGroups, actionData }: Ser
                   <ChevronsUpDown className="h-4 w-4 opacity-60" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-2">
+              <PopoverContent align="start" className="w-full p-2">
                 <div className="space-y-1">
                   {serviceGroups.map((serviceGroup) => {
                     const isSelected = String(serviceGroup.id) === serviceGroupId;

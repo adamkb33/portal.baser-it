@@ -15,7 +15,7 @@ import { AppointmentPaginationService } from './_services/appointment.pagination
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError, redirectWithSuccess } from '~/lib/flash-message.server';
 import { formatCurrentDateTimeInTimeZone } from '~/lib/query';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import {
   Badge,
   Card,
@@ -30,6 +30,7 @@ import {
   Notice,
   Text,
   Textarea,
+  routeLinkButtonClass,
 } from '~/ui';
 import { getTotalDuration, getTotalPrice, getTotalServiceCount, isAppointmentCompleted } from './_utils/appointments.utils';
 
@@ -229,13 +230,13 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
           <>
             <NavLink
               to={ROUTES_MAP['company.booking'].href}
-              className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+              className={routeLinkButtonClass}
             >
               Oversikt
             </NavLink>
             <NavLink
               to={ROUTES_MAP['company.booking.admin'].href}
-              className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+              className={routeLinkButtonClass}
             >
               Administrasjon
             </NavLink>
@@ -504,7 +505,7 @@ function SpotlightAppointmentDetailsDialog({
           <div className="flex flex-wrap justify-end gap-2">
             <button
               type="button"
-              className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+              className={routeLinkButtonClass}
               onClick={() => onUploadImage(appointment.id)}
             >
               Last opp bilde

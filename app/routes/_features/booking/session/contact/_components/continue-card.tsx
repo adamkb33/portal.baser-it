@@ -1,0 +1,52 @@
+import { LogIn } from 'lucide-react';
+import { Form } from 'react-router';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
+
+type ContinueCardProps = {
+  title: string;
+  description?: string;
+  cta: string;
+  initials?: string;
+  intentValue: string;
+};
+
+export function ContinueCard({ title, description, cta, initials, intentValue }: ContinueCardProps) {
+  return (
+    <Form method="post">
+      <button
+        type="submit"
+        name="intent"
+        value={intentValue}
+        className="group w-full rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-booking-action"
+      >
+        <Card
+          variant="interactive"
+          size="sm"
+          className="cursor-pointer border-booking-border bg-booking-surface transition-colors group-hover:bg-booking-surface-muted group-focus-visible:border-booking-action"
+        >
+          <CardHeader>
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="flex items-center justify-center gap-3">
+                {initials ? (
+                  <div className="flex size-10 items-center justify-center rounded-full bg-booking-surface-muted text-sm font-semibold text-booking-text-muted">
+                    {initials}
+                  </div>
+                ) : null}
+                <CardTitle className="text-booking-text">{title}</CardTitle>
+              </div>
+              {description ? (
+                <CardDescription className="text-booking-text-muted">{description}</CardDescription>
+              ) : null}
+            </div>
+          </CardHeader>
+          <CardFooter>
+            <div className="inline-flex w-full items-center justify-center gap-2 text-sm font-medium text-booking-text">
+              <LogIn className="size-5" />
+              {cta}
+            </div>
+          </CardFooter>
+        </Card>
+      </button>
+    </Form>
+  );
+}

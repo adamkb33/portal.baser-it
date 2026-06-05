@@ -1,7 +1,7 @@
 // auth.sign-in.route.tsx
 import { Link, Form, useNavigation, redirect } from 'react-router';
 import { data } from 'react-router';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { ProviderButtons } from '../_components/provider-buttons';
 import { AuthController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';

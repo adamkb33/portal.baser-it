@@ -1,7 +1,16 @@
 import { Link, NavLink } from 'react-router';
 import { FolderKanban, Briefcase } from 'lucide-react';
-import { ROUTES_MAP } from '~/lib/route-tree';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CompanyPageTemplate, Text } from '~/ui';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CompanyPageTemplate,
+  Text,
+  routeLinkButtonClass,
+} from '~/ui';
 
 const adminNavigation = [
   {
@@ -29,13 +38,13 @@ export default function CompanyBookingAdminPage() {
         <>
           <NavLink
             to={ROUTES_MAP['company.booking'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+            className={routeLinkButtonClass}
           >
             Oversikt
           </NavLink>
           <NavLink
             to={ROUTES_MAP['company.booking.appointments'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+            className={routeLinkButtonClass}
           >
             Timebestillinger
           </NavLink>

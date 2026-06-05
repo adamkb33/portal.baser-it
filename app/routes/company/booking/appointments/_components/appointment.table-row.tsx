@@ -179,7 +179,7 @@ export function AppointmentTableRow({ appointment, onDelete, onUploadImage, isDe
             <Text as="p" variant="body-sm" className="font-semibold">
               Tjenester
             </Text>
-            <div className="mt-2 max-h-[260px] space-y-3 overflow-y-auto pr-1">
+            <div className="mt-2 max-h-64 space-y-3 overflow-y-auto pr-1">
               {appointment.groupedServiceGroups?.map((group) => {
                 const groupServices = group.services ?? [];
                 const groupDuration = groupServices.reduce((sum, service) => sum + (service.duration ?? 0), 0);
@@ -207,7 +207,7 @@ export function AppointmentTableRow({ appointment, onDelete, onUploadImage, isDe
                     </div>
 
                     <div className="mt-2">
-                      <div className="grid grid-cols-[1fr_auto_auto] gap-2 px-1 pb-1">
+                      <div className="grid grid-cols-3 gap-2 px-1 pb-1">
                         <Text as="p" variant="caption" className="text-text-secondary">
                           Tjeneste
                         </Text>
@@ -223,7 +223,7 @@ export function AppointmentTableRow({ appointment, onDelete, onUploadImage, isDe
                         {groupServices.map((service) => (
                           <div
                             key={service.id}
-                            className="grid grid-cols-[1fr_auto_auto] items-center gap-2 rounded-sm border border-border bg-background px-2 py-1.5 text-sm"
+                            className="grid grid-cols-3 items-center gap-2 rounded-sm border border-border bg-background px-2 py-1.5 text-sm"
                           >
                             <span className="text-text-primary">{service.name}</span>
                             <span className="text-right text-text-secondary">{service.duration ?? 0} min</span>

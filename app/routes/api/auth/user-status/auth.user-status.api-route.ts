@@ -1,7 +1,7 @@
 import { data } from 'react-router';
 import type { Route } from './+types/auth.user-status.api-route';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ContactAuthService } from '~/routes/booking/public/appointment/session/contact/_services/contact-auth.service.server';
+import { ContactAuthService } from '~/routes/_features/booking/session/contact/_services/contact-auth.service.server';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);

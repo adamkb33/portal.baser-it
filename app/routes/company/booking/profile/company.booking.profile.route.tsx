@@ -7,7 +7,7 @@ import type { Route } from './+types/company.booking.profile.route';
 import { CompanyUserBookingProfileController, CompanyUserServiceGroupController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import {
   Accordion,
   AccordionContent,
@@ -22,6 +22,7 @@ import {
   CompanyPageTemplate,
   Text,
   cn,
+  routeLinkButtonClass,
 } from '~/ui';
 
 const DAY_ABBREV: Record<string, string> = {
@@ -102,13 +103,13 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
         <>
           <NavLink
             to={ROUTES_MAP['company.booking'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+            className={routeLinkButtonClass}
           >
             Oversikt
           </NavLink>
           <NavLink
             to={ROUTES_MAP['company.booking.schedule-unavailability'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+            className={routeLinkButtonClass}
           >
             Mitt fravik
           </NavLink>
@@ -143,8 +144,8 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
         </div>
       }
     >
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[320px,1fr]">
-        <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div className="space-y-4 xl:col-span-1">
           <Card variant="default" className="bg-surface">
             <CardHeader>
               <CardTitle>Profilforhåndsvisning</CardTitle>
@@ -210,7 +211,7 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
           </Card>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 xl:col-span-2">
           <Card variant="default" className="bg-surface">
             <CardHeader>
               <CardTitle>Oversikt</CardTitle>

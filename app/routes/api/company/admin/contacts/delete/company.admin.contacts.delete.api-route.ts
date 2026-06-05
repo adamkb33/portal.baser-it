@@ -1,6 +1,6 @@
 import { redirectWithError, redirectWithSuccess } from '~/lib/flash-message.server';
 import type { Route } from './+types/company.admin.contacts.delete.api-route';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { CompanyUserContactController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 

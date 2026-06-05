@@ -132,7 +132,7 @@ export const BookingProfileCard = React.forwardRef<HTMLElement, BookingProfileCa
 
         {/* Action Button - Bottom Fixed on Mobile */}
         <div className="sticky bottom-0 bg-card-footer-bg border-t border-card-header-border p-4 sm:relative">
-          <Button type="button" variant="primary" size="lg" onClick={onEditProfile} className="w-full min-h-[48px]">
+          <Button type="button" variant="primary" size="lg" onClick={onEditProfile} className="h-12 w-full">
             Rediger profil
           </Button>
         </div>

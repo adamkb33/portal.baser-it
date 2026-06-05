@@ -387,10 +387,15 @@ export type AppointmentSessionDto = {
     sessionId: string;
     companyId: number;
     userId?: number;
-    selectedServices?: Array<number>;
+    selectedServices?: Array<AppointmentSessionServicesDto>;
     selectedProfileId?: number;
     selectedStartTime?: string;
     steps?: Array<AppointmentSessionStepDto>;
+};
+
+export type AppointmentSessionServicesDto = {
+    serviceId: number;
+    quantity: number;
 };
 
 export type AppointmentSessionStepDto = {
@@ -398,6 +403,15 @@ export type AppointmentSessionStepDto = {
     order: number;
     name: string;
     isComplete: boolean;
+};
+
+export type PublicSelectProfileServicesDto = {
+    selectedServices: Array<PublicSelectedServiceDto>;
+};
+
+export type PublicSelectedServiceDto = {
+    serviceId: number;
+    quantity: number;
 };
 
 export type CreateServiceDto = {
@@ -1218,6 +1232,141 @@ export type ApiResponseListAdminEmployeeTimesheetEntriesDto = {
     timestamp: string;
 };
 
+export type ApiResponseDiagnosticTableResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: DiagnosticTableResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type DiagnosticActiveFilterDto = {
+    key: string;
+    operator: 'EQUALS' | 'CONTAINS' | 'STARTS_WITH' | 'GTE' | 'LTE' | 'BETWEEN';
+    value?: {
+        [key: string]: unknown;
+    };
+    displayValue?: string;
+};
+
+export type DiagnosticFilterOptionDto = {
+    value?: {
+        [key: string]: unknown;
+    };
+    label: string;
+    tone?: 'NEUTRAL' | 'INFO' | 'WARNING' | 'ERROR' | 'SUCCESS';
+};
+
+export type DiagnosticPaginationDto = {
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
+    previousPage?: number;
+    nextPage?: number;
+    pageSizeOptions: Array<number>;
+};
+
+export type DiagnosticTableFieldDto = {
+    key: string;
+    label: string;
+    valueType: 'TEXT' | 'NUMBER' | 'DATE_TIME' | 'ENUM' | 'HASH' | 'JSON';
+    sortable: boolean;
+    copyable: boolean;
+    visibleByDefault: boolean;
+    width?: string;
+};
+
+export type DiagnosticTableFilterDto = {
+    key: string;
+    label: string;
+    valueType: 'TEXT' | 'NUMBER' | 'DATE_TIME' | 'ENUM' | 'HASH' | 'JSON';
+    operators: Array<'EQUALS' | 'CONTAINS' | 'STARTS_WITH' | 'GTE' | 'LTE' | 'BETWEEN'>;
+    options: Array<DiagnosticFilterOptionDto>;
+    placeholder?: string;
+};
+
+export type DiagnosticTableMetadataDto = {
+    id: string;
+    domain: 'BOOKING';
+    flow: 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN';
+    title: string;
+    description?: string;
+    emptyState: string;
+};
+
+export type DiagnosticTableQueryDto = {
+    activeFilters: Array<DiagnosticActiveFilterDto>;
+    sort: DiagnosticTableSortDto;
+};
+
+export type DiagnosticTableResponseDto = {
+    table: DiagnosticTableMetadataDto;
+    fields: Array<DiagnosticTableFieldDto>;
+    filters: Array<DiagnosticTableFilterDto>;
+    query: DiagnosticTableQueryDto;
+    rows: Array<DiagnosticTableRowDto>;
+    pagination: DiagnosticPaginationDto;
+};
+
+export type DiagnosticTableRowDto = {
+    id: number;
+    values: Array<DiagnosticTableValueDto>;
+};
+
+export type DiagnosticTableSortDto = {
+    key: string;
+    direction: 'ASC' | 'DESC';
+};
+
+export type DiagnosticTableValueDto = {
+    key: string;
+    value?: {
+        [key: string]: unknown;
+    };
+    displayValue?: string;
+    tone?: 'NEUTRAL' | 'INFO' | 'WARNING' | 'ERROR' | 'SUCCESS';
+    copyable: boolean;
+};
+
+export type ApiResponseDiagnosticServiceFlowsResponseDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: DiagnosticServiceFlowsResponseDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type DiagnosticFlowOverviewQueryDto = {
+    from: string;
+    to: string;
+};
+
+export type DiagnosticFlowSummaryDto = {
+    id: 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN';
+    title: string;
+    description: string;
+    totalCount: number;
+    lastOccurredAt?: string;
+    severity: 'NONE' | 'ERROR';
+    status: 'HEALTHY' | 'FAILING';
+};
+
+export type DiagnosticServiceDto = {
+    id: 'BOOKING';
+    title: string;
+};
+
+export type DiagnosticServiceFlowsResponseDto = {
+    service: DiagnosticServiceDto;
+    query: DiagnosticFlowOverviewQueryDto;
+    flows: Array<DiagnosticFlowSummaryDto>;
+};
+
 export type GetInAppNotificationsRequest = {
     page?: number;
     size?: number;
@@ -1314,11 +1463,14 @@ export type AppointmentSessionOverviewDto = {
     selectedProfile: BookingProfileDto;
     selectedServices: Array<AppointmentSessionSelectedServicesDto>;
     selectedStartTime: string;
+    totalDurationMinutes: number;
+    totalPrice: number;
 };
 
 export type AppointmentSessionSelectedServicesDto = {
     serviceGroup: ServiceGroupDto;
     services: ServiceDto;
+    quantity: number;
 };
 
 export type ApiResponsePaginatedResponseServiceDto = {

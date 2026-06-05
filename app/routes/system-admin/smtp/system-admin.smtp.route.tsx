@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router';
 import type { Route } from './+types/system-admin.smtp.route';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { CompanyPageTemplate, Panel } from '~/ui';
 
 export async function loader() {

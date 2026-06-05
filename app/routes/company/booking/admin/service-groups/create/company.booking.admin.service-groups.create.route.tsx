@@ -4,7 +4,7 @@ import { CompanyUserServiceGroupController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { ServiceGroupFormPage, type ServiceGroupFormValues } from '../_components/service-group-form-page';
 
 const emptyValues: ServiceGroupFormValues = { name: '' };

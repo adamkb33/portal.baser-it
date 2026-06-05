@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
   redirectWithInfo: vi.fn(),
 }));
 
-vi.mock('~/routes/booking/public/appointment/session/contact/_services/contact-auth.service.server', () => ({
+vi.mock('~/routes/_features/booking/session/contact/_services/contact-auth.service.server', () => ({
   ContactAuthService: {
     signInWithProvider: mocks.signInWithProvider,
     signInLocal: mocks.signInLocal,
@@ -30,7 +30,7 @@ vi.mock('~/routes/booking/public/appointment/session/contact/_services/contact-a
   },
 }));
 
-vi.mock('~/routes/booking/public/appointment/session/_services/appointment-session.service.server', () => ({
+vi.mock('~/routes/_features/booking/_services/booking.appointment-session.service.server', () => ({
   AppointmentSessionService: {
     get: mocks.getSession,
   },
@@ -45,12 +45,12 @@ vi.mock('~/lib/api-error', () => ({
   resolveErrorPayload: mocks.resolveErrorPayload,
 }));
 
-vi.mock('~/routes/company/_lib/flash-message.server', () => ({
+vi.mock('~/lib/flash-message.server', () => ({
   redirectWithError: mocks.redirectWithError,
   redirectWithInfo: mocks.redirectWithInfo,
 }));
 
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { action as bookingSignInAction } from './sign-in/booking.public.appointment.session.contact.sign-in.route';
 import { action as bookingSignUpAction } from './sign-up/booking.public.appointment.session.contact.sign-up.route';
 import { action as bookingCollectEmailAction } from './collect-email/booking.public.appointment.session.contact.collect-email.route';

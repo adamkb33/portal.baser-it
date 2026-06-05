@@ -4,14 +4,14 @@ import { Link, data, redirect, Form, useActionData, useNavigation } from 'react-
 import type { Route } from './+types/auth.verify-mobile.route';
 
 import { AuthController, type VerificationStatusResponseDto } from '~/api/generated/base';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { requireVerificationToken } from '~/routes/booking/public/appointment/session/contact/_utils/auth.utils.server';
-import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
+import { requireVerificationToken } from '~/routes/_features/booking/session/contact/_utils/auth.utils.server';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { authService } from '~/lib/auth-service';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { Button, FormPageTemplate, Label, Notice, VerificationCodeInput } from '~/ui';
+import { VerificationTokenService } from '~/routes/_features/booking/session/contact/_services/verification-token.service.server';
 
 type VerifyMobileLoaderData = {
   verificationSessionToken: string;
@@ -194,9 +194,7 @@ export default function AuthVerifyMobile({ loaderData }: Route.ComponentProps) {
               <input type="hidden" name="intent" value="verify" />
 
               <div className="space-y-3">
-                <Label htmlFor="code">
-                  Engangskode
-                </Label>
+                <Label htmlFor="code">Engangskode</Label>
                 <VerificationCodeInput
                   id="code"
                   name="code"

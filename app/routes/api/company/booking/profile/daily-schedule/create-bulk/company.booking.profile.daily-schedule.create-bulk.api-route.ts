@@ -1,7 +1,7 @@
 // app/routes/api/company/booking/profile/daily-schedule/create-bulk.api-route.ts
 import { DailyScheduleController } from '~/api/generated/booking';
 import { redirectWithSuccess, redirectWithError } from '~/lib/flash-message.server';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { withAuth } from '~/api/utils/with-auth';
 import type { Route } from './+types/company.booking.profile.daily-schedule.create-bulk.api-route';
 

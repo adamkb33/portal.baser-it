@@ -6,7 +6,7 @@ import { CompanyUserInAppNotificationController, type InAppNotificationDto } fro
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { serializeQueryParams } from '~/lib/query';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import { CompanyMetricCard, CompanyPageTemplate, Notice } from '~/ui';
 import { NotificationsFilterCard } from './_components/notifications-filter-card';

@@ -4,7 +4,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '~
 import { Button } from '~/ui';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { toast } from 'sonner';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import type { ContactDto } from '~/api/generated/base';
 
 export type ContactPickerProps = {

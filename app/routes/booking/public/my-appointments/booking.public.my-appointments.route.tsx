@@ -1,8 +1,9 @@
-import { data, Link, useNavigation, useSearchParams } from 'react-router';
+import { data, Link, useLocation, useNavigation, useSearchParams } from 'react-router';
 import type { Route } from './+types/booking.public.my-appointments.route';
 import {
   Calendar,
   CalendarClock,
+  CalendarPlus,
   ChevronDown,
   CheckCircle2,
   CircleDot,
@@ -14,7 +15,9 @@ import {
 import { AppointmentsController, type MyAppointmentDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
+import { getBookingRouteHref } from '~/routes/_features/booking/_utils/booking.route-map';
+import type { BookingSurface } from '~/routes/_features/booking/_utils/booking.surface';
 import {
   Badge,
   Button,
@@ -27,6 +30,11 @@ import {
 } from '~/ui';
 const UPCOMING_BADGE_CLASS = 'border-border bg-muted text-foreground';
 const COMPLETED_BADGE_CLASS = 'border-secondary/30 bg-secondary/15 text-foreground';
+const ACTION_LINK_BASE =
+  'inline-flex items-center justify-center gap-2 rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive';
+const PRIMARY_ACTION_LINK_CLASS = `${ACTION_LINK_BASE} border-interactive bg-interactive text-text-inverse hover:bg-interactive-hover`;
+const SECONDARY_ACTION_LINK_CLASS = `${ACTION_LINK_BASE} border-border bg-background text-text-primary hover:bg-surface`;
+const DANGER_ACTION_LINK_CLASS = `${ACTION_LINK_BASE} border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20`;
 
 const formatDurationMinutes = (startIso: string, endIso: string): number => {
   const start = new Date(startIso).getTime();
@@ -194,6 +202,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.ComponentProps) {
+  const location = useLocation();
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
   const nearestAppointment = loaderData.nearestAppointment ?? null;
@@ -212,6 +221,9 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
   const completedHasNext = loaderData.completedHasNext ?? false;
   const completedHasPrevious = loaderData.completedHasPrevious ?? false;
   const completedTotalElements = loaderData.completedTotalElements ?? 0;
+  const bookingSurface: BookingSurface = location.pathname === '/embed' || location.pathname.startsWith('/embed/')
+    ? 'embed'
+    : 'public';
 
   const buildSectionPageHref = (section: 'upcoming' | 'completed', nextPage: number) => {
     const params = new URLSearchParams(searchParams);
@@ -229,6 +241,14 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
     return `?${params.toString()}`;
   };
 
+  const buildNewBookingHref = (appointment?: MyAppointmentDto | null): string | null => {
+    const companyId = appointment?.company.id;
+    if (!companyId) return null;
+
+    const params = new URLSearchParams({ companyId: String(companyId) });
+    return `${getBookingRouteHref(bookingSurface, 'session')}?${params.toString()}`;
+  };
+
   const nearestUpcomingAppointment = nearestAppointment;
   const nearestUpcomingDate = nearestUpcomingAppointment ? formatDateParts(nearestUpcomingAppointment.startTime) : null;
   const nearestUpcomingDuration = nearestUpcomingAppointment
@@ -237,6 +257,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
   const nearestCalendarPayload = buildCalendarPayload(nearestUpcomingAppointment ?? undefined);
   const nearestMapsUrl = buildGoogleMapsUrl(nearestUpcomingAppointment ?? undefined);
   const nearestCancelHref = buildCancelHref(nearestUpcomingAppointment ?? undefined);
+  const nearestNewBookingHref = buildNewBookingHref(nearestUpcomingAppointment);
   const expiredAppointments = completedAppointments;
 
   return (
@@ -300,13 +321,32 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
               </div>
             )}
 
-            {nearestCalendarPayload && (
+            {(nearestNewBookingHref || nearestCalendarPayload || nearestMapsUrl || nearestCancelHref) && (
               <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+                {nearestNewBookingHref && (
+                  <Link to={nearestNewBookingHref} className={`${PRIMARY_ACTION_LINK_CLASS} w-full px-4 py-3`}>
+                    <CalendarPlus className="size-5" />
+                    Book ny time
+                  </Link>
+                )}
+                {nearestMapsUrl && (
+                  <a href={nearestMapsUrl} target="_blank" rel="noreferrer" className={`${SECONDARY_ACTION_LINK_CLASS} w-full px-4 py-3`}>
+                    <MapPin className="size-5" />
+                    Google Maps
+                  </a>
+                )}
+                {nearestCancelHref && (
+                  <Link to={nearestCancelHref} className={`${DANGER_ACTION_LINK_CLASS} w-full px-4 py-3`}>
+                    Avbestill
+                  </Link>
+                )}
+                {nearestCalendarPayload ? (
+                  <>
                 <a
                   href={nearestCalendarPayload.googleUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
+                  className={`${SECONDARY_ACTION_LINK_CLASS} w-full px-4 py-3`}
                 >
                   <ExternalLink className="size-5" />
                   Google Kalender
@@ -314,30 +354,13 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
                 <a
                   href={nearestCalendarPayload.href}
                   download={nearestCalendarPayload.filename}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
+                  className={`${SECONDARY_ACTION_LINK_CLASS} w-full px-4 py-3`}
                 >
                   <Calendar className="size-5" />
                   Last ned kalenderfil
                 </a>
-                {nearestMapsUrl && (
-                  <a
-                    href={nearestMapsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
-                  >
-                    <MapPin className="size-5" />
-                    Google Maps
-                  </a>
-                )}
-                {nearestCancelHref && (
-                  <Link
-                    to={nearestCancelHref}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-destructive/40 bg-destructive/10 px-4 py-3 font-semibold text-destructive transition-colors hover:bg-destructive/20"
-                  >
-                    Avbestill
-                  </Link>
-                )}
+                  </>
+                ) : null}
               </div>
             )}
           </div>
@@ -355,6 +378,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
               const appointmentCalendarPayload = buildCalendarPayload(appointment);
               const appointmentMapsUrl = buildGoogleMapsUrl(appointment);
               const cancelHref = buildCancelHref(appointment);
+              const newBookingHref = buildNewBookingHref(appointment);
 
               return (
                 <BookingCard key={appointment.id} className="overflow-hidden p-3 md:p-4">
@@ -409,13 +433,19 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
                       )}
 
                       <div className="flex flex-wrap gap-2">
+                        {newBookingHref && (
+                          <Link to={newBookingHref} className={PRIMARY_ACTION_LINK_CLASS}>
+                            <CalendarPlus className="size-4.5" />
+                            Book ny time
+                          </Link>
+                        )}
                         {appointmentCalendarPayload && (
                           <>
                             <a
                               href={appointmentCalendarPayload.googleUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                              className={SECONDARY_ACTION_LINK_CLASS}
                             >
                               <ExternalLink className="size-4.5" />
                               Google Kalender
@@ -423,7 +453,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
                             <a
                               href={appointmentCalendarPayload.href}
                               download={appointmentCalendarPayload.filename}
-                              className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                              className={SECONDARY_ACTION_LINK_CLASS}
                             >
                               <Calendar className="size-4.5" />
                               Last ned kalenderfil
@@ -435,7 +465,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
                             href={appointmentMapsUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                            className={SECONDARY_ACTION_LINK_CLASS}
                           >
                             <MapPin className="size-4.5" />
                             Google Maps
@@ -444,7 +474,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
                         {cancelHref && (
                           <Link
                             to={cancelHref}
-                            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-destructive/40 bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20"
+                            className={DANGER_ACTION_LINK_CLASS}
                           >
                             Avbestill
                           </Link>
@@ -485,6 +515,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
               const appointmentDate = formatDateParts(appointment.startTime);
               const appointmentDuration = formatDurationMinutes(appointment.startTime, appointment.endTime);
               const appointmentMapsUrl = buildGoogleMapsUrl(appointment);
+              const newBookingHref = buildNewBookingHref(appointment);
 
               return (
                 <BookingCard key={appointment.id} className="overflow-hidden p-3 md:p-4">
@@ -538,17 +569,25 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
                         <p className="text-sm text-muted-foreground">Ingen tjenester oppgitt</p>
                       )}
 
-                      {appointmentMapsUrl && (
-                        <a
-                          href={appointmentMapsUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
-                        >
-                          <MapPin className="size-4.5" />
-                          Google Maps
-                        </a>
-                      )}
+                      <div className="flex flex-wrap gap-2">
+                        {newBookingHref && (
+                          <Link to={newBookingHref} className={PRIMARY_ACTION_LINK_CLASS}>
+                            <CalendarPlus className="size-4.5" />
+                            Book ny time
+                          </Link>
+                        )}
+                        {appointmentMapsUrl && (
+                          <a
+                            href={appointmentMapsUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={SECONDARY_ACTION_LINK_CLASS}
+                          >
+                            <MapPin className="size-4.5" />
+                            Google Maps
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </details>
                 </BookingCard>

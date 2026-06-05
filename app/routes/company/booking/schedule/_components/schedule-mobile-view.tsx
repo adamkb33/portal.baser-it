@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CalendarPlus2, CalendarX2 } from 'lucide-react';
 import { Button } from '~/ui';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import type { ScheduleWeekDay } from '../_types/schedule.types';
 
 type Props = {

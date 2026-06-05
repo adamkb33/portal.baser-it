@@ -75,7 +75,7 @@ export function AppointmentCardRow({ appointment, onDelete, onUploadImage, isDel
                 </p>
               </div>
 
-              <Badge variant="outline" size="sm" className="shrink-0 text-[11px]">
+              <Badge variant="outline" size="sm" className="shrink-0 text-xs">
                 {statusLabel}
               </Badge>
             </div>
@@ -87,12 +87,12 @@ export function AppointmentCardRow({ appointment, onDelete, onUploadImage, isDel
             </p>
 
             <div className="mt-1.5 grid grid-cols-2 gap-1.5">
-              <div className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-variant-2 px-2 py-1 text-[11px]">
+              <div className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-variant-2 px-2 py-1 text-xs">
                 <Clock3 className="h-3 w-3 text-text-secondary" />
                 <span className="text-text-secondary">Varighet</span>
                 <span className="font-semibold text-text-primary">{getTotalDuration(appointment)}</span>
               </div>
-              <div className="inline-flex items-center justify-end gap-1 rounded-full border border-border bg-surface-variant-3 px-2 py-1 text-[11px]">
+              <div className="inline-flex items-center justify-end gap-1 rounded-full border border-border bg-surface-variant-3 px-2 py-1 text-xs">
                 <Wallet className="h-3 w-3 text-text-secondary" />
                 <span className="text-text-secondary">Pris</span>
                 <span className="font-semibold text-text-primary">{getTotalPrice(appointment)}</span>

@@ -1,6 +1,6 @@
 import type { ProviderCompleteProfileResponseDto, SignInResponseDto, SignUpResponseDto } from '~/api/generated/base';
-import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
 import { resolveAuthNextStepHref } from './auth-flow';
+import { VerificationTokenService } from '~/routes/_features/booking/session/contact/_services/verification-token.service.server';
 
 type AuthFlowPayload = SignInResponseDto | SignUpResponseDto | ProviderCompleteProfileResponseDto | null | undefined;
 
@@ -19,12 +19,12 @@ export async function resolveAuthPostRedirect(payload: AuthFlowPayload): Promise
 
   const nextStepHref = resolveAuthNextStepHref(payload.nextStep, {
     userId: payload.userId ?? null,
-    emailDelivery: 'emailDelivery' in payload ? payload.emailDelivery ?? null : null,
-    mobileDelivery: 'mobileDelivery' in payload ? payload.mobileDelivery ?? null : null,
+    emailDelivery: 'emailDelivery' in payload ? (payload.emailDelivery ?? null) : null,
+    mobileDelivery: 'mobileDelivery' in payload ? (payload.mobileDelivery ?? null) : null,
   });
 
   const verificationCookieHeader = await VerificationTokenService.buildVerificationCookieHeaderFromDto(
-    'verificationToken' in payload ? payload.verificationToken ?? null : null,
+    'verificationToken' in payload ? (payload.verificationToken ?? null) : null,
   );
 
   return {

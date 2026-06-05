@@ -5,7 +5,7 @@ import type { Route } from './+types/company.admin.employees.route';
 import { getFlashMessage } from '../../../../lib/flash-message.server';
 import { AdminCompanyUserController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
-import { logRouteError, logRouteStart, logRouteSuccess } from '~/lib/route-log';
+import { logRouteError, logRouteStart, logRouteSuccess } from '~/lib/routing/route-log';
 import { describeAxiosError } from '~/lib/http-log';
 
 export async function loader(args: Route.LoaderArgs) {

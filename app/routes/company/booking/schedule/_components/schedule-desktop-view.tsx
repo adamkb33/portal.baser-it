@@ -57,7 +57,7 @@ export function ScheduleDesktopView({
   return (
     <div
       ref={scrollContainerRef}
-      className="relative h-[clamp(26.25rem,calc(100dvh-12rem),33rem)] overflow-auto overscroll-contain rounded-2xl border border-border bg-background shadow-sm"
+      className="relative h-screen overflow-auto overscroll-contain rounded-2xl border border-border bg-background shadow-sm"
     >
       <div className="grid w-full overflow-hidden rounded-2xl" style={{ gridTemplateColumns }}>
         <div className="sticky top-0 z-20 border-r border-border bg-surface" />

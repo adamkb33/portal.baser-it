@@ -4,7 +4,7 @@ import { Check, MapPin, Calendar, Mail, Bell, Clock, ExternalLink, Sparkles, Par
 import { PublicCompanyController } from '~/api/generated/base';
 import { AppointmentsController, PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import {
   Button as BookingButton,
   Card as BookingCard,

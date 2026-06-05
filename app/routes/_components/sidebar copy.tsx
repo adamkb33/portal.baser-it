@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { type RouteBranch } from '~/lib/route-tree';
-import { getIcon } from '~/lib/route-icon-map';
+import { type RouteBranch } from '~/lib/routing/route-tree';
+import { getIcon } from '~/lib/routing/route-icon-map';
 import { onSidebarLinkSelect } from './sidebar-drilldown';
 
 type SidebarProps = {

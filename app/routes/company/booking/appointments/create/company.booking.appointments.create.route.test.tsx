@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ROUTES_MAP, ROUTE_TREE } from '~/lib/route-tree';
+import { ROUTES_MAP, ROUTE_TREE } from '~/lib/routing/route-tree';
 import { action, loader } from './company.booking.appointments.create.route';
 import { parseCreateFlowQueryState, withCreateFlowQueryState } from './_utils/create-flow-query-params';
 

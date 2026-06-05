@@ -3,7 +3,7 @@ import type { Route } from './+types/auth.collect-email.route';
 
 import { AuthController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { Button, FormField, FormPageTemplate } from '~/ui';

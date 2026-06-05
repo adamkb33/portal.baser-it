@@ -10,7 +10,7 @@ export interface PageHeaderProps extends React.HTMLAttributes<HTMLElement> {
 
 export function PageHeader({ label, title, description, meta, className, ...props }: PageHeaderProps) {
   return (
-    <header className={cn('pb-6 md:border-b md:border-border md:pb-8', className)} {...props}>
+    <header className={cn('pb-4 md:border-b md:border-border md:pb-6', className)} {...props}>
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0 flex-1 space-y-2">
           {label ? (

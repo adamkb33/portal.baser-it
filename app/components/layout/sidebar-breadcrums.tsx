@@ -8,7 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { ROUTE_TREE, type RouteBranch } from '~/lib/route-tree';
+import { ROUTE_TREE, type RouteBranch } from '~/lib/routing/route-tree';
 
 interface BreadcrumbsProps {
   items: RouteBranch[] | undefined;

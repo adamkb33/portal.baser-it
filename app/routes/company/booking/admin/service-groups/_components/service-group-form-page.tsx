@@ -1,6 +1,6 @@
 import { Form, useNavigate, useNavigation } from 'react-router';
 import { Button, CompanyFormPageTemplate, FormField, Text } from '~/ui';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 
 export type ServiceGroupFormValues = {
   id?: number;

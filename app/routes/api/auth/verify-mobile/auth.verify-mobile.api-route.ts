@@ -1,9 +1,12 @@
 import { data } from 'react-router';
 import type { Route } from './+types/auth.verify-mobile.api-route';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
-import { ContactAuthService } from '~/routes/booking/public/appointment/session/contact/_services/contact-auth.service.server';
-import { extractAuthErrorCode, resolveMappedAuthError } from '~/routes/booking/public/appointment/session/contact/_utils/auth-step-error';
+import {
+  extractAuthErrorCode,
+  resolveMappedAuthError,
+} from '~/routes/_features/booking/session/contact/_utils/auth-step-error';
+import { VerificationTokenService } from '~/routes/_features/booking/session/contact/_services/verification-token.service.server';
+import { ContactAuthService } from '~/routes/_features/booking/session/contact/_services/contact-auth.service.server';
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();

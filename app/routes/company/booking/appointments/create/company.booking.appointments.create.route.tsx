@@ -10,7 +10,7 @@ import {
 import type { UserDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { CustomerSelector } from '~/routes/company/booking/_components/customer-selector';
 import { DateTimeSelector } from '~/routes/company/booking/_components/date-time-selector';
 import { ServicesSelector } from '~/routes/company/booking/_components/services-selector';
@@ -31,6 +31,7 @@ import {
   CompanyPageTemplate,
   Input,
   Label,
+  routeLinkButtonClass,
 } from '~/ui';
 
 const CONTACT_PAGE_SIZE = 10;
@@ -407,7 +408,7 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
       routeLinks={
         <Link
           to={ROUTES_MAP['company.booking.appointments'].href}
-          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+          className={routeLinkButtonClass}
         >
           Tilbake til timebestillinger
         </Link>

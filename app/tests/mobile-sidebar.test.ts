@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BrachCategory, type RouteBranch } from '~/lib/route-tree';
+import { BrachCategory, type RouteBranch } from '~/lib/routing/route-tree';
 import {
   getInitialDrawerStack,
   getMobileNavPage,

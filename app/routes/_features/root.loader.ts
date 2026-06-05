@@ -1,12 +1,11 @@
 import { data } from 'react-router';
-import { createNavigation } from '~/lib/route-tree';
+import { createNavigation } from '~/lib/routing/route-tree';
 import { authService } from '~/lib/auth-service';
 import { logger } from '~/lib/logger';
 import type { FlashMessage } from '~/lib/flash-message.server';
 import { AuthController } from '~/api/generated/base';
 import type { UserContextDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
-import { readEmbedModeFromCookieString, readEmbedThemeFromCookieString } from '~/lib/embed-shell';
 
 function mergeResponseHeaders(...headersInit: Array<HeadersInit | undefined>): Headers {
   const merged = new Headers();
@@ -36,10 +35,6 @@ function mergeResponseHeaders(...headersInit: Array<HeadersInit | undefined>): H
   }
 
   return merged;
-}
-
-function isEmbeddedRequest(request: Request): boolean {
-  return request.headers.get('sec-fetch-dest') === 'iframe';
 }
 
 export const refreshAndBuildResponse = async (
@@ -106,16 +101,12 @@ export const buildResponseData = async (request: Request, accessToken: string, f
   }
 
   const navigation = createNavigation(userContext, systemRoles, Boolean(authPayload));
-  const cookieHeader = request.headers.get('Cookie') ?? '';
 
   return {
     user: authPayload,
     userNavigation: navigation,
     companyContext: companySummary,
     flashMessage,
-    embedMode: readEmbedModeFromCookieString(cookieHeader),
-    embedTheme: readEmbedThemeFromCookieString(cookieHeader),
-    isEmbeddedRequest: isEmbeddedRequest(request),
   };
 };
 
@@ -126,16 +117,12 @@ export const defaultResponse = async (
 ) => {
   const authHeaders = await authService.clearAuthCookies();
   const headers = mergeResponseHeaders(authHeaders, additionalHeaders);
-  const cookieHeader = request?.headers.get('Cookie') ?? '';
   return data(
     {
       user: null,
       companyContext: null,
       userNavigation: createNavigation(undefined, [], false),
       flashMessage,
-      embedMode: readEmbedModeFromCookieString(cookieHeader),
-      embedTheme: readEmbedThemeFromCookieString(cookieHeader),
-      isEmbeddedRequest: request ? isEmbeddedRequest(request) : false,
     },
     { status: 200, headers },
   );

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Form, NavLink, useNavigation } from 'react-router';
 import { Briefcase, CalendarDays, Image as ImageIcon, PencilLine } from 'lucide-react';
 import type { BookingProfileDto, DailyScheduleDto, GroupedServiceGroupDto } from '~/api/generated/booking';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { ServicesSelector } from '../../_components/services-selector';
 import {
   Accordion,
@@ -19,6 +19,7 @@ import {
   Notice,
   Text,
   Textarea,
+  routeLinkButtonClass,
 } from '~/ui';
 
 const DAY_LABELS: Record<DailyScheduleDto['dayOfWeek'], string> = {
@@ -118,13 +119,13 @@ export function BookingProfileForm({
         <>
           <NavLink
             to={ROUTES_MAP['company.booking.profile'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+            className={routeLinkButtonClass}
           >
             Tilbake til bookingprofil
           </NavLink>
           <NavLink
             to={ROUTES_MAP['company.booking.schedule-unavailability'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+            className={routeLinkButtonClass}
           >
             Mitt fravik
           </NavLink>

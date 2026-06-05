@@ -4,10 +4,25 @@ import { Camera, Image as ImageIcon, Move, ZoomIn } from 'lucide-react';
 import { CompanyUserAppointmentController, PublicAppointmentSessionController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { fileToBase64 } from '~/lib/file.utils';
 import type { Route } from './+types/company.booking.appointments.upload-image.route';
-import { Badge, Button, Card, CardContent, CompanyPageTemplate, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Notice, Text } from '~/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CompanyPageTemplate,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Notice,
+  Text,
+  routeLinkButtonClass,
+} from '~/ui';
 
 const EDITOR_SIZE = 240;
 const OUTPUT_SIZE = 1024;
@@ -282,7 +297,7 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
       routeLinks={
         <Link
           to={ROUTES_MAP['company.booking.appointments'].href}
-          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+          className={routeLinkButtonClass}
         >
           Tilbake til timebestillinger
         </Link>
@@ -294,7 +309,7 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
         <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-surface via-background to-surface p-3 sm:p-4">
           <div className="pointer-events-none absolute -right-14 -top-14 h-28 w-28 rounded-full bg-primary/10 blur-xl" />
           <div className="pointer-events-none absolute -bottom-16 -left-8 h-28 w-28 rounded-full bg-secondary/10 blur-xl" />
-          <div className="relative grid gap-3 lg:grid-cols-[1.35fr_1fr]">
+          <div className="relative grid gap-3 lg:grid-cols-2">
             <div className="space-y-2">
               <Badge variant="outline" size="sm" className="rounded-full">
                 Avtaledetaljer
@@ -356,7 +371,7 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
               <div className="-mx-1 overflow-x-auto px-1 pb-1">
                 <div className="flex min-w-max gap-2">
                   {existingImages.map((image, index) => (
-                    <article key={image.id ?? `${image.url}-${index}`} className="w-[110px] shrink-0 overflow-hidden rounded-lg bg-surface">
+                    <article key={image.id ?? `${image.url}-${index}`} className="w-28 shrink-0 overflow-hidden rounded-lg bg-surface">
                       <button
                         type="button"
                         className="block w-full text-left"
@@ -368,11 +383,11 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
                           })
                         }
                       >
-                        <div className="h-[92px] w-full overflow-hidden bg-background">
+                        <div className="h-24 w-full overflow-hidden bg-background">
                           <img
                             src={image.url}
                             alt={image.label || `Avtalebilde ${index + 1}`}
-                            className="h-full w-full object-cover transition-transform duration-200 hover:scale-[1.03]"
+                            className="h-full w-full object-cover transition-transform duration-200 hover:scale-105"
                             loading="lazy"
                           />
                         </div>
@@ -381,14 +396,14 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
                         <Text as="p" variant="caption" className="truncate font-semibold">
                           {image.label || `Bilde ${index + 1}`}
                         </Text>
-                        <Text as="p" variant="caption" className="text-[10px] text-text-secondary">
+                        <Text as="p" variant="caption" className="text-xs text-text-secondary">
                           {(image.size / 1024).toFixed(0)} KB
                         </Text>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="h-6 w-full px-2 text-[10px]"
+                          className="h-6 w-full px-2 text-xs"
                           disabled={!image.id || deletingImageId === image.id}
                           loading={deletingImageId === image.id}
                           onClick={() => {
@@ -473,7 +488,7 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
 
                   <div className="pointer-events-none absolute inset-0 border border-white/25" />
                   <div
-                    className="pointer-events-none absolute left-1/2 top-1/2 h-[72%] w-[72%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-dashed border-white/80"
+                    className="pointer-events-none absolute left-1/2 top-1/2 h-3/4 w-3/4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-dashed border-white/80"
                     aria-hidden
                   />
                 </div>
@@ -562,7 +577,7 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
               <img
                 src={selectedPreviewImage.url}
                 alt={selectedPreviewImage.label}
-                className="max-h-[72vh] w-full object-contain"
+                className="max-h-screen w-full object-contain"
               />
             </div>
           ) : null}

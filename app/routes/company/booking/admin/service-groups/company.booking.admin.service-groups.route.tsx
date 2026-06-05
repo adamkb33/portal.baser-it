@@ -6,7 +6,7 @@ import { Button, Input, Notice, TableCell, TableRow } from '~/ui';
 import type { Route } from './+types/company.booking.admin.service-groups.route';
 import { CompanyUserServiceGroupController, type ServiceGroupDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
-import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {

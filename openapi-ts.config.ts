@@ -65,4 +65,19 @@ export default defineConfig([
       },
     ],
   },
+  {
+    client: '@hey-api/client-axios',
+    input: groupedDocsUrl('diagnostic-service'),
+    output: './app/api/generated/diagnostic',
+    plugins: [
+      {
+        name: '@hey-api/client-axios',
+        runtimeConfigPath: '~/api/config/diagnostic-client',
+      },
+      {
+        name: '@hey-api/sdk',
+        asClass: true,
+      },
+    ],
+  },
 ]);

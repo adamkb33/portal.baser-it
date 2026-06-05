@@ -1,7 +1,7 @@
 import { Form, useNavigate, useNavigation } from 'react-router';
 import { CompanyFormPageTemplate, FormField, Text, Button } from '~/ui';
 import type { ContactFormData, FieldErrors } from '../_schemas/contact.form.schema';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 
 type ContactFormPageProps = {
   mode: 'create' | 'edit';

@@ -18,7 +18,7 @@ const variantClasses: Record<ButtonVariant, string> = {
   secondary: 'border border-interactive text-interactive hover:bg-surface',
   outline: 'border border-border bg-background text-text-primary hover:bg-surface',
   ghost: 'text-interactive hover:bg-surface',
-  destructive: 'border border-interactive bg-interactive text-text-inverse hover:bg-interactive-hover',
+  destructive: 'border border-flash-error-border bg-flash-error-bg text-flash-error-text hover:bg-flash-error-border',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

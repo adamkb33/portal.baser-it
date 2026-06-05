@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
 import { cn } from '~/ui';
-import type { RouteBranch } from '~/lib/route-tree';
+import type { RouteBranch } from '~/lib/routing/route-tree';
 
 type SidebarProps = {
   branches: RouteBranch[];

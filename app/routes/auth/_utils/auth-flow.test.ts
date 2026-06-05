@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveAuthNextStepHref, resolveAuthStatusNextStepHref } from './auth-flow';
 
 describe('auth-flow next-step routing matrix', () => {

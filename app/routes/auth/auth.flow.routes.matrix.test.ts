@@ -83,7 +83,7 @@ vi.mock('~/lib/logger', () => ({
   },
 }));
 
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { action as signInAction } from './sign-in/auth.sign-in.route';
 import { action as signUpAction } from './sign-up/auth.sign-up.route';
 import { loader as checkEmailLoader, action as checkEmailAction } from './check-email/auth.check-email.route';

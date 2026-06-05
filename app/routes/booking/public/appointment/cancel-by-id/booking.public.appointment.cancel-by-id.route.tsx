@@ -1,11 +1,11 @@
 import { data, Form, useNavigation } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.cancel-by-id.route';
-import { CompanyUserAppointmentController, PublicAppointmentSessionController } from '~/api/generated/booking';
+import { AppointmentsController, PublicAppointmentSessionController } from '~/api/generated/booking';
 import type { AppointmentDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { authService } from '~/lib/auth-service';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
 import {
   Button,
@@ -57,19 +57,6 @@ function getDurationMinutes(startIso: string, endIso: string): number {
   const start = new Date(startIso).getTime();
   const end = new Date(endIso).getTime();
   return Math.max(0, Math.round((end - start) / 60000));
-}
-
-function resolveCancelToken(appointment: AppointmentDto): string | null {
-  const runtime = appointment as AppointmentDto & {
-    cancelToken?: string;
-    cancellationToken?: string;
-    token?: string;
-  };
-  if (typeof runtime.cancelToken === 'string' && runtime.cancelToken.length > 0) return runtime.cancelToken;
-  if (typeof runtime.cancellationToken === 'string' && runtime.cancellationToken.length > 0)
-    return runtime.cancellationToken;
-  if (typeof runtime.token === 'string' && runtime.token.length > 0) return runtime.token;
-  return null;
 }
 
 async function loadOwnedAppointment(request: Request, appointmentId: number) {
@@ -145,31 +132,13 @@ export async function action({ request, params }: Route.ActionArgs) {
   }
 
   try {
-    const appointment = await loadOwnedAppointment(request, appointmentId);
+    await loadOwnedAppointment(request, appointmentId);
 
-    try {
-      await withAuth(request, async () => {
-        return CompanyUserAppointmentController.deleteAppointment({
-          path: { id: appointmentId },
-          body: { reason: 'Avbestilt av kunde' },
-        });
+    await withAuth(request, async () => {
+      return AppointmentsController.cancelMyAppointment({
+        path: { appointmentId },
       });
-    } catch {
-      const token = resolveCancelToken(appointment);
-      if (!token) {
-        return redirectWithError(
-          request,
-          ROUTES_MAP['booking.public.my-appointments'].href,
-          'Kunne ikke avbestille avtalen automatisk. Åpne avbestillingslenken fra e-post.',
-        );
-      }
-
-      await withAuth(request, async () => {
-        return PublicAppointmentSessionController.cancelAppointment({
-          query: { token },
-        });
-      });
-    }
+    });
 
     return redirectWithInfo(
       request,

@@ -4,7 +4,7 @@ import type { Route } from './+types/company.admin.settings.route';
 import { AdminCompanyController, CompanyUserController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
 import { Button, CompanyMetricCard, CompanyPageTemplate, Input, Notice, Panel, Text } from '~/ui';
 

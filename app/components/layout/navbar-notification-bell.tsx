@@ -3,7 +3,7 @@ import { Bell, BellRing, ChevronRight, Circle } from 'lucide-react';
 import { Link } from 'react-router';
 import axios from 'axios';
 import { type InAppNotificationDto } from '~/api/generated/notification';
-import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/routing/route-tree';
 import { formatNotificationTimestamp } from '~/routes/company/notifications/_utils/format';
 import { getNotificationHeadline } from '~/routes/company/notifications/_utils/query';
 import { Badge, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '~/ui';

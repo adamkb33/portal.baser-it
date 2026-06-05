@@ -4,7 +4,7 @@ import { CompanyUserServiceGroupController, ServiceController, type ServiceDto }
 import type { Delete, Upload } from '~/api/generated/booking/types.gen';
 import { withAuth } from '~/api/utils/with-auth';
 import { redirectWithInfo, setFlashMessage } from '~/lib/flash-message.server';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ServiceFormPage, type ServiceFormValues } from '../_components/service-form-page';
 

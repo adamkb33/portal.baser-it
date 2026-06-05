@@ -1,7 +1,7 @@
 import { Outlet, redirect } from 'react-router';
 import type { Route } from './+types/system-admin.layout';
 import { authService } from '~/lib/auth-service';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { withAuth } from '~/api/utils/with-auth';
 import { AuthController } from '~/api/generated/base';

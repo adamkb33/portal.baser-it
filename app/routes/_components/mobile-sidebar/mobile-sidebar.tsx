@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Link, useLocation } from 'react-router';
 import { ChevronLeft, ChevronRight, Ellipsis, X } from 'lucide-react';
-import { getIcon } from '~/lib/route-icon-map';
-import type { RouteBranch } from '~/lib/route-tree';
+import { getIcon } from '~/lib/routing/route-icon-map';
+import type { RouteBranch } from '~/lib/routing/route-tree';
 import { Button, cn } from '~/ui';
 
 const DEFAULT_MAX_VISIBLE = 5;

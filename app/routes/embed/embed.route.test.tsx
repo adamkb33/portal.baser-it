@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { loader } from './embed.route';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 
 function unwrapData<T = unknown>(result: unknown): T {
   if (result && typeof result === 'object' && 'data' in (result as Record<string, unknown>)) {
@@ -57,9 +57,8 @@ describe('embed route loader', () => {
     } as never);
 
     expect(getStatus(result)).toBe(302);
-    expect(getLocation(result)).toBe(`${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=123`);
-    expect(getSetCookie(result)).toContain('embed_mode=');
-    expect(getSetCookie(result)).toContain('SameSite=Lax');
+    expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=123`);
+    expect(getSetCookie(result)).toBeNull();
   });
 
   it('allows start=contact and redirects to booking session', async () => {
@@ -68,9 +67,8 @@ describe('embed route loader', () => {
     } as never);
 
     expect(getStatus(result)).toBe(302);
-    expect(getLocation(result)).toBe(`${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=55`);
-    expect(getSetCookie(result)).toContain('embed_mode=');
-    expect(getSetCookie(result)).toContain('SameSite=Lax');
+    expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=55`);
+    expect(getSetCookie(result)).toBeNull();
   });
 
   it('returns 400 when companyId is missing', async () => {
@@ -84,15 +82,13 @@ describe('embed route loader', () => {
     });
   });
 
-  it('returns 400 when start is not contact', async () => {
+  it('ignores unsupported start values and still redirects to booking session', async () => {
     const result = await loader({
       request: new Request('http://localhost/embed?companyId=8&start=overview'),
     } as never);
 
-    expect(getStatus(result)).toBe(400);
-    expect(unwrapData(result)).toMatchObject({
-      error: 'Ugyldig startverdi. Bruk start=contact.',
-    });
+    expect(getStatus(result)).toBe(302);
+    expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=8`);
   });
 
   it('returns 400 when theme is invalid', async () => {
@@ -106,14 +102,27 @@ describe('embed route loader', () => {
     });
   });
 
-  it('sets embed theme cookie when theme is valid', async () => {
+  it('preserves valid theme in the redirect URL', async () => {
     const result = await loader({
       request: new Request('http://localhost/embed?companyId=8&theme=ocean'),
     } as never);
 
     const setCookies = getSetCookies(result).join('\n');
     expect(getStatus(result)).toBe(302);
-    expect(setCookies).toContain('embed_mode=');
-    expect(setCookies).toContain('embed_theme=ocean');
+    expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=8&theme=ocean`);
+    expect(setCookies).not.toContain('embed_mode=');
+    expect(setCookies).not.toContain('embed_theme=ocean');
+  });
+
+  it('clears the appointment session cookie when reset is requested', async () => {
+    const result = await loader({
+      request: new Request('http://localhost/embed?companyId=8&reset=1'),
+    } as never);
+
+    const setCookies = getSetCookies(result).join('\n');
+    expect(getStatus(result)).toBe(302);
+    expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=8`);
+    expect(setCookies).toContain('appointment_session=');
+    expect(setCookies).toContain('Max-Age=0');
   });
 });

@@ -1,7 +1,7 @@
 // auth.sign-up.route.tsx
 import { Link, Form, redirect, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.sign-up.route';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { AuthController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';

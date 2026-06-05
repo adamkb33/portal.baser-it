@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createNavigation, RoutePlaceMent } from '~/lib/route-tree';
+import { createNavigation, RoutePlaceMent } from '~/lib/routing/route-tree';
 import type { UserContextDto } from '~/api/generated/base';
 
 const createUserContext = (

@@ -4,7 +4,7 @@ import { ContactFormSchema, type ContactFormData, type FieldErrors } from '../_s
 import { ContactFormPage } from '../_components/contact-form-page';
 import { CompanyUserContactController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 

@@ -7,7 +7,7 @@ import { withAuth } from '~/api/utils/with-auth';
 import { addDays, addMonths, format, isSameDay, startOfDay } from 'date-fns';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { formatDateBoundaryInTimeZone, formatDateInputInTimeZone } from '~/lib/query';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import {
   Button,
   Card,
@@ -18,6 +18,7 @@ import {
   CompanyPageTemplate,
   Text,
   cn,
+  routeLinkButtonClass,
 } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -121,13 +122,13 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
         <>
           <NavLink
             to={ROUTES_MAP['company.booking'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+            className={routeLinkButtonClass}
           >
             Oversikt
           </NavLink>
           <NavLink
             to={ROUTES_MAP['company.booking.profile'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+            className={routeLinkButtonClass}
           >
             Bookingprofil
           </NavLink>
@@ -141,7 +142,7 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
         </div>
       }
     >
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[360px,1fr]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card variant="default" className="bg-surface">
           <CardHeader>
             <CardTitle>Registrert fravær</CardTitle>
@@ -155,20 +156,20 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
               </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 <div className="rounded-md bg-background px-3 py-2">
-                  <p className="text-[11px] text-text-secondary">Totalt</p>
+                  <p className="text-xs text-text-secondary">Totalt</p>
                   <p className="text-sm font-medium text-text-primary">{totalRanges}</p>
                 </div>
                 <div className="rounded-md bg-background px-3 py-2">
-                  <p className="text-[11px] text-text-secondary">Heldag</p>
+                  <p className="text-xs text-text-secondary">Heldag</p>
                   <p className="text-sm font-medium text-text-primary">{wholeDayRanges}</p>
                 </div>
                 <div className="rounded-md bg-background px-3 py-2">
-                  <p className="text-[11px] text-text-secondary">Med klokkeslett</p>
+                  <p className="text-xs text-text-secondary">Med klokkeslett</p>
                   <p className="text-sm font-medium text-text-primary">{partialRanges}</p>
                 </div>
               </div>
               <div className="space-y-2 rounded-md bg-background p-3">
-                <div className="text-[11px] font-medium uppercase tracking-wide text-text-secondary">Fremover</div>
+                <div className="text-xs font-medium uppercase tracking-wide text-text-secondary">Fremover</div>
                 <div className="flex flex-wrap gap-2">
                   {futureOptions.map((option) => (
                     <Button
@@ -187,7 +188,7 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
                     </Button>
                   ))}
                 </div>
-                <div className="text-[11px] font-medium uppercase tracking-wide text-text-secondary">Tidligere</div>
+                <div className="text-xs font-medium uppercase tracking-wide text-text-secondary">Tidligere</div>
                 <div className="flex flex-wrap gap-2">
                   {pastOptions.map((option) => (
                     <Button
@@ -224,8 +225,8 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
           </CardHeader>
           <CardContent className="space-y-2">
             {visibleSchedules.length > 0 ? (
-              visibleSchedules.map((schedule: ScheduleUnavailabilityDto, index: number) => (
-                <div key={index} className="flex items-center gap-3 rounded-md bg-background p-3">
+              visibleSchedules.map((schedule: ScheduleUnavailabilityDto) => (
+                <div key={`${schedule.profileId}-${schedule.startTime}-${schedule.endTime}`} className="flex items-center gap-3 rounded-md bg-background p-3">
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-primary/10">
                     <CalendarOff className="h-5 w-5 text-primary" />
                   </div>
@@ -259,7 +260,7 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
           </CardContent>
         </Card>
 
-        <Card variant="default" className="h-full bg-surface">
+        <Card variant="default" className="h-full bg-surface xl:col-span-2">
           <CardHeader>
             <CardTitle>Tips</CardTitle>
             <CardDescription>Husk å legge inn fravær i god tid.</CardDescription>

@@ -15,7 +15,7 @@ vi.mock('~/routes/company/_lib/flash-message.server', () => ({
   redirectWithError: mocks.redirectWithError,
 }));
 
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { loader } from './company.layout';
 
 describe('company.layout loader guards', () => {

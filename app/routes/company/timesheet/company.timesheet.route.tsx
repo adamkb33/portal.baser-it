@@ -7,7 +7,7 @@ import { CompanyUserTimesheetEntryController } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { CalendarView, type CalendarEntry } from '~/components/calendar/CalendarView';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { CompanyEmptyState, CompanyMetricCard, CompanyPageTemplate, Notice, Popover, PopoverContent, PopoverTrigger } from '~/ui';
 import { parseTimesheetListRequest, serializeTimesheetQuery, TIMESHEET_STATUS_LABELS } from './_utils';
 

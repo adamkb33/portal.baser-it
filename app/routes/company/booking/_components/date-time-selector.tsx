@@ -148,7 +148,7 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
           <Clock className="h-4 w-4" />
           <span>Velg tid</span>
         </Label>
-        <div className="h-[320px] overflow-y-auto rounded-lg border border-border bg-surface-variant-1 p-3 md:h-[250px] md:p-4">
+        <div className="h-80 overflow-y-auto rounded-lg border border-border bg-surface-variant-1 p-3 md:h-64 md:p-4">
           {!selectedDate ? (
             <div className="py-12 md:py-8 text-center">
               <Clock className="h-12 w-12 md:h-10 md:w-10 mx-auto text-muted-foreground/50 mb-3 md:mb-2" />
@@ -161,13 +161,13 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-2">
-              {availableTimeSlots.map((slot, index) => {
+              {availableTimeSlots.map((slot) => {
                 const slotStart = new Date(slot.startTime);
                 const isSelected = selectedDateTime && slotStart.getTime() === selectedDateTime.getTime();
 
                 return (
                   <Button
-                    key={index}
+                    key={`${slot.startTime}-${slot.endTime}`}
                     variant={isSelected ? 'primary' : 'outline'}
                     size="sm"
                     className={cn(

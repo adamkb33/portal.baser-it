@@ -5,7 +5,7 @@ import { Pen } from 'lucide-react';
 import type { Route } from './+types/company.admin.contacts.route';
 import { CompanyUserContactController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
-import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/routing/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import type { ContactDto } from '~/api/generated/base';

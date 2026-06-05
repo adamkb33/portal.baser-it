@@ -1,8 +1,5 @@
 import type { CSSProperties } from 'react';
 
-export const EMBED_MODE_COOKIE = 'embed_mode';
-export const EMBED_THEME_COOKIE = 'embed_theme';
-
 export const EMBED_THEME_KEYS = ['pitell', 'ocean', 'sunset', 'forest'] as const;
 export type EmbedThemeKey = (typeof EMBED_THEME_KEYS)[number];
 
@@ -47,50 +44,4 @@ export const EMBED_THEME_TOKENS: Record<EmbedThemeKey, CSSProperties> = {
 export function isEmbedThemeKey(value: string | null): value is EmbedThemeKey {
   if (!value) return false;
   return (EMBED_THEME_KEYS as readonly string[]).includes(value);
-}
-
-function parseCookieMap(cookieString: string): Record<string, string> {
-  return cookieString
-    .split(';')
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .reduce<Record<string, string>>((acc, part) => {
-      const separator = part.indexOf('=');
-      if (separator < 0) return acc;
-      const key = part.slice(0, separator);
-      const rawValue = part.slice(separator + 1);
-      acc[key] = decodeURIComponent(rawValue);
-      return acc;
-    }, {});
-}
-
-export function readEmbedModeFromCookieString(cookieString: string): boolean {
-  const cookies = parseCookieMap(cookieString);
-  return cookies[EMBED_MODE_COOKIE] === '1';
-}
-
-export function readEmbedThemeFromCookieString(cookieString: string): EmbedThemeKey {
-  const cookies = parseCookieMap(cookieString);
-  const value = cookies[EMBED_THEME_COOKIE];
-  return isEmbedThemeKey(value) ? value : 'pitell';
-}
-
-function isSecureCookieRequest(requestUrl: string): boolean {
-  const url = new URL(requestUrl);
-  return url.protocol === 'https:';
-}
-
-function buildSetCookieHeader(requestUrl: string, name: string, value: string): string {
-  const secure = isSecureCookieRequest(requestUrl);
-  const sameSite = secure ? 'None' : 'Lax';
-  const base = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=14400; SameSite=${sameSite}`;
-  return secure ? `${base}; Secure` : base;
-}
-
-export function buildEmbedModeCookieHeader(requestUrl: string): string {
-  return buildSetCookieHeader(requestUrl, EMBED_MODE_COOKIE, '1');
-}
-
-export function buildEmbedThemeCookieHeader(requestUrl: string, theme: EmbedThemeKey): string {
-  return buildSetCookieHeader(requestUrl, EMBED_THEME_COOKIE, theme);
 }

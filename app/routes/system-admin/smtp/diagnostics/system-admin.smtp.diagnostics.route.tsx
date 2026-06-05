@@ -3,7 +3,7 @@ import type { Route } from './+types/system-admin.smtp.diagnostics.route';
 import { Base } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, CompanyPageTemplate, Notice, Panel, Text } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {

@@ -60,6 +60,12 @@ Routes and feature components compose these layers. They should not re-invent th
 - Use stable React ids where needed.
 - Avoid client-only assumptions for basic form or layout behavior.
 
+### 3.6 Navigation
+
+- Do not use raw `<a>` for internal app navigation.
+- Use React Router `Link` or `NavLink` for every internal route transition.
+- Raw `<a>` is allowed only for external URLs, and must include proper security attributes when opening a new tab.
+
 ## 4. Surface Rules
 
 The system has three shared surface concepts. They are not interchangeable.

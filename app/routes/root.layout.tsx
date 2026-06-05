@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Link, Outlet, data, isRouteErrorResponse, useLocation, useRouteError } from 'react-router';
 
 import { Navbar } from '~/components/layout/navbar';
-import { type UserNavigation, RoutePlaceMent } from '~/lib/route-tree';
+import { type UserNavigation, RoutePlaceMent } from '~/lib/routing/route-tree';
 import { Sidebar } from './_components/sidebar';
 import { MobileSidebar } from './_components/mobile-sidebar/mobile-sidebar';
 import type { Route } from './+types/root.layout';
@@ -12,43 +12,10 @@ import { defaultResponse, refreshAndBuildResponse, buildResponseData } from './_
 import { getFlashMessage } from '../lib/flash-message.server';
 import { FlashMessageBanner } from './_components/flash-message-banner';
 import { Footer } from './_components/footer';
-import { AppShellBackground } from './_components/backgrounds/app-shell-background';
 import type { CompanySummaryDto } from '~/api/generated/base';
-import { logRouteError, logRouteStart, logRouteSuccess } from '~/lib/route-log';
-import { ROUTES_MAP } from '~/lib/route-tree';
-import { type EmbedThemeKey } from '~/lib/embed-shell';
+import { logRouteError, logRouteStart, logRouteSuccess } from '~/lib/routing/route-log';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { SimpleShinyBackground } from './_components/backgrounds/simple-shiny.background';
-
-function resolveParentOrigin(): string | null {
-  if (typeof document === 'undefined') return null;
-  const referrer = document.referrer;
-  if (!referrer) return null;
-  try {
-    return new URL(referrer).origin;
-  } catch {
-    return null;
-  }
-}
-
-function postEmbedMessage(payload: Record<string, unknown>) {
-  if (typeof window === 'undefined') return;
-  if (window.parent === window) return;
-
-  const targetOrigin = resolveParentOrigin() ?? '*';
-  window.parent.postMessage(payload, targetOrigin);
-}
-
-function deriveBookingStep(pathname: string): string | null {
-  if (!pathname.startsWith('/booking/public')) return null;
-  if (pathname.includes('/session/contact')) return 'contact';
-  if (pathname.includes('/session/employee')) return 'employee';
-  if (pathname.includes('/session/select-services')) return 'select-services';
-  if (pathname.includes('/session/select-time')) return 'select-time';
-  if (pathname.includes('/session/overview')) return 'overview';
-  if (pathname.includes('/appointment/success')) return 'success';
-  if (pathname.includes('/appointment/cancel')) return 'cancel';
-  return 'entry';
-}
 
 export async function loader(args: Route.LoaderArgs) {
   const { request } = args;
@@ -116,23 +83,18 @@ export type RootOutletContext = {
   setUserNav: React.Dispatch<React.SetStateAction<UserNavigation | undefined>>;
   companyContext: CompanySummaryDto | null | undefined;
   setCompanyContext: React.Dispatch<React.SetStateAction<CompanySummaryDto | null | undefined>>;
-  embedMode: boolean;
-  embedTheme: EmbedThemeKey;
-  isEmbeddedRequest: boolean;
 };
+
+function isEmbeddedRoutePath(pathname: string): boolean {
+  return pathname === '/embed' || pathname.startsWith('/embed/');
+}
 
 export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const contentRef = React.useRef<HTMLElement | null>(null);
-  const hasSentReadyRef = React.useRef(false);
-  const lastHeightRef = React.useRef(0);
   const keepMobileMenuOpenOnNextRouteChangeRef = React.useRef(false);
-  const isEmbedMode = loaderData.embedMode === true;
-  const embedTheme = (loaderData.embedTheme ?? 'pitell') as EmbedThemeKey;
-  const isEmbeddedRequest = loaderData.isEmbeddedRequest === true;
-  const isEmbeddedRuntime = typeof window !== 'undefined' && window.parent !== window;
-  const isEmbedded = isEmbeddedRequest || isEmbeddedRuntime;
+  const isEmbedRoute = isEmbeddedRoutePath(location.pathname);
+
   const userNav = loaderData.userNavigation || undefined;
   const companyContext = loaderData.companyContext;
   const setUserNav: RootOutletContext['setUserNav'] = (_value) => undefined;
@@ -141,48 +103,6 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const sidebarBranches = userNav?.[RoutePlaceMent.SIDEBAR] || [];
   const hasSystemAdminSidebar = sidebarBranches.some((branch) => branch.id === 'system-admin');
   const hasSidebar = sidebarBranches.length > 0 && (Boolean(companyContext) || hasSystemAdminSidebar);
-  const isBookingPublicPath = location.pathname.startsWith('/booking/public');
-  const useEmbedShell = isEmbedMode && isEmbedded && isBookingPublicPath;
-
-  React.useEffect(() => {
-    if (!useEmbedShell) return;
-    if (hasSentReadyRef.current) return;
-    hasSentReadyRef.current = true;
-    postEmbedMessage({ type: 'embed:ready', mode: 'booking-public' });
-  }, [useEmbedShell]);
-
-  React.useEffect(() => {
-    if (!useEmbedShell) return;
-    const step = deriveBookingStep(location.pathname);
-    if (!step) return;
-
-    postEmbedMessage({
-      type: 'embed:step-changed',
-      step,
-      path: `${location.pathname}${location.search}`,
-    });
-  }, [location.pathname, location.search, useEmbedShell]);
-
-  React.useEffect(() => {
-    if (!useEmbedShell || typeof window === 'undefined') return;
-    const node = contentRef.current;
-    if (!node) return;
-
-    const publishHeight = () => {
-      const nextHeight = Math.ceil(node.getBoundingClientRect().height);
-      if (nextHeight <= 0 || nextHeight === lastHeightRef.current) return;
-      lastHeightRef.current = nextHeight;
-      postEmbedMessage({ type: 'embed:resize', height: nextHeight });
-    };
-
-    const observer = new ResizeObserver(() => publishHeight());
-    observer.observe(node);
-    publishHeight();
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [location.pathname, location.search, useEmbedShell]);
 
   React.useEffect(() => {
     if (keepMobileMenuOpenOnNextRouteChangeRef.current) {
@@ -193,30 +113,18 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
     setMobileMenuOpen(false);
   }, [location.pathname, location.search]);
 
-  if (useEmbedShell) {
+  if (isEmbedRoute) {
     return (
-      <div className="flex min-h-screen flex-col bg-background text-text-primary">
+      <div className="bg-background text-text-primary">
         <FlashMessageBanner message={loaderData.flashMessage} />
-        <main className="flex flex-1">
-          <div className="mx-auto flex min-h-full w-full max-w-[var(--container-xl)] flex-1">
-            <section
-              ref={contentRef}
-              className="min-w-0 flex-1 bg-background py-[var(--app-content-padding-block-mobile)] px-4 lg:py-[var(--app-content-padding-block-desktop)]"
-            >
-              <Outlet
-                context={{
-                  userNav,
-                  setUserNav,
-                  companyContext,
-                  setCompanyContext,
-                  embedMode: isEmbedMode,
-                  embedTheme,
-                  isEmbeddedRequest: isEmbedded,
-                }}
-              />
-            </section>
-          </div>
-        </main>
+        <Outlet
+          context={{
+            userNav,
+            setUserNav,
+            companyContext,
+            setCompanyContext,
+          }}
+        />
       </div>
     );
   }
@@ -273,9 +181,6 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
                 setUserNav,
                 companyContext,
                 setCompanyContext,
-                embedMode: isEmbedMode,
-                embedTheme,
-                isEmbeddedRequest: isEmbedded,
               }}
             />
           </section>

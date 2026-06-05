@@ -4,7 +4,7 @@ import { accessTokenCookie, refreshTokenCookie } from '~/routes/auth/_features/a
 import { AuthController, type CompanySummaryDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import type { Route } from './+types/user.company-context.route';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { Grid, PageTemplate, Panel, SelectionCard, Text } from '~/ui';
 

@@ -196,6 +196,6 @@
   --app-footer-height: 4rem;
   --app-sidebar-width: 17rem;
   --app-shell-inline-padding: 1rem;
-  --app-content-padding-block-mobile: var(--space-lg);
+  --app-content-padding-block-mobile: var(--space-sm);
   --app-content-padding-block-desktop: var(--space-xl);
 }

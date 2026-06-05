@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   loggerError: vi.fn(),
 }));
 
-vi.mock('./company/_lib/flash-message.server', () => ({
+vi.mock('../lib/flash-message.server', () => ({
   getFlashMessage: mocks.getFlashMessage,
 }));
 
@@ -43,7 +43,7 @@ vi.mock('./_features/root.loader', () => ({
   buildResponseData: mocks.buildResponseData,
 }));
 
-vi.mock('~/lib/route-log', () => ({
+vi.mock('~/lib/routing/route-log', () => ({
   logRouteStart: mocks.logRouteStart,
   logRouteSuccess: mocks.logRouteSuccess,
   logRouteError: mocks.logRouteError,

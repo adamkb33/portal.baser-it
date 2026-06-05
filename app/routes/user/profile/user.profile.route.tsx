@@ -5,7 +5,7 @@ import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { authService } from '~/lib/auth-service';
 import { redirectWithError, redirectWithSuccess } from '~/lib/flash-message.server';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, FormField, PageTemplate, Panel, Text } from '~/ui';
 import type { Route } from './+types/user.profile.route';
 

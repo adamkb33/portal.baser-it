@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { NavLink, useSubmit, useNavigate, useSearchParams } from 'react-router';
 import { Pen } from 'lucide-react';
-import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/route-tree';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/routing/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import type { CompanyUserDto } from '~/api/generated/base';

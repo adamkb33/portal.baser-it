@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { ClipboardCheck, ShieldCheck } from 'lucide-react';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { CompanyPageTemplate, Panel, Text } from '~/ui';
 
 export default function CompanyTimesheetAdminRoute() {

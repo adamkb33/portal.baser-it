@@ -1,12 +1,12 @@
 import { data, type ActionFunctionArgs } from 'react-router';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
-import { ContactAuthService } from '~/routes/booking/public/appointment/session/contact/_services/contact-auth.service.server';
-import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
+import { ContactAuthService } from '~/routes/_features/booking/session/contact/_services/contact-auth.service.server';
+import { VerificationTokenService } from '~/routes/_features/booking/session/contact/_services/verification-token.service.server';
 import {
   extractAuthErrorCode,
   resolveMappedAuthError,
-} from '~/routes/booking/public/appointment/session/contact/_utils/auth-step-error';
+} from '~/routes/_features/booking/session/contact/_utils/auth-step-error';
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();

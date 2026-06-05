@@ -2,7 +2,7 @@ import { data, Form, Link, useLoaderData, useNavigation } from 'react-router';
 import type { Route } from './+types/company.timesheet.edit-hours.route';
 import { CompanyUserTimesheetEntryController } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
 import { Button, CompanyPageTemplate, Input, Label, Notice, Panel, Textarea } from '~/ui';

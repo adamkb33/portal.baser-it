@@ -7,7 +7,7 @@ vi.mock('~/lib/appointments.server', () => ({
   getSession: getSessionMock,
 }));
 
-vi.mock('~/routes/booking/public/appointment/session/contact/_services/contact-auth.service.server', () => ({
+vi.mock('~/routes/_features/booking/session/contact/_services/contact-auth.service.server', () => ({
   ContactAuthService: {
     getUserStatus: getUserStatusMock,
   },
@@ -19,18 +19,18 @@ describe('requireAuthenticatedBookingFlow', () => {
     getUserStatusMock.mockReset();
   });
 
-  it('redirects to sign-in when session user exists but auth status missing', async () => {
+  it('redirects to contact when session user exists but auth status is missing', async () => {
     getSessionMock.mockResolvedValue({ sessionId: 's1', userId: 10 });
     getUserStatusMock.mockResolvedValue(null);
 
     const { requireAuthenticatedBookingFlow } = await import(
-      '~/routes/booking/public/appointment/session/_utils/require-authenticated-booking-flow.server'
+      '~/routes/_features/booking/_utils/booking.require-authenticated-flow.server'
     );
 
     const result = await requireAuthenticatedBookingFlow(new Request('http://localhost/x'));
 
     expect(result).toBeInstanceOf(Response);
-    expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment/session/contact/sign-in');
+    expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment/session/contact');
   });
 
   it('redirects to required auth next step when nextStep is not DONE', async () => {
@@ -38,7 +38,7 @@ describe('requireAuthenticatedBookingFlow', () => {
     getUserStatusMock.mockResolvedValue({ nextStep: 'VERIFY_EMAIL' });
 
     const { requireAuthenticatedBookingFlow } = await import(
-      '~/routes/booking/public/appointment/session/_utils/require-authenticated-booking-flow.server'
+      '~/routes/_features/booking/_utils/booking.require-authenticated-flow.server'
     );
 
     const result = await requireAuthenticatedBookingFlow(new Request('http://localhost/x'));
@@ -53,7 +53,7 @@ describe('requireAuthenticatedBookingFlow', () => {
     getUserStatusMock.mockResolvedValue({ nextStep: 'DONE' });
 
     const { requireAuthenticatedBookingFlow } = await import(
-      '~/routes/booking/public/appointment/session/_utils/require-authenticated-booking-flow.server'
+      '~/routes/_features/booking/_utils/booking.require-authenticated-flow.server'
     );
 
     const result = await requireAuthenticatedBookingFlow(new Request('http://localhost/x'));

@@ -2,7 +2,7 @@
 import { Form, Link, data, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.forgot-password.route';
 
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { AuthController } from '~/api/generated/base';
 import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';

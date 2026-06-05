@@ -21,9 +21,9 @@ export const gapSpaceClasses: Record<Space, string> = {
 };
 
 export const insetSpaceClasses = {
-  sm: 'p-4',
-  md: 'p-5 md:p-6',
-  lg: 'p-6 md:p-8',
+  sm: 'p-2.5 md:p-4',
+  md: 'p-3 md:p-6',
+  lg: 'p-3.5 md:p-8',
 } as const;
 
 export type InsetSpace = keyof typeof insetSpaceClasses;

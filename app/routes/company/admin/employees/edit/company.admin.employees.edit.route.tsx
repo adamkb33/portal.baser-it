@@ -4,7 +4,7 @@ import { CompanyRole } from '~/api/clients/types';
 import { AdminCompanyController, AdminCompanyUserController, type CompanyUserDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithInfo, setFlashMessage } from '~/lib/flash-message.server';
 import { EmployeeFormPage, type EmployeeFormValues } from '../_components/employee-form-page';
 

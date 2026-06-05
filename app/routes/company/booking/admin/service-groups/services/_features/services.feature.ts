@@ -1,7 +1,7 @@
 import { ServiceController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { redirectWithSuccess, redirectWithError } from '~/lib/flash-message.server';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { Route } from '../+types/company.booking.admin.service-groups.services.route';
 

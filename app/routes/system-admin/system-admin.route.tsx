@@ -1,6 +1,6 @@
 import type { Route } from './+types/system-admin.route';
 import { NavLink } from 'react-router';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Card, CardContent, CardHeader, CardTitle, CompanyPageTemplate, Text } from '~/ui';
 
 const links = [
@@ -9,6 +9,7 @@ const links = [
   { to: ROUTES_MAP['system-admin.companies.create'].href, title: 'Opprett selskap', desc: 'Opprett nytt selskap fra org.nr.' },
   { to: ROUTES_MAP['system-admin.companies.roles'].href, title: 'Tildel roller', desc: 'Tildel ADMIN/EMPLOYEE til bruker i selskap.' },
   { to: ROUTES_MAP['system-admin.companies.products'].href, title: 'Tildel produkter', desc: 'Aktiver BOOKING/EVENT/TIMESHEET for selskap.' },
+  { to: ROUTES_MAP['system-admin.diagnostics'].href, title: 'Diagnostikk', desc: 'Se systemadmin-diagnostikk per tjeneste/flyt.' },
   { to: ROUTES_MAP['system-admin.smtp.diagnostics'].href, title: 'SMTP diagnostikk', desc: 'Kjør backend SMTP diagnose-endepunkt.' },
 ];
 

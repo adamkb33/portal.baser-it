@@ -23,8 +23,20 @@ import {
 } from 'lucide-react';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Card, CardContent, CompanyEmptyState, CompanyPageTemplate, Text, cn } from '~/ui';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Card,
+  CardContent,
+  CompanyEmptyState,
+  CompanyPageTemplate,
+  Text,
+  cn,
+  routeLinkButtonClass,
+} from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -72,7 +84,7 @@ export default function CompanyBookingPage({ loaderData }: Route.ComponentProps)
       routeLinks={
         <NavLink
           to={ROUTES_MAP['company.booking.appointments'].href}
-          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+          className={routeLinkButtonClass}
         >
           Timebestillinger
         </NavLink>

@@ -3,7 +3,7 @@ import type { Route } from './+types/company.booking.admin.service-groups.edit.r
 import { CompanyUserServiceGroupController, type ServiceGroupDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithInfo, setFlashMessage } from '~/lib/flash-message.server';
 import { ServiceGroupFormPage, type ServiceGroupFormValues } from '../_components/service-group-form-page';
 

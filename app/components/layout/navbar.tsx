@@ -1,7 +1,7 @@
 import { Link, NavLink } from 'react-router';
 import { useLocation } from 'react-router';
-import type { UserNavigation } from '~/lib/route-tree';
-import { BrachCategory, ROUTES_MAP, RoutePlaceMent } from '~/lib/route-tree';
+import type { UserNavigation } from '~/lib/routing/route-tree';
+import { BrachCategory, ROUTES_MAP, RoutePlaceMent } from '~/lib/routing/route-tree';
 import type { CompanySummaryDto } from '~/api/generated/base';
 import CompanyHeader from './company-header';
 import { Loader2, Settings, User } from 'lucide-react';

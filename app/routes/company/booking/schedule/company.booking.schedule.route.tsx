@@ -15,7 +15,7 @@ import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { logger } from '~/lib/logger';
 import { DEFAULT_QUERY_TIMEZONE, formatDateBoundaryInTimeZone, formatDateInputInTimeZone } from '~/lib/query';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithError, redirectWithSuccess } from '~/lib/flash-message.server';
 import {
   Badge,
@@ -589,7 +589,7 @@ export default function CompanyBookingSchedulePage({ loaderData }: Route.Compone
               <div className="mb-3 text-center text-sm font-semibold text-text-primary">
                 {formatMinuteClock(selectionCommitted.startMinute)} - {formatMinuteClock(selectionCommitted.endMinute)}
               </div>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {hasWorkingHoursSelection ? (
                   <Button
                     type="button"

@@ -80,7 +80,8 @@ export function ServicesSelector({
   const totalServices = serviceGroups.reduce((sum, group) => sum + group.services.length, 0);
   const visibleServiceIds = serviceGroups.flatMap((group) => group.services.map((service) => service.id));
   const selectedVisibleServiceIds = visibleServiceIds.filter((serviceId) => selectedServiceIds.includes(serviceId));
-  const allVisibleSelected = visibleServiceIds.length > 0 && selectedVisibleServiceIds.length === visibleServiceIds.length;
+  const allVisibleSelected =
+    visibleServiceIds.length > 0 && selectedVisibleServiceIds.length === visibleServiceIds.length;
 
   const handleSelectAll = () => {
     visibleServiceIds.forEach((serviceId) => {
@@ -173,7 +174,9 @@ export function ServicesSelector({
                             className={cn(
                               'mt-0.5 flex shrink-0 items-center justify-center rounded-sm border',
                               compact ? 'h-4 w-4' : 'h-4 w-4',
-                              isSelected ? 'border-interactive bg-interactive text-text-inverse' : 'border-border bg-background text-text-secondary',
+                              isSelected
+                                ? 'border-interactive bg-interactive text-text-inverse'
+                                : 'border-border bg-background text-text-secondary',
                             )}
                           >
                             {isSelected ? <Check className="h-3 w-3" /> : null}

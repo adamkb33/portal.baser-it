@@ -5,7 +5,7 @@ import { CompanyUserTimesheetEntryController } from '~/api/generated/timesheet';
 import { withAuth } from '~/api/utils/with-auth';
 import { StartEndTimeSelector } from '~/components/pickers/start-end-time-selector';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
 import { Button, Calendar, CompanyPageTemplate, Input, Panel, Popover, PopoverContent, PopoverTrigger, Tabs, TabsList, TabsTrigger, Textarea } from '~/ui';
 import { formatDateInputToZonedISOString, normalizeNote, parseBulkEntries, splitBulkEntries } from '../_utils';

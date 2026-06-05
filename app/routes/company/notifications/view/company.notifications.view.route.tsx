@@ -4,7 +4,7 @@ import type { Route } from './+types/company.notifications.view.route';
 import { CompanyUserInAppNotificationController } from '~/api/generated/notification';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { CompanyMetricCard, CompanyPageTemplate, Panel, Text } from '~/ui';
 import { formatNotificationTimestamp } from '../_utils/format';
 import { getNotificationHeadline } from '../_utils/query';

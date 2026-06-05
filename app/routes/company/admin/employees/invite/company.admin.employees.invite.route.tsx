@@ -5,7 +5,7 @@ import { AdminCompanyController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { EmployeeFormPage, type EmployeeFormValues } from '../_components/employee-form-page';
 
 const emptyValues: EmployeeFormValues = {

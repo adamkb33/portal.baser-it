@@ -3,7 +3,7 @@ import { Link, data, redirect } from 'react-router';
 import type { Route } from './+types/auth.verify-email.route';
 
 import { AuthController } from '~/api/generated/base';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { verificationSessionToken } from '~/lib/auth.server';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';

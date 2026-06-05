@@ -5,7 +5,7 @@ import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 import { formatLocalDateTimeInTimeZone } from '~/lib/query';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, Card, CardContent, CardHeader, CardTitle, CompanyPageTemplate, Notice, Text } from '~/ui';
 import { StartEndTimeSelector } from '~/components/pickers/start-end-time-selector';
 import { useState } from 'react';
@@ -126,7 +126,7 @@ export default function CompanyBookingScheduleAvailabilitiesEditPage({ loaderDat
             <CardTitle>Oppdater intervall</CardTitle>
           </CardHeader>
           <CardContent>
-            <Form method="post" className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_170px_170px_auto]">
+            <Form method="post" className="grid grid-cols-1 gap-2 md:grid-cols-4">
               <input type="hidden" name="id" value={availability.id} />
               <div>
                 <input name="date" type="hidden" value={dateValue} />

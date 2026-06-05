@@ -1,5 +1,5 @@
 import type { Route } from './+types/company.booking.profile.create.route';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithInfo } from '~/lib/flash-message.server';
 import { BookingProfileForm } from '../_components/booking-profile-form';
 import { loadBookingProfileFormData, submitBookingProfileForm } from '../_lib/booking-profile-form.server';

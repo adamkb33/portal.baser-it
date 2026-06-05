@@ -107,7 +107,7 @@ export function AppointmentTableHeaderSlot() {
                   Filtrer
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[min(92vw,24rem)] border-border bg-surface-variant-1 p-0" align="end">
+              <PopoverContent className="w-80 max-w-sm border-border bg-surface-variant-1 p-0" align="end">
                 <div className="space-y-4 p-4">
                 <div className="flex items-center justify-between">
                   <Text as="p" variant="label">

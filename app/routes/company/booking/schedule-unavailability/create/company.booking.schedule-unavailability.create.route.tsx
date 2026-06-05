@@ -12,7 +12,7 @@ import { StartEndTimeSelector } from '~/components/pickers/start-end-time-select
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 import { formatLocalDateTimeInTimeZone } from '~/lib/query';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { cn } from '~/lib/utils';
 import {
   Button,

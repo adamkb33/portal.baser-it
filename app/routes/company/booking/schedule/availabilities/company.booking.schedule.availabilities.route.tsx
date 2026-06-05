@@ -9,7 +9,7 @@ import { StartEndTimeSelector } from '~/components/pickers/start-end-time-select
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 import { formatDateBoundaryInTimeZone, formatLocalDateTimeInTimeZone } from '~/lib/query';
-import { ROUTES_MAP } from '~/lib/route-tree';
+import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, Calendar, Card, CardContent, CardHeader, CardTitle, CompanyPageTemplate, Notice, Popover, PopoverContent, PopoverTrigger, Text } from '~/ui';
 
 function getRangeBounds(range: string, baseDate: Date) {
@@ -175,7 +175,7 @@ export default function CompanyBookingScheduleAvailabilitiesPage({ loaderData }:
           <CardTitle>Legg til tilgjengelighet</CardTitle>
         </CardHeader>
         <CardContent>
-          <Form method="post" className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_170px_170px_auto]">
+          <Form method="post" className="grid grid-cols-1 gap-2 md:grid-cols-4">
             <input name="intent" type="hidden" value="create" />
             <input name="redirectTo" type="hidden" value={redirectTo} />
             <div>

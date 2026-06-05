@@ -1,4 +1,4 @@
-import type { RouteBranch } from '~/lib/route-tree';
+import type { RouteBranch } from '~/lib/routing/route-tree';
 
 type SelectHandlers = {
   item: RouteBranch;
