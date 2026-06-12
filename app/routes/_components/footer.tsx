@@ -1,14 +1,8 @@
 export function Footer() {
   return (
-    <footer className="h-full lg:col-span-12 lg:grid lg:grid-cols-12 bg-footer-bg">
-      <div className="hidden lg:col-span-2 lg:block"></div>
-
-      <section className="h-full p-2 lg:col-span-8 flex flex-col justify-center">
-        <span className="text-xs font-medium uppercase tracking-[0.12em] text-footer-text-muted">Footer</span>
-        <p className="mt-2 text-[0.7rem] text-footer-text-muted">Footer content goes here</p>
-      </section>
-
-      <div className="hidden lg:col-span-2 lg:block"></div>
-    </footer>
+    <div className="mx-auto flex h-full w-full max-w-[var(--container-xl)] items-center justify-between gap-4 px-[var(--app-shell-inline-padding)] text-xs text-text-secondary">
+      <span>© {new Date().getFullYear()} Pitell</span>
+      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-text-disabled">Pitell Portal</span>
+    </div>
   );
 }

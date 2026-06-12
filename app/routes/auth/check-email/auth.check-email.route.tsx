@@ -9,7 +9,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { getVerificationTokenFromRequest } from '~/routes/_features/booking/session/contact/_utils/auth.utils.server';
 import { redirectWithError } from '~/lib/flash-message.server';
-import { FormPageTemplate, Notice } from '~/ui';
+import { AuthPageTemplate, Notice } from '~/ui';
 import { VerificationTokenService } from '~/routes/_features/booking/session/contact/_services/verification-token.service.server';
 
 type CheckEmailLoaderData = {
@@ -158,7 +158,7 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
   }, [navigate, nextStep]);
 
   return (
-    <FormPageTemplate
+    <AuthPageTemplate
       title="Sjekk e-posten din"
       description={
         hasError
@@ -166,21 +166,18 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
           : 'Bekreft e-posten din for å fortsette.'
       }
       error={hasError ? 'Kunne ikke sende e-post.' : undefined}
-      variant="airy"
-      actions={
-        <div className="space-y-2 text-center">
+      topRight={
+        <span>
+          Trenger du å logge inn?{' '}
           <Link
             to={ROUTES_MAP['auth.sign-in'].href}
-            className="inline-block text-sm font-medium text-foreground hover:underline"
+            className="font-semibold text-interactive hover:text-interactive-hover"
           >
-            Gå til innlogging →
+            Logg inn
           </Link>
-          <Link to="/" className="block text-sm font-medium text-muted-foreground hover:underline">
-            Tilbake til forsiden →
-          </Link>
-        </div>
+        </span>
       }
-      footerLink={null}
+      bottom="Vi sjekker status automatisk mens du bekrefter e-posten."
     >
       <div className="space-y-3 text-sm text-form-text-muted">
         <p>Følg instruksene i e-posten for å bekrefte kontoen din.</p>
@@ -198,6 +195,6 @@ export default function AuthCheckEmail({ loaderData }: Route.ComponentProps) {
           </button>
         </Form>
       </div>
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }

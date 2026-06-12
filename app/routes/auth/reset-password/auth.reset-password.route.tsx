@@ -1,5 +1,5 @@
 // auth.reset-password.route.tsx (refactored)
-import { Form, Link, redirect, data, useNavigation } from 'react-router';
+import { Form, Link, redirect, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.reset-password.route';
 
 import { decodeResetPasswordToken } from './_utils/auth.reset-password.utils';
@@ -7,7 +7,8 @@ import { AuthController } from '~/api/generated/base';
 import { authService } from '~/lib/auth-service';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
-import { Button, FormField, FormPageTemplate } from '~/ui';
+import { AuthPageTemplate, Button, FormField } from '~/ui';
+import { Lock, Mail } from 'lucide-react';
 
 function toMessageValue(message: unknown, fallback: string) {
   if (typeof message === 'string' && message.trim().length > 0) return message;
@@ -75,16 +76,18 @@ export default function AuthResetPassword({ loaderData }: Route.ComponentProps) 
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   return (
-    <FormPageTemplate
+    <AuthPageTemplate
       title="Tilbakestill passord"
       description="Opprett et nytt passord for din konto."
-      variant="emphasis"
-      actions={
-        <Link to="/" className="mt-2 block text-center text-sm font-medium text-foreground hover:underline">
-          Tilbake til forsiden →
-        </Link>
+      topRight={
+        <span>
+          Ikke riktig sted?{' '}
+          <Link to="/" className="font-semibold text-interactive hover:text-interactive-hover">
+            Forsiden
+          </Link>
+        </span>
       }
-      footerLink={null}
+      bottom="Velg et nytt passord før lenken utløper."
     >
       <Form method="post" className="space-y-6">
         <input type="hidden" name="resetPasswordToken" value={resetPasswordToken} />
@@ -96,6 +99,7 @@ export default function AuthResetPassword({ loaderData }: Route.ComponentProps) 
           type="email"
           autoComplete="email"
           defaultValue={email}
+          startIcon={<Mail />}
           disabled
         />
 
@@ -105,6 +109,7 @@ export default function AuthResetPassword({ loaderData }: Route.ComponentProps) 
           label="Passord"
           type="password"
           autoComplete="new-password"
+          startIcon={<Lock />}
           required
           disabled={isSubmitting}
         />
@@ -115,6 +120,7 @@ export default function AuthResetPassword({ loaderData }: Route.ComponentProps) 
           label="Bekreft passord"
           type="password"
           autoComplete="new-password"
+          startIcon={<Lock />}
           required
           disabled={isSubmitting}
         />
@@ -123,6 +129,6 @@ export default function AuthResetPassword({ loaderData }: Route.ComponentProps) 
           Tilbakestill passord
         </Button>
       </Form>
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }

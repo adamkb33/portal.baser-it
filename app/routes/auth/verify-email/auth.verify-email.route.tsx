@@ -9,7 +9,7 @@ import { verificationSessionToken } from '~/lib/auth.server';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { authService } from '~/lib/auth-service';
 import { redirectWithError } from '~/lib/flash-message.server';
-import { Button, FormPageTemplate } from '~/ui';
+import { AuthPageTemplate, Button } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -90,7 +90,7 @@ export default function AuthVerifyEmail({ loaderData }: Route.ComponentProps) {
     loaderData.redirectUrl === 'booking';
 
   return (
-    <FormPageTemplate
+    <AuthPageTemplate
       title={isSuccess ? 'E-post bekreftet' : 'Kunne ikke bekrefte e-post'}
       description={
         isSuccess
@@ -100,13 +100,12 @@ export default function AuthVerifyEmail({ loaderData }: Route.ComponentProps) {
           : 'Vi klarte ikke å bekrefte e-posten din. Be om en ny lenke eller prøv igjen senere.'
       }
       error={loaderData?.error}
-      variant={isSuccess ? 'default' : 'emphasis'}
-      actions={
-        <Link to="/" className="block text-center text-sm font-medium text-muted-foreground hover:underline">
-          Tilbake til forsiden →
+      topRight={
+        <Link to="/" className="font-semibold text-interactive hover:text-interactive-hover">
+          Forsiden
         </Link>
       }
-      footerLink={null}
+      bottom="Bruk den nyeste lenken fra e-posten hvis bekreftelsen feiler."
     >
       <div className="space-y-4">
         <p className="text-sm text-form-text-muted">
@@ -124,6 +123,6 @@ export default function AuthVerifyEmail({ loaderData }: Route.ComponentProps) {
           </Button>
         )}
       </div>
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }

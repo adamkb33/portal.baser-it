@@ -1,5 +1,4 @@
 import { Outlet, redirect, useOutletContext } from 'react-router';
-import { SidebarBreadcrumbs } from '~/components/layout/sidebar-breadcrums';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import type { RootOutletContext } from '../root.layout';
 import type { Route } from './+types/company.route';
@@ -36,13 +35,7 @@ export default function CompanyLayout() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-3 md:px-6 md:py-4">
-          <SidebarBreadcrumbs items={context.userNav?.SIDEBAR} />
-        </div>
-      </header>
-
-      <main className="container mx-auto flex-1 px-2 py-2">
+      <main className="flex-1">
         <Outlet context={context} />
       </main>
     </div>

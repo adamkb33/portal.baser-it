@@ -17,24 +17,56 @@
   --color-white: #fafafa;
   --color-byzantium-600: #702963;
 
+  /* ─── Template brand (blue) + neutral slate scale ─ */
+  --color-blue-700: #1d4ed8;
+  --color-blue-600: #2563eb;
+  --color-blue-500: #3b82f6;
+  --color-blue-50: #eff6ff;
+  --color-page: #f0f4f8; /* template --bg-body */
+  --color-pure-white: #ffffff; /* template --bg-card */
+  --color-slate-900: #1e293b; /* template --t-base */
+  --color-slate-500: #64748b; /* template --t-muted */
+  --color-slate-400: #94a3b8; /* template --t-light */
+  --color-slate-100: #f1f5f9; /* template --bg-muted */
+  --color-slate-50: #f8fafc; /* template --bg-hover */
+  --color-border-slate: #e4e8ef; /* template --border */
+
+  /* ─── Status palette (template) ───────────────── */
+  --color-success: #10b981;
+  --color-success-soft: #ecfdf5;
+  --color-warning: #f59e0b;
+  --color-warning-soft: #fffbeb;
+  --color-danger: #ef4444;
+  --color-danger-soft: #fef2f2;
+  --color-info: #0ea5e9;
+  --color-info-soft: #f0f9ff;
+  --color-purple: #8b5cf6;
+  --color-purple-soft: #f5f3ff;
+  --color-pink: #ec4899;
+  --color-pink-soft: #fdf2f8;
+  --color-teal: #14b8a6;
+  --color-teal-soft: #f0fdfa;
+  --color-orange: #f97316;
+  --color-orange-soft: #fff7ed;
+
   /* ─── Semantic Color Aliases ──────────────────── */
-  --color-background: var(--color-white);
-  --color-surface: var(--color-gray-50);
-  --color-border: var(--color-gray-100);
-  --color-overlay-surface: var(--color-white);
-  --color-overlay-border: var(--color-gray-100);
-  --color-text-primary: var(--color-gray-900);
-  --color-text-secondary: var(--color-gray-500);
-  --color-text-disabled: var(--color-gray-300);
-  --color-text-inverse: var(--color-white);
+  --color-background: var(--color-pure-white);
+  --color-surface: var(--color-page);
+  --color-border: var(--color-border-slate);
+  --color-overlay-surface: var(--color-pure-white);
+  --color-overlay-border: var(--color-border-slate);
+  --color-text-primary: var(--color-slate-900);
+  --color-text-secondary: var(--color-slate-500);
+  --color-text-disabled: var(--color-slate-400);
+  --color-text-inverse: var(--color-pure-white);
   --color-primary: var(--color-interactive);
   --color-primary-hover: var(--color-interactive-hover);
   --color-primary-contrast: var(--color-text-inverse);
   --color-secondary: #2f7f7b;
   --color-secondary-hover: color-mix(in oklab, var(--color-secondary) 84%, black);
   --color-secondary-contrast: var(--color-white);
-  --color-interactive: var(--color-black);
-  --color-interactive-hover: var(--color-gray-800);
+  --color-interactive: var(--color-blue-600);
+  --color-interactive-hover: var(--color-blue-700);
   --color-tertiary: var(--color-byzantium-600);
   --color-tertiary-hover: color-mix(in oklab, var(--color-tertiary) 84%, black);
   --color-tertiary-contrast: var(--color-white);
@@ -126,7 +158,9 @@
   --space-container-gutter: var(--space-lg);
 
   /* ─── Typography ──────────────────────────────── */
-  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Inter Tight', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
   --text-xs: 0.75rem; /* 12px */
   --text-sm: 0.875rem; /* 14px */
@@ -157,12 +191,13 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-full: 9999px;
 
-  --radius-control: var(--radius-sm);
-  --radius-field: var(--radius-sm);
-  --radius-card: var(--radius-md);
-  --radius-panel: var(--radius-lg);
+  --radius-control: var(--radius-md); /* template buttons/inputs ~8px */
+  --radius-field: var(--radius-md);
+  --radius-card: var(--radius-lg); /* template cards ~12-14px */
+  --radius-panel: var(--radius-xl);
   --radius-badge: var(--radius-full);
 
   /* ─── Border Width ────────────────────────────── */
@@ -174,11 +209,11 @@
   --border-focus-ring: var(--border-medium);
 
   /* ─── Shadows ─────────────────────────────────── */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 12px 0 rgb(0 0 0 / 0.08);
-  --shadow-lg: 0 8px 24px 0 rgb(0 0 0 / 0.1);
-  --shadow-card: var(--shadow-sm);
-  --shadow-panel: var(--shadow-md);
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  --shadow-md: 0 1px 3px 0 rgb(15 23 42 / 0.06), 0 1px 2px -1px rgb(15 23 42 / 0.04);
+  --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.05);
+  --shadow-card: var(--shadow-md);
+  --shadow-panel: var(--shadow-lg);
   --shadow-floating: var(--shadow-lg);
 
   /* ─── Background Effects ─────────────────────── */

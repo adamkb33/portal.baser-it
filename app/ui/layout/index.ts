@@ -1,3 +1,4 @@
+export { CardGrid, type CardGridProps, GridCol, type GridColProps, type GridSpan } from './card-grid';
 export { Cluster, type ClusterProps } from './cluster';
 export { Container, type ContainerProps, type ContainerSize } from './container';
 export { Grid, type GridProps } from './grid';

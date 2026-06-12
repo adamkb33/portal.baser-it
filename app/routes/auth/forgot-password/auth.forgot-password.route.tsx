@@ -1,12 +1,13 @@
 // auth.forgot-password.route.tsx (refactored)
-import { Form, Link, data, useNavigation } from 'react-router';
+import { Form, Link, useNavigation } from 'react-router';
 import type { Route } from './+types/auth.forgot-password.route';
 
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { AuthController } from '~/api/generated/base';
 import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { Button, FormField, FormPageTemplate } from '~/ui';
+import { AuthPageTemplate, Button, FormField } from '~/ui';
+import { Mail } from 'lucide-react';
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -29,24 +30,21 @@ export default function AuthForgotPassword({}: Route.ComponentProps) {
   const isSubmitting = navigation.state === 'submitting';
 
   return (
-    <FormPageTemplate
+    <AuthPageTemplate
       title="Glemt passord"
       description="Oppgi din e-post for å tilbakestille ditt passord. Følg lenken du får tilsendt på din e-post adresse."
-      variant="subtle"
-      actions={
-        <>
+      topRight={
+        <span>
+          Husker du passordet?{' '}
           <Link
             to={ROUTES_MAP['auth.sign-in'].href}
-            className="block text-center text-sm font-medium text-foreground hover:underline"
+            className="font-semibold text-interactive hover:text-interactive-hover"
           >
-            ← Tilbake til innlogging
+            Logg inn
           </Link>
-          <Link to="/" className="mt-2 block text-center text-sm font-medium text-muted-foreground hover:underline">
-            Hovedsiden →
-          </Link>
-        </>
+        </span>
       }
-      footerLink={null}
+      bottom="Du får en lenke på e-post hvis kontoen finnes hos oss."
     >
       <Form method="post" className="space-y-6">
         <FormField
@@ -55,7 +53,8 @@ export default function AuthForgotPassword({}: Route.ComponentProps) {
           label="E-post adresse"
           type="email"
           autoComplete="email"
-          placeholder="e-post"
+          placeholder="deg@firma.no"
+          startIcon={<Mail />}
           required
           disabled={isSubmitting}
         />
@@ -64,6 +63,6 @@ export default function AuthForgotPassword({}: Route.ComponentProps) {
           Send tilbakestillingskode
         </Button>
       </Form>
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }

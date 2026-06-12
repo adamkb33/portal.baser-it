@@ -4,15 +4,22 @@ export { CompanyEmptyState, type CompanyEmptyStateProps } from './company-empty-
 export { CompanyMetricCard, type CompanyMetricCardProps } from './company-metric-card';
 export {
   Card,
+  CardAction,
+  type CardActionProps,
   CardContent,
   CardDescription,
   CardFooter,
+  CardHead,
+  type CardHeadProps,
   CardHeader,
   CardTitle,
+  Eyebrow,
+  type EyebrowProps,
   type CardProps,
   type CardSize,
   type CardVariant,
 } from './card';
+export { KpiCard, type KpiCardProps, type KpiTone, type KpiTrend } from './kpi-card';
 export { ConfirmDialog, type ConfirmDialogProps } from './confirm-dialog';
 export { KeyValueList, type KeyValueItem, type KeyValueListProps, type KeyValueListLayout } from './key-value-list';
 export { Notice, type NoticeProps, type NoticeTone } from './notice';

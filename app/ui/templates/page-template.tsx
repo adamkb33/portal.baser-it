@@ -1,11 +1,14 @@
+import * as React from 'react';
 import { Text } from '../atoms/text';
 import { Container, type ContainerSize } from '../layout/container';
 import { Stack } from '../layout/stack';
+import { Eyebrow } from '../organisms/card';
 import { cn } from '../lib/cn';
 
 export interface PageTemplateProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
   description?: string;
+  eyebrow?: React.ReactNode;
   label?: string;
   routeLinks?: React.ReactNode;
   actions?: React.ReactNode;
@@ -17,6 +20,7 @@ export interface PageTemplateProps extends React.HTMLAttributes<HTMLDivElement> 
 export function PageTemplate({
   title,
   description,
+  eyebrow,
   label,
   routeLinks,
   actions,
@@ -26,30 +30,40 @@ export function PageTemplate({
   className,
   ...props
 }: PageTemplateProps) {
+  const eyebrowContent = eyebrow ?? label;
+
   return (
-    <Container size={size} className={cn('space-y-5', className)} {...props}>
-      <section className="space-y-3">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0 space-y-2">
-            {label ? (
-              <Text as="p" variant="overline" className="text-text-secondary">
-                {label}
-              </Text>
-            ) : null}
-            <Text as="h1" variant="heading-lg">
-              {title}
-            </Text>
-            {description ? (
-              <Text as="p" variant="body" className="max-w-3xl text-text-secondary">
-                {description}
-              </Text>
+    <Container size={size} className={cn('space-y-6', className)} {...props}>
+      {(title || description || eyebrowContent || actions || routeLinks) ? (
+        <header className="space-y-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="min-w-0 space-y-2">
+              {eyebrowContent ? (
+                <Eyebrow>
+                  {eyebrowContent}
+                </Eyebrow>
+              ) : null}
+              {title ? (
+                <Text as="h1" className="font-display text-2xl font-bold leading-tight tracking-tight md:text-3xl">
+                  {title}
+                </Text>
+              ) : null}
+              {description ? (
+                <Text as="p" variant="body-sm" className="max-w-3xl text-text-secondary md:text-base">
+                  {description}
+                </Text>
+              ) : null}
+            </div>
+            {actions ? (
+              <div className="flex shrink-0 flex-wrap items-center gap-2 md:justify-end">
+                {actions}
+              </div>
             ) : null}
           </div>
-          {actions ? <div className="shrink-0">{actions}</div> : null}
-        </div>
 
-        {routeLinks ? <div className="flex flex-wrap items-center gap-2">{routeLinks}</div> : null}
-      </section>
+          {routeLinks ? <div className="flex flex-wrap items-center gap-2">{routeLinks}</div> : null}
+        </header>
+      ) : null}
 
       {hero ? <div>{hero}</div> : null}
 

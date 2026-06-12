@@ -10,7 +10,7 @@ import { requireVerificationToken } from '~/routes/_features/booking/session/con
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { authService } from '~/lib/auth-service';
 import { redirectWithError } from '~/lib/flash-message.server';
-import { Button, FormPageTemplate, Label, Notice, VerificationCodeInput } from '~/ui';
+import { AuthPageTemplate, Button, Label, Notice, VerificationCodeInput } from '~/ui';
 import { VerificationTokenService } from '~/routes/_features/booking/session/contact/_services/verification-token.service.server';
 
 type VerifyMobileLoaderData = {
@@ -154,25 +154,22 @@ export default function AuthVerifyMobile({ loaderData }: Route.ComponentProps) {
       : 'Du trenger ikke verifisere mobilnummer. Du kan gå videre til innlogging.';
 
   return (
-    <FormPageTemplate
+    <AuthPageTemplate
       title="Bekreft mobilnummer"
       description={description}
       error={errorMessage}
-      variant={canVerifyMobile ? 'default' : 'subtle'}
-      actions={
-        <div className="space-y-2 text-center">
+      topRight={
+        <span>
+          Trenger du å logge inn?{' '}
           <Link
             to={ROUTES_MAP['auth.sign-in'].href}
-            className="inline-block text-sm font-medium text-foreground hover:underline"
+            className="font-semibold text-interactive hover:text-interactive-hover"
           >
-            Gå til innlogging →
+            Logg inn
           </Link>
-          <Link to="/" className="block text-sm font-medium text-muted-foreground hover:underline">
-            Tilbake til forsiden →
-          </Link>
-        </div>
+        </span>
       }
-      footerLink={null}
+      bottom={canVerifyMobile ? 'Skriv inn koden fra SMS-en vi sendte deg.' : 'Du kan fortsette når verifiseringen er fullført.'}
     >
       <div className="space-y-4">
         {!status?.emailVerified ? (
@@ -230,6 +227,6 @@ export default function AuthVerifyMobile({ loaderData }: Route.ComponentProps) {
           </Button>
         )}
       </div>
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Ellipsis, X } from 'lucide-react';
 import { getIcon } from '~/lib/routing/route-icon-map';
 import type { RouteBranch } from '~/lib/routing/route-tree';
 import { Button, cn } from '~/ui';
+import { Sidebar, type SidebarWorkspace } from '../sidebar';
 
 const DEFAULT_MAX_VISIBLE = 5;
 const MOBILE_RADIUS = 'rounded-[1.35rem]';
@@ -14,6 +15,7 @@ type MobileSidebarProps = {
   onClose: () => void;
   onNavigateWithinMenu?: () => void;
   maxVisible?: number;
+  workspace?: SidebarWorkspace | null;
 };
 
 type TrailEntry = {
@@ -35,6 +37,7 @@ export function MobileSidebar({
   onClose,
   onNavigateWithinMenu,
   maxVisible = DEFAULT_MAX_VISIBLE,
+  workspace,
 }: MobileSidebarProps) {
   const location = useLocation();
   const visibleRoots = React.useMemo(() => filterVisibleBranches(branches), [branches]);
@@ -149,6 +152,39 @@ export function MobileSidebar({
 
   return (
     <>
+      {isOpen && !drawerOpen ? (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-950/35 backdrop-blur-[3px]"
+            onClick={onClose}
+            aria-label="Lukk navigasjon"
+          />
+
+          <aside
+            className={cn(
+              'absolute inset-y-0 left-0 flex w-[min(20rem,calc(100vw-3rem))] flex-col border-r border-border bg-background px-4 py-5 shadow-[20px_0_60px_rgba(15,23,42,0.18)]',
+              'duration-200 animate-in slide-in-from-left-4',
+            )}
+            aria-label="Mobil hovednavigasjon"
+          >
+            <div className="mb-3 flex justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="size-9 text-text-muted"
+                aria-label="Lukk meny"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </Button>
+            </div>
+            <Sidebar branches={branches} workspace={workspace} />
+          </aside>
+        </div>
+      ) : null}
+
       {drawerOpen ? (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button

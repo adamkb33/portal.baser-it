@@ -2,7 +2,7 @@
 import { Link, Form, useNavigation, redirect } from 'react-router';
 import { data } from 'react-router';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { ProviderButtons } from '../_components/provider-buttons';
+import { SocialButtonRow } from '../_components/social-button-row';
 import { AuthController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
 import type { Route } from './+types/auth.sign-in.route';
@@ -11,7 +11,8 @@ import { redirectWithError, redirectWithWarning } from '~/lib/flash-message.serv
 import { logger } from '~/lib/logger';
 import React from 'react';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
-import { Button, FormField, FormPageTemplate, Stack } from '~/ui';
+import { Button, FormField, AuthPageTemplate, Stack } from '~/ui';
+import { Lock, Mail } from 'lucide-react';
 
 function redactEmail(value: string) {
   const normalized = value.trim();
@@ -213,48 +214,46 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
   }, [actionData]);
 
   return (
-    <FormPageTemplate
-      title="Logg inn"
+    <AuthPageTemplate
+      title="Velkommen tilbake"
       description="Logg inn for å administrere ditt selskap og kundeforhold."
       error={errorMessage}
-      size="md"
-      variant="emphasis"
-      footerLink={null}
+      topRight={
+        <span>
+          Ny bruker?{' '}
+          <Link to={ROUTES_MAP['auth.sign-up'].href} className="font-semibold text-interactive hover:text-interactive-hover">
+            Opprett konto
+          </Link>
+        </span>
+      }
       footer={
         <Stack space="md">
-          <div className="space-y-2 text-center">
-            <p className="text-xs text-text-secondary">Ny bruker?</p>
-            <Link
-              to={ROUTES_MAP['auth.sign-up'].href}
-              className="inline-block text-sm font-medium text-text-primary hover:underline"
-            >
-              Opprett konto
-            </Link>
-          </div>
-
-          <div className="space-y-2 text-center">
-            <p className="text-xs text-text-secondary">Glemt passordet?</p>
+          <div className="text-center">
             <Link
               to={ROUTES_MAP['auth.forgot-password'].href}
-              className="inline-block text-sm font-medium text-text-primary hover:underline"
+              className="inline-block text-sm font-medium text-interactive hover:text-interactive-hover"
             >
               Tilbakestill passord
             </Link>
           </div>
         </Stack>
       }
+      bottom={
+        <span>
+          Ved å logge inn godtar du gjeldende vilkår for bruk av Pitell Portal.
+        </span>
+      }
     >
       <Form method="post" aria-busy={isSubmitting}>
         <Stack space="md">
-          <ProviderButtons disabled={isSubmitting} />
-
           <FormField
             id="email"
             name="email"
             label="E-post"
             type="email"
             autoComplete="email"
-            placeholder="e-post"
+            placeholder="deg@firma.no"
+            startIcon={<Mail />}
             disabled={isSubmitting}
           />
 
@@ -264,14 +263,17 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
             label="Passord"
             type="password"
             autoComplete="current-password"
+            startIcon={<Lock />}
             disabled={isSubmitting}
           />
 
           <Button type="submit" size="lg" fullWidth loading={isSubmitting}>
             Logg inn
           </Button>
+
+          <SocialButtonRow disabled={isSubmitting} />
         </Stack>
       </Form>
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }

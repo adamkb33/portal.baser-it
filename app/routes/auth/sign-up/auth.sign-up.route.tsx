@@ -7,7 +7,8 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
 import { authService } from '~/lib/auth-service';
 import { redirectWithError } from '~/lib/flash-message.server';
-import { Button, FormField, FormPageTemplate } from '~/ui';
+import { AuthPageTemplate, Button, FormField } from '~/ui';
+import { Lock, Mail, Phone, User } from 'lucide-react';
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -68,23 +69,22 @@ export default function AuthSignUp() {
   const isSubmitting = navigation.state === 'submitting';
 
   return (
-    <FormPageTemplate
+    <AuthPageTemplate
       title="Opprett konto"
       description="Registrer deg for å få tilgang til selskapet ditt og kundene dine."
       error={undefined}
-      variant="airy"
-      actions={
-        <div className="space-y-2 text-center">
-          <p className="text-xs text-muted-foreground">Har du allerede en konto?</p>
+      topRight={
+        <span>
+          Har du allerede konto?{' '}
           <Link
             to={ROUTES_MAP['auth.sign-in'].href}
-            className="inline-block text-sm font-medium text-foreground hover:underline"
+            className="font-semibold text-interactive hover:text-interactive-hover"
           >
-            Logg inn →
+            Logg inn
           </Link>
-        </div>
+        </span>
       }
-      footerLink={null}
+      bottom="Vi sender bekreftelseslenke til e-posten din før kontoen aktiveres."
     >
       <Form method="post" className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2">
@@ -94,6 +94,7 @@ export default function AuthSignUp() {
             label="Fornavn"
             autoComplete="given-name"
             placeholder="Ola"
+            startIcon={<User />}
             required
             disabled={isSubmitting}
           />
@@ -104,6 +105,7 @@ export default function AuthSignUp() {
             label="Etternavn"
             autoComplete="family-name"
             placeholder="Nordmann"
+            startIcon={<User />}
             required
             disabled={isSubmitting}
           />
@@ -115,7 +117,8 @@ export default function AuthSignUp() {
           label="E-post"
           type="email"
           autoComplete="email"
-          placeholder="e-post"
+          placeholder="deg@firma.no"
+          startIcon={<Mail />}
           required
           disabled={isSubmitting}
         />
@@ -126,6 +129,7 @@ export default function AuthSignUp() {
           label="Mobilnummer (valgfritt)"
           autoComplete="tel"
           placeholder="mobilnummer"
+          startIcon={<Phone />}
           disabled={isSubmitting}
         />
 
@@ -135,6 +139,7 @@ export default function AuthSignUp() {
           label="Passord"
           type="password"
           autoComplete="new-password"
+          startIcon={<Lock />}
           required
           disabled={isSubmitting}
         />
@@ -145,6 +150,7 @@ export default function AuthSignUp() {
           label="Bekreft passord"
           type="password"
           autoComplete="new-password"
+          startIcon={<Lock />}
           required
           disabled={isSubmitting}
         />
@@ -157,6 +163,6 @@ export default function AuthSignUp() {
           Opprett konto
         </Button>
       </Form>
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }

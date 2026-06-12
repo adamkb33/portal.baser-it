@@ -1,6 +1,8 @@
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from './button';
 export { Badge, type BadgeProps, type BadgeSize, type BadgeVariant } from './badge';
 export { Checkbox, type CheckboxProps } from './checkbox';
+export { Icon, type IconProps } from './icon';
+export { ICONS, type IconName } from './icon-map';
 export { Input, type InputProps, type InputSize } from './input';
 export { Label, type LabelProps } from './label';
 export { Link, type LinkProps } from './link';

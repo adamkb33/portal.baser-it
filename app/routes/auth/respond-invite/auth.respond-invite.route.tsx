@@ -8,7 +8,8 @@ import { redirectWithSuccess } from '~/lib/flash-message.server';
 import type { CompanySummaryDto } from '~/api/generated/base';
 import { AuthController, PublicCompanyController, PublicUserController } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { Button, FormField, FormPageTemplate } from '~/ui';
+import { AuthPageTemplate, Button, FormField } from '~/ui';
+import { Lock, User } from 'lucide-react';
 
 const USER_ROLE_LABELS: Record<'SYSTEM_ADMIN' | 'USER' | 'COMPANY_USER', string> = {
   SYSTEM_ADMIN: 'Systemadministrator',
@@ -219,7 +220,7 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
   const actionValues = actionData?.values;
 
   return (
-    <FormPageTemplate
+    <AuthPageTemplate
       title="Fullfør din konto"
       description={
         existingUser
@@ -227,13 +228,12 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
           : 'Opprett profilen din og sett passord for å aktivere tilgangen din.'
       }
       error={errorMessage}
-      variant="airy"
-      actions={
-        <Link to="/" className="mt-2 block text-center text-sm font-medium text-foreground hover:underline">
-          Tilbake til forsiden →
+      topRight={
+        <Link to="/" className="font-semibold text-interactive hover:text-interactive-hover">
+          Forsiden
         </Link>
       }
-      footerLink={null}
+      bottom="Invitasjonen aktiverer tilgangen din når du fullfører steget."
     >
       <div className="space-y-4 rounded-md border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
         {companySummary ? (
@@ -302,6 +302,7 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
               type="text"
               autoComplete="given-name"
               defaultValue={actionValues?.givenName}
+              startIcon={<User />}
               required
               disabled={isSubmitting}
             />
@@ -313,6 +314,7 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
               type="text"
               autoComplete="family-name"
               defaultValue={actionValues?.familyName}
+              startIcon={<User />}
               required
               disabled={isSubmitting}
             />
@@ -324,6 +326,7 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
             label="Passord"
             type="password"
             autoComplete="new-password"
+            startIcon={<Lock />}
             required
             disabled={isSubmitting}
           />
@@ -334,6 +337,7 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
             label="Bekreft passord"
             type="password"
             autoComplete="new-password"
+            startIcon={<Lock />}
             required
             disabled={isSubmitting}
           />
@@ -355,6 +359,6 @@ export default function AuthRespondInvite({ loaderData, actionData }: Route.Comp
           </div>
         </Form>
       )}
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }

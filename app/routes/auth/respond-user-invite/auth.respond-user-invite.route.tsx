@@ -4,7 +4,8 @@ import type { Route } from './+types/auth.respond-user-invite.route';
 import { AuthController, type AcceptUserInviteDto, type UserInviteTokenDto } from '~/api/generated/base';
 import { authService } from '~/lib/auth-service';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { Button, FormField, FormPageTemplate } from '~/ui';
+import { AuthPageTemplate, Button, FormField } from '~/ui';
+import { Lock, Mail, Phone, User } from 'lucide-react';
 
 type InvitePayload = Pick<UserInviteTokenDto, 'userId' | 'email' | 'mobileNumber'>;
 
@@ -231,39 +232,34 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
 
   if (inviteData.invalidInvite) {
     return (
-      <FormPageTemplate
+      <AuthPageTemplate
         title="Invitasjonen er ikke gyldig"
         description="Invitasjonen kan være brukt eller utløpt."
-        variant="emphasis"
-        actions={
-          <div className="space-y-2 text-center">
-            <p className="text-sm text-muted-foreground">Kontakt virksomheten for ny invitasjon</p>
-            <Link to="/" className="inline-block text-sm font-medium text-foreground hover:underline">
-              Tilbake til forsiden →
-            </Link>
-          </div>
+        topRight={
+          <Link to="/" className="font-semibold text-interactive hover:text-interactive-hover">
+            Forsiden
+          </Link>
         }
-        footerLink={null}
+        bottom="Kontakt virksomheten for ny invitasjon."
       >
         <div className="text-sm text-form-text-muted">
           Vi klarte ikke å validere invitasjonslenken. Be om en ny invitasjon og prøv igjen.
         </div>
-      </FormPageTemplate>
+      </AuthPageTemplate>
     );
   }
 
   return (
-    <FormPageTemplate
+    <AuthPageTemplate
       title="Svar på brukerinvitasjon"
       description="Fullfør profilen din for å akseptere invitasjonen."
       error={routeActionData?.formError}
-      variant="airy"
-      actions={
-        <Link to="/" className="mt-2 block text-center text-sm font-medium text-muted-foreground hover:underline">
-          Tilbake til forsiden →
+      topRight={
+        <Link to="/" className="font-semibold text-interactive hover:text-interactive-hover">
+          Forsiden
         </Link>
       }
-      footerLink={null}
+      bottom="Invitasjonen knyttes til profilen når du aksepterer."
     >
       <div className="space-y-2 rounded-md border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
         {inviteData.invite.email ? <p>Invitert e-post: {inviteData.invite.email}</p> : null}
@@ -282,6 +278,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
               label="Fornavn"
               autoComplete="given-name"
               defaultValue={routeActionData?.values?.givenName}
+              startIcon={<User />}
               required
               disabled={isSubmitting}
             />
@@ -297,6 +294,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
               label="Etternavn"
               autoComplete="family-name"
               defaultValue={routeActionData?.values?.familyName}
+              startIcon={<User />}
               required
               disabled={isSubmitting}
             />
@@ -313,6 +311,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
             label="Passord"
             type="password"
             autoComplete="new-password"
+            startIcon={<Lock />}
             required
             disabled={isSubmitting}
           />
@@ -328,6 +327,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
             label="Bekreft passord"
             type="password"
             autoComplete="new-password"
+            startIcon={<Lock />}
             required
             disabled={isSubmitting}
           />
@@ -345,6 +345,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
               type="email"
               autoComplete="email"
               defaultValue={routeActionData?.values?.email}
+              startIcon={<Mail />}
               required
               disabled={isSubmitting}
             />
@@ -362,6 +363,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
               label="Mobilnummer"
               autoComplete="tel"
               defaultValue={routeActionData?.values?.mobileNumber}
+              startIcon={<Phone />}
               required
               disabled={isSubmitting}
             />
@@ -375,7 +377,7 @@ export default function RespondUserInvitePage({ loaderData, actionData }: Route.
           Aksepter invitasjon
         </Button>
       </Form>
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }
 
@@ -384,24 +386,35 @@ export function ErrorBoundary() {
 
   if (isRouteErrorResponse(error) && error.status === 400) {
     return (
-      <FormPageTemplate title="Ugyldig invitasjonslenke" description="Lenken mangler token." variant="emphasis" footerLink={null}>
+      <AuthPageTemplate
+        title="Ugyldig invitasjonslenke"
+        description="Lenken mangler token."
+        topRight={
+          <Link to="/" className="font-semibold text-interactive hover:text-interactive-hover">
+            Forsiden
+          </Link>
+        }
+      >
         <div className="space-y-2">
           <p className="text-sm text-form-text-muted">Sjekk at du bruker hele lenken fra invitasjonen.</p>
-          <Link to="/" className="inline-block text-sm font-medium text-foreground hover:underline">
-            Tilbake til forsiden →
-          </Link>
         </div>
-      </FormPageTemplate>
+      </AuthPageTemplate>
     );
   }
 
   return (
-    <FormPageTemplate title="Noe gikk galt" description="En uventet feil oppstod. Prøv igjen." variant="emphasis" footerLink={null}>
-      <div className="space-y-2">
-        <Link to="/" className="inline-block text-sm font-medium text-foreground hover:underline">
-          Tilbake til forsiden →
+    <AuthPageTemplate
+      title="Noe gikk galt"
+      description="En uventet feil oppstod. Prøv igjen."
+      topRight={
+        <Link to="/" className="font-semibold text-interactive hover:text-interactive-hover">
+          Forsiden
         </Link>
+      }
+    >
+      <div className="space-y-2">
+        <p className="text-sm text-form-text-muted">Prøv å åpne invitasjonslenken på nytt.</p>
       </div>
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }

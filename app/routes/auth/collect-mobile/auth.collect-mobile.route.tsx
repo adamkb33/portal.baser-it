@@ -6,7 +6,8 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
 import { redirectWithError } from '~/lib/flash-message.server';
-import { Button, FormField, FormPageTemplate } from '~/ui';
+import { AuthPageTemplate, Button, FormField } from '~/ui';
+import { Phone } from 'lucide-react';
 
 type LoaderData = {
   userId: number;
@@ -64,21 +65,21 @@ export default function AuthCollectMobile({ loaderData }: Route.ComponentProps) 
   const isSubmitting = navigation.state === 'submitting';
 
   return (
-    <FormPageTemplate
+    <AuthPageTemplate
       title="Legg til mobilnummer"
       description="Vi trenger mobilnummeret ditt for å fullføre registreringen."
-      variant="default"
-      actions={
-        <div className="space-y-2 text-center">
+      topRight={
+        <span>
+          Vil du starte på nytt?{' '}
           <Link
             to={ROUTES_MAP['auth.sign-in'].href}
-            className="inline-block text-sm font-medium text-foreground hover:underline"
+            className="font-semibold text-interactive hover:text-interactive-hover"
           >
-            Gå til innlogging →
+            Logg inn
           </Link>
-        </div>
+        </span>
       }
-      footerLink={null}
+      bottom="Denne informasjonen brukes til å fullføre profilen din."
     >
       <Form method="post" className="space-y-4" aria-busy={isSubmitting}>
         <input type="hidden" name="userId" value={loaderData.userId} />
@@ -88,7 +89,8 @@ export default function AuthCollectMobile({ loaderData }: Route.ComponentProps) 
           label="Mobilnummer"
           type="text"
           autoComplete="tel"
-          placeholder="Mobilnummer"
+          placeholder="+47 12 34 56 78"
+          startIcon={<Phone />}
           required
           disabled={isSubmitting}
         />
@@ -97,6 +99,6 @@ export default function AuthCollectMobile({ loaderData }: Route.ComponentProps) 
           Fortsett
         </Button>
       </Form>
-    </FormPageTemplate>
+    </AuthPageTemplate>
   );
 }
