@@ -47,22 +47,22 @@ export function BookingEmployeePage() {
               key={profile.id}
               variant="default"
               className={cn(
-                'group flex h-full min-h-64 flex-col border-border bg-surface-variant-1 shadow-sm transition-colors focus-within:ring-2 focus-within:ring-interactive',
+                'group flex h-full min-h-64 flex-col border-booking-border bg-booking-surface-subtle shadow-[var(--shadow-booking-card)] transition-colors focus-within:ring-[length:var(--border-booking-focus-ring)] focus-within:ring-booking-action',
                 isSelected
-                  ? 'border-interactive bg-surface-primary-subtle ring-2 ring-interactive/35'
-                  : 'hover:border-interactive/20 hover:bg-surface',
+                  ? 'border-booking-action bg-booking-action-muted ring-[length:var(--border-booking-focus-ring)] ring-booking-action/35'
+                  : 'hover:border-booking-action/20 hover:bg-booking-surface-muted',
                 isSubmittingProfile && 'opacity-80',
               )}
             >
               <CardHeader>
                 {isSelected ? (
-                  <Text as="p" variant="overline" className="text-interactive">
+                  <Text as="p" variant="overline" className="text-booking-action">
                     Valgt behandler
                   </Text>
                 ) : null}
-                <div className="flex min-h-20 items-start gap-3 rounded-md border border-border bg-surface-variant-2 p-3">
+                <div className="flex min-h-20 items-start gap-3 rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-strong p-3">
                   {profile.image ? (
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-sm border border-border bg-background">
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[var(--radius-booking-field)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised">
                       <img
                         src={profile.image.url}
                         alt={`${profile.givenName} ${profile.familyName}`}
@@ -71,11 +71,11 @@ export function BookingEmployeePage() {
                     </div>
                   ) : null}
                   <div className="min-w-0 flex-1">
-                    <CardTitle className="text-text-primary">
+                    <CardTitle className="text-booking-text">
                       {profile.givenName} {profile.familyName}
                     </CardTitle>
                     {profile.description ? (
-                      <Text className="mt-1 text-text-secondary">{profile.description}</Text>
+                      <Text className="mt-1 text-booking-text-muted">{profile.description}</Text>
                     ) : null}
                   </div>
                 </div>
@@ -83,9 +83,9 @@ export function BookingEmployeePage() {
 
               <CardContent className="flex-1">
                 {profile.services.length > 0 && (
-                  <div className="rounded-md border border-border bg-surface-variant-1 p-3">
+                  <div className="rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-subtle p-3">
                     <div className="mb-2 flex items-center justify-between gap-2">
-                      <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
+                      <Text as="p" variant="caption" className="uppercase tracking-wide text-booking-text-muted">
                         Tjenester
                       </Text>
                       <Popover>
@@ -94,31 +94,31 @@ export function BookingEmployeePage() {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-8 px-2 text-xs hover:bg-background"
+                            className="h-8 px-2 text-xs hover:bg-booking-surface-raised"
                           >
                             Vis alle
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-72 border-border bg-surface p-4">
+                        <PopoverContent className="w-72 border-booking-border bg-booking-surface-muted p-4">
                           <div className="max-h-56 space-y-3 overflow-y-auto pr-1">
                             {profile.services.map((group) => (
                               <div
                                 key={group.id}
-                                className="space-y-2 rounded-md border border-border bg-surface-variant-1 p-3"
+                                className="space-y-2 rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-subtle p-3"
                               >
-                                <div className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                                <div className="text-xs font-semibold uppercase tracking-wide text-booking-text-muted">
                                   {group.name}
                                 </div>
                                 <div className="space-y-2">
                                   {group.services.map((service) => (
                                     <div
                                       key={service.id}
-                                      className="flex items-baseline justify-between gap-2 rounded-sm bg-surface-variant-2 px-2 py-1.5"
+                                      className="flex items-baseline justify-between gap-2 rounded-[var(--radius-booking-field)] bg-booking-surface-strong px-2 py-1.5"
                                     >
-                                      <span className="text-sm text-text-primary">{service.name}</span>
+                                      <span className="text-sm text-booking-text">{service.name}</span>
                                       <div className="flex flex-shrink-0 items-baseline gap-2">
-                                        <span className="text-xs text-text-secondary">{service.duration} min</span>
-                                        <span className="text-sm font-medium text-text-primary">
+                                        <span className="text-xs text-booking-text-muted">{service.duration} min</span>
+                                        <span className="text-sm font-medium text-booking-text">
                                           {service.price} kr
                                         </span>
                                       </div>
@@ -131,21 +131,21 @@ export function BookingEmployeePage() {
                         </PopoverContent>
                       </Popover>
                     </div>
-                    <Text as="p" variant="body-sm" className="text-text-secondary">
+                    <Text as="p" variant="body-sm" className="text-booking-text-muted">
                       {profile.services.reduce((sum, group) => sum + group.services.length, 0)} tjenester tilgjengelig
                     </Text>
                   </div>
                 )}
               </CardContent>
 
-              <CardFooter className="mt-auto border-t border-border bg-surface-variant-2 p-3">
+              <CardFooter className="mt-auto border-t border-booking-border bg-booking-surface-strong p-3">
                 {isSelected ? (
                   <Button
                     type="button"
                     variant="outline"
                     fullWidth
                     disabled
-                    className="gap-2 border-interactive/40 bg-background text-text-primary"
+                    className="gap-2 border-booking-action/40 bg-booking-surface-raised text-booking-text"
                   >
                     Valgt
                   </Button>

@@ -6,6 +6,7 @@ import type { FlashMessage } from '~/lib/flash-message.server';
 import { AuthController } from '~/api/generated/base';
 import type { UserContextDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
+import { parseEmbedConfig } from '~/lib/embed-config.server';
 
 function mergeResponseHeaders(...headersInit: Array<HeadersInit | undefined>): Headers {
   const merged = new Headers();
@@ -102,11 +103,15 @@ export const buildResponseData = async (request: Request, accessToken: string, f
 
   const navigation = createNavigation(userContext, systemRoles, Boolean(authPayload));
 
+  const embedConfig = await parseEmbedConfig(request);
+
   return {
     user: authPayload,
     userNavigation: navigation,
     companyContext: companySummary,
     flashMessage,
+    embedTheme: embedConfig.theme,
+    embedConfig,
   };
 };
 
@@ -117,12 +122,16 @@ export const defaultResponse = async (
 ) => {
   const authHeaders = await authService.clearAuthCookies();
   const headers = mergeResponseHeaders(authHeaders, additionalHeaders);
+  const embedConfig = request ? await parseEmbedConfig(request) : { theme: 'pitell' as const, parentOrigin: null };
+
   return data(
     {
       user: null,
       companyContext: null,
       userNavigation: createNavigation(undefined, [], false),
       flashMessage,
+      embedTheme: embedConfig.theme,
+      embedConfig,
     },
     { status: 200, headers },
   );

@@ -133,11 +133,11 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick, variant = 
       onClick={onClick}
       className={cn(
         // Base styles - mobile-first touch target
-        'relative flex w-full items-center justify-between gap-3 rounded-lg border-2 transition-all',
+        'relative flex w-full items-center justify-between gap-3 rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-selected)] transition-all',
         isCompact ? 'min-h-11 px-3 py-2' : 'min-h-16 p-3 md:min-h-14',
 
         // Selected state
-        isSelected && ['border-booking-action bg-booking-action text-booking-action-contrast', 'shadow-sm'],
+        isSelected && ['border-booking-action bg-booking-action text-booking-action-contrast', 'shadow-[var(--shadow-booking-card)]'],
 
         // Default state
         !isSelected && [
@@ -167,7 +167,7 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick, variant = 
         {hasSelectedTime && (
           <div
             className={cn(
-              'flex size-6 items-center justify-center rounded-full',
+              'flex size-6 items-center justify-center rounded-[var(--radius-booking-badge)]',
               isSelected ? 'bg-booking-action-contrast' : 'bg-booking-action',
             )}
           >
@@ -179,7 +179,7 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick, variant = 
       {/* Slot count badge */}
       <div
         className={cn(
-          'flex flex-col items-end gap-0.5 rounded-lg px-2.5 py-1',
+          'flex flex-col items-end gap-0.5 rounded-[var(--radius-booking-badge)] px-2.5 py-1',
           isSelected ? 'bg-booking-action-contrast/20' : 'bg-booking-surface-muted',
         )}
       >
@@ -220,13 +220,13 @@ function TimeSlotButton({ time, isSelected, onClick, variant = 'default' }: Time
       onClick={onClick}
       className={cn(
         // Touch-friendly: 48px height on mobile
-        'flex items-center justify-center rounded-lg border-2 font-bold transition-all',
+        'flex items-center justify-center rounded-[var(--radius-booking-control)] border-[length:var(--border-booking-selected)] font-bold transition-all',
         isCompact ? 'min-h-10 px-3 py-2 text-xs' : 'min-h-12 px-4 py-3 text-sm md:min-h-11 md:text-base',
 
         // Selected state
         isSelected && [
           'border-booking-action bg-booking-action text-booking-action-contrast',
-          'shadow-sm ring-2 ring-booking-action/20 ring-offset-2',
+          'shadow-[var(--shadow-booking-card)] ring-[length:var(--border-booking-focus-ring)] ring-booking-action/20 ring-offset-2',
         ],
 
         // Default state
@@ -630,7 +630,7 @@ export function BookingSelectTimePage() {
                     <div
                       className={cn(
                         'pointer-events-none absolute inset-y-0 right-0 z-10 flex w-8 items-center justify-center',
-                        'bg-gradient-to-l from-background/100 to-transparent font-semibold uppercase tracking-wider',
+                        'bg-gradient-to-l from-booking-surface-raised/100 to-transparent font-semibold uppercase tracking-wider',
                       )}
                       aria-hidden="true"
                     >

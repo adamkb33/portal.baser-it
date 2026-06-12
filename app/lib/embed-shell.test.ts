@@ -7,6 +7,7 @@ describe('embed theme keys', () => {
     expect(isEmbedThemeKey('ocean')).toBe(true);
     expect(isEmbedThemeKey('sunset')).toBe(true);
     expect(isEmbedThemeKey('forest')).toBe(true);
+    expect(isEmbedThemeKey('fredrikstad-barbershop')).toBe(true);
   });
 
   it('rejects missing or unsupported embed themes', () => {

@@ -1,12 +1,14 @@
 import * as React from 'react';
-import { Outlet, useLocation } from 'react-router';
+import { Outlet, useLocation, useRouteLoaderData } from 'react-router';
+import type { loader as rootLayoutLoader } from '~/routes/root.layout';
 
 export default function EmbedBookingLayout() {
   const location = useLocation();
-  const wrapperRef = React.useRef<HTMLDivElement | null>(null);
-  const contentRef = React.useRef<HTMLDivElement | null>(null);
-  const lastHeightRef = React.useRef<number | null>(null);
+  const rootLoaderData = useRouteLoaderData<typeof rootLayoutLoader>('root.layout');
+  const parentOrigin = rootLoaderData?.embedConfig.parentOrigin ?? null;
+  const lastHeightRef = React.useRef(0);
   const animationFrameRef = React.useRef<number | null>(null);
+  const resizeReasonRef = React.useRef<'init' | 'step' | 'content'>('init');
 
   const postEmbedMessage = React.useCallback(
     (message: Record<string, unknown>) => {
@@ -15,47 +17,80 @@ export default function EmbedBookingLayout() {
           path: `${location.pathname}${location.search}`,
           ...message,
         },
-        '*',
+        parentOrigin ?? '*',
       );
     },
-    [location.pathname, location.search],
+    [location.pathname, location.search, parentOrigin],
   );
 
-  const publishHeight = React.useCallback(
-    (force = false) => {
-      const target = contentRef.current;
-      if (!target) return;
+  React.useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtmlStyle = html.getAttribute('style');
+    const previousBodyStyle = body.getAttribute('style');
 
-      const rectHeight = target.getBoundingClientRect().height;
-      const scrollHeight = target.scrollHeight;
-      const height = Math.ceil(Math.max(rectHeight, scrollHeight));
+    html.style.background = 'transparent';
+    html.style.height = 'auto';
+    html.style.minHeight = '0';
+    html.style.overflow = 'visible';
+    html.style.colorScheme = 'normal';
 
-      if (!force && lastHeightRef.current === height) {
-        return;
+    body.style.background = 'transparent';
+    body.style.margin = '0';
+    body.style.height = 'auto';
+    body.style.minHeight = '0';
+    body.style.overflow = 'visible';
+
+    return () => {
+      if (previousHtmlStyle === null) {
+        html.removeAttribute('style');
+      } else {
+        html.setAttribute('style', previousHtmlStyle);
       }
 
-      lastHeightRef.current = height;
-      postEmbedMessage({
-        type: 'embed:resize',
-        height,
-      });
-    },
-    [postEmbedMessage],
-  );
-
-  const scheduleHeightPublish = React.useCallback(
-    (force = false) => {
-      if (animationFrameRef.current !== null) {
-        window.cancelAnimationFrame(animationFrameRef.current);
+      if (previousBodyStyle === null) {
+        body.removeAttribute('style');
+      } else {
+        body.setAttribute('style', previousBodyStyle);
       }
+    };
+  }, []);
 
-      animationFrameRef.current = window.requestAnimationFrame(() => {
-        animationFrameRef.current = null;
-        publishHeight(force);
-      });
-    },
-    [publishHeight],
-  );
+  const publishHeight = React.useCallback(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const height = Math.ceil(
+      Math.max(
+        html.getBoundingClientRect().height,
+        body.getBoundingClientRect().height,
+        html.scrollHeight,
+        body.scrollHeight,
+      ),
+    );
+
+    if (Math.abs(height - lastHeightRef.current) < 1) {
+      return;
+    }
+
+    lastHeightRef.current = height;
+    postEmbedMessage({
+      type: 'embed:resize',
+      height,
+      reason: resizeReasonRef.current,
+    });
+    resizeReasonRef.current = 'content';
+  }, [postEmbedMessage]);
+
+  const scheduleHeightPublish = React.useCallback(() => {
+    if (animationFrameRef.current !== null) {
+      window.cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    animationFrameRef.current = window.requestAnimationFrame(() => {
+      animationFrameRef.current = null;
+      publishHeight();
+    });
+  }, [publishHeight]);
 
   React.useEffect(() => {
     postEmbedMessage({
@@ -64,29 +99,41 @@ export default function EmbedBookingLayout() {
   }, [postEmbedMessage]);
 
   React.useEffect(() => {
+    if (resizeReasonRef.current !== 'init') {
+      resizeReasonRef.current = 'step';
+    }
+
     postEmbedMessage({
       type: 'embed:step-changed',
     });
-    scheduleHeightPublish(true);
+    scheduleHeightPublish();
 
-    const timeout = window.setTimeout(() => publishHeight(true), 150);
+    const timeout = window.setTimeout(() => publishHeight(), 150);
     return () => window.clearTimeout(timeout);
   }, [postEmbedMessage, publishHeight, scheduleHeightPublish]);
 
   React.useEffect(() => {
-    const target = contentRef.current;
-    if (!target) return;
-
-    scheduleHeightPublish(true);
+    scheduleHeightPublish();
     const observer = new ResizeObserver(() => scheduleHeightPublish());
-    observer.observe(target);
+    observer.observe(document.documentElement);
+    observer.observe(document.body);
 
-    const handleWindowResize = () => scheduleHeightPublish(true);
+    const handleWindowResize = () => scheduleHeightPublish();
+    const handleResourceLoad = (event: Event) => {
+      const target = event.target;
+      if (target instanceof HTMLImageElement) {
+        scheduleHeightPublish();
+      }
+    };
+
+    document.fonts?.ready.then(scheduleHeightPublish);
     window.addEventListener('resize', handleWindowResize);
+    document.addEventListener('load', handleResourceLoad, true);
 
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', handleWindowResize);
+      document.removeEventListener('load', handleResourceLoad, true);
       if (animationFrameRef.current !== null) {
         window.cancelAnimationFrame(animationFrameRef.current);
       }
@@ -94,10 +141,12 @@ export default function EmbedBookingLayout() {
   }, [scheduleHeightPublish]);
 
   return (
-    <div ref={wrapperRef} className="bg-background px-3 py-4 text-text-primary sm:px-4">
-      <div ref={contentRef} className="mx-auto w-full max-w-4xl">
-        <Outlet />
-      </div>
+    <div
+      id="embed-root"
+      data-embed-mode="fragment"
+      className="flow-root w-full bg-booking-background text-booking-text [--booking-step-min-height:auto] [container-name:embed] [container-type:inline-size]"
+    >
+      <Outlet />
     </div>
   );
 }

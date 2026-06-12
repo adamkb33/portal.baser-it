@@ -12,16 +12,26 @@ export interface CardProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const variantClasses: Record<CardVariant, string> = {
-  default: 'border-border bg-surface',
-  subtle: 'border-border bg-background',
-  emphasis: 'border-interactive bg-surface shadow-sm',
-  interactive: 'border-border bg-background transition-colors hover:bg-surface',
+  default: 'border-border bg-surface shadow-[var(--shadow-card)]',
+  subtle: 'border-border bg-background shadow-[var(--shadow-card)]',
+  emphasis: 'border-interactive bg-surface shadow-[var(--shadow-panel)]',
+  interactive: 'border-border bg-background shadow-[var(--shadow-card)] transition-colors hover:bg-surface',
   ghost: 'border-transparent bg-background',
-  bordered: 'border-border bg-surface',
+  bordered: 'border-border bg-surface shadow-[var(--shadow-card)]',
 };
 
 export function Card({ variant = 'default', size = 'md', as: Component = 'div', className, ...props }: CardProps) {
-  return <Component className={cn('rounded-md border', variantClasses[variant], insetSpaceClasses[size], className)} {...props} />;
+  return (
+    <Component
+      className={cn(
+        'rounded-[var(--radius-card)] border-[length:var(--border-card)]',
+        variantClasses[variant],
+        insetSpaceClasses[size],
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -61,5 +71,5 @@ export function CardContent({ className, ...props }: CardContentProps) {
 export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function CardFooter({ className, ...props }: CardFooterProps) {
-  return <div className={cn('mt-4 border-t border-border pt-4', className)} {...props} />;
+  return <div className={cn('mt-4 border-t-[length:var(--border-card)] border-border pt-4', className)} {...props} />;
 }

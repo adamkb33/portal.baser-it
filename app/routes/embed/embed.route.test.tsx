@@ -24,14 +24,6 @@ function getLocation(result: unknown): string | null {
   return result instanceof Response ? result.headers.get('Location') : null;
 }
 
-function getSetCookie(result: unknown): string | null {
-  if (result && typeof result === 'object' && 'init' in (result as Record<string, unknown>)) {
-    const headers = (result as { init?: { headers?: Headers } | null }).init?.headers;
-    return headers?.get('Set-Cookie') ?? null;
-  }
-  return result instanceof Response ? result.headers.get('Set-Cookie') : null;
-}
-
 function getSetCookies(result: unknown): string[] {
   if (result && typeof result === 'object' && 'init' in (result as Record<string, unknown>)) {
     const headers = (result as { init?: { headers?: Headers | [string, string][] } | null }).init?.headers;
@@ -56,9 +48,10 @@ describe('embed route loader', () => {
       request: new Request('http://localhost/embed?companyId=123'),
     } as never);
 
+    const setCookies = getSetCookies(result).join('\n');
     expect(getStatus(result)).toBe(302);
     expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=123`);
-    expect(getSetCookie(result)).toBeNull();
+    expect(setCookies).toContain('embed_config=');
   });
 
   it('allows start=contact and redirects to booking session', async () => {
@@ -66,9 +59,10 @@ describe('embed route loader', () => {
       request: new Request('http://localhost/embed?companyId=55&start=contact'),
     } as never);
 
+    const setCookies = getSetCookies(result).join('\n');
     expect(getStatus(result)).toBe(302);
     expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=55`);
-    expect(getSetCookie(result)).toBeNull();
+    expect(setCookies).toContain('embed_config=');
   });
 
   it('returns 400 when companyId is missing', async () => {
@@ -102,16 +96,42 @@ describe('embed route loader', () => {
     });
   });
 
-  it('preserves valid theme in the redirect URL', async () => {
+  it('stores valid theme in embed config cookie and keeps redirect URL clean', async () => {
     const result = await loader({
-      request: new Request('http://localhost/embed?companyId=8&theme=ocean'),
+      request: new Request('http://localhost/embed?companyId=8&theme=fredrikstad-barbershop'),
     } as never);
 
     const setCookies = getSetCookies(result).join('\n');
     expect(getStatus(result)).toBe(302);
-    expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=8&theme=ocean`);
+    expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=8`);
+    expect(setCookies).toContain('embed_config=');
     expect(setCookies).not.toContain('embed_mode=');
-    expect(setCookies).not.toContain('embed_theme=ocean');
+    expect(setCookies).not.toContain('embed_theme=fredrikstad-barbershop');
+  });
+
+  it('stores a valid parentOrigin in embed config cookie and keeps redirect URL clean', async () => {
+    const result = await loader({
+      request: new Request(
+        'http://localhost/embed?companyId=8&theme=fredrikstad-barbershop&parentOrigin=https%3A%2F%2Fclient.example%2Fbooking',
+      ),
+    } as never);
+
+    const setCookies = getSetCookies(result).join('\n');
+    expect(getStatus(result)).toBe(302);
+    expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=8`);
+    expect(setCookies).toContain('embed_config=');
+    expect(setCookies).not.toContain('parentOrigin=https://client.example');
+  });
+
+  it('returns 400 when parentOrigin is invalid', async () => {
+    const result = await loader({
+      request: new Request('http://localhost/embed?companyId=8&parentOrigin=not-a-url'),
+    } as never);
+
+    expect(getStatus(result)).toBe(400);
+    expect(unwrapData(result)).toMatchObject({
+      error: 'Ugyldig parentOrigin-verdi.',
+    });
   });
 
   it('clears the appointment session cookie when reset is requested', async () => {

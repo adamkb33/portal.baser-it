@@ -48,8 +48,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
     <Component
       ref={ref}
       className={cn(
-        'inline-flex items-center justify-center rounded-sm font-medium transition-colors motion-safe:duration-fast motion-safe:ease-default',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive',
+        'inline-flex items-center justify-center rounded-[var(--radius-control)] font-medium transition-colors motion-safe:duration-fast motion-safe:ease-default',
+        'focus-visible:outline-none focus-visible:ring-[length:var(--border-focus-ring)] focus-visible:ring-interactive',
         variantClasses[variant],
         (disabled || loading) && 'cursor-not-allowed opacity-50',
         fullWidth && 'w-full',

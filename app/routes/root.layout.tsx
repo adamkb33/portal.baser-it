@@ -16,6 +16,7 @@ import type { CompanySummaryDto } from '~/api/generated/base';
 import { logRouteError, logRouteStart, logRouteSuccess } from '~/lib/routing/route-log';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { SimpleShinyBackground } from './_components/backgrounds/simple-shiny.background';
+import { EMBED_THEME_TOKENS } from '~/lib/embed-shell';
 
 export async function loader(args: Route.LoaderArgs) {
   const { request } = args;
@@ -94,6 +95,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const keepMobileMenuOpenOnNextRouteChangeRef = React.useRef(false);
   const isEmbedRoute = isEmbeddedRoutePath(location.pathname);
+  const embedThemeStyle = isEmbedRoute ? EMBED_THEME_TOKENS[loaderData.embedTheme] : undefined;
 
   const userNav = loaderData.userNavigation || undefined;
   const companyContext = loaderData.companyContext;
@@ -113,9 +115,24 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
     setMobileMenuOpen(false);
   }, [location.pathname, location.search]);
 
+  React.useEffect(() => {
+    if (!isEmbedRoute || typeof document === 'undefined') return;
+
+    const previousHtmlBackground = document.documentElement.style.background;
+    const previousBodyBackground = document.body.style.background;
+
+    document.documentElement.style.background = 'transparent';
+    document.body.style.background = 'transparent';
+
+    return () => {
+      document.documentElement.style.background = previousHtmlBackground;
+      document.body.style.background = previousBodyBackground;
+    };
+  }, [isEmbedRoute]);
+
   if (isEmbedRoute) {
     return (
-      <div className="bg-background text-text-primary">
+      <div data-embed-root className="bg-transparent text-text-primary" style={embedThemeStyle}>
         <FlashMessageBanner message={loaderData.flashMessage} />
         <Outlet
           context={{

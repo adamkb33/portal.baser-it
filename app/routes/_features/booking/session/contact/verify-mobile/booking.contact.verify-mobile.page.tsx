@@ -65,7 +65,7 @@ export function BookingContactVerifyMobilePage() {
       <Stack space="md">
         <Link
           to={loaderData.navigation.previousStep}
-          className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-sm px-4 text-base font-medium text-interactive transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+          className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-[var(--radius-booking-control)] px-4 text-base font-medium text-booking-action transition-colors hover:bg-booking-action-muted focus-visible:outline-none focus-visible:ring-[length:var(--border-booking-focus-ring)] focus-visible:ring-booking-action"
         >
           <ArrowLeft className="size-4" />
           Endre mobilnummer

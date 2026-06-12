@@ -3,7 +3,11 @@
   --color-booking-background: var(--color-background);
   --color-booking-surface: var(--color-surface);
   --color-booking-surface-muted: var(--color-surface);
+  --color-booking-surface-raised: var(--color-background);
+  --color-booking-surface-subtle: var(--color-surface-variant-1);
+  --color-booking-surface-strong: var(--color-surface-variant-2);
   --color-booking-border: var(--color-border);
+  --color-booking-border-strong: color-mix(in oklab, var(--color-border) 72%, var(--color-interactive));
 
   --color-booking-text: var(--color-text-primary);
   --color-booking-text-muted: var(--color-text-secondary);
@@ -11,9 +15,32 @@
 
   --color-booking-action: var(--color-interactive);
   --color-booking-action-hover: var(--color-interactive-hover);
+  --color-booking-action-muted: color-mix(in oklab, var(--color-interactive) 10%, var(--color-surface));
+  --color-booking-action-ring: color-mix(in oklab, var(--color-interactive) 35%, transparent);
   --color-booking-action-contrast: var(--color-text-inverse);
+  --color-booking-accent: var(--color-secondary);
+  --color-booking-accent-muted: color-mix(in oklab, var(--color-secondary) 12%, var(--color-surface));
 
   --color-booking-appointment-ongoing-surface: color-mix(in oklab, var(--color-interactive) 10%, var(--color-surface));
   --color-booking-appointment-ongoing-chip: color-mix(in oklab, var(--color-interactive) 16%, var(--color-background));
   --color-booking-appointment-recent-surface: color-mix(in oklab, var(--color-secondary) 12%, var(--color-surface));
+
+  /* Booking shape and interaction aliases */
+  --radius-booking-control: var(--radius-control);
+  --radius-booking-field: var(--radius-field);
+  --radius-booking-card: var(--radius-card);
+  --radius-booking-panel: var(--radius-panel);
+  --radius-booking-badge: var(--radius-badge);
+
+  --border-booking-control: var(--border-control);
+  --border-booking-card: var(--border-card);
+  --border-booking-selected: var(--border-selected);
+  --border-booking-focus-ring: var(--border-focus-ring);
+
+  --shadow-booking-card: var(--shadow-card);
+  --shadow-booking-panel: var(--shadow-panel);
+  --shadow-booking-floating: var(--shadow-floating);
+
+  --spacing-booking-card-padding: var(--space-card-padding-md);
+  --spacing-booking-control-height: var(--spacing-touch-target-compact);
 }

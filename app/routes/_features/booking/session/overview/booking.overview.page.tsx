@@ -87,50 +87,50 @@ export function BookingOverviewPage() {
       <Stack space="lg">
         <Form id={changeTimeFormId} method="get" action={loaderData.navigation.selectTime} className="hidden" />
         <Form id={confirmFormId} method="post" className="hidden" />
-        <section className="space-y-4 rounded-lg bg-surface p-3 md:p-5">
+        <section className="space-y-4 rounded-[var(--radius-booking-panel)] bg-booking-surface-muted p-3 shadow-[var(--shadow-booking-panel)] md:p-5">
           <header className="space-y-1">
-            <Text as="h2" variant="label" className="text-text-primary">
+            <Text as="h2" variant="label" className="text-booking-text">
               Oversikt
             </Text>
-            <Text as="p" variant="body-sm" className="text-text-secondary">
+            <Text as="p" variant="body-sm" className="text-booking-text-muted">
               Kontroller informasjonen før bekreftelse.
             </Text>
           </header>
 
           <div className="grid gap-2 sm:grid-cols-3">
-            <div className="rounded-md bg-surface-variant-2 px-3 py-2">
-              <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
+            <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong px-3 py-2">
+              <Text as="p" variant="caption" className="uppercase tracking-wide text-booking-text-muted">
                 Tjenester
               </Text>
-              <Text as="p" variant="body-sm" className="tabular-nums font-semibold text-text-primary">
+              <Text as="p" variant="body-sm" className="tabular-nums font-semibold text-booking-text">
                 {totalServiceCount}
               </Text>
             </div>
-            <div className="rounded-md bg-surface-variant-2 px-3 py-2">
-              <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
+            <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong px-3 py-2">
+              <Text as="p" variant="caption" className="uppercase tracking-wide text-booking-text-muted">
                 Varighet
               </Text>
-              <Text as="p" variant="body-sm" className="tabular-nums font-semibold text-text-primary">
+              <Text as="p" variant="body-sm" className="tabular-nums font-semibold text-booking-text">
                 {totalDuration} min
               </Text>
             </div>
-            <div className="rounded-md bg-surface-variant-2 px-3 py-2">
-              <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
+            <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong px-3 py-2">
+              <Text as="p" variant="caption" className="uppercase tracking-wide text-booking-text-muted">
                 Totalpris
               </Text>
-              <Text as="p" variant="body-sm" className="tabular-nums font-semibold text-text-primary">
+              <Text as="p" variant="body-sm" className="tabular-nums font-semibold text-booking-text">
                 {totalPrice} kr
               </Text>
             </div>
           </div>
 
           <div className="space-y-3">
-            <section className="rounded-md bg-surface-variant-1 p-2.5 md:p-3">
-              <div className="mb-2 flex items-center justify-between gap-3 border-b border-border pb-2">
+            <section className="rounded-[var(--radius-booking-card)] bg-booking-surface-subtle p-2.5 md:p-3">
+              <div className="mb-2 flex items-center justify-between gap-3 border-b border-booking-border pb-2">
                 <Text as="p" variant="label">Tidspunkt</Text>
-                <Link to={loaderData.navigation.selectTime} className="text-xs text-text-secondary">Endre</Link>
+                <Link to={loaderData.navigation.selectTime} className="text-xs text-booking-text-muted">Endre</Link>
               </div>
-              <div className="rounded-md bg-surface-variant-2 p-2.5 md:p-3">
+              <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong p-2.5 md:p-3">
                 <KeyValueList
                   items={[
                     { label: 'Dato', value: dateTime.full, icon: <Calendar className="size-4" /> },
@@ -142,12 +142,12 @@ export function BookingOverviewPage() {
             </section>
 
             <div className="grid gap-3 md:grid-cols-2">
-              <section className="rounded-md bg-surface-variant-1 p-2.5 md:p-3">
-                <div className="mb-2 flex items-center justify-between gap-3 border-b border-border pb-2">
+              <section className="rounded-[var(--radius-booking-card)] bg-booking-surface-subtle p-2.5 md:p-3">
+                <div className="mb-2 flex items-center justify-between gap-3 border-b border-booking-border pb-2">
                   <Text as="p" variant="label">Kontakt</Text>
-                  <Link to={loaderData.navigation.contact} className="text-xs text-text-secondary">Endre</Link>
+                  <Link to={loaderData.navigation.contact} className="text-xs text-booking-text-muted">Endre</Link>
                 </div>
-                <div className="rounded-md bg-surface-variant-2 p-2.5 md:p-3">
+                <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong p-2.5 md:p-3">
                   <KeyValueList
                     layout="stacked"
                     items={[
@@ -158,15 +158,15 @@ export function BookingOverviewPage() {
                 </div>
               </section>
 
-              <section className="rounded-md bg-surface-variant-1 p-2.5 md:p-3">
-                <div className="mb-2 flex items-center justify-between gap-3 border-b border-border pb-2">
+              <section className="rounded-[var(--radius-booking-card)] bg-booking-surface-subtle p-2.5 md:p-3">
+                <div className="mb-2 flex items-center justify-between gap-3 border-b border-booking-border pb-2">
                   <Text as="p" variant="label">Behandler</Text>
-                  <Link to={loaderData.navigation.employee} className="text-xs text-text-secondary">Endre</Link>
+                  <Link to={loaderData.navigation.employee} className="text-xs text-booking-text-muted">Endre</Link>
                 </div>
-                <div className="rounded-md bg-surface-variant-2 p-2.5 md:p-3">
+                <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong p-2.5 md:p-3">
                   <div className="flex items-start gap-3">
                     {sessionOverview.selectedProfile.image ? (
-                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-surface">
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-[var(--radius-booking-field)] bg-booking-surface-muted">
                         <img
                           src={sessionOverview.selectedProfile.image.url}
                           alt={`${sessionOverview.selectedProfile.givenName} ${sessionOverview.selectedProfile.familyName}`}
@@ -182,30 +182,30 @@ export function BookingOverviewPage() {
               </section>
             </div>
 
-            <section className="rounded-md bg-surface-variant-1 p-2.5 md:p-3">
-              <div className="mb-2 flex items-center justify-between gap-3 border-b border-border pb-2">
+            <section className="rounded-[var(--radius-booking-card)] bg-booking-surface-subtle p-2.5 md:p-3">
+              <div className="mb-2 flex items-center justify-between gap-3 border-b border-booking-border pb-2">
                 <Text as="p" variant="label">Tjenester</Text>
-                <Link to={loaderData.navigation.selectServices} className="text-xs text-text-secondary">Endre</Link>
+                <Link to={loaderData.navigation.selectServices} className="text-xs text-booking-text-muted">Endre</Link>
               </div>
               <div className="grid gap-2 md:grid-cols-2">
                 {collapsedServices.map((item) => (
-                  <div key={`${item.serviceGroup.id}-${item.services.id}`} className="rounded-md bg-surface-variant-2 p-2.5">
+                  <div key={`${item.serviceGroup.id}-${item.services.id}`} className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong p-2.5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
                         <Text as="p" variant="body-sm" className="truncate text-sm font-medium md:text-base">
                           {item.services.name}
                         </Text>
                         {item.quantity > 1 ? (
-                          <Text as="p" variant="caption" className="text-text-secondary">
+                          <Text as="p" variant="caption" className="text-booking-text-muted">
                             Antall: {item.quantity}
                           </Text>
                         ) : null}
                       </div>
-                      <Text as="p" variant="body-sm" className="shrink-0 text-sm text-text-secondary md:text-base">
+                      <Text as="p" variant="body-sm" className="shrink-0 text-sm text-booking-text-muted md:text-base">
                         <span className="tabular-nums">{item.services.price * item.quantity}</span> kr
                       </Text>
                     </div>
-                    <Text as="p" variant="caption" className="mt-0.5 text-text-secondary">
+                    <Text as="p" variant="caption" className="mt-0.5 text-booking-text-muted">
                       <span className="tabular-nums">{item.services.duration * item.quantity}</span> min
                     </Text>
                   </div>
@@ -216,23 +216,23 @@ export function BookingOverviewPage() {
                   {showAllServices ? (
                     <div id="overview-more-services" className="grid gap-2 md:grid-cols-2">
                       {additionalServices.map((item) => (
-                        <div key={`${item.serviceGroup.id}-${item.services.id}`} className="rounded-md bg-surface p-2.5">
+                        <div key={`${item.serviceGroup.id}-${item.services.id}`} className="rounded-[var(--radius-booking-card)] bg-booking-surface-muted p-2.5">
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0">
                               <Text as="p" variant="body-sm" className="truncate text-sm font-medium md:text-base">
                                 {item.services.name}
                               </Text>
                               {item.quantity > 1 ? (
-                                <Text as="p" variant="caption" className="text-text-secondary">
+                                <Text as="p" variant="caption" className="text-booking-text-muted">
                                   Antall: {item.quantity}
                                 </Text>
                               ) : null}
                             </div>
-                            <Text as="p" variant="body-sm" className="shrink-0 text-sm text-text-secondary md:text-base">
+                            <Text as="p" variant="body-sm" className="shrink-0 text-sm text-booking-text-muted md:text-base">
                               <span className="tabular-nums">{item.services.price * item.quantity}</span> kr
                             </Text>
                           </div>
-                          <Text as="p" variant="caption" className="mt-0.5 text-text-secondary">
+                          <Text as="p" variant="caption" className="mt-0.5 text-booking-text-muted">
                             <span className="tabular-nums">{item.services.duration * item.quantity}</span> min
                           </Text>
                         </div>
@@ -241,7 +241,7 @@ export function BookingOverviewPage() {
                   ) : null}
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between rounded-md bg-surface-variant-2 px-3 py-2 text-left"
+                    className="flex w-full items-center justify-between rounded-[var(--radius-booking-control)] bg-booking-surface-strong px-3 py-2 text-left"
                     onClick={() => setShowAllServices((prev) => !prev)}
                     aria-expanded={showAllServices}
                     aria-controls="overview-more-services"
@@ -250,7 +250,7 @@ export function BookingOverviewPage() {
                       {showAllServices ? 'Vis færre' : 'Vis flere'}
                     </Text>
                     {!showAllServices ? (
-                      <Text as="span" variant="caption" className="text-text-secondary">
+                      <Text as="span" variant="caption" className="text-booking-text-muted">
                         +{additionalServices.length} flere
                       </Text>
                     ) : null}

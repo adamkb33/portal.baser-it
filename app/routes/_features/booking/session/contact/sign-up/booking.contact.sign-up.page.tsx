@@ -14,7 +14,7 @@ export function BookingContactSignUpPage() {
       <div>
         <Link
           to={loaderData.contactHref}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-booking-text-muted hover:text-booking-text"
         >
           <ChevronLeft className="size-4" />
           Tilbake til kontakt

@@ -16,9 +16,9 @@ export function Textarea({ size = 'md', className, disabled, ...props }: Textare
   return (
     <textarea
       className={cn(
-        'w-full rounded-sm border border-border bg-background text-text-primary placeholder:text-text-secondary',
+        'w-full rounded-[var(--radius-field)] border-[length:var(--border-control)] border-border bg-background text-text-primary placeholder:text-text-secondary',
         'transition-colors motion-safe:duration-fast motion-safe:ease-default',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive',
+        'focus-visible:outline-none focus-visible:ring-[length:var(--border-focus-ring)] focus-visible:ring-interactive',
         'resize-y',
         disabled && 'cursor-not-allowed bg-surface text-text-disabled',
         sizeClasses[size],

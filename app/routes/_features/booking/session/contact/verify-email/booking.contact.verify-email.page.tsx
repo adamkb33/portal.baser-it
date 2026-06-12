@@ -94,14 +94,14 @@ export function BookingContactVerifyEmailPage() {
         description="Klikk på lenken i e-posten for å fullføre verifiseringen."
       />
       {redirectHint === 'booking' ? (
-        <div className="rounded-md border border-border bg-background p-3 text-sm text-text-primary">
+        <div className="rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-3 text-sm text-booking-text">
           Du kan nå fortsette med bookingen. Gå tilbake til bookingsteget for å fullføre.
         </div>
       ) : null}
       <Stack space="md">
         <Link
           to={loaderData.navigation.previousStep}
-          className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-sm px-4 text-base font-medium text-interactive transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+          className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-[var(--radius-booking-control)] px-4 text-base font-medium text-booking-action transition-colors hover:bg-booking-action-muted focus-visible:outline-none focus-visible:ring-[length:var(--border-booking-focus-ring)] focus-visible:ring-booking-action"
         >
           <ArrowLeft className="size-4" />
           Endre e-postadresse
@@ -115,59 +115,59 @@ export function BookingContactVerifyEmailPage() {
         ) : null}
         {resendError ? <Notice tone="emphasis" title="Kunne ikke sende ny e-post" message={resendError} /> : null}
         {resendSuccess ? <Notice title="Ny e-post sendt" message={resendSuccess} /> : null}
-        <div className="rounded-md border border-border bg-background p-4 md:p-5">
+        <div className="rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-4 md:p-5">
           <div className="flex items-start gap-3">
-            <Loader2 className="size-10 animate-spin text-primary" />
+            <Loader2 className="size-10 animate-spin text-booking-action" />
             <div className="space-y-1">
               <Text as="p" variant="heading-sm">
                 Vi venter på bekreftelse
               </Text>
-              <Text as="p" className="text-text-secondary">
+              <Text as="p" className="text-booking-text-muted">
                 Når du bekrefter e-posten, tar vi deg videre automatisk.
               </Text>
             </div>
           </div>
         </div>
 
-        <div className="rounded-md border border-border bg-background p-3 md:p-4">
+        <div className="rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-3 md:p-4">
           <div className="flex items-start gap-3">
-            <div className="flex size-10 items-center justify-center rounded-full bg-surface text-text-secondary">
+            <div className="flex size-10 items-center justify-center rounded-[var(--radius-booking-badge)] bg-booking-surface-muted text-booking-text-muted">
               <Mail className="size-5" />
             </div>
             <div className="space-y-1">
               <Text as="p" variant="label">
                 E-post sendt
               </Text>
-              <Text as="p" variant="body-sm" className="text-text-secondary">
+              <Text as="p" variant="body-sm" className="text-booking-text-muted">
                 {email ? `Sjekk innboksen til ${email}.` : 'Sjekk innboksen din for verifiseringslenken.'}
               </Text>
             </div>
           </div>
         </div>
 
-        <ol className="space-y-3 rounded-md border border-border bg-background p-4">
+        <ol className="space-y-3 rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-4">
           <li className="flex items-start gap-3">
-            <div className="mt-0.5 flex size-6 items-center justify-center rounded-full bg-surface text-text-primary">
+            <div className="mt-0.5 flex size-6 items-center justify-center rounded-[var(--radius-booking-badge)] bg-booking-surface-muted text-booking-text">
               <Mail className="size-3.5" />
             </div>
             <div>
               <Text as="p" variant="label">
                 Åpne e-posten og klikk på lenken
               </Text>
-              <Text as="p" variant="body-sm" className="text-text-secondary">
+              <Text as="p" variant="body-sm" className="text-booking-text-muted">
                 Bekreft e-postadressen din for å fortsette.
               </Text>
             </div>
           </li>
           <li className="flex items-start gap-3">
-            <div className="mt-0.5 flex size-6 items-center justify-center rounded-full bg-surface text-text-primary">
+            <div className="mt-0.5 flex size-6 items-center justify-center rounded-[var(--radius-booking-badge)] bg-booking-surface-muted text-booking-text">
               <CheckCircle2 className="size-3.5" />
             </div>
             <div>
               <Text as="p" variant="label">
                 Kom tilbake hit
               </Text>
-              <Text as="p" variant="body-sm" className="text-text-secondary">
+              <Text as="p" variant="body-sm" className="text-booking-text-muted">
                 Vi sjekker status automatisk og sender deg videre.
               </Text>
             </div>

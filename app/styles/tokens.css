@@ -159,14 +159,27 @@
   --radius-lg: 12px;
   --radius-full: 9999px;
 
+  --radius-control: var(--radius-sm);
+  --radius-field: var(--radius-sm);
+  --radius-card: var(--radius-md);
+  --radius-panel: var(--radius-lg);
+  --radius-badge: var(--radius-full);
+
   /* ─── Border Width ────────────────────────────── */
   --border-thin: 1px;
   --border-medium: 2px;
+  --border-control: var(--border-thin);
+  --border-card: var(--border-thin);
+  --border-selected: var(--border-medium);
+  --border-focus-ring: var(--border-medium);
 
   /* ─── Shadows ─────────────────────────────────── */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 12px 0 rgb(0 0 0 / 0.08);
   --shadow-lg: 0 8px 24px 0 rgb(0 0 0 / 0.1);
+  --shadow-card: var(--shadow-sm);
+  --shadow-panel: var(--shadow-md);
+  --shadow-floating: var(--shadow-lg);
 
   /* ─── Background Effects ─────────────────────── */
   --opacity-background-shine: 0.34;
@@ -198,4 +211,5 @@
   --app-shell-inline-padding: 1rem;
   --app-content-padding-block-mobile: var(--space-sm);
   --app-content-padding-block-desktop: var(--space-xl);
+  --booking-step-min-height: auto;
 }

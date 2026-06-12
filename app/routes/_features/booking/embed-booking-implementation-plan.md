@@ -512,7 +512,7 @@ The root layout should not need to know whether a page is embedded. It should re
 
 The existing `/embed` route can remain as a convenience entry point for customer snippets, but it should no longer set `embed_mode`.
 
-Current behavior:
+Old behavior:
 
 ```text
 /embed?companyId=123
@@ -525,7 +525,8 @@ Target behavior:
 ```text
 /embed?companyId=123&theme=ocean
   -> validates params
-  -> redirects to /embed/booking/appointment/session?companyId=123&theme=ocean
+  -> stores validated theme in embed_config scoped to /embed
+  -> redirects to /embed/booking/appointment/session?companyId=123
 ```
 
 The generated customer iframe can also point directly to:

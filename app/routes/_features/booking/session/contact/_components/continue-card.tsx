@@ -17,7 +17,7 @@ export function ContinueCard({ title, description, cta, initials, intentValue }:
         type="submit"
         name="intent"
         value={intentValue}
-        className="group w-full rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-booking-action"
+        className="group w-full rounded-[var(--radius-booking-card)] focus-visible:outline-none focus-visible:ring-[length:var(--border-booking-focus-ring)] focus-visible:ring-booking-action"
       >
         <Card
           variant="interactive"
@@ -28,7 +28,7 @@ export function ContinueCard({ title, description, cta, initials, intentValue }:
             <div className="flex flex-col items-center gap-2 text-center">
               <div className="flex items-center justify-center gap-3">
                 {initials ? (
-                  <div className="flex size-10 items-center justify-center rounded-full bg-booking-surface-muted text-sm font-semibold text-booking-text-muted">
+                  <div className="flex size-10 items-center justify-center rounded-[var(--radius-booking-badge)] bg-booking-surface-muted text-sm font-semibold text-booking-text-muted">
                     {initials}
                   </div>
                 ) : null}

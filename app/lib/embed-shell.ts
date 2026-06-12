@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react';
 
-export const EMBED_THEME_KEYS = ['pitell', 'ocean', 'sunset', 'forest'] as const;
+import { fredrikstadBarbershopTheme } from './embed-themes/fredrikstad-barbershop';
+
+export const EMBED_THEME_KEYS = ['pitell', 'ocean', 'sunset', 'forest', 'fredrikstad-barbershop'] as const;
 export type EmbedThemeKey = (typeof EMBED_THEME_KEYS)[number];
 
 export const EMBED_THEME_LABELS: Record<EmbedThemeKey, string> = {
@@ -8,6 +10,7 @@ export const EMBED_THEME_LABELS: Record<EmbedThemeKey, string> = {
   ocean: 'Ocean',
   sunset: 'Sunset',
   forest: 'Forest',
+  'fredrikstad-barbershop': 'Fredrikstad Barbershop',
 };
 
 export const EMBED_THEME_TOKENS: Record<EmbedThemeKey, CSSProperties> = {
@@ -20,6 +23,15 @@ export const EMBED_THEME_TOKENS: Record<EmbedThemeKey, CSSProperties> = {
     '--color-text-secondary': '#2f5f84',
     '--color-interactive': '#0b5cab',
     '--color-interactive-hover': '#094f93',
+    '--radius-control': '10px',
+    '--radius-field': '10px',
+    '--radius-card': '18px',
+    '--radius-panel': '24px',
+    '--border-control': '1px',
+    '--border-card': '1px',
+    '--border-selected': '2px',
+    '--shadow-card': '0 8px 28px rgb(11 92 171 / 0.08)',
+    '--shadow-panel': '0 14px 44px rgb(11 92 171 / 0.12)',
   } as CSSProperties,
   sunset: {
     '--color-background': '#fff6f2',
@@ -29,6 +41,15 @@ export const EMBED_THEME_TOKENS: Record<EmbedThemeKey, CSSProperties> = {
     '--color-text-secondary': '#8b4d3e',
     '--color-interactive': '#b53b1f',
     '--color-interactive-hover': '#9e331a',
+    '--radius-control': '9999px',
+    '--radius-field': '18px',
+    '--radius-card': '22px',
+    '--radius-panel': '28px',
+    '--border-control': '1px',
+    '--border-card': '1px',
+    '--border-selected': '3px',
+    '--shadow-card': '0 10px 30px rgb(181 59 31 / 0.08)',
+    '--shadow-panel': '0 18px 48px rgb(181 59 31 / 0.13)',
   } as CSSProperties,
   forest: {
     '--color-background': '#f2faf4',
@@ -38,7 +59,17 @@ export const EMBED_THEME_TOKENS: Record<EmbedThemeKey, CSSProperties> = {
     '--color-text-secondary': '#3d6a53',
     '--color-interactive': '#1f6b45',
     '--color-interactive-hover': '#19593a',
+    '--radius-control': '6px',
+    '--radius-field': '6px',
+    '--radius-card': '8px',
+    '--radius-panel': '12px',
+    '--border-control': '1px',
+    '--border-card': '2px',
+    '--border-selected': '3px',
+    '--shadow-card': 'none',
+    '--shadow-panel': '0 8px 22px rgb(31 107 69 / 0.10)',
   } as CSSProperties,
+  'fredrikstad-barbershop': fredrikstadBarbershopTheme,
 };
 
 export function isEmbedThemeKey(value: string | null): value is EmbedThemeKey {

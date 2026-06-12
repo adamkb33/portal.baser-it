@@ -1,5 +1,4 @@
 import { Container, type ContainerSize } from '../layout/container';
-import { Stack } from '../layout/stack';
 import { cn } from '../lib/cn';
 import { PageHeader } from '../organisms/page-header';
 import { StickyFooterPageTemplate } from './sticky-footer-page-template';
@@ -29,11 +28,18 @@ export function BookingStepTemplate({
 }: BookingStepTemplateProps) {
   return (
     <StickyFooterPageTemplate footer={footer} size={size} className={className} {...props}>
-      <Container size={size}>
-        <Stack space="xl" className={cn(contentClassName)}>
+      <Container size={size} data-booking-step-container>
+        <div
+          data-booking-step-content
+          className={cn(
+            'flex min-h-[var(--booking-step-min-height)] flex-col gap-8',
+            '[&_[data-booking-bottom-action-bar]]:mt-auto',
+            contentClassName,
+          )}
+        >
           <PageHeader label={label} title={title} description={description} meta={headerMeta} />
           {children}
-        </Stack>
+        </div>
       </Container>
     </StickyFooterPageTemplate>
   );

@@ -1,7 +1,7 @@
 import { data, redirect } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 import { getBookingRouteHref } from '~/routes/_features/booking/_utils/booking.route-map';
-import { isEmbedThemeKey } from '~/lib/embed-shell';
+import { resolveEmbedParentOrigin, resolveEmbedTheme, serializeEmbedConfig } from '~/lib/embed-config.server';
 import { AppointmentSessionService } from '~/routes/_features/booking/_services/booking.appointment-session.service.server';
 
 function parseCompanyId(value: string | null): number | null {
@@ -14,18 +14,25 @@ function parseCompanyId(value: string | null): number | null {
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const companyId = parseCompanyId(url.searchParams.get('companyId'));
-  const themeParam = url.searchParams.get('theme');
+  const theme = resolveEmbedTheme(url.searchParams.get('theme'));
+  const parentOriginParam = url.searchParams.get('parentOrigin');
+  const parentOrigin = resolveEmbedParentOrigin(parentOriginParam);
   const reset = url.searchParams.get('reset') === '1';
 
   if (!companyId) {
     return data({ error: 'Mangler eller ugyldig companyId.' }, { status: 400 });
   }
 
-  if (themeParam && !isEmbedThemeKey(themeParam)) {
+  if (!theme) {
     return data({ error: 'Ugyldig theme-verdi.' }, { status: 400 });
   }
 
+  if (parentOriginParam && !parentOrigin) {
+    return data({ error: 'Ugyldig parentOrigin-verdi.' }, { status: 400 });
+  }
+
   const headers: [string, string][] = [];
+  headers.push(['Set-Cookie', await serializeEmbedConfig({ theme, parentOrigin })]);
 
   if (reset) {
     const clearSessionCookie = await AppointmentSessionService.delete(request);
@@ -34,10 +41,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const sessionHref = getBookingRouteHref('embed', 'entry');
   const params = new URLSearchParams({ companyId: String(companyId) });
-
-  if (themeParam && isEmbedThemeKey(themeParam)) {
-    params.set('theme', themeParam);
-  }
 
   return redirect(`${sessionHref}?${params.toString()}`, { headers });
 }

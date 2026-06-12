@@ -23,3 +23,22 @@
     @apply bg-background;
   }
 }
+
+@layer components {
+  [data-embed-mode='fragment'] [data-booking-step-container] {
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  [data-embed-mode='fragment'] [data-booking-bottom-action-bar] > div {
+    max-width: none;
+  }
+
+  [data-embed-mode='fragment'] [data-booking-bottom-action-bar] nav {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+}

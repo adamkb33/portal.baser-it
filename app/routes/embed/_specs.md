@@ -23,7 +23,7 @@
 
 ## Deterministic Activation Rules
 
-- Embed shell mode must be determined server-side from trusted embed intent (`embed_mode` cookie / request context), not from client runtime heuristics.
+- Embed shell mode must be determined server-side from the `/embed/*` route scope, not from client runtime heuristics.
 - Do not require `window.parent !== window` to hide shell.
 - If embed mode is active and route is in embed-supported scope, shell must be hidden on first server render.
 - This prevents first-paint flashes where header/footer/mobile nav briefly appear before hydration.
@@ -80,7 +80,7 @@
 
 - Accept only validated embed parameters (`companyId`, allowlisted theme/start values).
 - Invalid embed params must return explicit 4xx errors and never fall back to full-shell booking route.
-- Embed cookies should be scoped minimally (path and lifetime appropriate to embed flow).
+- Embed config cookies should be scoped minimally (path and lifetime appropriate to embed flow).
 - Parent origins allowed to embed must be controlled via deploy-time allowlist and enforced with CSP `frame-ancestors`.
 - Cross-window message payloads must be schema-validated before use.
 
@@ -131,7 +131,7 @@
 
 ## Recommended Implementation Strategy
 
-1. Resolve embed mode in server loader from signed/validated intent (cookie + route path).
+1. Resolve embed mode from the route path and keep optional embed configuration in a path-scoped cookie.
 2. Compute `useEmbedShell` from `embedMode && inScopePath` only; avoid runtime iframe checks for shell toggling.
 3. Render shell-free SSR HTML in embed mode to prevent first-paint chrome flicker.
 4. Keep iframe messaging optional and additive (ready/resize/step events), never required for shell correctness.

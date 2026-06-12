@@ -26,8 +26,8 @@ export function SelectionCard({
     <button
       type={type}
       className={cn(
-        'flex w-full flex-col gap-4 rounded-md border p-4 text-left transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive',
+        'flex w-full flex-col gap-4 rounded-[var(--radius-card)] border-[length:var(--border-card)] p-4 text-left transition-colors',
+        'focus-visible:outline-none focus-visible:ring-[length:var(--border-focus-ring)] focus-visible:ring-interactive',
         selected ? 'border-interactive bg-surface' : 'border-border bg-background hover:bg-surface',
         disabled && 'cursor-not-allowed opacity-50',
         className,

@@ -9,9 +9,11 @@ Use the `/embed` route as the integration entry point:
 ```html
 <iframe
   id="pitell-booking"
-  src="https://YOUR_PORTAL_DOMAIN/embed?companyId=123&theme=pitell"
+  src="https://YOUR_PORTAL_DOMAIN/embed?companyId=123&theme=fredrikstad-barbershop&parentOrigin=https%3A%2F%2FCLIENT_DOMAIN"
   title="Bestill time"
-  style="width: 100%; border: 0; min-height: 720px"
+  scrolling="no"
+  allowtransparency="true"
+  style="display: block; width: 1px; min-width: 100%; height: 720px; border: 0; overflow: hidden"
 ></iframe>
 ```
 
@@ -25,14 +27,15 @@ Optional query parameters:
 
 | Parameter | Values | Description |
 | --- | --- | --- |
-| `theme` | `pitell`, `ocean`, `sunset`, `forest` | Selects a built-in embed theme. Defaults to `pitell`. |
+| `theme` | `fredrikstad-barbershop`, `pitell`, `ocean`, `sunset`, `forest` | Selects a built-in embed theme. Defaults to `pitell`. |
+| `parentOrigin` | URL origin | Optional parent-page origin used as the `postMessage` target origin. Recommended for production embeds. |
 | `start` | `contact` | Reserved start-step parameter. Only `contact` is currently valid. |
 | `reset` | `1` | Clears the existing appointment session before starting a new one. Use this when a host page has a "start over" action. |
 
-Invalid or missing values return a `400` response with a small error payload. A valid request redirects to:
+Invalid or missing values return a `400` response with a small error payload. A valid request stores the validated embed config and redirects to:
 
 ```text
-/booking/public/appointment/session?companyId=123
+/embed/booking/appointment/session?companyId=123
 ```
 
 The session route then validates that the company is booking-ready, creates or reuses an appointment session, and redirects the user to the contact step.
@@ -50,24 +53,34 @@ The embedded public booking flow is linear:
 
 The session state is stored server-side and referenced by the `appointment_session` cookie.
 
+## Seamless Fragment Layout
+
+Embedded booking routes render as a transparent content fragment by default. The iframe does not add an app shell, outer padding, a centered max-width wrapper, or viewport-height layout around the booking flow. The parent page owns surrounding whitespace and page scrolling.
+
+The booking iframe sets its own document background to transparent and measures the full document height. Booking step containers expand to the iframe width in embedded routes, and bottom action buttons render in normal flow at the end of the step content.
+
 ## Parent Page Resize Handling
 
-When the booking flow is running inside an iframe, it posts messages to the parent page:
+Use `scrolling="no"` on the iframe and let the parent page own scrolling. The embedded booking flow measures its content and posts messages to the parent page:
 
 | Message type | Payload | When it fires |
 | --- | --- | --- |
-| `embed:ready` | `{ type, mode }` | Once, when the embedded booking shell is active. |
-| `embed:step-changed` | `{ type, step, path }` | On route changes inside the public booking flow. |
-| `embed:resize` | `{ type, height }` | When the embedded content height changes. |
+| `embed:ready` | `{ type, path }` | Once, when the embedded booking shell is active. |
+| `embed:step-changed` | `{ type, path }` | On route changes inside the embedded booking flow. |
+| `embed:resize` | `{ type, path, height, reason }` | When the embedded content height changes. `reason` is `init`, `step`, or `content`. |
+
+The raw iframe cannot resize itself without a parent-page listener. Browser security prevents iframe content from directly changing the parent DOM, so the listener below is required to avoid double scrolling.
 
 Recommended host page script:
 
 ```html
 <iframe
   id="pitell-booking"
-  src="https://YOUR_PORTAL_DOMAIN/embed?companyId=123&theme=ocean"
+  src="https://YOUR_PORTAL_DOMAIN/embed?companyId=123&theme=fredrikstad-barbershop&parentOrigin=https%3A%2F%2FCLIENT_DOMAIN"
   title="Bestill time"
-  style="width: 100%; border: 0; min-height: 720px"
+  scrolling="no"
+  allowtransparency="true"
+  style="display: block; width: 1px; min-width: 100%; height: 720px; border: 0; overflow: hidden"
 ></iframe>
 
 <script>
@@ -81,11 +94,14 @@ Recommended host page script:
     if (!message || typeof message !== 'object') return;
 
     if (message.type === 'embed:resize' && Number.isFinite(message.height)) {
-      iframe.style.height = `${message.height}px`;
+      iframe.style.height = `${Math.max(320, message.height)}px`;
     }
 
     if (message.type === 'embed:step-changed') {
-      console.debug('Booking step changed:', message.step, message.path);
+      requestAnimationFrame(() => {
+        const top = iframe.getBoundingClientRect().top + window.scrollY - 16;
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
     }
   });
 </script>
@@ -93,27 +109,43 @@ Recommended host page script:
 
 Always validate `event.origin` in production before trusting a message.
 
+The local fake client harness lives at:
+
+```text
+tools/embed-harness/index.html
+```
+
+Run it with:
+
+```sh
+npx serve tools/embed-harness -l 8080
+```
+
 ## Cookie Requirements
 
-The embed route sets two short-lived cookies:
+Embed mode is route-based under `/embed/*`; cookies are not used to decide whether the global app shell is hidden.
 
-| Cookie | Purpose | Max age |
+The selected theme is stored in a short-lived, path-scoped config cookie so child actions and redirects do not need to keep appending `theme=...` to every URL.
+
+| Cookie | Purpose | Scope |
 | --- | --- | --- |
-| `embed_mode` | Enables the compact embedded booking shell. | 4 hours |
-| `embed_theme` | Stores the selected built-in theme key. | 4 hours |
+| `embed_config` | Stores validated embed configuration, currently `{ theme }`. | `Path=/embed`, 4 hour max age. |
 
-On HTTPS requests these cookies are emitted with `SameSite=None; Secure`, which is required for cross-site iframe usage. On non-HTTPS local requests they are emitted with `SameSite=Lax` for local development.
+This avoids leaking embed state into normal public routes while still preserving the selected theme through back/forward navigation, form submissions, and server redirects.
 
-The appointment flow also uses `appointment_session` for the booking session id. It is currently configured as `SameSite=Lax`, so fully third-party cross-site iframe deployments should be tested carefully. Same-site embeds, same parent domain, or same-site subdomain deployments are the safest configuration with the current cookie policy.
+The appointment flow uses `appointment_session` for the booking session id. It is currently configured as `SameSite=Lax`, so fully third-party cross-site iframe deployments should be tested carefully. Same-site embeds, same parent domain, or same-site subdomain deployments are the safest configuration with the current cookie policy.
 
 ## Styling Model
 
 External pages cannot directly style the contents of a cross-origin iframe. The supported styling surface is token-based:
 
 1. The host page chooses a theme through `/embed?theme=...`.
-2. The app stores that theme in `embed_theme`.
-3. `app/routes/booking/public/booking.public.layout.tsx` applies the selected token map to the booking public layout.
-4. Booking components consume semantic Tailwind classes backed by CSS variables.
+2. The app validates the theme key against the allowlist.
+3. The app stores the selected theme in `embed_config` scoped to `/embed`.
+4. The root embed surface applies the selected token map as CSS custom properties.
+5. Booking components consume semantic Tailwind classes backed by those CSS variables.
+
+The client website cannot override classes inside a cross-origin iframe directly. To make each client feel native, add a validated theme preset that maps the client's brand to semantic tokens for color, radius, border width, focus rings, and elevation. Keep Pitell as the default `pitell` theme.
 
 Built-in theme presets live in:
 
@@ -136,16 +168,19 @@ app/styles/booking-tokens.css
 | `ocean` | Light blue background and blue action color. |
 | `sunset` | Warm peach background and red-orange action color. |
 | `forest` | Light green background and green action color. |
+| `fredrikstad-barbershop` | Seamless marketing-site embed theme with transparent outer canvas, neon purple actions, soft lavender surfaces, and small gold accents. |
 
 Example:
 
 ```html
-<iframe src="https://YOUR_PORTAL_DOMAIN/embed?companyId=123&theme=forest"></iframe>
+<iframe src="https://YOUR_PORTAL_DOMAIN/embed?companyId=123&theme=fredrikstad-barbershop"></iframe>
 ```
 
 ## Adding A Custom Theme
 
 To add a customer-specific theme, update `app/lib/embed-shell.ts`.
+
+For the full client theme implementation process, token contract, and QA checklist, see [booking-theme-implementation-plan.md](booking-theme-implementation-plan.md).
 
 1. Add the theme key to `EMBED_THEME_KEYS`.
 2. Add a readable label to `EMBED_THEME_LABELS`.
@@ -175,6 +210,15 @@ export const EMBED_THEME_TOKENS: Record<EmbedThemeKey, CSSProperties> = {
     '--color-text-secondary': '#5f6b7a',
     '--color-interactive': '#0057b8',
     '--color-interactive-hover': '#004a9d',
+    '--radius-control': '9999px',
+    '--radius-field': '12px',
+    '--radius-card': '18px',
+    '--radius-panel': '24px',
+    '--border-control': '1px',
+    '--border-card': '1px',
+    '--border-selected': '3px',
+    '--shadow-card': '0 10px 30px rgb(0 87 184 / 0.10)',
+    '--shadow-panel': '0 18px 48px rgb(0 87 184 / 0.14)',
   } as CSSProperties,
 };
 ```
@@ -202,6 +246,17 @@ Base semantic tokens:
 | `--color-interactive` | Primary actions and selected states. |
 | `--color-interactive-hover` | Hover state for primary actions. |
 | `--color-secondary` | Secondary accents used in derived appointment colors. |
+| `--radius-control` | Generic button/action radius. |
+| `--radius-field` | Generic input radius. |
+| `--radius-card` | Generic card radius. |
+| `--radius-panel` | Generic panel radius. |
+| `--border-control` | Generic control border width. |
+| `--border-card` | Generic card border width. |
+| `--border-selected` | Generic selected-state border width. |
+| `--border-focus-ring` | Generic focus ring width. |
+| `--shadow-card` | Generic card shadow. |
+| `--shadow-panel` | Generic panel shadow. |
+| `--shadow-floating` | Generic sticky/floating UI shadow. |
 
 Booking aliases from `app/styles/booking-tokens.css`:
 
@@ -217,6 +272,18 @@ Booking aliases from `app/styles/booking-tokens.css`:
 | `--color-booking-action` | `--color-interactive` |
 | `--color-booking-action-hover` | `--color-interactive-hover` |
 | `--color-booking-action-contrast` | `--color-text-inverse` |
+| `--radius-booking-control` | `--radius-control` |
+| `--radius-booking-field` | `--radius-field` |
+| `--radius-booking-card` | `--radius-card` |
+| `--radius-booking-panel` | `--radius-panel` |
+| `--radius-booking-badge` | `--radius-badge` |
+| `--border-booking-control` | `--border-control` |
+| `--border-booking-card` | `--border-card` |
+| `--border-booking-selected` | `--border-selected` |
+| `--border-booking-focus-ring` | `--border-focus-ring` |
+| `--shadow-booking-card` | `--shadow-card` |
+| `--shadow-booking-panel` | `--shadow-panel` |
+| `--shadow-booking-floating` | `--shadow-floating` |
 
 Use booking aliases in booking UI classes when adding new booking components:
 

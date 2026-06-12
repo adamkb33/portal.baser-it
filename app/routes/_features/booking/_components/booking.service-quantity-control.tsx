@@ -61,7 +61,7 @@ export function ServiceQuantityControl({ quantity, onChange, className }: Servic
       <Button
         type="button"
         variant="outline"
-        className="w-full border-interactive bg-interactive text-text-inverse hover:bg-interactive-hover"
+        className="w-full border-booking-action bg-booking-action text-booking-action-contrast hover:bg-booking-action-hover"
         aria-label="Reduser antall"
         onClick={(event) => {
           event.stopPropagation();
