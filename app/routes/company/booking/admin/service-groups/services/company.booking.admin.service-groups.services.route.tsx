@@ -171,12 +171,9 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
           />
         }
         primaryAction={
-          <NavLink
-            to={ROUTES_MAP['company.booking.admin.service-groups.services.create'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
-          >
-            Legg til ny tjeneste
-          </NavLink>
+          <Button asChild size="sm">
+            <NavLink to={ROUTES_MAP['company.booking.admin.services.create'].href}>Legg til ny tjeneste</NavLink>
+          </Button>
         }
         renderRow={(service) => (
           <TableRow>
@@ -197,12 +194,9 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <NavLink
-                  to={`${ROUTES_MAP['company.booking.admin.service-groups.services.edit'].href}?id=${service.id}`}
-                  className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface"
-                >
-                  Rediger
-                </NavLink>
+                <Button asChild variant="outline" size="sm">
+                  <NavLink to={`${ROUTES_MAP['company.booking.admin.services.edit'].href}?id=${service.id}`}>Rediger</NavLink>
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"

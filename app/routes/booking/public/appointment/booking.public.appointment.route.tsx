@@ -7,11 +7,11 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import {
   Container,
   Card,
+  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
+  CardHead,
+  KeyValueList,
   Notice,
   Grid,
   PageHeader,
@@ -202,7 +202,7 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
   const companies = loaderData.companies ?? [];
   const locations = loaderData.locations ?? [];
   const error = loaderData.error ?? null;
-  const errorMessage = typeof error === 'string' ? error : error?.value ?? null;
+  const errorMessage = typeof error === 'string' ? error : (error?.value ?? null);
   const [showMap, setShowMap] = useState(false);
   const [activeCompanyId, setActiveCompanyId] = useState<number | null>(null);
   const navigation = useNavigation();
@@ -225,7 +225,9 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
           description="Velg en bedrift for å starte timebestilling."
         />
 
-        {errorMessage ? <Notice tone="emphasis" title="Kunne ikke hente timebestillinger" message={errorMessage} /> : null}
+        {errorMessage ? (
+          <Notice variant="booking" tone="emphasis" title="Kunne ikke hente timebestillinger" message={errorMessage} />
+        ) : null}
 
         {companies.length > 0 && (
           <Panel title="Kart" tone="muted">
@@ -249,79 +251,68 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
 
         <Panel title="Tilgjengelige bedrifter">
           {companies.length === 0 ? (
-            <div className="rounded-md border border-border bg-background p-4 text-sm text-text-secondary">
-              Ingen bedrifter er klare for booking akkurat nå.
-            </div>
+            <Notice
+              variant="booking"
+              tone="default"
+              title="Ingen bedrifter"
+              message="Ingen bedrifter er klare for booking akkurat nå."
+            />
           ) : (
             <Grid columns={2}>
               {companies.map((company) => {
-              const companyName = company.name || `Selskap ${company.orgNumber}`;
-              const startUrl = `${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=${company.id}`;
-              const addressLine = buildAddressLine(company);
-              const orgTypeDescription = company.organizationType?.description;
-              const isLoading = isNavigatingToSession && activeCompanyId === company.id;
+                const companyName = company.name || `Selskap ${company.orgNumber}`;
+                const startUrl = `${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=${company.id}`;
+                const addressLine = buildAddressLine(company);
+                const orgTypeDescription = company.organizationType?.description;
+                const isLoading = isNavigatingToSession && activeCompanyId === company.id;
 
-              return (
-                <Link
-                  key={company.id}
-                  to={startUrl}
-                  onClick={() => setActiveCompanyId(company.id)}
-                  className="group block focus-visible:outline-none"
-                  aria-label={`Start booking hos ${companyName}`}
-                >
-                  <Card
-                    variant="interactive"
-                    size="md"
-                    className="h-full focus-visible:ring-2 focus-visible:ring-interactive"
+                return (
+                  <Link
+                    key={company.id}
+                    to={startUrl}
+                    onClick={() => setActiveCompanyId(company.id)}
+                    className="group block focus-visible:outline-none"
+                    aria-label={`Start booking hos ${companyName}`}
                   >
-                    <CardHeader>
-                      <CardTitle>{companyName}</CardTitle>
-                      <CardDescription>
-                        {orgTypeDescription
-                          ? `Organisasjonsform: ${orgTypeDescription}`
-                          : 'Velg denne bedriften for å starte en ny booking.'}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div>
-                          <Text as="span" variant="label" className="mr-2 text-text-secondary">
-                            Org.nr
-                          </Text>
-                          <Text as="span" variant="body-sm">
-                            {company.orgNumber}
-                          </Text>
-                        </div>
-                        {addressLine && (
-                          <div>
-                            <Text as="span" variant="label" className="mr-2 text-text-secondary">
-                              Adresse
-                            </Text>
-                            <Text as="span" variant="body-sm">
-                              {addressLine}
-                            </Text>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <div className="inline-flex items-center gap-2 text-sm font-medium text-text-primary">
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="size-4 animate-spin" />
-                            Starter booking...
-                          </>
-                        ) : (
-                          <>
-                            Start booking
-                            <span aria-hidden="true">→</span>
-                          </>
-                        )}
-                      </div>
-                    </CardFooter>
-                  </Card>
-                </Link>
-              );
+                    <Card
+                      variant="interactive"
+                      size="md"
+                      className="h-full focus-visible:ring-2 focus-visible:ring-interactive"
+                    >
+                      <CardHead heading={companyName}>
+                        <Text as="p" variant="body-sm" className="text-text-secondary">
+                          {orgTypeDescription
+                            ? `Organisasjonsform: ${orgTypeDescription}`
+                            : 'Velg denne bedriften for å starte en ny booking.'}
+                        </Text>
+                      </CardHead>
+                      <CardContent>
+                        <KeyValueList
+                          layout="compact"
+                          items={[
+                            { label: 'Org.nr', value: company.orgNumber },
+                            ...(addressLine ? [{ label: 'Adresse', value: addressLine }] : []),
+                          ]}
+                        />
+                      </CardContent>
+                      <CardFooter>
+                        <CardAction>
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="size-4 animate-spin" />
+                              Starter booking...
+                            </>
+                          ) : (
+                            <>
+                              Start booking
+                              <span aria-hidden="true">→</span>
+                            </>
+                          )}
+                        </CardAction>
+                      </CardFooter>
+                    </Card>
+                  </Link>
+                );
               })}
             </Grid>
           )}

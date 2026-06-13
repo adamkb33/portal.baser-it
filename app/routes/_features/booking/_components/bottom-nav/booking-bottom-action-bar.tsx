@@ -27,7 +27,8 @@ type BookingBottomActionBarProps = {
 
 const variantClassByType: Record<BottomActionBarActionVariant, string> = {
   primary: 'bg-booking-action text-booking-action-contrast hover:bg-booking-action-hover',
-  secondary: 'border-[length:var(--border-booking-control)] border-booking-action text-booking-action hover:bg-booking-action-muted',
+  secondary:
+    'border-[length:var(--border-booking-control)] border-booking-action text-booking-action hover:bg-booking-action-muted',
   ghost: 'text-booking-text hover:bg-booking-surface-muted',
 };
 
@@ -36,6 +37,17 @@ const activeClassByType: Record<BottomActionBarActionVariant, string> = {
   secondary: 'bg-booking-action-muted',
   ghost: 'bg-booking-surface-muted',
 };
+
+const buttonVariantByType: Record<
+  BottomActionBarActionVariant,
+  'booking-primary' | 'booking-secondary' | 'booking-ghost'
+> = {
+  primary: 'booking-primary',
+  secondary: 'booking-secondary',
+  ghost: 'booking-ghost',
+};
+
+const actionControlClass = 'min-h-12 w-full px-2 py-0 text-xs md:min-h-12 md:px-3 md:text-sm';
 
 export function BookingBottomActionBar({
   actions,
@@ -73,13 +85,13 @@ export function BookingBottomActionBar({
                   <Button
                     key={action.id}
                     type={action.buttonType ?? 'button'}
-                    variant={variant}
-                    size={compact ? 'sm' : 'md'}
+                    variant={buttonVariantByType[variant]}
+                    size="md"
                     loading={action.loading}
                     disabled={action.disabled}
                     form={action.form}
                     onClick={action.onClick}
-                    className="h-11 w-full"
+                    className={actionControlClass}
                   >
                     <span className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2">
                       {action.icon}
@@ -101,7 +113,8 @@ export function BookingBottomActionBar({
                   }}
                   className={({ isActive }) =>
                     cn(
-                      'inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-booking-control)] px-2 text-xs font-medium transition-colors md:px-3 md:text-sm',
+                      'inline-flex items-center justify-center rounded-[var(--radius-booking-control)] font-medium transition-colors',
+                      actionControlClass,
                       'focus-visible:outline-none focus-visible:ring-[length:var(--border-booking-focus-ring)] focus-visible:ring-booking-action',
                       (action.disabled || action.loading) && 'pointer-events-none cursor-not-allowed opacity-50',
                       variantClassByType[variant],

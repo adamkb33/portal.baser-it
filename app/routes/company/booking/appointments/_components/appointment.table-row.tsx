@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  KeyValueList,
   TableCell,
   TableRow,
   Text,
@@ -127,55 +128,47 @@ export function AppointmentTableRow({ appointment, onDelete, onUploadImage, isDe
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-md border border-border bg-surface p-3">
+            <div className="space-y-2">
               <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
                 Kunde
               </Text>
               <Text as="p" variant="body-sm" className="mt-1 font-semibold">
                 {appointment.user.givenName} {appointment.user.familyName}
               </Text>
-              <div className="mt-3 space-y-1.5 text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-text-secondary">Mobil</span>
-                  <span className="text-text-primary">{appointment.user.mobileNumber ?? 'Ikke oppgitt'}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-text-secondary">E-post</span>
-                  {appointment.user.email ? (
-                    <Link to={`mailto:${appointment.user.email}`} className="text-primary hover:underline break-all">
-                      {appointment.user.email}
-                    </Link>
-                  ) : (
-                    <span className="text-text-secondary">Ikke oppgitt</span>
-                  )}
-                </div>
-              </div>
+              <KeyValueList
+                layout="compact"
+                items={[
+                  { label: 'Mobil', value: appointment.user.mobileNumber ?? 'Ikke oppgitt' },
+                  {
+                    label: 'E-post',
+                    value: appointment.user.email ? (
+                      <Link to={`mailto:${appointment.user.email}`} className="break-all text-primary hover:underline">
+                        {appointment.user.email}
+                      </Link>
+                    ) : (
+                      'Ikke oppgitt'
+                    ),
+                  },
+                ]}
+              />
             </div>
 
-            <div className="rounded-md border border-border bg-surface p-3">
+            <div className="space-y-2">
               <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
                 Oppsummering
               </Text>
-              <div className="mt-3 space-y-1.5 text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-text-secondary">Tjenester</span>
-                  <span className="font-medium text-text-primary">
-                    {totalServices} {totalServices === 1 ? 'stk' : 'stk'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-text-secondary">Varighet</span>
-                  <span className="font-medium text-text-primary">{getTotalDuration(appointment)}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-text-secondary">Total pris</span>
-                  <span className="font-semibold text-primary">{getTotalPrice(appointment)}</span>
-                </div>
-              </div>
+              <KeyValueList
+                layout="compact"
+                items={[
+                  { label: 'Tjenester', value: `${totalServices} stk` },
+                  { label: 'Varighet', value: getTotalDuration(appointment) },
+                  { label: 'Total pris', value: getTotalPrice(appointment) },
+                ]}
+              />
             </div>
           </div>
 
-          <div className="rounded-md border border-border bg-background p-3">
+          <div className="space-y-3 border-t border-border pt-3">
             <Text as="p" variant="body-sm" className="font-semibold">
               Tjenester
             </Text>
@@ -186,7 +179,7 @@ export function AppointmentTableRow({ appointment, onDelete, onUploadImage, isDe
                 const groupPrice = groupServices.reduce((sum, service) => sum + (service.price ?? 0), 0);
 
                 return (
-                  <div key={group.id} className="rounded-md border border-border bg-surface p-2.5">
+                  <div key={group.id} className="border-b border-border pb-3 last:border-b-0">
                     <div className="flex items-center justify-between gap-3 border-b border-border pb-2">
                       <div>
                         <Text as="p" variant="caption" className="font-semibold uppercase tracking-wide text-text-secondary">
@@ -219,11 +212,11 @@ export function AppointmentTableRow({ appointment, onDelete, onUploadImage, isDe
                         </Text>
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="divide-y divide-border">
                         {groupServices.map((service) => (
                           <div
                             key={service.id}
-                            className="grid grid-cols-3 items-center gap-2 rounded-sm border border-border bg-background px-2 py-1.5 text-sm"
+                            className="grid grid-cols-3 items-center gap-2 py-1.5 text-sm"
                           >
                             <span className="text-text-primary">{service.name}</span>
                             <span className="text-right text-text-secondary">{service.duration ?? 0} min</span>

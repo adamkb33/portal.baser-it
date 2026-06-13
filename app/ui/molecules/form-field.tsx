@@ -42,12 +42,12 @@ export function FormField({
         id={fieldId}
         aria-invalid={error ? true : undefined}
         aria-describedby={descriptionId}
-        className={cn(error && 'border-interactive', className)}
+        className={cn(error && 'border-danger', className)}
         {...inputProps}
       />
       {error && (
-        <Text id={descriptionId} variant="caption" as="p" className="text-text-primary">
-          Feil: {error}
+        <Text id={descriptionId} variant="caption" as="p" className="text-danger">
+          {error}
         </Text>
       )}
       {helperText && !error && (

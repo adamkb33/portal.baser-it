@@ -14,6 +14,7 @@ export function TableDesktopView<T>({
   items,
   columns,
   renderRow,
+  getRowKey,
   pagination,
   onPageChange,
   onPageSizeChange,
@@ -45,7 +46,7 @@ export function TableDesktopView<T>({
   return (
     <div
       className={cn(
-        'hidden overflow-hidden rounded-lg border border-border bg-background md:block',
+        'hidden overflow-hidden rounded-lg border border-border bg-background shadow-card md:block',
         className,
       )}
     >
@@ -69,7 +70,7 @@ export function TableDesktopView<T>({
                 {columns.map((c, i) => (
                   <TableHead
                     key={i}
-                    className="sticky top-0 z-10 bg-surface font-semibold text-text-primary"
+                    className="sticky top-0 z-10 bg-surface-variant-1"
                     style={{ width: columnWidth }}
                   >
                     {c.header}
@@ -79,7 +80,9 @@ export function TableDesktopView<T>({
             </TableHeader>
             <TableBody>
               {items.length ? (
-                items.map((item, index) => renderRow(item, index))
+                items.map((item, index) =>
+                  React.cloneElement(renderRow(item, index), { key: getRowKey(item, index) }),
+                )
               ) : (
                 <TableRow style={{ height: `${CELL_HEIGHT * 3}px` }}>
                   <TableCell colSpan={columns.length} className="text-center">
@@ -99,7 +102,7 @@ export function TableDesktopView<T>({
         {/* Scroll hint with gradient */}
         {showScrollHint && hasScrollableContent && (
           <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex h-16 items-end justify-center bg-gradient-to-t from-background via-background/95 to-transparent pb-3">
-            <div className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5">
+            <div className="flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 shadow-sm">
               <ChevronDown className="h-4 w-4 animate-bounce text-text-secondary" />
               <span className="text-xs font-medium text-text-secondary">Scroll for mer</span>
             </div>

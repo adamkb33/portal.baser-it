@@ -15,7 +15,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (!Number.isFinite(id) || id <= 0) {
     return redirectWithInfo(
       request,
-      ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+      ROUTES_MAP['company.booking.admin.services'].href,
       'Velg en tjeneste som skal redigeres.',
     );
   }
@@ -44,7 +44,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     if (!service) {
       return redirectWithInfo(
         request,
-        ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+        ROUTES_MAP['company.booking.admin.services'].href,
         'Fant ikke tjenesten du prøvde å redigere.',
       );
     }
@@ -158,7 +158,7 @@ export async function action({ request }: Route.ActionArgs) {
       });
     });
 
-    return redirect(ROUTES_MAP['company.booking.admin.service-groups.services'].href);
+    return redirect(ROUTES_MAP['company.booking.admin.services'].href);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke oppdatere tjeneste');
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });

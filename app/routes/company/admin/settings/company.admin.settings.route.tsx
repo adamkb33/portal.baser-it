@@ -6,7 +6,7 @@ import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
-import { Button, CompanyMetricCard, CompanyPageTemplate, Input, Notice, Panel, Text } from '~/ui';
+import { Button, CompanyPageTemplate, Input, KeyValueList, KpiCard, Label, Notice, Panel } from '~/ui';
 
 type SettingsActionValues = {
   displayName: string;
@@ -81,22 +81,25 @@ export default function CompanySettings({ loaderData, actionData }: Route.Compon
       label="Selskapsadministrasjon"
       hero={
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <CompanyMetricCard
+          <KpiCard
             label="Selskapsnavn"
             value={company?.name || 'Ikke satt'}
             icon={<Building2 className="h-5 w-5" />}
+            tone="primary"
           />
-          <CompanyMetricCard
+          <KpiCard
             label="Organisasjonsnummer"
             value={company?.orgNumber || '—'}
             icon={<Building2 className="h-5 w-5" />}
+            tone="info"
           />
-          <CompanyMetricCard
+          <KpiCard
             label="Innlogget administrator"
             value={
               self ? [self.givenName, self.familyName].filter(Boolean).join(' ') || self.email : 'Ikke tilgjengelig'
             }
             icon={<User className="h-5 w-5" />}
+            tone="success"
           />
         </div>
       }
@@ -106,29 +109,24 @@ export default function CompanySettings({ loaderData, actionData }: Route.Compon
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
           <Panel title="Selskapsoversikt" description="Rask oversikt over de viktigste selskapsfeltene.">
-            <div className="space-y-2 rounded-md border border-border bg-background p-4">
-              <Text as="p" variant="body-sm">
-                <span className="text-text-secondary">Selskapsnavn: </span>
-                {company?.name || 'Ikke satt'}
-              </Text>
-              <Text as="p" variant="body-sm">
-                <span className="text-text-secondary">Organisasjonsnummer: </span>
-                {company?.orgNumber || '—'}
-              </Text>
-              <Text as="p" variant="body-sm">
-                <span className="text-text-secondary">Brukernavn (admin): </span>
-                {self ? [self.givenName, self.familyName].filter(Boolean).join(' ') || self.email : 'Ikke tilgjengelig'}
-              </Text>
-            </div>
+            <KeyValueList
+              layout="compact"
+              items={[
+                { label: 'Selskapsnavn', value: company?.name || 'Ikke satt' },
+                { label: 'Organisasjonsnummer', value: company?.orgNumber || '—' },
+                {
+                  label: 'Brukernavn (admin)',
+                  value: self ? [self.givenName, self.familyName].filter(Boolean).join(' ') || self.email : 'Ikke tilgjengelig',
+                },
+              ]}
+            />
           </Panel>
 
           <Panel title="Oppdater selskapsnavn" description="Endre visningsnavnet som brukes i selskapets grensesnitt.">
             <Form method="post" reloadDocument className="space-y-3">
               <input type="hidden" name="intent" value="update-company-name" />
               <div className="space-y-1.5">
-                <label htmlFor="displayName" className="text-sm font-medium text-text-primary">
-                  Selskapsnavn
-                </label>
+                <Label htmlFor="displayName">Selskapsnavn</Label>
                 <Input
                   id="displayName"
                   name="displayName"

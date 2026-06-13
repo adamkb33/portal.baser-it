@@ -6,7 +6,7 @@ import { API_ROUTES_MAP } from '~/lib/routing/route-tree';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import type { InviteTokenDto } from '~/api/generated/base';
 import { COMPANY_ROLE_LABELS } from '~/lib/constants';
-import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/ui';
+import { Badge, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/ui';
 
 type InvitesTableProps = {
   invites: InviteTokenDto[];
@@ -63,9 +63,9 @@ export function InvitesTable({ invites }: InvitesTableProps) {
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <span>{invite.email}</span>
-                    <span className="rounded-sm border border-border bg-surface px-2.5 py-0.5 text-[0.7rem] font-medium text-text-secondary">
+                    <Badge variant="muted" size="sm" dot>
                       Venter
-                    </span>
+                    </Badge>
                   </div>
                 </TableCell>
                 <TableCell>{formatRoles(invite.payload.companyRoles)}</TableCell>

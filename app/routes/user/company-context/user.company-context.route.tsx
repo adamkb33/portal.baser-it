@@ -6,7 +6,7 @@ import { withAuth } from '~/api/utils/with-auth';
 import type { Route } from './+types/user.company-context.route';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithError } from '~/lib/flash-message.server';
-import { Grid, PageTemplate, Panel, SelectionCard, Text } from '~/ui';
+import { Grid, KeyValueList, Notice, PageTemplate, Panel, SelectionCard, Text } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   return withAuth(request, async () => {
@@ -86,24 +86,13 @@ export default function CompanyContextPage({ loaderData }: Route.ComponentProps)
       label="Selskapskontekst"
       hero={
         <Panel title="Tilgjengelige selskaper" description="Alle selskaper du kan bytte inn i fra denne brukerkontoen.">
-          <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2.5">
-            <Text as="p" variant="body-sm" className="text-text-secondary">
-              Antall tilgjengelige kontekster
-            </Text>
-            <Text as="p" variant="heading-sm">
-              {companies.length}
-            </Text>
-          </div>
+          <KeyValueList layout="compact" items={[{ label: 'Antall tilgjengelige kontekster', value: companies.length }]} />
         </Panel>
       }
     >
       {companies.length === 0 ? (
         <Panel title="Ingen selskaper funnet" description="Du har ikke tilgang til noen selskapskontekster enda.">
-          <div className="rounded-md border border-border bg-background px-4 py-5 text-center">
-            <Text as="p" variant="body-sm" className="text-text-secondary">
-              Kontakt administrator hvis du forventer å se et selskap her.
-            </Text>
-          </div>
+          <Notice tone="default" title="Ingen tilgang" message="Kontakt administrator hvis du forventer å se et selskap her." />
         </Panel>
       ) : (
         <Panel title="Velg kontekst" description="Hvert valg logger deg inn i valgt selskap og bruker samme tematiske sideuttrykk som company-flatene.">
@@ -127,18 +116,16 @@ export default function CompanyContextPage({ loaderData }: Route.ComponentProps)
                   trailing={<ChevronRight className="mt-0.5 h-4 w-4 text-text-secondary" />}
                   meta={
                     company.postalAddress ? (
-                      <div className="flex items-start gap-2 rounded-md border border-border bg-surface px-3 py-2">
+                      <div className="flex items-start gap-2">
                         <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-text-secondary" />
                         <Text as="p" variant="body-sm" className="text-text-secondary">
                           {formatAddress(company.postalAddress)}
                         </Text>
                       </div>
                     ) : (
-                      <div className="rounded-md border border-border bg-surface px-3 py-2">
-                        <Text as="p" variant="body-sm" className="text-text-secondary">
-                          Ingen postadresse registrert
-                        </Text>
-                      </div>
+                      <Text as="p" variant="body-sm" className="text-text-secondary">
+                        Ingen postadresse registrert
+                      </Text>
                     )
                   }
                 />

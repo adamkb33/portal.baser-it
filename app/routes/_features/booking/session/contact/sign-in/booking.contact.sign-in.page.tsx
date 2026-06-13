@@ -4,6 +4,11 @@ import { ChevronLeft, LogIn } from 'lucide-react';
 import { ProviderButtons } from '~/routes/auth/_components/provider-buttons';
 import { Button, Input, Label, PageHeader, Panel, Stack } from '~/ui';
 import type { createBookingContactSignInLoader } from './booking.contact.sign-in.loader';
+import {
+  BOOKING_CONTACT_LABEL_CLASS,
+  BOOKING_CONTACT_PAGE_HEADER_CLASS,
+  BOOKING_CONTACT_PANEL_CLASS,
+} from '../_utils/booking-contact-theme';
 
 export function BookingContactSignInPage() {
   const loaderData = useLoaderData<ReturnType<typeof createBookingContactSignInLoader>>();
@@ -26,7 +31,12 @@ export function BookingContactSignInPage() {
 
   return (
     <Stack space="xl">
-      <PageHeader label="Kontakt" title="Logg inn" description="Logg inn for å fortsette booking." />
+      <PageHeader
+        label="Kontakt"
+        title="Logg inn"
+        description="Logg inn for å fortsette booking."
+        className={BOOKING_CONTACT_PAGE_HEADER_CLASS}
+      />
       <div>
         <Link
           to={loaderData.contactHref}
@@ -37,7 +47,7 @@ export function BookingContactSignInPage() {
         </Link>
       </div>
 
-      <Panel title="Logg inn med e-post" tone="muted">
+      <Panel title="Logg inn med e-post" tone="muted" className={BOOKING_CONTACT_PANEL_CLASS}>
         <Form method="post" aria-busy={isSubmitting}>
           <Stack space="md">
             <ProviderButtons showDivider={!isGoogleProvider} />
@@ -46,7 +56,9 @@ export function BookingContactSignInPage() {
             {!isGoogleProvider ? (
               <>
                 <Stack space="xs">
-                  <Label htmlFor="email">E-post</Label>
+                  <Label htmlFor="email" className={BOOKING_CONTACT_LABEL_CLASS}>
+                    E-post
+                  </Label>
                   <Input
                     id="email"
                     name="email"
@@ -56,21 +68,25 @@ export function BookingContactSignInPage() {
                     value={email || undefined}
                     onChange={(event) => setEmail(event.target.value)}
                     disabled={isSubmitting}
+                    variant="booking"
                   />
                 </Stack>
 
                 <Stack space="xs">
-                  <Label htmlFor="password">Passord</Label>
+                  <Label htmlFor="password" className={BOOKING_CONTACT_LABEL_CLASS}>
+                    Passord
+                  </Label>
                   <Input
                     id="password"
                     name="password"
                     type="password"
                     autoComplete="current-password"
                     disabled={isSubmitting}
+                    variant="booking"
                   />
                 </Stack>
 
-                <Button type="submit" size="lg" fullWidth className="gap-3">
+                <Button type="submit" size="lg" fullWidth variant="booking-primary" className="gap-3">
                   <LogIn className="size-5" />
                   Logg inn
                 </Button>

@@ -155,9 +155,7 @@ describe('booking contact auth routes matrix', () => {
 
       expect(mocks.attachUserToSession).toHaveBeenCalledOnce();
       expect(getStatus(result)).toBe(302);
-      expect(getLocation(result)).toBe(
-        ROUTES_MAP['booking.public.appointment.session.employee'].href,
-      );
+      expect(getLocation(result)).toBe(ROUTES_MAP['booking.public.appointment.session.employee'].href);
     });
 
     it('redirects with backend error message when sign-in fails', async () => {
@@ -228,7 +226,7 @@ describe('booking contact auth routes matrix', () => {
     it('sets pending user and redirects to next step when signup succeeds', async () => {
       mocks.signUp.mockResolvedValueOnce({
         userId: 10,
-        nextStep: 'VERIFY_EMAIL',
+        nextStep: 'VERIFY_MOBILE',
         authTokens: {
           accessToken: 'a',
           refreshToken: 'r',
@@ -238,7 +236,7 @@ describe('booking contact auth routes matrix', () => {
       });
       mocks.setPendingSessionUser.mockResolvedValueOnce({ ok: true });
       mocks.resolvePostAuthRedirect.mockResolvedValueOnce({
-        nextStepHref: ROUTES_MAP['booking.public.appointment.session.contact.verify-email'].href,
+        nextStepHref: ROUTES_MAP['booking.public.appointment.session.contact.verify-mobile'].href,
         verificationCookieHeader: 'verification=1',
       });
 
@@ -257,9 +255,7 @@ describe('booking contact auth routes matrix', () => {
 
       expect(mocks.setPendingSessionUser).toHaveBeenCalledWith('s1', 10);
       expect(getStatus(result)).toBe(302);
-      expect(getLocation(result)).toBe(
-        ROUTES_MAP['booking.public.appointment.session.contact.verify-email'].href,
-      );
+      expect(getLocation(result)).toBe(ROUTES_MAP['booking.public.appointment.session.contact.verify-mobile'].href);
     });
   });
 
@@ -299,9 +295,7 @@ describe('booking contact auth routes matrix', () => {
 
       expect(mocks.completeProfile).toHaveBeenCalledOnce();
       expect(getStatus(result)).toBe(302);
-      expect(getLocation(result)).toBe(
-        ROUTES_MAP['booking.public.appointment.session.employee'].href,
-      );
+      expect(getLocation(result)).toBe(ROUTES_MAP['booking.public.appointment.session.employee'].href);
     });
 
     it.each([
@@ -325,7 +319,9 @@ describe('booking contact auth routes matrix', () => {
       mocks.redirectWithError.mockResolvedValueOnce(
         new Response(null, {
           status: 302,
-          headers: { Location: `/booking/public/appointment/session/contact/${field === 'email' ? 'collect-email' : 'collect-mobile'}?${field}=${encodeURIComponent(value)}` },
+          headers: {
+            Location: `/booking/public/appointment/session/contact/${field === 'email' ? 'collect-email' : 'collect-mobile'}?${field}=${encodeURIComponent(value)}`,
+          },
         }),
       );
 

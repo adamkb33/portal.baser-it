@@ -5,8 +5,9 @@ import { API_ROUTES_MAP } from '~/lib/routing/route-tree';
 import type { action as resendVerificationMobileAction } from '~/routes/api/auth/resend-verification/mobile/auth.resend-verification.mobile.api-route';
 import type { action as verifyMobileAction } from '~/routes/api/auth/verify-mobile/auth.verify-mobile.api-route';
 import type { loader as userStatusLoader } from '~/routes/api/auth/user-status/auth.user-status.api-route';
-import { Button, Notice, PageHeader, Panel, Stack, VerificationCodeInput } from '~/ui';
-import { resolveAuthNextStepHref } from '../_utils/auth.utils';
+import { Button, Notice, PageHeader, Stack, VerificationCodeInput } from '~/ui';
+import { resolveAuthStatusNextStepHref } from '../_utils/auth.utils';
+import { BOOKING_CONTACT_PAGE_HEADER_CLASS } from '../_utils/booking-contact-theme';
 import type { createBookingContactVerifyMobileLoader } from './booking.contact.verify-mobile.loader';
 
 const CODE_LENGTH = 6;
@@ -48,7 +49,7 @@ export function BookingContactVerifyMobilePage() {
     if ('error' in statusFetcher.data) return;
     if (!('nextStep' in statusFetcher.data) || !statusFetcher.data.nextStep) return;
 
-    const nextStepHref = resolveAuthNextStepHref(statusFetcher.data.nextStep, loaderData.surface);
+    const nextStepHref = resolveAuthStatusNextStepHref(statusFetcher.data, loaderData.surface);
     if (!nextStepHref) return;
 
     didNavigateRef.current = true;
@@ -61,6 +62,7 @@ export function BookingContactVerifyMobilePage() {
         label="Kontakt"
         title="Bekreft mobil"
         description="Skriv inn koden vi har sendt på SMS for å bekrefte mobilnummeret."
+        className={BOOKING_CONTACT_PAGE_HEADER_CLASS}
       />
       <Stack space="md">
         <Link
@@ -71,10 +73,12 @@ export function BookingContactVerifyMobilePage() {
           Endre mobilnummer
         </Link>
         {errorMessage ? (
-          <Notice tone="emphasis" title="Kunne ikke bekrefte kode" message={String(errorMessage)} />
+          <Notice variant="booking" tone="emphasis" title="Kunne ikke bekrefte kode" message={String(errorMessage)} />
         ) : null}
-        {resendError ? <Notice tone="emphasis" title="Kunne ikke sende ny SMS" message={String(resendError)} /> : null}
-        {resendMessage ? <Notice title="Ny kode sendt" message={resendMessage} /> : null}
+        {resendError ? (
+          <Notice variant="booking" tone="emphasis" title="Kunne ikke sende ny SMS" message={String(resendError)} />
+        ) : null}
+        {resendMessage ? <Notice variant="booking" title="Ny kode sendt" message={resendMessage} /> : null}
         <fetcher.Form method="post" action={API_ROUTES_MAP['auth.verify-mobile'].url}>
           <Stack space="md">
             <Stack space="xs">
@@ -85,9 +89,10 @@ export function BookingContactVerifyMobilePage() {
                 onChange={setCode}
                 length={CODE_LENGTH}
                 aria-invalid={Boolean(errorMessage)}
+                boxClassName="border-booking-border bg-booking-surface-strong text-booking-text data-[active=true]:border-booking-action data-[active=true]:ring-booking-action/25 data-[filled=true]:border-booking-action hover:border-booking-action"
               />
             </Stack>
-            <Button type="submit" className="w-full" disabled={code.length !== CODE_LENGTH}>
+            <Button type="submit" variant="booking-primary" className="w-full" disabled={code.length !== CODE_LENGTH}>
               Bekreft kode
             </Button>
           </Stack>
@@ -98,7 +103,7 @@ export function BookingContactVerifyMobilePage() {
             <Button
               type="submit"
               fullWidth
-              variant="secondary"
+              variant="booking-secondary"
               disabled={!verificationSessionToken || resendFetcher.state !== 'idle'}
             >
               Send SMS på nytt

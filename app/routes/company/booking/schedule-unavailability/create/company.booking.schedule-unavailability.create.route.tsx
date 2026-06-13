@@ -283,7 +283,7 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
               : 'Velg periode';
 
             return (
-              <div key={range.id} className="rounded-md border border-border bg-background p-3">
+              <div key={range.id} className="space-y-3 border-b border-border pb-4 last:border-b-0">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
                     <Text as="p" variant="label" className="text-text-primary">
@@ -333,10 +333,8 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
                 {rangeErrors.dateRange ? <p className="mt-1.5 text-xs text-destructive">{rangeErrors.dateRange}</p> : null}
 
                 {isSingleDay ? (
-                  <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-text-primary">Starttid</label>
-                      <label className="text-xs font-medium text-text-primary">Sluttid</label>
                       <StartEndTimeSelector
                         startName={`range-${range.id}-startTime`}
                         endName={`range-${range.id}-endTime`}

@@ -8,6 +8,7 @@ import type { createBookingSessionContactLoader } from './booking.session.contac
 import { Button, Grid, Inline, PageHeader, Panel, Stack, Text } from '~/ui';
 import { useLoaderData } from 'react-router';
 import { ContinueCard } from './_components/continue-card';
+import { BOOKING_CONTACT_PAGE_HEADER_CLASS, BOOKING_CONTACT_PANEL_CLASS } from './_utils/booking-contact-theme';
 
 const ACTION_INTENT = {
   CONTINUE_WITH_SESSION_USER: 'continue-with-session-user',
@@ -36,7 +37,9 @@ export function BookingSessionContactPage() {
     sessionUser && isSameUser ? `${sessionUser.user.givenName} ${sessionUser.user.familyName}`.trim() : '';
   const authDisplayName = matchedSessionUserName || auth?.email || (auth ? `Bruker #${auth.id}` : 'innlogget bruker');
   const authSupportingText =
-    sessionUser && isSameUser && sessionUser.user.email ? sessionUser.user.email : 'Kontaktinformasjonen verifiseres før du går videre.';
+    sessionUser && isSameUser && sessionUser.user.email
+      ? sessionUser.user.email
+      : 'Kontaktinformasjonen verifiseres før du går videre.';
   const authInitials =
     matchedSessionUserName
       .split(/\s+/)
@@ -68,9 +71,14 @@ export function BookingSessionContactPage() {
         label="Kontakt"
         title="Hvordan vil du fortsette?"
         description="Velg en av de følgende metodene for å fortsette."
+        className={BOOKING_CONTACT_PAGE_HEADER_CLASS}
       />
 
-      <Panel title={auth ? 'Innlogget bruker' : 'Velg innloggingsmetode'} tone="muted" className="bg-booking-action-muted">
+      <Panel
+        title={auth ? 'Innlogget bruker' : 'Velg innloggingsmetode'}
+        tone="muted"
+        className={BOOKING_CONTACT_PANEL_CLASS}
+      >
         <Stack space="lg">
           {auth ? (
             <div className="rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-4 shadow-[var(--shadow-booking-card)] md:p-5">
@@ -100,7 +108,12 @@ export function BookingSessionContactPage() {
                     <CalendarClock className="size-4" />
                     Mine bookinger
                   </Link>
-                  <Button type="button" variant="secondary" className="gap-2" onClick={() => setShowSwitchOptions((prev) => !prev)}>
+                  <Button
+                    type="button"
+                    variant="booking-secondary"
+                    className="gap-2"
+                    onClick={() => setShowSwitchOptions((prev) => !prev)}
+                  >
                     <RefreshCcw className="size-4" />
                     Bytt bruker
                   </Button>
@@ -109,7 +122,7 @@ export function BookingSessionContactPage() {
 
               <Form method="post" className="mt-4">
                 <input type="hidden" name="intent" value={ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER} />
-                <Button type="submit" size="lg" fullWidth className="gap-3">
+                <Button type="submit" size="lg" fullWidth variant="booking-primary" className="gap-3">
                   <UserCheck className="size-5" />
                   Fortsett med denne brukeren
                 </Button>
@@ -128,7 +141,13 @@ export function BookingSessionContactPage() {
           )}
 
           {(!auth || showSwitchOptions) && (
-            <div className={auth ? 'rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-4 md:p-5' : undefined}>
+            <div
+              className={
+                auth
+                  ? 'rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-4 md:p-5'
+                  : undefined
+              }
+            >
               <Stack space="md">
                 {auth ? (
                   <div>
@@ -149,7 +168,14 @@ export function BookingSessionContactPage() {
 
                 <Grid columns={2} gap="md">
                   <div className="space-y-2">
-                    <Button type="button" size="lg" fullWidth onClick={() => goToSignIn()} className="gap-3">
+                    <Button
+                      type="button"
+                      size="lg"
+                      fullWidth
+                      variant="booking-primary"
+                      onClick={() => goToSignIn()}
+                      className="gap-3"
+                    >
                       <LogIn className="size-5" />
                       Logg inn
                     </Button>
@@ -158,7 +184,14 @@ export function BookingSessionContactPage() {
                     </Text>
                   </div>
                   <div className="space-y-2">
-                    <Button type="button" size="lg" fullWidth variant="outline" onClick={goToSignUp} className="gap-3">
+                    <Button
+                      type="button"
+                      size="lg"
+                      fullWidth
+                      variant="booking-secondary"
+                      onClick={goToSignUp}
+                      className="gap-3"
+                    >
                       <UserPlus className="size-5" />
                       Opprett konto
                     </Button>

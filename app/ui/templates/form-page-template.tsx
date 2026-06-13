@@ -1,8 +1,9 @@
 import { Link } from 'react-router';
 import { type ContainerSize, Container } from '../layout/container';
 import { Stack } from '../layout/stack';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../organisms/card';
+import { Card, CardContent, CardFooter, CardHead } from '../organisms/card';
 import { Notice } from '../organisms/notice';
+import { Text } from '../atoms/text';
 import { cn } from '../lib/cn';
 
 export type FormPageTemplateVariant = 'default' | 'subtle' | 'emphasis' | 'airy';
@@ -72,10 +73,11 @@ export function FormPageTemplate({
   return (
     <Container size={size}>
       <Card variant={config.cardVariant} size={config.cardSize}>
-        <CardHeader className={config.headerClassName}>
-          <CardTitle as="h2">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
+        <CardHead heading={title} headingAs="h2" className={config.headerClassName}>
+          <Text as="p" variant="body-sm" className="text-text-secondary">
+            {description}
+          </Text>
+        </CardHead>
 
         <CardContent>
           <Stack space={config.contentSpace}>

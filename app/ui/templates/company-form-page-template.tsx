@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { Button } from '../atoms/button';
 import { Card, CardContent, CardFooter } from '../organisms/card';
 import { CompanyPageTemplate, type CompanyPageTemplateProps } from './company-page-template';
 
@@ -28,12 +29,9 @@ export function CompanyFormPageTemplate({
     backLink || routeLinks ? (
       <>
         {backLink ? (
-          <Link
-            to={backLink.to}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
-          >
-            {backLink.label}
-          </Link>
+          <Button asChild variant="outline" size="sm">
+            <Link to={backLink.to}>{backLink.label}</Link>
+          </Button>
         ) : null}
         {routeLinks}
       </>
@@ -42,9 +40,13 @@ export function CompanyFormPageTemplate({
   return (
     <CompanyPageTemplate {...props} routeLinks={resolvedRouteLinks}>
       {notices}
-      <Card variant="default" className="bg-surface">
+      <Card variant="default">
         <CardContent className="space-y-3">{children}</CardContent>
-        {footer ? <CardFooter className="flex flex-wrap items-center justify-end gap-2 border-t border-border">{footer}</CardFooter> : null}
+        {footer ? (
+          <CardFooter className="flex flex-wrap items-center justify-end gap-2 border-t border-border">
+            {footer}
+          </CardFooter>
+        ) : null}
       </Card>
     </CompanyPageTemplate>
   );

@@ -6,7 +6,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 import { formatLocalDateTimeInTimeZone } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Button, Card, CardContent, CardHeader, CardTitle, CompanyPageTemplate, Notice, Text } from '~/ui';
+import { Button, Card, CardContent, CardHead, CompanyPageTemplate, Notice, Text } from '~/ui';
 import { StartEndTimeSelector } from '~/components/pickers/start-end-time-selector';
 import { useState } from 'react';
 import { format } from 'date-fns';
@@ -26,7 +26,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   if (!Number.isFinite(id) || id <= 0) {
     const flashCookie = await setFlashMessage(request, { type: 'error', text: 'Ugyldig tilgjengelighet-id' });
-    return redirect(ROUTES_MAP['company.booking.schedule.availabilities'].href, { headers: { 'Set-Cookie': flashCookie } });
+    return redirect(ROUTES_MAP['company.booking.schedule.availabilities'].href, {
+      headers: { 'Set-Cookie': flashCookie },
+    });
   }
 
   try {
@@ -37,7 +39,10 @@ export async function loader({ request }: Route.LoaderArgs) {
       throw new Error('Fant ikke tilgjengelighet');
     }
     if (isPastInterval(availability.endTime)) {
-      const flashCookie = await setFlashMessage(request, { type: 'error', text: 'Tidligere tilgjengeligheter kan ikke redigeres' });
+      const flashCookie = await setFlashMessage(request, {
+        type: 'error',
+        text: 'Tidligere tilgjengeligheter kan ikke redigeres',
+      });
       return redirect(ROUTES_MAP['company.booking.schedule'].href, { headers: { 'Set-Cookie': flashCookie } });
     }
 
@@ -74,7 +79,10 @@ export async function action({ request }: Route.ActionArgs) {
       return redirect(ROUTES_MAP['company.booking.schedule'].href, { headers: { 'Set-Cookie': flashCookie } });
     }
     if (isPastInterval(availability.endTime)) {
-      const flashCookie = await setFlashMessage(request, { type: 'error', text: 'Tidligere tilgjengeligheter kan ikke redigeres' });
+      const flashCookie = await setFlashMessage(request, {
+        type: 'error',
+        text: 'Tidligere tilgjengeligheter kan ikke redigeres',
+      });
       return redirect(ROUTES_MAP['company.booking.schedule'].href, { headers: { 'Set-Cookie': flashCookie } });
     }
 
@@ -99,7 +107,9 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function CompanyBookingScheduleAvailabilitiesEditPage({ loaderData }: Route.ComponentProps) {
   const availability = loaderData.availability;
-  const [startTime, setStartTime] = useState(availability ? format(new Date(availability.startTime), 'HH:mm') : '15:00');
+  const [startTime, setStartTime] = useState(
+    availability ? format(new Date(availability.startTime), 'HH:mm') : '15:00',
+  );
   const [endTime, setEndTime] = useState(availability ? format(new Date(availability.endTime), 'HH:mm') : '19:00');
   const [dateValue, setDateValue] = useState(
     availability ? format(new Date(availability.startTime), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
@@ -110,21 +120,18 @@ export default function CompanyBookingScheduleAvailabilitiesEditPage({ loaderDat
     <CompanyPageTemplate
       title="Rediger tilgjengelighet"
       routeLinks={
-        <NavLink
-          to={ROUTES_MAP['company.booking.schedule'].href}
-          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface"
-        >
-          Tilbake til ukeplan
-        </NavLink>
+        <Button asChild variant="outline" size="sm">
+          <NavLink to={ROUTES_MAP['company.booking.schedule'].href}>Tilbake til ukeplan</NavLink>
+        </Button>
       }
     >
-      {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente tilgjengelighet" message={loaderData.error} /> : null}
+      {loaderData.error ? (
+        <Notice tone="emphasis" title="Kunne ikke hente tilgjengelighet" message={loaderData.error} />
+      ) : null}
 
       {availability ? (
-        <Card variant="default" size="sm" className="bg-surface">
-          <CardHeader>
-            <CardTitle>Oppdater intervall</CardTitle>
-          </CardHeader>
+        <Card variant="default" size="sm">
+          <CardHead heading="Oppdater intervall" />
           <CardContent>
             <Form method="post" className="grid grid-cols-1 gap-2 md:grid-cols-4">
               <input type="hidden" name="id" value={availability.id} />

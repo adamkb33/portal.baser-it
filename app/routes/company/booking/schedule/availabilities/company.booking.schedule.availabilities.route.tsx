@@ -10,7 +10,19 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 import { formatDateBoundaryInTimeZone, formatLocalDateTimeInTimeZone } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Button, Calendar, Card, CardContent, CardHeader, CardTitle, CompanyPageTemplate, Notice, Popover, PopoverContent, PopoverTrigger, Text } from '~/ui';
+import {
+  Button,
+  Calendar,
+  Card,
+  CardContent,
+  CardHead,
+  CompanyPageTemplate,
+  Notice,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Text,
+} from '~/ui';
 
 function getRangeBounds(range: string, baseDate: Date) {
   const start = range === 'prev6m' ? addMonths(baseDate, -6) : baseDate;
@@ -92,7 +104,10 @@ export async function action({ request }: Route.ActionArgs) {
         return redirect(request.url, { headers: { 'Set-Cookie': flashCookie } });
       }
       if (isPastInterval(availability.endTime)) {
-        const flashCookie = await setFlashMessage(request, { type: 'error', text: 'Tidligere tilgjengeligheter kan ikke slettes' });
+        const flashCookie = await setFlashMessage(request, {
+          type: 'error',
+          text: 'Tidligere tilgjengeligheter kan ikke slettes',
+        });
         return redirect(request.url, { headers: { 'Set-Cookie': flashCookie } });
       }
 
@@ -160,20 +175,17 @@ export default function CompanyBookingScheduleAvailabilitiesPage({ loaderData }:
     <CompanyPageTemplate
       title="Tilgjengeligheter"
       routeLinks={
-        <NavLink
-          to={ROUTES_MAP['company.booking.schedule'].href}
-          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface"
-        >
-          Tilbake til ukeplan
-        </NavLink>
+        <Button asChild variant="outline" size="sm">
+          <NavLink to={ROUTES_MAP['company.booking.schedule'].href}>Tilbake til ukeplan</NavLink>
+        </Button>
       }
     >
-      {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente tilgjengeligheter" message={loaderData.error} /> : null}
+      {loaderData.error ? (
+        <Notice tone="emphasis" title="Kunne ikke hente tilgjengeligheter" message={loaderData.error} />
+      ) : null}
 
-      <Card variant="default" size="sm" className="bg-surface">
-        <CardHeader>
-          <CardTitle>Legg til tilgjengelighet</CardTitle>
-        </CardHeader>
+      <Card variant="default" size="sm">
+        <CardHead heading="Legg til tilgjengelighet" />
         <CardContent>
           <Form method="post" className="grid grid-cols-1 gap-2 md:grid-cols-4">
             <input name="intent" type="hidden" value="create" />
@@ -220,10 +232,10 @@ export default function CompanyBookingScheduleAvailabilitiesPage({ loaderData }:
         </CardContent>
       </Card>
 
-      <Card variant="default" size="sm" className="bg-surface">
-        <CardHeader>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle>Registrerte tilgjengeligheter</CardTitle>
+      <Card variant="default" size="sm">
+        <CardHead
+          heading="Registrerte tilgjengeligheter"
+          action={
             <div className="flex flex-wrap gap-2">
               {rangeOptions.map((option) => (
                 <Button
@@ -241,24 +253,33 @@ export default function CompanyBookingScheduleAvailabilitiesPage({ loaderData }:
                 </Button>
               ))}
             </div>
-          </div>
+          }
+        >
           <Text as="p" variant="body-sm" className="text-text-secondary">
             Totalt: {loaderData.total}
           </Text>
-        </CardHeader>
+        </CardHead>
         <CardContent className="space-y-2">
           {loaderData.availabilities.length === 0 ? (
-            <Notice tone="default" title="Ingen tilgjengeligheter" message="Ingen registrerte tidsrom i valgt periode." />
+            <Notice
+              tone="default"
+              title="Ingen tilgjengeligheter"
+              message="Ingen registrerte tidsrom i valgt periode."
+            />
           ) : (
             loaderData.availabilities.map((item: ScheduleAvailabilityDto) => {
               const isPast = isPastInterval(item.endTime);
               return (
-                <div key={item.id} className="flex items-center justify-between gap-2 rounded-md border border-border bg-background p-2">
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-2 rounded-md border border-border bg-background p-2"
+                >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <CalendarPlus2 className="h-4 w-4 text-secondary" />
                       <Text as="p" variant="body-sm" className="font-medium">
-                        {format(new Date(item.startTime), 'dd.MM.yyyy HH:mm')} - {format(new Date(item.endTime), 'HH:mm')}
+                        {format(new Date(item.startTime), 'dd.MM.yyyy HH:mm')} -{' '}
+                        {format(new Date(item.endTime), 'HH:mm')}
                       </Text>
                     </div>
                   </div>

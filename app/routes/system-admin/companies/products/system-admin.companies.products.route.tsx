@@ -1,11 +1,11 @@
-import { data } from 'react-router';
+import { data, NavLink } from 'react-router';
 import type { Route } from './+types/system-admin.companies.products.route';
 import { Base } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Button, CompanyPageTemplate, FormField, Notice } from '~/ui';
+import { Button, Checkbox, CompanyPageTemplate, FormField, Notice, Panel } from '~/ui';
 
 const PRODUCT_VALUES = ['BOOKING', 'EVENT', 'TIMESHEET'] as const;
 
@@ -47,27 +47,27 @@ export default function SystemAdminCompaniesProductsPage({ actionData }: Route.C
       title="Tildel produkter"
       description="Aktiver produkter for selskap via system-admin endpoint."
       routeLinks={
-        <a href={ROUTES_MAP['system-admin.companies'].href} className="inline-flex rounded-sm border border-border px-3 py-2 text-sm">
-          Tilbake til selskaper
-        </a>
+        <Button asChild variant="outline">
+          <NavLink to={ROUTES_MAP['system-admin.companies'].href}>Tilbake til selskaper</NavLink>
+        </Button>
       }
     >
       {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke oppdatere produkter" message={actionData.error} /> : null}
-      <form method="post" className="space-y-3 rounded-md border border-border bg-surface p-4">
-        <FormField label="Selskap-ID" name="companyId" type="number" defaultValue={values.companyId} required />
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-text-primary">Produkter</p>
-          {PRODUCT_VALUES.map((product) => (
-            <label key={product} className="flex items-center gap-2 text-sm text-text-primary">
-              <input type="checkbox" name={product} defaultChecked={values.products.includes(product)} />
-              {product}
-            </label>
-          ))}
-        </div>
-        <div>
+      <Panel title="Produkter" description="Velg produktene som skal aktiveres for selskapet.">
+        <form method="post" className="space-y-4">
+          <FormField label="Selskap-ID" name="companyId" type="number" defaultValue={values.companyId} required />
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium text-text-primary">Produkter</legend>
+            {PRODUCT_VALUES.map((product) => (
+              <label key={product} className="flex min-h-10 items-center gap-2 text-sm text-text-primary">
+                <Checkbox name={product} defaultChecked={values.products.includes(product)} />
+                {product}
+              </label>
+            ))}
+          </fieldset>
           <Button type="submit">Oppdater produkter</Button>
-        </div>
-      </form>
+        </form>
+      </Panel>
     </CompanyPageTemplate>
   );
 }

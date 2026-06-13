@@ -16,13 +16,11 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  CardHead,
   CompanyPageTemplate,
+  KeyValueList,
+  KpiCard,
   Text,
-  cn,
-  routeLinkButtonClass,
 } from '~/ui';
 
 const DAY_ABBREV: Record<string, string> = {
@@ -101,68 +99,66 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
       description="Hold profilen, tjenestene og arbeidstidene dine konsistente med den kompakte booking-layouten."
       routeLinks={
         <>
-          <NavLink
-            to={ROUTES_MAP['company.booking'].href}
-            className={routeLinkButtonClass}
-          >
-            Oversikt
-          </NavLink>
-          <NavLink
-            to={ROUTES_MAP['company.booking.schedule-unavailability'].href}
-            className={routeLinkButtonClass}
-          >
-            Mitt fravik
-          </NavLink>
+          <Button asChild variant="outline" size="sm">
+            <NavLink to={ROUTES_MAP['company.booking'].href}>Oversikt</NavLink>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <NavLink to={ROUTES_MAP['company.booking.schedule-unavailability'].href}>Mitt fravik</NavLink>
+          </Button>
         </>
       }
       hero={
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <ProfileMetricCard
+          <KpiCard
             label="Tjenester"
             value={totalServices}
             icon={<Briefcase className="h-5 w-5 text-primary" />}
-            accent="info"
+            tone="info"
           />
-          <ProfileMetricCard
+          <KpiCard
             label="Grupper"
             value={totalServiceGroups}
             icon={<Briefcase className="h-5 w-5 text-secondary" />}
-            accent="success"
+            tone="success"
           />
-          <ProfileMetricCard
+          <KpiCard
             label="Dager"
             value={availabilityDays}
             icon={<CalendarDays className="h-5 w-5 text-primary" />}
-            accent="info"
+            tone="info"
           />
-          <ProfileMetricCard
+          <KpiCard
             label="Tidsluker"
             value={scheduleSlots}
             icon={<CalendarDays className="h-5 w-5 text-secondary" />}
-            accent="success"
+            tone="success"
           />
         </div>
       }
     >
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <div className="space-y-4 xl:col-span-1">
-          <Card variant="default" className="bg-surface">
-            <CardHeader>
-              <CardTitle>Profilforhåndsvisning</CardTitle>
-              <CardDescription>Slik ser profilen ut for kunder.</CardDescription>
-              <div className="flex justify-end">
-                <NavLink
-                  to={
-                    bookingProfile
-                      ? ROUTES_MAP['company.booking.profile.edit'].href
-                      : ROUTES_MAP['company.booking.profile.create'].href
-                  }
-                  className="inline-flex h-10 items-center justify-center rounded-sm bg-interactive px-4 text-sm font-medium text-text-inverse transition-colors hover:bg-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
-                >
-                  {bookingProfile ? 'Rediger bookingprofil' : 'Legg til bookingprofil'}
-                </NavLink>
-              </div>
-            </CardHeader>
+          <Card variant="default">
+            <CardHead
+              heading="Profilforhåndsvisning"
+              action={
+                <Button asChild size="sm">
+                  <NavLink
+                    to={
+                      bookingProfile
+                        ? ROUTES_MAP['company.booking.profile.edit'].href
+                        : ROUTES_MAP['company.booking.profile.create'].href
+                    }
+                  >
+                    {bookingProfile ? 'Rediger bookingprofil' : 'Legg til bookingprofil'}
+                  </NavLink>
+                </Button>
+              }
+            >
+              <Text as="p" variant="body-sm" className="mt-1 text-text-secondary">
+                Slik ser profilen ut for kunder.
+              </Text>
+            </CardHead>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-4">
                 {hasProfileImage ? (
@@ -193,14 +189,8 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
               )}
 
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-md bg-background p-2.5">
-                  <p className="text-xs text-muted-foreground">Tjenestegrupper</p>
-                  <p className="text-base font-semibold text-foreground">{totalServiceGroups}</p>
-                </div>
-                <div className="rounded-md bg-background p-2.5">
-                  <p className="text-xs text-muted-foreground">Tidsluker</p>
-                  <p className="text-base font-semibold text-foreground">{scheduleSlots}</p>
-                </div>
+                <KpiCard label="Tjenestegrupper" value={totalServiceGroups} tone="success" />
+                <KpiCard label="Tidsluker" value={scheduleSlots} tone="info" />
               </div>
 
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -212,30 +202,22 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
         </div>
 
         <div className="space-y-4 xl:col-span-2">
-          <Card variant="default" className="bg-surface">
-            <CardHeader>
-              <CardTitle>Oversikt</CardTitle>
-              <CardDescription>En rask oppsummering av profilen.</CardDescription>
-            </CardHeader>
+          <Card variant="default">
+            <CardHead heading="Oversikt">
+              <Text as="p" variant="body-sm" className="mt-1 text-text-secondary">
+                En rask oppsummering av profilen.
+              </Text>
+            </CardHead>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <div className="rounded-md bg-background p-2.5">
-                  <p className="text-xs text-muted-foreground">Tjenester</p>
-                  <p className="text-lg font-semibold text-foreground">{totalServices}</p>
-                </div>
-                <div className="rounded-md bg-background p-2.5">
-                  <p className="text-xs text-muted-foreground">Tjenestegrupper</p>
-                  <p className="text-lg font-semibold text-foreground">{totalServiceGroups}</p>
-                </div>
-                <div className="rounded-md bg-background p-2.5">
-                  <p className="text-xs text-muted-foreground">Dager tilgjengelig</p>
-                  <p className="text-lg font-semibold text-foreground">{availabilityDays}</p>
-                </div>
-                <div className="rounded-md bg-background p-2.5">
-                  <p className="text-xs text-muted-foreground">Tidsluker</p>
-                  <p className="text-lg font-semibold text-foreground">{scheduleSlots}</p>
-                </div>
-              </div>
+              <KeyValueList
+                layout="compact"
+                items={[
+                  { label: 'Tjenester', value: totalServices },
+                  { label: 'Tjenestegrupper', value: totalServiceGroups },
+                  { label: 'Dager tilgjengelig', value: availabilityDays },
+                  { label: 'Tidsluker', value: scheduleSlots },
+                ]}
+              />
             </CardContent>
           </Card>
 
@@ -341,42 +323,5 @@ export default function BookingCompanyUserProfile({ loaderData }: Route.Componen
         </div>
       </div>
     </CompanyPageTemplate>
-  );
-}
-
-function ProfileMetricCard({
-  label,
-  value,
-  icon,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  icon: React.ReactNode;
-  accent: 'info' | 'success';
-}) {
-  const accentClasses = {
-    info: 'bg-primary/10',
-    success: 'bg-secondary/10',
-  } as const;
-
-  return (
-    <Card variant="default" size="sm" className="bg-surface">
-      <CardContent className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <Text as="p" variant="body-sm" className="text-text-secondary">
-              {label}
-            </Text>
-            <Text as="p" variant="heading-md">
-              {value}
-            </Text>
-          </div>
-          <div className={cn('flex h-10 w-10 items-center justify-center rounded-md', accentClasses[accent])}>
-            {icon}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

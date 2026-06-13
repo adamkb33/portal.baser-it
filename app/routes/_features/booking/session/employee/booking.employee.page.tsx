@@ -5,8 +5,6 @@ import {
   Card,
   CardContent,
   CardFooter,
-  CardHeader,
-  CardTitle,
   Grid,
   Panel,
   Popover,
@@ -54,7 +52,7 @@ export function BookingEmployeePage() {
                 isSubmittingProfile && 'opacity-80',
               )}
             >
-              <CardHeader>
+              <div className="mb-4 space-y-2">
                 {isSelected ? (
                   <Text as="p" variant="overline" className="text-booking-action">
                     Valgt behandler
@@ -71,15 +69,15 @@ export function BookingEmployeePage() {
                     </div>
                   ) : null}
                   <div className="min-w-0 flex-1">
-                    <CardTitle className="text-booking-text">
+                    <Text as="h3" variant="heading-sm" className="text-booking-text">
                       {profile.givenName} {profile.familyName}
-                    </CardTitle>
+                    </Text>
                     {profile.description ? (
                       <Text className="mt-1 text-booking-text-muted">{profile.description}</Text>
                     ) : null}
                   </div>
                 </div>
-              </CardHeader>
+              </div>
 
               <CardContent className="flex-1">
                 {profile.services.length > 0 && (
@@ -92,7 +90,7 @@ export function BookingEmployeePage() {
                         <PopoverTrigger asChild>
                           <Button
                             type="button"
-                            variant="ghost"
+                            variant="booking-ghost"
                             size="sm"
                             className="h-8 px-2 text-xs hover:bg-booking-surface-raised"
                           >
@@ -142,7 +140,7 @@ export function BookingEmployeePage() {
                 {isSelected ? (
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="booking-secondary"
                     fullWidth
                     disabled
                     className="gap-2 border-booking-action/40 bg-booking-surface-raised text-booking-text"
@@ -154,6 +152,7 @@ export function BookingEmployeePage() {
                     <input type="hidden" name="selectedProfileId" value={profile.id} />
                     <Button
                       type="submit"
+                      variant="booking-primary"
                       fullWidth
                       loading={isSubmittingProfile}
                       disabled={isSubmitting}

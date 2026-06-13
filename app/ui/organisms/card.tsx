@@ -14,13 +14,14 @@ export interface CardProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const variantClasses: Record<CardVariant, string> = {
-  // Template cards are white surfaces on the bluish page (`--bg-card`).
-  default: 'border-border bg-background shadow-[var(--shadow-card)]',
-  subtle: 'border-border bg-background shadow-[var(--shadow-card)]',
-  emphasis: 'border-interactive bg-background shadow-[var(--shadow-panel)]',
-  interactive: 'border-border bg-background shadow-[var(--shadow-card)] transition-colors hover:bg-surface',
-  ghost: 'border-transparent bg-background',
-  bordered: 'border-border bg-background shadow-[var(--shadow-card)]',
+  // Template cards are elevated white surfaces on the bluish page background.
+  default: 'border-border bg-background text-text-primary shadow-[var(--shadow-card)]',
+  subtle: 'border-border/80 bg-surface-variant-1 text-text-primary shadow-sm',
+  emphasis: 'border-interactive/35 bg-surface-primary-subtle text-text-primary shadow-[var(--shadow-panel)]',
+  interactive:
+    'border-border bg-background text-text-primary shadow-[var(--shadow-card)] transition-[border-color,background-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-interactive/40 hover:bg-surface-variant-1 hover:shadow-[var(--shadow-floating)]',
+  ghost: 'border-transparent bg-transparent text-text-primary shadow-none',
+  bordered: 'border-border bg-background text-text-primary shadow-none',
 };
 
 export function Card({ variant = 'default', size = 'md', as: Component = 'div', className, ...props }: CardProps) {

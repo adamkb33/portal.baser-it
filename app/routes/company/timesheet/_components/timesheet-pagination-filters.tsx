@@ -5,8 +5,7 @@ import {
   Calendar,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
+  CardHead,
   type CalendarDateRange,
   Checkbox,
   Input,
@@ -70,9 +69,7 @@ export function TimesheetPaginationFilterCard({
 
   return (
     <Card>
-      <CardHeader className="pb-1">
-        <CardTitle className="text-base">Filtre</CardTitle>
-      </CardHeader>
+      <CardHead heading="Filtre" className="mb-4" />
       <CardContent>
         <Form ref={formRef} method="get" className="space-y-4" onChange={onSubmitDebounced}>
           {(showDateRange || showEntryMode) && (
@@ -151,9 +148,9 @@ export function TimesheetPaginationFilterCard({
           </div>
 
           <div className="flex items-center gap-2">
-            <Link to={resetHref} className="text-xs text-muted-foreground underline">
-              Nullstill
-            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link to={resetHref}>Nullstill</Link>
+            </Button>
           </div>
         </Form>
       </CardContent>

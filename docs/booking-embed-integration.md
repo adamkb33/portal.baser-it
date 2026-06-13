@@ -9,33 +9,31 @@ Use the `/embed` route as the integration entry point:
 ```html
 <iframe
   id="pitell-booking"
-  src="https://YOUR_PORTAL_DOMAIN/embed?companyId=123&theme=fredrikstad-barbershop&parentOrigin=https%3A%2F%2FCLIENT_DOMAIN"
+  src="https://YOUR_PORTAL_DOMAIN/embed?companyId=1&theme=fredrikstad-barbershop&parentOrigin=https%3A%2F%2FCLIENT_DOMAIN"
   title="Bestill time"
   scrolling="no"
-  allowtransparency="true"
-  style="display: block; width: 1px; min-width: 100%; height: 720px; border: 0; overflow: hidden"
+  style="display: block; width: 100%; height: 720px; border: 0; overflow: hidden"
 ></iframe>
 ```
 
 Required query parameters:
 
-| Parameter | Required | Description |
-| --- | --- | --- |
-| `companyId` | Yes | Numeric company id for the company whose booking flow should start. Must be a positive integer. |
+| Parameter   | Required | Description                                                                                     |
+| ----------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `companyId` | Yes      | Numeric company id for the company whose booking flow should start. Must be a positive integer. |
 
 Optional query parameters:
 
-| Parameter | Values | Description |
-| --- | --- | --- |
-| `theme` | `fredrikstad-barbershop`, `pitell`, `ocean`, `sunset`, `forest` | Selects a built-in embed theme. Defaults to `pitell`. |
-| `parentOrigin` | URL origin | Optional parent-page origin used as the `postMessage` target origin. Recommended for production embeds. |
-| `start` | `contact` | Reserved start-step parameter. Only `contact` is currently valid. |
-| `reset` | `1` | Clears the existing appointment session before starting a new one. Use this when a host page has a "start over" action. |
+| Parameter | Values                                                          | Description                                                                                                             |
+| --------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `theme`   | `fredrikstad-barbershop`, `pitell`, `ocean`, `sunset`, `forest` | Selects a built-in embed theme. Defaults to `pitell`.                                                                   |
+| `start`   | `contact`                                                       | Reserved start-step parameter. Only `contact` is currently valid.                                                       |
+| `reset`   | `1`                                                             | Clears the existing appointment session before starting a new one. Use this when a host page has a "start over" action. |
 
 Invalid or missing values return a `400` response with a small error payload. A valid request stores the validated embed config and redirects to:
 
 ```text
-/embed/booking/appointment/session?companyId=123
+/embed/booking/appointment/session?companyId=1
 ```
 
 The session route then validates that the company is booking-ready, creates or reuses an appointment session, and redirects the user to the contact step.
@@ -53,21 +51,15 @@ The embedded public booking flow is linear:
 
 The session state is stored server-side and referenced by the `appointment_session` cookie.
 
-## Seamless Fragment Layout
-
-Embedded booking routes render as a transparent content fragment by default. The iframe does not add an app shell, outer padding, a centered max-width wrapper, or viewport-height layout around the booking flow. The parent page owns surrounding whitespace and page scrolling.
-
-The booking iframe sets its own document background to transparent and measures the full document height. Booking step containers expand to the iframe width in embedded routes, and bottom action buttons render in normal flow at the end of the step content.
-
 ## Parent Page Resize Handling
 
 Use `scrolling="no"` on the iframe and let the parent page own scrolling. The embedded booking flow measures its content and posts messages to the parent page:
 
-| Message type | Payload | When it fires |
-| --- | --- | --- |
-| `embed:ready` | `{ type, path }` | Once, when the embedded booking shell is active. |
-| `embed:step-changed` | `{ type, path }` | On route changes inside the embedded booking flow. |
-| `embed:resize` | `{ type, path, height, reason }` | When the embedded content height changes. `reason` is `init`, `step`, or `content`. |
+| Message type         | Payload                          | When it fires                                                                       |
+| -------------------- | -------------------------------- | ----------------------------------------------------------------------------------- |
+| `embed:ready`        | `{ type, path }`                 | Once, when the embedded booking shell is active.                                    |
+| `embed:step-changed` | `{ type, path }`                 | On route changes inside the embedded booking flow.                                  |
+| `embed:resize`       | `{ type, path, height, reason }` | When the embedded content height changes. `reason` is `init`, `step`, or `content`. |
 
 The raw iframe cannot resize itself without a parent-page listener. Browser security prevents iframe content from directly changing the parent DOM, so the listener below is required to avoid double scrolling.
 
@@ -76,11 +68,10 @@ Recommended host page script:
 ```html
 <iframe
   id="pitell-booking"
-  src="https://YOUR_PORTAL_DOMAIN/embed?companyId=123&theme=fredrikstad-barbershop&parentOrigin=https%3A%2F%2FCLIENT_DOMAIN"
+  src="https://YOUR_PORTAL_DOMAIN/embed?companyId=1&theme=fredrikstad-barbershop&parentOrigin=https%3A%2F%2FCLIENT_DOMAIN"
   title="Bestill time"
   scrolling="no"
-  allowtransparency="true"
-  style="display: block; width: 1px; min-width: 100%; height: 720px; border: 0; overflow: hidden"
+  style="display: block; width: 100%; height: 720px; border: 0; overflow: hidden"
 ></iframe>
 
 <script>
@@ -98,10 +89,7 @@ Recommended host page script:
     }
 
     if (message.type === 'embed:step-changed') {
-      requestAnimationFrame(() => {
-        const top = iframe.getBoundingClientRect().top + window.scrollY - 16;
-        window.scrollTo({ top, behavior: 'smooth' });
-      });
+      iframe.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   });
 </script>
@@ -109,31 +97,19 @@ Recommended host page script:
 
 Always validate `event.origin` in production before trusting a message.
 
-The local fake client harness lives at:
-
-```text
-tools/embed-harness/index.html
-```
-
-Run it with:
-
-```sh
-npx serve tools/embed-harness -l 8080
-```
-
 ## Cookie Requirements
 
 Embed mode is route-based under `/embed/*`; cookies are not used to decide whether the global app shell is hidden.
 
 The selected theme is stored in a short-lived, path-scoped config cookie so child actions and redirects do not need to keep appending `theme=...` to every URL.
 
-| Cookie | Purpose | Scope |
-| --- | --- | --- |
+| Cookie         | Purpose                                                      | Scope                          |
+| -------------- | ------------------------------------------------------------ | ------------------------------ |
 | `embed_config` | Stores validated embed configuration, currently `{ theme }`. | `Path=/embed`, 4 hour max age. |
 
 This avoids leaking embed state into normal public routes while still preserving the selected theme through back/forward navigation, form submissions, and server redirects.
 
-The appointment flow uses `appointment_session` for the booking session id. It is currently configured as `SameSite=Lax`, so fully third-party cross-site iframe deployments should be tested carefully. Same-site embeds, same parent domain, or same-site subdomain deployments are the safest configuration with the current cookie policy.
+The appointment flow uses `appointment_session` for the booking session id. Cross-site iframe deployments require this cookie to be emitted with `SameSite=None; Secure` in embed mode. See [portal-embed-cookie-fix-spec.md](portal-embed-cookie-fix-spec.md) for the portal-side implementation spec.
 
 ## Styling Model
 
@@ -162,18 +138,20 @@ app/styles/booking-tokens.css
 
 ## Available Embed Themes
 
-| Theme | Description |
-| --- | --- |
-| `pitell` | Default app styling. Uses the base design tokens. |
-| `ocean` | Light blue background and blue action color. |
-| `sunset` | Warm peach background and red-orange action color. |
-| `forest` | Light green background and green action color. |
-| `fredrikstad-barbershop` | Seamless marketing-site embed theme with transparent outer canvas, neon purple actions, soft lavender surfaces, and small gold accents. |
+| Theme                    | Description                                                                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pitell`                 | Default app styling. Uses the base design tokens.                                                                                                             |
+| `ocean`                  | Light blue background and blue action color.                                                                                                                  |
+| `sunset`                 | Warm peach background and red-orange action color.                                                                                                            |
+| `forest`                 | Light green background and green action color.                                                                                                                |
+| `fredrikstad-barbershop` | Seamless marketing-site embed theme with transparent outer canvas, charcoal surfaces, warm gold actions, and square controls matching Fredrikstad Barbershop. |
 
 Example:
 
 ```html
-<iframe src="https://YOUR_PORTAL_DOMAIN/embed?companyId=123&theme=fredrikstad-barbershop"></iframe>
+<iframe
+  src="https://YOUR_PORTAL_DOMAIN/embed?companyId=1&theme=fredrikstad-barbershop&parentOrigin=https%3A%2F%2FCLIENT_DOMAIN"
+></iframe>
 ```
 
 ## Adding A Custom Theme
@@ -226,7 +204,7 @@ export const EMBED_THEME_TOKENS: Record<EmbedThemeKey, CSSProperties> = {
 Then embed with:
 
 ```html
-<iframe src="https://YOUR_PORTAL_DOMAIN/embed?companyId=123&theme=customer"></iframe>
+<iframe src="https://YOUR_PORTAL_DOMAIN/embed?companyId=1&theme=customer"></iframe>
 ```
 
 ## Token Reference
@@ -235,62 +213,60 @@ These are the main tokens used by the embedded booking flow.
 
 Base semantic tokens:
 
-| Token | Use |
-| --- | --- |
-| `--color-background` | Main page background. |
-| `--color-surface` | Cards, panels, and muted UI surfaces. |
-| `--color-border` | Borders and separators. |
-| `--color-text-primary` | Primary readable text. |
-| `--color-text-secondary` | Secondary text, descriptions, metadata. |
-| `--color-text-inverse` | Text on dark or action backgrounds. |
-| `--color-interactive` | Primary actions and selected states. |
-| `--color-interactive-hover` | Hover state for primary actions. |
-| `--color-secondary` | Secondary accents used in derived appointment colors. |
-| `--radius-control` | Generic button/action radius. |
-| `--radius-field` | Generic input radius. |
-| `--radius-card` | Generic card radius. |
-| `--radius-panel` | Generic panel radius. |
-| `--border-control` | Generic control border width. |
-| `--border-card` | Generic card border width. |
-| `--border-selected` | Generic selected-state border width. |
-| `--border-focus-ring` | Generic focus ring width. |
-| `--shadow-card` | Generic card shadow. |
-| `--shadow-panel` | Generic panel shadow. |
-| `--shadow-floating` | Generic sticky/floating UI shadow. |
+| Token                       | Use                                                   |
+| --------------------------- | ----------------------------------------------------- |
+| `--color-background`        | Main page background.                                 |
+| `--color-surface`           | Cards, panels, and muted UI surfaces.                 |
+| `--color-border`            | Borders and separators.                               |
+| `--color-text-primary`      | Primary readable text.                                |
+| `--color-text-secondary`    | Secondary text, descriptions, metadata.               |
+| `--color-text-inverse`      | Text on dark or action backgrounds.                   |
+| `--color-interactive`       | Primary actions and selected states.                  |
+| `--color-interactive-hover` | Hover state for primary actions.                      |
+| `--color-secondary`         | Secondary accents used in derived appointment colors. |
+| `--radius-control`          | Generic button/action radius.                         |
+| `--radius-field`            | Generic input radius.                                 |
+| `--radius-card`             | Generic card radius.                                  |
+| `--radius-panel`            | Generic panel radius.                                 |
+| `--border-control`          | Generic control border width.                         |
+| `--border-card`             | Generic card border width.                            |
+| `--border-selected`         | Generic selected-state border width.                  |
+| `--border-focus-ring`       | Generic focus ring width.                             |
+| `--shadow-card`             | Generic card shadow.                                  |
+| `--shadow-panel`            | Generic panel shadow.                                 |
+| `--shadow-floating`         | Generic sticky/floating UI shadow.                    |
 
 Booking aliases from `app/styles/booking-tokens.css`:
 
-| Alias | Resolves to |
-| --- | --- |
-| `--color-booking-background` | `--color-background` |
-| `--color-booking-surface` | `--color-surface` |
-| `--color-booking-surface-muted` | `--color-surface` |
-| `--color-booking-border` | `--color-border` |
-| `--color-booking-text` | `--color-text-primary` |
-| `--color-booking-text-muted` | `--color-text-secondary` |
-| `--color-booking-text-inverse` | `--color-text-inverse` |
-| `--color-booking-action` | `--color-interactive` |
-| `--color-booking-action-hover` | `--color-interactive-hover` |
-| `--color-booking-action-contrast` | `--color-text-inverse` |
-| `--radius-booking-control` | `--radius-control` |
-| `--radius-booking-field` | `--radius-field` |
-| `--radius-booking-card` | `--radius-card` |
-| `--radius-booking-panel` | `--radius-panel` |
-| `--radius-booking-badge` | `--radius-badge` |
-| `--border-booking-control` | `--border-control` |
-| `--border-booking-card` | `--border-card` |
-| `--border-booking-selected` | `--border-selected` |
-| `--border-booking-focus-ring` | `--border-focus-ring` |
-| `--shadow-booking-card` | `--shadow-card` |
-| `--shadow-booking-panel` | `--shadow-panel` |
-| `--shadow-booking-floating` | `--shadow-floating` |
+| Alias                             | Resolves to                 |
+| --------------------------------- | --------------------------- |
+| `--color-booking-background`      | `--color-background`        |
+| `--color-booking-surface`         | `--color-surface`           |
+| `--color-booking-surface-muted`   | `--color-surface`           |
+| `--color-booking-border`          | `--color-border`            |
+| `--color-booking-text`            | `--color-text-primary`      |
+| `--color-booking-text-muted`      | `--color-text-secondary`    |
+| `--color-booking-text-inverse`    | `--color-text-inverse`      |
+| `--color-booking-action`          | `--color-interactive`       |
+| `--color-booking-action-hover`    | `--color-interactive-hover` |
+| `--color-booking-action-contrast` | `--color-text-inverse`      |
+| `--radius-booking-control`        | `--radius-control`          |
+| `--radius-booking-field`          | `--radius-field`            |
+| `--radius-booking-card`           | `--radius-card`             |
+| `--radius-booking-panel`          | `--radius-panel`            |
+| `--radius-booking-badge`          | `--radius-badge`            |
+| `--border-booking-control`        | `--border-control`          |
+| `--border-booking-card`           | `--border-card`             |
+| `--border-booking-selected`       | `--border-selected`         |
+| `--border-booking-focus-ring`     | `--border-focus-ring`       |
+| `--shadow-booking-card`           | `--shadow-card`             |
+| `--shadow-booking-panel`          | `--shadow-panel`            |
+| `--shadow-booking-floating`       | `--shadow-floating`         |
 
 Use booking aliases in booking UI classes when adding new booking components:
 
 ```tsx
-<button className="bg-booking-action text-booking-action-contrast hover:bg-booking-action-hover">
-  Fortsett
-</button>
+<button className="bg-booking-action text-booking-action-contrast hover:bg-booking-action-hover">Fortsett</button>
 ```
 
 For surfaces and selectable cards:

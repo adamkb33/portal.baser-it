@@ -1,11 +1,11 @@
-import { data } from 'react-router';
+import { data, NavLink } from 'react-router';
 import type { Route } from './+types/system-admin.companies.roles.route';
 import { Base } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Button, CompanyPageTemplate, FormField, Notice } from '~/ui';
+import { Button, CompanyPageTemplate, FormField, Label, Notice, Panel } from '~/ui';
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -46,26 +46,31 @@ export default function SystemAdminCompaniesRolesPage({ actionData }: Route.Comp
       title="Tildel selskapsroller"
       description="Koble bruker til selskap med ADMIN eller EMPLOYEE."
       routeLinks={
-        <a href={ROUTES_MAP['system-admin.companies'].href} className="inline-flex rounded-sm border border-border px-3 py-2 text-sm">
-          Tilbake til selskaper
-        </a>
+        <Button asChild variant="outline">
+          <NavLink to={ROUTES_MAP['system-admin.companies'].href}>Tilbake til selskaper</NavLink>
+        </Button>
       }
     >
       {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke tildele rolle" message={actionData.error} /> : null}
-      <form method="post" className="space-y-3 rounded-md border border-border bg-surface p-4">
-        <FormField label="Bruker-ID" name="userId" type="number" defaultValue={values.userId} required />
-        <FormField label="Selskap-ID" name="companyId" type="number" defaultValue={values.companyId} required />
-        <label className="block text-sm font-medium text-text-primary">
-          Rolle
-          <select name="role" defaultValue={values.role} className="mt-1 h-10 w-full rounded-sm border border-border bg-background px-2 text-sm">
-            <option value="ADMIN">ADMIN</option>
-            <option value="EMPLOYEE">EMPLOYEE</option>
-          </select>
-        </label>
-        <div>
+      <Panel title="Rolle" description="Velg bruker, selskap og rolle som skal tildeles.">
+        <form method="post" className="space-y-4">
+          <FormField label="Bruker-ID" name="userId" type="number" defaultValue={values.userId} required />
+          <FormField label="Selskap-ID" name="companyId" type="number" defaultValue={values.companyId} required />
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="role">Rolle</Label>
+            <select
+              id="role"
+              name="role"
+              defaultValue={values.role}
+              className="min-h-11 w-full rounded-[var(--radius-field)] border border-border bg-background px-3 py-2 text-sm text-text-primary focus-visible:border-interactive focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-blue-50 sm:h-10 sm:min-h-10 sm:py-0"
+            >
+              <option value="ADMIN">ADMIN</option>
+              <option value="EMPLOYEE">EMPLOYEE</option>
+            </select>
+          </div>
           <Button type="submit">Tildel rolle</Button>
-        </div>
-      </form>
+        </form>
+      </Panel>
     </CompanyPageTemplate>
   );
 }

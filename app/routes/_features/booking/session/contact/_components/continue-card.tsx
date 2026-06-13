@@ -1,6 +1,6 @@
 import { LogIn } from 'lucide-react';
 import { Form } from 'react-router';
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
+import { Card, CardContent, CardFooter, Text } from '~/ui';
 
 type ContinueCardProps = {
   title: string;
@@ -24,7 +24,7 @@ export function ContinueCard({ title, description, cta, initials, intentValue }:
           size="sm"
           className="cursor-pointer border-booking-border bg-booking-surface transition-colors group-hover:bg-booking-surface-muted group-focus-visible:border-booking-action"
         >
-          <CardHeader>
+          <CardContent>
             <div className="flex flex-col items-center gap-2 text-center">
               <div className="flex items-center justify-center gap-3">
                 {initials ? (
@@ -32,13 +32,17 @@ export function ContinueCard({ title, description, cta, initials, intentValue }:
                     {initials}
                   </div>
                 ) : null}
-                <CardTitle className="text-booking-text">{title}</CardTitle>
+                <Text as="h3" variant="heading-sm" className="text-booking-text">
+                  {title}
+                </Text>
               </div>
               {description ? (
-                <CardDescription className="text-booking-text-muted">{description}</CardDescription>
+                <Text as="p" variant="body-sm" className="text-booking-text-muted">
+                  {description}
+                </Text>
               ) : null}
             </div>
-          </CardHeader>
+          </CardContent>
           <CardFooter>
             <div className="inline-flex w-full items-center justify-center gap-2 text-sm font-medium text-booking-text">
               <LogIn className="size-5" />

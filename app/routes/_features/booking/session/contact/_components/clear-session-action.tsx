@@ -20,7 +20,7 @@ export function ClearSessionAction() {
         title="Fjern brukerinfo fra bookingøkten?"
         description="Dette vil slette brukerinformasjon og data som er lagt inn i denne bookingøkten. Du kan ikke angre."
         cancelAction={
-          <Button type="button" variant="outline">
+          <Button type="button" variant="booking-secondary">
             Avbryt
           </Button>
         }

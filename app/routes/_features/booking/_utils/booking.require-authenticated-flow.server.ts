@@ -1,7 +1,7 @@
 import { redirect } from 'react-router';
 import type { AppointmentSessionDto } from '~/api/generated/booking';
 import { getSession } from '~/lib/appointments.server';
-import { resolveAuthNextStepHref } from '~/routes/_features/booking/session/contact/_utils/auth.utils';
+import { resolveAuthStatusNextStepHref } from '~/routes/_features/booking/session/contact/_utils/auth.utils';
 import { AppointmentSessionService } from '../_services/booking.appointment-session.service.server';
 import { ContactAuthService } from '../session/contact/_services/contact-auth.service.server';
 import { getBookingRouteMap } from './booking.route-map';
@@ -32,11 +32,13 @@ export async function requireAuthenticatedBookingFlow(
   }
 
   if (authStatus.nextStep !== 'DONE') {
-    const nextStepHref = resolveAuthNextStepHref(authStatus.nextStep, surface);
-    if (nextStepHref) {
+    const nextStepHref = resolveAuthStatusNextStepHref(authStatus, surface);
+    if (nextStepHref && nextStepHref !== routes.employee) {
       return redirect(nextStepHref);
     }
-    return redirect(routes.contact);
+    if (!nextStepHref) {
+      return redirect(routes.contact);
+    }
   }
 
   return { session };

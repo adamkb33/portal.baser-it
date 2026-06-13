@@ -18,4 +18,3 @@ export * from './templates/index';
 
 /* ─── Utilities ───────────────────────────────────────────── */
 export { cn } from './lib/cn';
-export { routeLinkButtonClass } from './lib/route-link-button-class';

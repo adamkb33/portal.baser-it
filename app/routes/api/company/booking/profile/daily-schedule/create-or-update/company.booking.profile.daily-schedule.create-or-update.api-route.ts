@@ -30,7 +30,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirectWithSuccess(
       request,
-      ROUTES_MAP['company.booking.profile.daily-schedule'].href,
+      ROUTES_MAP['company.booking.profile'].href,
       id ? 'Arbeidstid oppdatert' : 'Arbeidstid lagret',
     );
   } catch (error: any) {
@@ -38,7 +38,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return redirectWithError(
       request,
-      ROUTES_MAP['company.booking.profile.daily-schedule'].href,
+      ROUTES_MAP['company.booking.profile'].href,
       error?.message || 'Kunne ikke lagre arbeidstid',
     );
   }

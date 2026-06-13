@@ -176,14 +176,14 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
           items={[]}
           primaryAction={
             <Link to={ROUTES_MAP['booking.public.my-appointments'].href}>
-              <BookingButton variant="primary" size="md" fullWidth>
+              <BookingButton variant="booking-primary" size="md" fullWidth>
                 Se mine bookinger
               </BookingButton>
             </Link>
           }
           secondaryAction={
             <Link to={ROUTES_MAP['booking.public.appointment.session.contact'].href}>
-              <BookingButton variant="outline" size="md" fullWidth>
+              <BookingButton variant="booking-secondary" size="md" fullWidth>
                 Book en ny time
               </BookingButton>
             </Link>
@@ -194,32 +194,35 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
       <BookingContainer>
         <BookingStepHeader title="Timen er bekreftet" description="Vi gleder oss til å se deg." />
         <Stack space="md">
-          <BookingCard variant="emphasis" className="space-y-4">
+          <BookingCard
+            variant="emphasis"
+            className="space-y-4 border-booking-border bg-booking-surface-raised text-booking-text shadow-[var(--shadow-booking-card)]"
+          >
             <div className="space-y-4">
               {/* Success icon */}
               <div className="flex items-center justify-center">
                 <div className="relative">
-                  <div className="flex size-20 items-center justify-center rounded-full bg-secondary shadow-lg md:size-24">
-                    <Check className="size-10 text-secondary-foreground md:size-12" strokeWidth={3} />
+                  <div className="flex size-20 items-center justify-center rounded-full bg-booking-action text-booking-action-contrast shadow-[var(--shadow-booking-card)] md:size-24">
+                    <Check className="size-10 md:size-12" strokeWidth={3} />
                   </div>
                   {/* Sparkle decoration */}
                   <div className="absolute -right-1 -top-1">
-                    <Sparkles className="size-6 text-primary md:size-8" fill="currentColor" />
+                    <Sparkles className="size-6 text-booking-action md:size-8" fill="currentColor" />
                   </div>
                 </div>
               </div>
 
               {/* Success message */}
               <div className="text-center">
-                <h1 className="text-2xl font-bold text-card-text md:text-3xl lg:text-4xl">Timen er bekreftet</h1>
-                <p className="mt-2 text-base text-muted-foreground md:text-lg">Vi gleder oss til å se deg</p>
+                <h1 className="text-2xl font-bold text-booking-text md:text-3xl lg:text-4xl">Timen er bekreftet</h1>
+                <p className="mt-2 text-base text-booking-text-muted md:text-lg">Vi gleder oss til å se deg</p>
               </div>
 
               {/* Confirmation number (if available) */}
               <div className="flex justify-center">
-                <div className="inline-flex items-center gap-2 rounded-full border border-secondary/30 bg-secondary/10 px-4 py-2">
-                  <PartyPopper className="size-4 text-secondary" />
-                  <span className="text-sm font-semibold text-card-text">Bekreftelse sendt til e-post</span>
+                <div className="inline-flex items-center gap-2 rounded-full border border-booking-border bg-booking-surface-muted px-4 py-2 text-booking-text">
+                  <PartyPopper className="size-4 text-booking-action" />
+                  <span className="text-sm font-semibold">Bekreftelse sendt til e-post</span>
                 </div>
               </div>
             </div>
@@ -418,7 +421,6 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
               </li>
             </ol>
           </BookingCard>
-
         </Stack>
       </BookingContainer>
     </StickyFooterPageTemplate>

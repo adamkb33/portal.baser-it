@@ -97,12 +97,9 @@ export default function CompanyTimesheetEditHours() {
       description="Oppdater timer med samme kompakte formulamønster som resten av company-domenet."
       label="Timelister"
       actions={
-        <Link
-          to={ROUTES_MAP['company.timesheet'].href}
-          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
-        >
-          Tilbake
-        </Link>
+        <Button asChild variant="outline" size="sm">
+          <Link to={ROUTES_MAP['company.timesheet'].href}>Tilbake</Link>
+        </Button>
       }
     >
       <Panel title="Oppdater registrering" description="Dato, timer og notat for valgt registrering.">

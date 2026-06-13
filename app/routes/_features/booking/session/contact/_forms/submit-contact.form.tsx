@@ -4,17 +4,19 @@ import { useForm } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
 
 import {
+  type SubmitContactFormInput,
   type SubmitContactFormSchema,
   submitContactFormSchema,
 } from '~/routes/_features/booking/session/contact/_schemas/submit-contact.form.schema';
 import { Button, Input, Label, Text } from '~/ui';
+import { BOOKING_CONTACT_LABEL_CLASS } from '../_utils/booking-contact-theme';
 
 export interface GetOrCreateContactFetcherFormProps {
   companyId: number;
   onSubmit: (values: SubmitContactFormSchema) => void;
   onChange?: () => void;
   onValidityChange?: (isValid: boolean) => void;
-  initialValues?: Partial<SubmitContactFormSchema>;
+  initialValues?: Partial<SubmitContactFormInput>;
   isSubmitting?: boolean;
   formId?: string;
 }
@@ -28,7 +30,7 @@ export function SubmitContactForm({
   isSubmitting = false,
   formId = 'booking-contact-form',
 }: GetOrCreateContactFetcherFormProps) {
-  const form = useForm<SubmitContactFormSchema>({
+  const form = useForm<SubmitContactFormInput, unknown, SubmitContactFormSchema>({
     resolver: zodResolver(submitContactFormSchema),
     mode: 'onChange',
     reValidateMode: 'onChange',
@@ -62,17 +64,32 @@ export function SubmitContactForm({
   });
 
   const renderField = (
-    name: keyof SubmitContactFormSchema,
+    name: keyof SubmitContactFormInput,
     label: string,
-    options?: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
+    options?: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> & { helperText?: string },
   ) => {
     const fieldError = form.formState.errors[name];
     const field = form.register(name);
+    const { helperText, ...inputOptions } = options ?? {};
 
     return (
       <div className="space-y-2">
-        <Label htmlFor={name}>{label}</Label>
-        <Input id={name} {...field} {...options} aria-invalid={Boolean(fieldError)} />
+        <Label htmlFor={name} className={BOOKING_CONTACT_LABEL_CLASS}>
+          {label}
+        </Label>
+        <Input
+          id={name}
+          {...field}
+          {...inputOptions}
+          aria-invalid={Boolean(fieldError)}
+          invalid={Boolean(fieldError)}
+          variant="booking"
+        />
+        {helperText ? (
+          <Text as="p" variant="caption" className="text-booking-text-muted">
+            {helperText}
+          </Text>
+        ) : null}
         {fieldError?.message ? (
           <Text as="p" variant="caption" className="text-destructive">
             {String(fieldError.message)}
@@ -98,6 +115,7 @@ export function SubmitContactForm({
           type: 'email',
           inputMode: 'email',
           autoComplete: 'email',
+          helperText: 'Valgfritt. Legg inn e-post hvis du også vil motta bekreftelse på e-post.',
         })}
 
         {renderField('mobileNumber', 'Mobilnummer', {
@@ -105,11 +123,13 @@ export function SubmitContactForm({
           inputMode: 'tel',
           autoComplete: 'tel',
           maxLength: 8,
+          required: true,
+          helperText: 'Vi bruker mobilnummeret ditt til å bekrefte bestillingen og sende viktig informasjon om timen.',
         })}
       </div>
 
       <div className="mt-6 hidden md:block">
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" variant="booking-primary" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 size-4 animate-spin" />

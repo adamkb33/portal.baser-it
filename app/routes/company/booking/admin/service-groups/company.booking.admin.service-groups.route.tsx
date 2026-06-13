@@ -124,20 +124,14 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
           />
         }
         primaryAction={
-          <NavLink
-            to={ROUTES_MAP['company.booking.admin.service-groups.create'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
-          >
-            Legg til ny tjenestegruppe
-          </NavLink>
+          <Button asChild size="sm">
+            <NavLink to={ROUTES_MAP['company.booking.admin.service-groups.create'].href}>Legg til ny tjenestegruppe</NavLink>
+          </Button>
         }
         mobilePrimaryAction={
-          <NavLink
-            to={ROUTES_MAP['company.booking.admin.service-groups.create'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
-          >
-            Ny tjenestegruppe
-          </NavLink>
+          <Button asChild size="sm">
+            <NavLink to={ROUTES_MAP['company.booking.admin.service-groups.create'].href}>Ny tjenestegruppe</NavLink>
+          </Button>
         }
         renderRow={(serviceGroup) => (
           <TableRow>
@@ -145,12 +139,9 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
             <TableCell className="font-medium">{serviceGroup.name}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <NavLink
-                  to={`${ROUTES_MAP['company.booking.admin.service-groups.edit'].href}?id=${serviceGroup.id}`}
-                  className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface"
-                >
-                  Rediger
-                </NavLink>
+                <Button asChild variant="outline" size="sm">
+                  <NavLink to={`${ROUTES_MAP['company.booking.admin.service-groups.edit'].href}?id=${serviceGroup.id}`}>Rediger</NavLink>
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"

@@ -35,17 +35,17 @@ export function TableDesktopHeader({
   const endIndex = Math.min((page + 1) * size, totalElements);
 
   return (
-    <div className="bg-surface p-4">
+    <div className="border-b border-border-soft bg-background p-4">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background">
+          <div className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border bg-surface">
             <Rows3 className="h-4 w-4 text-text-secondary" />
           </div>
           <div>
             <p className="text-sm font-semibold text-text-primary">
               {totalElements ? startIndex : 0}–{endIndex} av {totalElements}
             </p>
-            <p className="text-xs text-text-secondary">Viser resultater</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-text-disabled">Viser resultater</p>
           </div>
         </div>
 
@@ -54,7 +54,9 @@ export function TableDesktopHeader({
           {primaryAction ? <div className="flex items-center md:shrink-0">{primaryAction}</div> : null}
 
           <div className="flex items-center gap-3 md:shrink-0">
-            <span className="text-xs font-semibold text-text-secondary">Rader per side</span>
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-text-disabled">
+              Rader per side
+            </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="min-w-[100px] justify-between">

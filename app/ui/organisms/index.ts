@@ -1,7 +1,6 @@
 export { ActionBar, type ActionBarProps } from './action-bar';
 export { AlertBanner, type AlertBannerProps } from './alert-banner';
 export { CompanyEmptyState, type CompanyEmptyStateProps } from './company-empty-state';
-export { CompanyMetricCard, type CompanyMetricCardProps } from './company-metric-card';
 export {
   Card,
   CardAction,

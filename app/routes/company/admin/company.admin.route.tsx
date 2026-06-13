@@ -1,9 +1,20 @@
 import type { Route } from './+types/company.admin.route';
-import { Activity, Clock, Contact, KeyRound, Mail, Shield, Users } from 'lucide-react';
+import { Activity, Clock, Contact, Mail, Shield, Users } from 'lucide-react';
 import { AdminCompanyController } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, CompanyEmptyState, CompanyMetricCard, CompanyPageTemplate, Panel, Text } from '~/ui';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  Badge,
+  CompanyEmptyState,
+  CompanyPageTemplate,
+  KpiCard,
+  Panel,
+  Text,
+} from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -43,9 +54,24 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
       label="Selskapsadministrasjon"
       hero={
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <CompanyMetricCard label="Totalt brukere" value={metrics.overview.totalUsers} icon={<Users className="h-5 w-5" />} />
-          <CompanyMetricCard label="Aktive siste 30 dager" value={metrics.users.activeLastThirtyDays} icon={<Activity className="h-5 w-5" />} />
-          <CompanyMetricCard label="Totalt kontakter" value={metrics.contacts.totalContacts} icon={<Contact className="h-5 w-5" />} />
+          <KpiCard
+            label="Totalt brukere"
+            value={metrics.overview.totalUsers}
+            icon={<Users className="h-5 w-5" />}
+            tone="primary"
+          />
+          <KpiCard
+            label="Aktive siste 30 dager"
+            value={metrics.users.activeLastThirtyDays}
+            icon={<Activity className="h-5 w-5" />}
+            tone="success"
+          />
+          <KpiCard
+            label="Totalt kontakter"
+            value={metrics.contacts.totalContacts}
+            icon={<Contact className="h-5 w-5" />}
+            tone="info"
+          />
         </div>
       }
     >
@@ -157,11 +183,9 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
                 <div className="grid gap-2 sm:grid-cols-2">
                   {metrics.overview.enabledProducts.length > 0 ? (
                     metrics.overview.enabledProducts.map((product) => (
-                      <div key={product} className="rounded-md border border-border bg-background px-3 py-2">
-                        <Text as="p" variant="label">
-                          {product}
-                        </Text>
-                      </div>
+                      <Badge key={product} variant="info" className="justify-self-start">
+                        {product}
+                      </Badge>
                     ))
                   ) : (
                     <Text as="p" variant="body-sm" className="text-text-secondary">
@@ -194,7 +218,10 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
                     metrics.contacts.recentContacts.map((contact) => (
                       <KeyValueRow
                         key={contact.contactId}
-                        label={[contact.givenName, contact.familyName].filter(Boolean).join(' ') || `Kontakt #${contact.contactId}`}
+                        label={
+                          [contact.givenName, contact.familyName].filter(Boolean).join(' ') ||
+                          `Kontakt #${contact.contactId}`
+                        }
                         value={formatDate(contact.createdAt)}
                         helper={`${contact.hasEmail ? 'E-post' : 'Ingen e-post'} · ${contact.hasMobile ? 'Mobil' : 'Ingen mobil'}`}
                       />
@@ -213,8 +240,16 @@ export default function CompanyAdminRoute({ loaderData }: Route.ComponentProps) 
 
       <Panel title="Selskapssammendrag" description="Grunnleggende administrativ status for selskapet.">
         <div className="grid gap-3 md:grid-cols-2">
-          <KeyValueRow label="Opprettet" value={formatDate(metrics.overview.accountCreatedAt)} icon={<Clock className="h-4 w-4" />} />
-          <KeyValueRow label="Aktive produkter" value={metrics.overview.enabledProducts.length} icon={<Shield className="h-4 w-4" />} />
+          <KeyValueRow
+            label="Opprettet"
+            value={formatDate(metrics.overview.accountCreatedAt)}
+            icon={<Clock className="h-4 w-4" />}
+          />
+          <KeyValueRow
+            label="Aktive produkter"
+            value={metrics.overview.enabledProducts.length}
+            icon={<Shield className="h-4 w-4" />}
+          />
         </div>
       </Panel>
     </CompanyPageTemplate>
@@ -238,16 +273,7 @@ function HeaderContent({ icon, title, description }: { icon: React.ReactNode; ti
 }
 
 function MetricTile({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="rounded-md border border-border bg-background p-3">
-      <Text as="p" variant="caption" className="text-text-secondary">
-        {label}
-      </Text>
-      <Text as="p" variant="heading-sm">
-        {value}
-      </Text>
-    </div>
-  );
+  return <KpiCard label={label} value={value} tone="primary" />;
 }
 
 function KeyValueRow({
@@ -262,7 +288,7 @@ function KeyValueRow({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-md border border-border bg-background px-3 py-2.5">
+    <div className="border-b border-border pb-2.5 last:border-b-0">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
           <div className="flex items-center gap-2">

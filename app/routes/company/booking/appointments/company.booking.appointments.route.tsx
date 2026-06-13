@@ -18,6 +18,7 @@ import { formatCurrentDateTimeInTimeZone } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import {
   Badge,
+  Button,
   Card,
   CardContent,
   CompanyPageTemplate,
@@ -26,11 +27,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  KeyValueList,
   Label,
   Notice,
   Text,
   Textarea,
-  routeLinkButtonClass,
 } from '~/ui';
 import { getTotalDuration, getTotalPrice, getTotalServiceCount, isAppointmentCompleted } from './_utils/appointments.utils';
 
@@ -228,27 +229,18 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
         description="Hold oversikten over kommende og fullførte avtaler i den samme kompakte booking-layouten."
         routeLinks={
           <>
-            <NavLink
-              to={ROUTES_MAP['company.booking'].href}
-              className={routeLinkButtonClass}
-            >
-              Oversikt
-            </NavLink>
-            <NavLink
-              to={ROUTES_MAP['company.booking.admin'].href}
-              className={routeLinkButtonClass}
-            >
-              Administrasjon
-            </NavLink>
+            <Button asChild variant="outline" size="sm">
+              <NavLink to={ROUTES_MAP['company.booking'].href}>Oversikt</NavLink>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <NavLink to={ROUTES_MAP['company.booking.admin'].href}>Administrasjon</NavLink>
+            </Button>
           </>
         }
         actions={
-          <NavLink
-            to={ROUTES_MAP['company.booking.appointments.create'].href}
-            className="inline-flex h-10 items-center justify-center rounded-sm bg-interactive px-4 text-sm font-medium text-text-inverse transition-colors hover:bg-interactive-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
-          >
-            Ny time
-          </NavLink>
+          <Button asChild>
+            <NavLink to={ROUTES_MAP['company.booking.appointments.create'].href}>Ny time</NavLink>
+          </Button>
         }
         hero={
           ongoingAppointment || lastCompletedAppointment || nextUpcomingAppointment ? (
@@ -503,25 +495,28 @@ function SpotlightAppointmentDetailsDialog({
 
         <div className="space-y-3">
           <div className="flex flex-wrap justify-end gap-2">
-            <button
+            <Button
               type="button"
-              className={routeLinkButtonClass}
+              variant="outline"
+              size="sm"
               onClick={() => onUploadImage(appointment.id)}
             >
               Last opp bilde
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="inline-flex h-8 items-center justify-center rounded-sm px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive disabled:cursor-not-allowed disabled:opacity-50"
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={() => onDelete(appointment.id)}
               disabled={isDeleting || isCompleted}
               title={isCompleted ? 'Fullførte avtaler kan ikke slettes' : undefined}
             >
               Slett
-            </button>
+            </Button>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-3">
+          <div className="space-y-2">
             <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
               Kunde
             </Text>
@@ -531,36 +526,18 @@ function SpotlightAppointmentDetailsDialog({
             <div className="mt-2 text-sm text-text-secondary">{appointment.user.email || 'Ingen e-post registrert'}</div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-3">
+          <div className="space-y-2 border-t border-border pt-3">
             <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
               Oppsummering
             </Text>
-            <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
-              <div>
-                <Text as="p" variant="body-sm" className="text-text-secondary">
-                  Tjenester
-                </Text>
-                <Text as="p" variant="body-sm">
-                  {totalServices}
-                </Text>
-              </div>
-              <div>
-                <Text as="p" variant="body-sm" className="text-text-secondary">
-                  Varighet
-                </Text>
-                <Text as="p" variant="body-sm">
-                  {getTotalDuration(appointment)}
-                </Text>
-              </div>
-              <div>
-                <Text as="p" variant="body-sm" className="text-text-secondary">
-                  Pris
-                </Text>
-                <Text as="p" variant="body-sm">
-                  {getTotalPrice(appointment)}
-                </Text>
-              </div>
-            </div>
+            <KeyValueList
+              layout="compact"
+              items={[
+                { label: 'Tjenester', value: totalServices },
+                { label: 'Varighet', value: getTotalDuration(appointment) },
+                { label: 'Pris', value: getTotalPrice(appointment) },
+              ]}
+            />
           </div>
         </div>
       </DialogContent>

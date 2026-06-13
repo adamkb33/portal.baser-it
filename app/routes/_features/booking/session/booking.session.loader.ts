@@ -43,7 +43,7 @@ export function createBookingSessionLoader({ surface }: CreateBookingSessionLoad
 
           if (session.companyId !== companyIdNumber) {
             await AppointmentSessionService.delete(args.request);
-            const created = await AppointmentSessionService.create(companyIdNumber);
+            const created = await AppointmentSessionService.create(companyIdNumber, args.request);
 
             return redirect(routes.contact, {
               headers: {
@@ -74,7 +74,7 @@ export function createBookingSessionLoader({ surface }: CreateBookingSessionLoad
         },
       });
 
-      const created = await AppointmentSessionService.create(companyIdNumber);
+      const created = await AppointmentSessionService.create(companyIdNumber, args.request);
 
       return redirect(routes.contact, {
         headers: {

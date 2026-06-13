@@ -47,7 +47,7 @@ export function NotificationCardRow({ notification, isViewed, onOpen }: Notifica
           </div>
         </div>
 
-        <div className="flex items-start gap-2 rounded-md bg-muted/40 p-3 text-sm leading-relaxed text-foreground">
+        <div className="flex items-start gap-2 text-sm leading-relaxed text-foreground">
           <MessageSquareQuote className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <p>{compactText(notification.content)}</p>
         </div>

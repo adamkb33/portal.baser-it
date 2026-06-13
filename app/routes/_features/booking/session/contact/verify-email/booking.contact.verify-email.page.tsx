@@ -4,8 +4,9 @@ import { ArrowLeft, CheckCircle2, Loader2, Mail, MailCheck } from 'lucide-react'
 import { API_ROUTES_MAP } from '~/lib/routing/route-tree';
 import type { loader as userStatusLoader } from '~/routes/api/auth/user-status/auth.user-status.api-route';
 import type { action as resendVerificationAction } from '~/routes/api/auth/resend-verification/email/auth.resend-verification.email.api-route';
-import { Button, Notice, PageHeader, Panel, Stack, Text } from '~/ui';
+import { Button, Notice, PageHeader, Stack, Text } from '~/ui';
 import { resolveAuthNextStepHref } from '../_utils/auth.utils';
+import { BOOKING_CONTACT_PAGE_HEADER_CLASS } from '../_utils/booking-contact-theme';
 import type { createBookingContactVerifyEmailLoader } from './booking.contact.verify-email.loader';
 
 export const handle = {
@@ -92,6 +93,7 @@ export function BookingContactVerifyEmailPage() {
         label="Kontakt"
         title="Bekreft e-post"
         description="Klikk på lenken i e-posten for å fullføre verifiseringen."
+        className={BOOKING_CONTACT_PAGE_HEADER_CLASS}
       />
       {redirectHint === 'booking' ? (
         <div className="rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-3 text-sm text-booking-text">
@@ -108,18 +110,21 @@ export function BookingContactVerifyEmailPage() {
         </Link>
         {statusFetcherError && errorCountRef.current >= 3 ? (
           <Notice
+            variant="booking"
             tone="muted"
             title="Kunne ikke sjekke verifiseringsstatus automatisk"
             message="Prøv igjen om litt, eller oppdater siden."
           />
         ) : null}
-        {resendError ? <Notice tone="emphasis" title="Kunne ikke sende ny e-post" message={resendError} /> : null}
-        {resendSuccess ? <Notice title="Ny e-post sendt" message={resendSuccess} /> : null}
+        {resendError ? (
+          <Notice variant="booking" tone="emphasis" title="Kunne ikke sende ny e-post" message={resendError} />
+        ) : null}
+        {resendSuccess ? <Notice variant="booking" title="Ny e-post sendt" message={resendSuccess} /> : null}
         <div className="rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-4 md:p-5">
           <div className="flex items-start gap-3">
             <Loader2 className="size-10 animate-spin text-booking-action" />
             <div className="space-y-1">
-              <Text as="p" variant="heading-sm">
+              <Text as="p" variant="heading-sm" className="text-booking-text">
                 Vi venter på bekreftelse
               </Text>
               <Text as="p" className="text-booking-text-muted">
@@ -185,7 +190,7 @@ export function BookingContactVerifyEmailPage() {
                 type="submit"
                 size="lg"
                 fullWidth
-                variant="secondary"
+                variant="booking-secondary"
                 className="gap-3"
                 loading={resendFetcher.state !== 'idle'}
                 disabled={!email}

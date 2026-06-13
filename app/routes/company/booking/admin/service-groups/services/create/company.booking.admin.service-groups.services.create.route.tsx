@@ -125,7 +125,7 @@ export async function action({ request }: Route.ActionArgs) {
       });
     });
 
-    return redirect(ROUTES_MAP['company.booking.admin.service-groups.services'].href);
+    return redirect(ROUTES_MAP['company.booking.admin.services'].href);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke opprette tjeneste');
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });

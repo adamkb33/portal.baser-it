@@ -1,14 +1,32 @@
 import { data, Link, redirect } from 'react-router';
 import { Building2, FileText, Mail, MapPin } from 'lucide-react';
 import type { BrregEnhetResponse } from '~/api/brreg/types';
-import { AdminCompanyController, CompanyUserController, type AddressDto, type RecentContact, type RecentInvite } from '~/api/generated/base';
+import {
+  AdminCompanyController,
+  CompanyUserController,
+  type AddressDto,
+  type RecentContact,
+  type RecentInvite,
+} from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { getAuthPayloadFromRequest } from '~/lib/auth.utils';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import type { Route } from './+types/company.route';
-import { Button, Card, CardContent, CardHead, CardGrid, CompanyEmptyState, CompanyPageTemplate, GridCol, KpiCard, Panel, Text } from '~/ui';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHead,
+  CardGrid,
+  CompanyEmptyState,
+  CompanyPageTemplate,
+  GridCol,
+  KpiCard,
+  Panel,
+  Text,
+} from '~/ui';
 
 export type CompanyIndexLoaderResponse = {
   brregResponse?: BrregEnhetResponse;
@@ -23,7 +41,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   try {
     const companSummaryResponse = await withAuth(request, async () => CompanyUserController.getCompanySummary());
-    const dashboardMetricsResponse = await withAuth(request, async () => AdminCompanyController.getDashboardMetrics()).catch(() => null);
+    const dashboardMetricsResponse = await withAuth(request, async () =>
+      AdminCompanyController.getDashboardMetrics(),
+    ).catch(() => null);
 
     return data({
       companySummary: companSummaryResponse.data?.data,
@@ -94,7 +114,9 @@ export default function CompanyIndex({ loaderData }: Route.ComponentProps) {
             value={companySummary.organizationType?.description || 'Ikke registrert'}
             tone="info"
             icon={<MapPin className="h-5 w-5" />}
-            compare={companySummary.organizationType?.code ? `Kode ${companySummary.organizationType.code}` : 'Mangler kode'}
+            compare={
+              companySummary.organizationType?.code ? `Kode ${companySummary.organizationType.code}` : 'Mangler kode'
+            }
           />
           <KpiCard
             label="Adressekilder"
@@ -127,7 +149,12 @@ export default function CompanyIndex({ loaderData }: Route.ComponentProps) {
         </GridCol>
 
         <GridCol span={4}>
-          <Panel title="Forretningsadresse" description="Registrert besøks- eller forretningsadresse for selskapet." tone="default" className="h-full">
+          <Panel
+            title="Forretningsadresse"
+            description="Registrert besøks- eller forretningsadresse for selskapet."
+            tone="default"
+            className="h-full"
+          >
             {businessAddressLines.length > 0 ? (
               <AddressBlock lines={businessAddressLines} />
             ) : (
@@ -139,7 +166,12 @@ export default function CompanyIndex({ loaderData }: Route.ComponentProps) {
         </GridCol>
 
         <GridCol span={4}>
-          <Panel title="Postadresse" description="Registrert postadresse for selskapet." tone="default" className="h-full">
+          <Panel
+            title="Postadresse"
+            description="Registrert postadresse for selskapet."
+            tone="default"
+            className="h-full"
+          >
             {postalAddressLines.length > 0 ? (
               <AddressBlock lines={postalAddressLines} />
             ) : (

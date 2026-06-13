@@ -283,7 +283,7 @@ export default function BookingPublicAppointmentCancelRoute() {
     return (
       <Container size="lg">
         <PageHeader label="Avbestilling" title="Avbestill time" description={error} />
-        <Notice tone="emphasis" title="Kunne ikke hente avtalen" message={error} />
+        <Notice variant="booking" tone="emphasis" title="Kunne ikke hente avtalen" message={error} />
       </Container>
     );
   }
@@ -355,10 +355,12 @@ export default function BookingPublicAppointmentCancelRoute() {
           ) : null}
 
           {error || actionError ? (
-            <Notice tone="emphasis" title="Kunne ikke avbestille" message={actionError ?? error} />
+            <Notice variant="booking" tone="emphasis" title="Kunne ikke avbestille" message={actionError ?? error} />
           ) : null}
 
-          {actionData?.success ? <Notice title="Avbestillingen er registrert" message={actionData.message} /> : null}
+          {actionData?.success ? (
+            <Notice variant="booking" title="Avbestillingen er registrert" message={actionData.message} />
+          ) : null}
 
           {appointment ? (
             <Stack space="lg">
@@ -406,12 +408,9 @@ export default function BookingPublicAppointmentCancelRoute() {
 
               <Panel title="Tjenester">
                 {services.length ? (
-                  <div className="space-y-2">
+                  <div className="divide-y divide-border">
                     {services.map((service) => (
-                      <div
-                        key={service.id}
-                        className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3"
-                      >
+                      <div key={service.id} className="flex items-center justify-between gap-3 py-3">
                         <span className="text-sm font-medium text-text-primary md:text-base">{service.name}</span>
                         <div className="flex shrink-0 items-center gap-3 text-xs text-text-secondary md:text-sm">
                           <span className="flex items-center gap-1">

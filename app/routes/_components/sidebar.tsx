@@ -87,7 +87,7 @@ function SidebarSection({ section, pathname }: { section: SidebarSectionModel; p
 }
 
 const navLinkBase =
-  'group flex items-center gap-3 rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-interactive';
+  'group flex min-h-11 items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-interactive sm:min-h-0 sm:py-2';
 
 function isActive(href: string, pathname: string) {
   return pathname === href;
@@ -162,7 +162,7 @@ function SidebarGroup({ item, pathname }: { item: RouteBranch; pathname: string 
           aria-label={open ? 'Skjul undermeny' : 'Vis undermeny'}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="mr-1 grid size-7 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-disabled transition-colors hover:bg-surface-variant-1 hover:text-text-secondary"
+          className="mr-1 grid size-9 shrink-0 place-items-center rounded-[var(--radius-control)] text-text-disabled transition-colors hover:bg-surface-variant-1 hover:text-text-secondary sm:size-7"
         >
           <ChevronRight className={cn('size-3 transition-transform duration-200', open && 'rotate-90')} aria-hidden />
         </button>
@@ -194,7 +194,7 @@ function SidebarSubLink({ branch, pathname }: { branch: RouteBranch; pathname: s
       to={branch.href}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex items-center rounded-[6px] px-2.5 py-1.5 text-[12.5px] transition-[color,background-color,padding] focus:outline-none focus-visible:ring-2 focus-visible:ring-interactive',
+        'flex min-h-10 items-center rounded-[6px] px-2.5 py-2 text-[12.5px] transition-[color,background-color,padding] focus:outline-none focus-visible:ring-2 focus-visible:ring-interactive sm:min-h-0 sm:py-1.5',
         active
           ? 'bg-blue-50 font-semibold text-interactive'
           : 'text-text-secondary hover:bg-surface-variant-1 hover:pl-3 hover:text-text-primary',
@@ -214,7 +214,7 @@ function SidebarFooter({ workspace }: { workspace: SidebarWorkspace }) {
         type="button"
         aria-label="Bytt selskap"
         onClick={() => navigate(ROUTES_MAP['user.company-context'].href)}
-        className="flex w-full items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 py-1.5 text-left transition-colors hover:bg-surface-variant-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
+        className="flex min-h-11 w-full items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 py-2 text-left transition-colors hover:bg-surface-variant-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-interactive sm:min-h-0 sm:py-1.5"
       >
         <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-interactive),var(--color-purple))] text-[12.5px] font-semibold text-text-inverse">
           {initials}
@@ -285,6 +285,12 @@ function buildSections(branches: RouteBranch[]): SidebarSectionModel[] {
       sections.push({
         id: child.id,
         label: child.label ?? child.id,
+        overview: {
+          ...child,
+          id: `${child.id}.overview`,
+          label: 'Oversikt',
+          children: undefined,
+        },
         items: child.children,
       });
     }

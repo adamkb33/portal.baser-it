@@ -4,7 +4,7 @@ import { Diagnostic } from '~/api/generated/diagnostic';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Button, CompanyPageTemplate, Notice, Panel, Text } from '~/ui';
+import { Button, CompanyPageTemplate, Input, Label, Notice, Panel, Text } from '~/ui';
 
 function parseInteger(value: string | null): number | undefined {
   if (!value) return undefined;
@@ -83,9 +83,9 @@ export default function SystemAdminDiagnosticsBookingPublicAppointmentCancellati
       title="Booking diagnostikk: Public appointment cancellation by token"
       description="Detaljert hendelsestabell med backend-definerte felt og filtre."
       routeLinks={
-        <NavLink to={ROUTES_MAP['system-admin.diagnostics.booking'].href} className="inline-flex rounded-sm border border-border px-3 py-2 text-sm">
-          Tilbake til booking-diagnostikk
-        </NavLink>
+        <Button asChild variant="outline">
+          <NavLink to={ROUTES_MAP['system-admin.diagnostics.booking'].href}>Tilbake til booking-diagnostikk</NavLink>
+        </Button>
       }
     >
       {loaderData.error ? (
@@ -94,49 +94,37 @@ export default function SystemAdminDiagnosticsBookingPublicAppointmentCancellati
 
       <Panel title="Filtre" description="Server-side filtre">
         <Form method="get" className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <label className="space-y-1">
-            <Text as="span" variant="caption" className="text-text-secondary">
-              From
-            </Text>
-            <input name="from" defaultValue={loaderData.query.from ?? ''} className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm" />
-          </label>
-          <label className="space-y-1">
-            <Text as="span" variant="caption" className="text-text-secondary">
-              To
-            </Text>
-            <input name="to" defaultValue={loaderData.query.to ?? ''} className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm" />
-          </label>
-          <label className="space-y-1">
-            <Text as="span" variant="caption" className="text-text-secondary">
-              Event type
-            </Text>
-            <input name="eventType" defaultValue={loaderData.query.eventType ?? ''} className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm" />
-          </label>
-          <label className="space-y-1">
-            <Text as="span" variant="caption" className="text-text-secondary">
-              Company ID
-            </Text>
-            <input name="companyId" defaultValue={loaderData.query.companyId ?? ''} className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm" />
-          </label>
-          <label className="space-y-1">
-            <Text as="span" variant="caption" className="text-text-secondary">
-              Appointment ID
-            </Text>
-            <input name="appointmentId" defaultValue={loaderData.query.appointmentId ?? ''} className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm" />
-          </label>
-          <label className="space-y-1">
-            <Text as="span" variant="caption" className="text-text-secondary">
-              Token hash
-            </Text>
-            <input name="tokenHash" defaultValue={loaderData.query.tokenHash ?? ''} className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm" />
-          </label>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="from">From</Label>
+            <Input id="from" name="from" defaultValue={loaderData.query.from ?? ''} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="to">To</Label>
+            <Input id="to" name="to" defaultValue={loaderData.query.to ?? ''} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="eventType">Event type</Label>
+            <Input id="eventType" name="eventType" defaultValue={loaderData.query.eventType ?? ''} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="companyId">Company ID</Label>
+            <Input id="companyId" name="companyId" defaultValue={loaderData.query.companyId ?? ''} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="appointmentId">Appointment ID</Label>
+            <Input id="appointmentId" name="appointmentId" defaultValue={loaderData.query.appointmentId ?? ''} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="tokenHash">Token hash</Label>
+            <Input id="tokenHash" name="tokenHash" defaultValue={loaderData.query.tokenHash ?? ''} />
+          </div>
           <div className="md:col-span-3 flex gap-2">
             <Button type="submit" variant="outline">
               Oppdater
             </Button>
-            <NavLink to={ROUTES_MAP['system-admin.diagnostics.booking.public-appointment-cancellation-by-token'].href} className="inline-flex items-center justify-center rounded-sm border border-border px-3 py-2 text-sm">
-              Nullstill
-            </NavLink>
+            <Button asChild variant="outline">
+              <NavLink to={ROUTES_MAP['system-admin.diagnostics.booking.public-appointment-cancellation-by-token'].href}>Nullstill</NavLink>
+            </Button>
           </div>
         </Form>
       </Panel>

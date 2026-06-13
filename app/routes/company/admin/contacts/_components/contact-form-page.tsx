@@ -1,5 +1,5 @@
 import { Form, useNavigate, useNavigation } from 'react-router';
-import { CompanyFormPageTemplate, FormField, Text, Button } from '~/ui';
+import { CompanyFormPageTemplate, FormField, Button } from '~/ui';
 import type { ContactFormData, FieldErrors } from '../_schemas/contact.form.schema';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 
@@ -44,73 +44,47 @@ export function ContactFormPage({ mode, values, actionData, returnTo }: ContactF
         {currentValues.id ? <input type="hidden" name="id" value={currentValues.id} /> : null}
 
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-md border border-border bg-background p-3">
-            <Text as="p" variant="label" className="text-text-primary">
-              Fornavn
-            </Text>
-            <Text as="p" variant="body-sm" className="mb-3 text-text-secondary">
-              Navnet kunden møter i tabeller og bookingflater.
-            </Text>
             <FormField
+              label="Fornavn"
               name="givenName"
               defaultValue={currentValues.givenName}
               error={fieldErrors.givenName}
+              helperText="Navnet kunden møter i tabeller og bookingflater."
               placeholder="Skriv inn fornavn"
               autoComplete="given-name"
             />
-          </div>
-
-          <div className="rounded-md border border-border bg-background p-3">
-            <Text as="p" variant="label" className="text-text-primary">
-              Etternavn
-            </Text>
-            <Text as="p" variant="body-sm" className="mb-3 text-text-secondary">
-              Bruk fullt navn for tydelig søk og oversikt.
-            </Text>
             <FormField
+              label="Etternavn"
               name="familyName"
               defaultValue={currentValues.familyName}
               error={fieldErrors.familyName}
+              helperText="Bruk fullt navn for tydelig søk og oversikt."
               placeholder="Skriv inn etternavn"
               autoComplete="family-name"
             />
-          </div>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-md border border-border bg-background p-3">
-            <Text as="p" variant="label" className="text-text-primary">
-              E-post
-            </Text>
-            <Text as="p" variant="body-sm" className="mb-3 text-text-secondary">
-              Valgfritt, men anbefalt for oppfølging og booking.
-            </Text>
             <FormField
+              label="E-post"
               name="email"
               type="email"
               defaultValue={currentValues.email ?? ''}
               error={fieldErrors.email}
+              helperText="Valgfritt, men anbefalt for oppfølging og booking."
               placeholder="fornavn@firma.no"
               autoComplete="email"
             />
-          </div>
-
-          <div className="rounded-md border border-border bg-background p-3">
-            <Text as="p" variant="label" className="text-text-primary">
-              Mobil
-            </Text>
-            <Text as="p" variant="body-sm" className="mb-3 text-text-secondary">
-              Bruk fullt nummer, gjerne med landskode.
-            </Text>
             <FormField
+              label="Mobil"
               name="mobileNumber"
               type="tel"
               defaultValue={currentValues.mobileNumber ?? ''}
               error={fieldErrors.mobileNumber}
+              helperText="Bruk fullt nummer, gjerne med landskode."
               placeholder="+47 412 34 567"
               autoComplete="tel"
             />
-          </div>
         </div>
       </Form>
     </CompanyFormPageTemplate>

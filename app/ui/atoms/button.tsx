@@ -9,6 +9,10 @@ export type ButtonVariant =
   | 'outline'
   | 'ghost'
   | 'destructive'
+  // booking client theme
+  | 'booking-primary'
+  | 'booking-secondary'
+  | 'booking-ghost'
   // filled status (template btn--success/warning/danger/info)
   | 'success'
   | 'warning'
@@ -44,6 +48,13 @@ const variantClasses: Record<ButtonVariant, string> = {
   outline: 'border-border bg-background text-text-primary hover:border-text-disabled hover:shadow-sm',
   ghost: 'text-interactive hover:bg-surface',
   destructive: 'bg-danger text-text-inverse hover:brightness-95',
+  // booking client theme
+  'booking-primary':
+    'border-[length:var(--border-booking-control)] border-booking-action bg-booking-action text-booking-action-contrast shadow-sm hover:bg-booking-action-hover focus-visible:ring-booking-action',
+  'booking-secondary':
+    'border-[length:var(--border-booking-control)] border-booking-action bg-transparent text-booking-action hover:bg-booking-action-muted focus-visible:ring-booking-action',
+  'booking-ghost':
+    'border-transparent bg-transparent text-booking-text hover:bg-booking-surface-muted focus-visible:ring-booking-action',
   // filled status
   success: 'bg-success text-text-inverse hover:brightness-95',
   warning: 'bg-warning text-text-inverse hover:brightness-95',
@@ -61,11 +72,17 @@ const variantClasses: Record<ButtonVariant, string> = {
   'outline-danger': 'border-danger bg-transparent text-danger hover:bg-danger-soft',
 };
 
+const activeClasses: Partial<Record<ButtonVariant, string>> = {
+  'booking-primary': 'bg-booking-action-hover text-booking-action-contrast',
+  'booking-secondary': 'bg-booking-action-muted text-booking-action',
+  'booking-ghost': 'bg-booking-surface-muted text-booking-text',
+};
+
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-sm gap-1.5',
-  md: 'h-10 px-4 text-sm gap-2',
+  sm: 'min-h-10 px-3 py-1.5 text-sm gap-1.5 sm:h-8 sm:min-h-8 sm:py-0',
+  md: 'min-h-11 px-4 py-2 text-sm gap-2 sm:h-10 sm:min-h-10 sm:py-0',
   lg: 'h-12 px-5 text-base gap-2',
-  icon: 'h-10 w-10',
+  icon: 'size-11 sm:size-10',
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -90,7 +107,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
     'focus-visible:outline-none focus-visible:ring-[length:var(--border-focus-ring)] focus-visible:ring-interactive',
     '[&_svg]:size-4 [&_svg]:shrink-0',
     variantClasses[variant],
-    active && 'bg-blue-50 text-interactive',
+    active && (activeClasses[variant] ?? 'bg-blue-50 text-interactive'),
     (disabled || loading) && 'cursor-not-allowed opacity-50',
     fullWidth && 'w-full',
     sizeClasses[size],

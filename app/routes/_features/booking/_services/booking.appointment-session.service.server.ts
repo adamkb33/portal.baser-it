@@ -1,4 +1,4 @@
-import { createCookie } from 'react-router';
+import { createCookie, type CookieSerializeOptions } from 'react-router';
 import { PublicAppointmentSessionController, type AppointmentSessionDto } from '~/api/generated/booking';
 
 const appointmentSessionCookie = createCookie('appointment_session', {
@@ -9,12 +9,34 @@ const appointmentSessionCookie = createCookie('appointment_session', {
   maxAge: 60 * 60 * 24,
 });
 
+function isEmbedRequest(request: Request): boolean {
+  const { pathname } = new URL(request.url);
+  return pathname === '/embed' || pathname.startsWith('/embed/');
+}
+
+function getAppointmentSessionCookieOptions(request: Request): CookieSerializeOptions | undefined {
+  if (!isEmbedRequest(request)) {
+    return undefined;
+  }
+
+  return {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    path: '/',
+    maxAge: 60 * 60 * 24,
+  };
+}
+
 export class AppointmentSessionService {
   /**
    * Create a new appointment session for a company.
    * Returns the session and a Set-Cookie header to persist the session ID.
    */
-  static async create(companyId: number): Promise<{ session: AppointmentSessionDto; setCookieHeader: string }> {
+  static async create(
+    companyId: number,
+    request: Request,
+  ): Promise<{ session: AppointmentSessionDto; setCookieHeader: string }> {
     const response = await PublicAppointmentSessionController.createAppointmentSession({
       query: { companyId },
     });
@@ -23,7 +45,10 @@ export class AppointmentSessionService {
       throw new Error('Kunne ikke opprette session');
     }
 
-    const setCookieHeader = await appointmentSessionCookie.serialize(response.data.data.sessionId);
+    const setCookieHeader = await appointmentSessionCookie.serialize(
+      response.data.data.sessionId,
+      getAppointmentSessionCookieOptions(request),
+    );
 
     return { session: response.data.data, setCookieHeader };
   }
@@ -108,6 +133,9 @@ export class AppointmentSessionService {
       }
     }
 
-    return appointmentSessionCookie.serialize('', { maxAge: 0 });
+    return appointmentSessionCookie.serialize('', {
+      ...getAppointmentSessionCookieOptions(request),
+      maxAge: 0,
+    });
   }
 }

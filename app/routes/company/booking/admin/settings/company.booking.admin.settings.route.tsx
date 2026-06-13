@@ -1,16 +1,7 @@
 import { NavLink } from 'react-router';
 import { Settings2, SlidersHorizontal } from 'lucide-react';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CompanyPageTemplate,
-  Text,
-  routeLinkButtonClass,
-} from '~/ui';
+import { Button, Card, CardContent, CardHead, CompanyPageTemplate, KpiCard, Text } from '~/ui';
 
 export default function CompanyBookingAdminSettingsPage() {
   return (
@@ -19,18 +10,12 @@ export default function CompanyBookingAdminSettingsPage() {
       description="Samle generelle bookingvalg i samme kompakte sideoppsett som resten av booking-domenet."
       routeLinks={
         <>
-          <NavLink
-            to={ROUTES_MAP['company.booking'].href}
-            className={routeLinkButtonClass}
-          >
-            Oversikt
-          </NavLink>
-          <NavLink
-            to={ROUTES_MAP['company.booking.admin'].href}
-            className={routeLinkButtonClass}
-          >
-            Administrasjon
-          </NavLink>
+          <Button asChild variant="outline" size="sm">
+            <NavLink to={ROUTES_MAP['company.booking'].href}>Oversikt</NavLink>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <NavLink to={ROUTES_MAP['company.booking.admin'].href}>Administrasjon</NavLink>
+          </Button>
         </>
       }
       hero={
@@ -51,14 +36,16 @@ export default function CompanyBookingAdminSettingsPage() {
         </div>
       }
     >
-      <Card variant="default" className="bg-surface">
-        <CardHeader>
-          <CardTitle>Generelle innstillinger</CardTitle>
-          <CardDescription>Denne siden er klar for videre konfigurasjon med samme komponentbibliotek.</CardDescription>
-        </CardHeader>
+      <Card variant="default">
+        <CardHead heading="Generelle innstillinger">
+          <Text as="p" variant="body-sm" className="mt-1 text-text-secondary">
+            Denne siden er klar for videre konfigurasjon med samme komponentbibliotek.
+          </Text>
+        </CardHead>
         <CardContent>
           <Text as="p" variant="body-sm" className="text-text-secondary">
-            Bruk kort, seksjoner og eventuelle fremtidige skjemaer fra `~/ui` slik at innstillingssiden følger samme kompakte struktur som bookingoversikt, bookingprofil og timebestillinger.
+            Bruk kort, seksjoner og eventuelle fremtidige skjemaer fra `~/ui` slik at innstillingssiden følger samme
+            kompakte struktur som bookingoversikt, bookingprofil og timebestillinger.
           </Text>
         </CardContent>
       </Card>
@@ -79,29 +66,5 @@ function SettingsMetricCard({
   icon: React.ReactNode;
   accent?: 'info' | 'success';
 }) {
-  const accentClasses = {
-    info: 'bg-primary/10',
-    success: 'bg-secondary/10',
-  } as const;
-
-  return (
-    <Card variant="default" size="sm" className="bg-surface">
-      <CardContent className="space-y-3">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <Text as="p" variant="body-sm" className="text-text-secondary">
-              {label}
-            </Text>
-            <Text as="p" variant="heading-lg">
-              {value}
-            </Text>
-          </div>
-          <div className={`flex h-11 w-11 items-center justify-center rounded-md ${accentClasses[accent]}`}>{icon}</div>
-        </div>
-        <Text as="p" variant="body-sm" className="text-text-secondary">
-          {description}
-        </Text>
-      </CardContent>
-    </Card>
-  );
+  return <KpiCard label={label} value={value} icon={icon} compare={description} tone={accent} />;
 }

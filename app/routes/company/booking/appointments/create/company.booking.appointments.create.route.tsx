@@ -31,7 +31,6 @@ import {
   CompanyPageTemplate,
   Input,
   Label,
-  routeLinkButtonClass,
 } from '~/ui';
 
 const CONTACT_PAGE_SIZE = 10;
@@ -406,12 +405,9 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
       description="Velg eksisterende kunde eller oppgi brukerinfo, deretter tjenester og tidspunkt i én flyt."
       size="xl"
       routeLinks={
-        <Link
-          to={ROUTES_MAP['company.booking.appointments'].href}
-          className={routeLinkButtonClass}
-        >
-          Tilbake til timebestillinger
-        </Link>
+        <Button asChild variant="outline" size="sm">
+          <Link to={ROUTES_MAP['company.booking.appointments'].href}>Tilbake til timebestillinger</Link>
+        </Button>
       }
     >
       <Accordion
@@ -491,7 +487,7 @@ export default function CompanyBookingAppointmentsCreatePage({ loaderData }: Rou
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="space-y-3 rounded-md border border-border bg-background p-3">
+                  <div className="space-y-3 border-t border-border pt-3">
                     <p className="text-sm font-medium text-text-primary">Oppgi ny kunde</p>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">

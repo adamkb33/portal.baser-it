@@ -9,7 +9,7 @@ export function Accordion({
   return (
     <AccordionPrimitive.Root
       data-slot="accordion"
-      className={cn('w-full space-y-2', className)}
+      className={cn('w-full space-y-2.5', className)}
       {...props}
     />
   );
@@ -23,8 +23,8 @@ export function AccordionItem({
     <AccordionPrimitive.Item
       data-slot="accordion-item"
       className={cn(
-        'overflow-hidden rounded-md border border-border bg-surface',
-        'data-[state=open]:bg-surface',
+        'overflow-hidden rounded-[var(--radius-card)] border border-border bg-background text-text-primary shadow-[var(--shadow-card)]',
+        'transition-[border-color,box-shadow] data-[state=open]:border-interactive/25 data-[state=open]:shadow-[var(--shadow-panel)]',
         className,
       )}
       {...props}
@@ -42,11 +42,10 @@ export function AccordionTrigger({
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          'group flex flex-1 items-start justify-between gap-3 px-3 py-3 text-left',
-          'text-sm font-medium text-text-primary transition-colors',
-          'bg-surface hover:bg-background',
-          'data-[state=open]:bg-background',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive',
+          'group flex flex-1 items-start justify-between gap-3 px-4 py-3.5 text-left',
+          'bg-background text-sm font-medium text-text-primary transition-colors',
+          'hover:bg-surface-variant-1 data-[state=open]:bg-surface-primary-subtle',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-interactive',
           'disabled:pointer-events-none disabled:opacity-50',
           className,
         )}
@@ -54,10 +53,11 @@ export function AccordionTrigger({
       >
         <span className="min-w-0 flex-1">{children}</span>
         <ChevronDown
-          className={cn(
-            'mt-0.5 size-4 shrink-0 text-text-secondary transition-transform duration-150',
-            'group-data-[state=open]:rotate-180',
-          )}
+        className={cn(
+          'mt-0.5 size-4 shrink-0 text-text-secondary transition-[color,transform] duration-150',
+          'group-hover:text-interactive group-data-[state=open]:text-interactive',
+          'group-data-[state=open]:rotate-180',
+        )}
         />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
@@ -73,13 +73,13 @@ export function AccordionContent({
     <AccordionPrimitive.Content
       data-slot="accordion-content"
       className={cn(
-        'overflow-hidden text-sm text-text-primary',
+        'overflow-hidden bg-surface-variant-1 text-sm text-text-primary',
         'data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down',
         className,
       )}
       {...props}
     >
-      <div className="border-t border-border px-3 pb-3 pt-3">{children}</div>
+      <div className="border-t border-border/80 px-4 pb-4 pt-4">{children}</div>
     </AccordionPrimitive.Content>
   );
 }

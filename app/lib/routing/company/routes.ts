@@ -128,6 +128,35 @@ export const COMPANY_ROUTES: RouteBranch[] = [
                   iconName: 'Settings',
                 },
                 {
+                  id: 'company.booking.admin.services',
+                  href: '/company/booking/admin/services',
+                  label: 'Tjenester',
+                  category: BrachCategory.COMPANY,
+                  accessType: Access.PRODUCT,
+                  companyRoles: [CompanyRole.ADMIN],
+                  iconName: 'Briefcase',
+                  children: [
+                    {
+                      id: 'company.booking.admin.services.create',
+                      href: '/company/booking/admin/services/create',
+                      label: 'Opprett tjeneste',
+                      category: BrachCategory.COMPANY,
+                      accessType: Access.PRODUCT,
+                      companyRoles: [CompanyRole.ADMIN],
+                      hidden: true,
+                    },
+                    {
+                      id: 'company.booking.admin.services.edit',
+                      href: '/company/booking/admin/services/edit',
+                      label: 'Rediger tjeneste',
+                      category: BrachCategory.COMPANY,
+                      accessType: Access.PRODUCT,
+                      companyRoles: [CompanyRole.ADMIN],
+                      hidden: true,
+                    },
+                  ],
+                },
+                {
                   id: 'company.booking.admin.service-groups',
                   href: '/company/booking/admin/service-groups',
                   label: 'Tjeneste grupper',
@@ -144,6 +173,7 @@ export const COMPANY_ROUTES: RouteBranch[] = [
                       accessType: Access.PRODUCT,
                       companyRoles: [CompanyRole.ADMIN],
                       iconName: 'Briefcase',
+                      hidden: true,
                       children: [
                         {
                           id: 'company.booking.admin.service-groups.services.create',
@@ -253,6 +283,7 @@ export const COMPANY_ROUTES: RouteBranch[] = [
                   accessType: Access.PRODUCT,
                   companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
                   iconName: 'Calendar',
+                  hidden: true,
                 },
                 {
                   id: 'company.booking.appointments.upload-image',

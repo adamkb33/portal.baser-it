@@ -281,10 +281,8 @@ export function BookingSelectTimePage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isDateListCollapsed, setIsDateListCollapsed] = useState(false);
-  const mobileTimeSlotsRef = useRef<HTMLDivElement>(null);
   const mobileTimeSlotsScrollRef = useRef<HTMLDivElement>(null);
   const weekTabsRef = useRef<HTMLDivElement>(null);
-  const activeWeekRef = useRef<HTMLButtonElement>(null);
   const [showMoreTimeHint, setShowMoreTimeHint] = useState(true);
 
   const urlSelectedTime = searchParams.get('time');
@@ -317,16 +315,6 @@ export function BookingSelectTimePage() {
       }
     }
   }, [session.selectedStartTime, urlSelectedTime, persistedTime, schedules, weekGroups, setSearchParams]);
-
-  useEffect(() => {
-    if (!selectedSchedule || !mobileTimeSlotsRef.current) return;
-    mobileTimeSlotsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [selectedSchedule]);
-
-  useEffect(() => {
-    if (!activeWeekRef.current) return;
-    activeWeekRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-  }, [selectedWeekIndex]);
 
   const handleTimeSelect = (startTime: string) => {
     setSelectedTime(startTime);
@@ -545,7 +533,6 @@ export function BookingSelectTimePage() {
                   return (
                     <button
                       key={week.key}
-                      ref={isActive ? activeWeekRef : null}
                       type="button"
                       onClick={() => {
                         setSelectedWeekIndex(index);
@@ -616,7 +603,7 @@ export function BookingSelectTimePage() {
           {/* Time slots */}
           {selectedSchedule && (
             <BookingSection>
-              <div ref={mobileTimeSlotsRef} className="space-y-3">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Clock className="size-4 text-booking-text-muted" />

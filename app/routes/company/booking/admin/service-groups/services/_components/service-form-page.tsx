@@ -8,6 +8,7 @@ import {
   Button,
   CompanyFormPageTemplate,
   FormField,
+  Label,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -92,13 +93,13 @@ export function ServiceFormPage({ mode, values, serviceGroups, actionData }: Ser
     <CompanyFormPageTemplate
       title={isEdit ? 'Rediger tjeneste' : 'Ny tjeneste'}
       description="Bruk samme kompakte ruteside for tjenestedata som resten av bookingadministrasjonen."
-      backLink={{ to: ROUTES_MAP['company.booking.admin.service-groups.services'].href, label: 'Tilbake til tjenester' }}
+      backLink={{ to: ROUTES_MAP['company.booking.admin.services'].href, label: 'Tilbake til tjenester' }}
       footer={
         <>
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate(ROUTES_MAP['company.booking.admin.service-groups.services'].href)}
+            onClick={() => navigate(ROUTES_MAP['company.booking.admin.services'].href)}
           >
             Avbryt
           </Button>
@@ -113,23 +114,16 @@ export function ServiceFormPage({ mode, values, serviceGroups, actionData }: Ser
         {currentValues.id ? <input type="hidden" name="id" value={currentValues.id} /> : null}
 
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-md border border-border bg-background p-3">
-            <Text as="p" variant="label" className="text-text-primary">
-              Navn
-            </Text>
-            <Text as="p" variant="body-sm" className="mb-3 text-text-secondary">
-              Dette navnet vises for kunder og ansatte i bookingløpet.
-            </Text>
-            <FormField name="name" defaultValue={currentValues.name} placeholder="Skriv inn navn" />
-          </div>
+          <FormField
+            label="Navn"
+            name="name"
+            defaultValue={currentValues.name}
+            helperText="Dette navnet vises for kunder og ansatte i bookingløpet."
+            placeholder="Skriv inn navn"
+          />
 
-          <div className="rounded-md border border-border bg-background p-3">
-            <Text as="p" variant="label" className="text-text-primary">
-              Tjenestegruppe
-            </Text>
-            <Text as="p" variant="body-sm" className="mb-3 text-text-secondary">
-              Knyt tjenesten til riktig gruppe for filtrering og oversikt.
-            </Text>
+          <div className="flex flex-col gap-2">
+            <Label>Tjenestegruppe</Label>
             <Popover open={isServiceGroupPopoverOpen} onOpenChange={setIsServiceGroupPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -169,36 +163,37 @@ export function ServiceFormPage({ mode, values, serviceGroups, actionData }: Ser
                 </div>
               </PopoverContent>
             </Popover>
+            <Text as="p" variant="caption" className="text-text-secondary">
+              Knyt tjenesten til riktig gruppe for filtrering og oversikt.
+            </Text>
           </div>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-md border border-border bg-background p-3">
-            <Text as="p" variant="label" className="text-text-primary">
-              Pris
-            </Text>
-            <Text as="p" variant="body-sm" className="mb-3 text-text-secondary">
-              Oppgis i kroner og brukes direkte i bookingoversikten.
-            </Text>
-            <FormField name="price" type="number" min={0} defaultValue={String(currentValues.price)} placeholder="0" />
-          </div>
+          <FormField
+            label="Pris"
+            name="price"
+            type="number"
+            min={0}
+            defaultValue={String(currentValues.price)}
+            helperText="Oppgis i kroner og brukes direkte i bookingoversikten."
+            placeholder="0"
+          />
 
-          <div className="rounded-md border border-border bg-background p-3">
-            <Text as="p" variant="label" className="text-text-primary">
-              Varighet
-            </Text>
-            <Text as="p" variant="body-sm" className="mb-3 text-text-secondary">
-              Antall minutter som blokkeres i kalenderen.
-            </Text>
-            <FormField name="duration" type="number" min={1} defaultValue={String(currentValues.duration)} placeholder="30" />
-          </div>
+          <FormField
+            label="Varighet"
+            name="duration"
+            type="number"
+            min={1}
+            defaultValue={String(currentValues.duration)}
+            helperText="Antall minutter som blokkeres i kalenderen."
+            placeholder="30"
+          />
         </div>
 
-        <div className="rounded-md border border-border bg-background p-3">
-          <Text as="p" variant="label" className="text-text-primary">
-            Bilder
-          </Text>
-          <Text as="p" variant="body-sm" className="mb-3 text-text-secondary">
+        <div className="space-y-3">
+          <Label>Bilder</Label>
+          <Text as="p" variant="body-sm" className="text-text-secondary">
             Administrer bilder på samme side. Endringer lagres sammen med resten av tjenesten.
           </Text>
           <ImagesField images={images} onChange={setImages} />

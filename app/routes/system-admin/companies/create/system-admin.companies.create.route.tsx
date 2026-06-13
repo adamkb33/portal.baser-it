@@ -1,4 +1,4 @@
-import { data } from 'react-router';
+import { data, NavLink } from 'react-router';
 import type { Route } from './+types/system-admin.companies.create.route';
 import { Base } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
@@ -36,24 +36,30 @@ export default function SystemAdminCompaniesCreatePage({ actionData }: Route.Com
       title="Opprett selskap"
       description="Opprett selskap via base-service/system-admin/companies."
       routeLinks={
-        <a href={ROUTES_MAP['system-admin.companies'].href} className="inline-flex rounded-sm border border-border px-3 py-2 text-sm">
-          Tilbake til selskaper
-        </a>
+        <Button asChild variant="outline">
+          <NavLink to={ROUTES_MAP['system-admin.companies'].href}>Tilbake til selskaper</NavLink>
+        </Button>
       }
     >
       {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke opprette selskap" message={actionData.error} /> : null}
-      <form method="post" className="space-y-3 rounded-md border border-border bg-surface p-4">
-        <FormField label="Organisasjonsnummer" name="orgNumber" defaultValue={values.orgNumber} required />
-        <div>
+      <Panel title="Selskapsinformasjon" description="Oppgi organisasjonsnummer for selskapet som skal opprettes.">
+        <form method="post" className="space-y-4">
+          <FormField label="Organisasjonsnummer" name="orgNumber" defaultValue={values.orgNumber} required />
           <Button type="submit">Opprett selskap</Button>
-        </div>
-      </form>
+        </form>
+      </Panel>
 
       {actionData?.company ? (
         <Panel title="Opprettet selskap" description="Backend-respons etter opprettelse.">
-          <Text as="p" variant="body-sm">ID: {actionData.company.id}</Text>
-          <Text as="p" variant="body-sm">Org.nr: {actionData.company.orgNumber}</Text>
-          <Text as="p" variant="body-sm">Navn: {actionData.company.name ?? '—'}</Text>
+          <Text as="p" variant="body-sm">
+            ID: {actionData.company.id}
+          </Text>
+          <Text as="p" variant="body-sm">
+            Org.nr: {actionData.company.orgNumber}
+          </Text>
+          <Text as="p" variant="body-sm">
+            Navn: {actionData.company.name ?? '—'}
+          </Text>
         </Panel>
       ) : null}
     </CompanyPageTemplate>

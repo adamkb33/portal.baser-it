@@ -31,7 +31,7 @@ export default function CompanyBookingLayout({ loaderData }: Route.ComponentProp
     if (data.servicesAmount < 1) {
       missingItems.push({
         label: 'tjenester',
-        link: ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+        link: ROUTES_MAP['company.booking.admin.services'].href,
         disabled: data.serviceGroupsAmount < 1,
         reason: 'Krever tjenestegrupper',
       });

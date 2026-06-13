@@ -41,13 +41,17 @@ export function createBookingContactSignUpAction({ surface }: CreateBookingConta
     const retryHref = buildSignUpRetryHref(request, { givenName, familyName, email, mobileNumber });
 
     try {
+      if (!mobileNumber.trim()) {
+        return redirectWithError(request, retryHref, 'Mobilnummer er påkrevd for å bestille time.');
+      }
+
       const response = await ContactAuthService.signUp({
         givenName,
         familyName,
-        email,
+        email: email.trim(),
         password,
         password2,
-        mobileNumber,
+        mobileNumber: mobileNumber.trim(),
         redirectUrl,
       });
 

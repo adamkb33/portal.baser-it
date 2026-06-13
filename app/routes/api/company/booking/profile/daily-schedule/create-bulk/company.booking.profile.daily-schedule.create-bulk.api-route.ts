@@ -41,7 +41,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     return redirectWithSuccess(
       request,
-      ROUTES_MAP['company.booking.profile.daily-schedule'].href,
+      ROUTES_MAP['company.booking.profile'].href,
       'Standard arbeidstider lagret',
     );
   } catch (error: any) {
@@ -49,7 +49,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     return redirectWithError(
       request,
-      ROUTES_MAP['company.booking.profile.daily-schedule'].href,
+      ROUTES_MAP['company.booking.profile'].href,
       error?.message || 'Kunne ikke lagre standard arbeidstider',
     );
   }

@@ -1,6 +1,7 @@
-import { data, Link, useLocation, useNavigation, useSearchParams } from 'react-router';
+import { data, Link, useLocation, useNavigate, useNavigation, useSearchParams } from 'react-router';
 import type { Route } from './+types/booking.public.my-appointments.route';
 import {
+  ArrowLeft,
   Calendar,
   CalendarClock,
   CalendarPlus,
@@ -30,11 +31,6 @@ import {
 } from '~/ui';
 const UPCOMING_BADGE_CLASS = 'border-border bg-muted text-foreground';
 const COMPLETED_BADGE_CLASS = 'border-secondary/30 bg-secondary/15 text-foreground';
-const ACTION_LINK_BASE =
-  'inline-flex items-center justify-center gap-2 rounded-lg border-2 px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive';
-const PRIMARY_ACTION_LINK_CLASS = `${ACTION_LINK_BASE} border-interactive bg-interactive text-text-inverse hover:bg-interactive-hover`;
-const SECONDARY_ACTION_LINK_CLASS = `${ACTION_LINK_BASE} border-border bg-background text-text-primary hover:bg-surface`;
-const DANGER_ACTION_LINK_CLASS = `${ACTION_LINK_BASE} border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20`;
 
 const formatDurationMinutes = (startIso: string, endIso: string): number => {
   const start = new Date(startIso).getTime();
@@ -203,6 +199,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.ComponentProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
   const nearestAppointment = loaderData.nearestAppointment ?? null;
@@ -221,9 +218,8 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
   const completedHasNext = loaderData.completedHasNext ?? false;
   const completedHasPrevious = loaderData.completedHasPrevious ?? false;
   const completedTotalElements = loaderData.completedTotalElements ?? 0;
-  const bookingSurface: BookingSurface = location.pathname === '/embed' || location.pathname.startsWith('/embed/')
-    ? 'embed'
-    : 'public';
+  const bookingSurface: BookingSurface =
+    location.pathname === '/embed' || location.pathname.startsWith('/embed/') ? 'embed' : 'public';
 
   const buildSectionPageHref = (section: 'upcoming' | 'completed', nextPage: number) => {
     const params = new URLSearchParams(searchParams);
@@ -258,360 +254,368 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
   const nearestMapsUrl = buildGoogleMapsUrl(nearestUpcomingAppointment ?? undefined);
   const nearestCancelHref = buildCancelHref(nearestUpcomingAppointment ?? undefined);
   const nearestNewBookingHref = buildNewBookingHref(nearestUpcomingAppointment);
+  const fallbackBookingHref =
+    buildNewBookingHref(nearestUpcomingAppointment) ??
+    buildNewBookingHref(upcomingAppointments[0]) ??
+    buildNewBookingHref(completedAppointments[0]) ??
+    getBookingRouteHref(bookingSurface, 'session');
   const expiredAppointments = completedAppointments;
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(fallbackBookingHref);
+  };
 
   return (
     <BookingContainer>
       <Stack space="md">
+        <div>
+          <Button type="button" variant="booking-secondary" size="sm" className="gap-2" onClick={handleBack}>
+            <ArrowLeft className="size-4" />
+            Tilbake
+          </Button>
+        </div>
         <BookingPageHeader title="Mine bookinger" description="Her kan du se dine bookinger." />
-        {loaderData.error && <Notice tone="emphasis" title="Kunne ikke hente bookinger" message={loaderData.error} />}
+        {loaderData.error && (
+          <Notice variant="booking" tone="emphasis" title="Kunne ikke hente bookinger" message={loaderData.error} />
+        )}
 
         {nearestUpcomingAppointment && (
           <BookingCard variant="emphasis" className="space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-full bg-primary shadow-sm">
-                <CalendarClock className="size-6 text-primary-foreground" strokeWidth={2.5} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-primary md:text-sm">Neste time</p>
-                <p className="text-sm text-muted-foreground md:text-base">
-                  {nearestUpcomingAppointment.company.name?.trim() ||
-                    `Bedrift #${nearestUpcomingAppointment.company.id}`}
-                </p>
-              </div>
-            </div>
-
-            {nearestUpcomingDate && (
-              <div className="space-y-2 rounded-lg bg-background p-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="size-5 text-primary md:size-6" />
-                  <div>
-                    <p className="text-xs font-medium capitalize text-muted-foreground md:text-sm">
-                      {nearestUpcomingDate.dayName}
-                    </p>
-                    <p className="text-lg font-bold text-card-text md:text-xl">{nearestUpcomingDate.date}</p>
-                  </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="flex size-12 items-center justify-center rounded-full bg-primary shadow-sm">
+                  <CalendarClock className="size-6 text-primary-foreground" strokeWidth={2.5} />
                 </div>
-                <div className="flex items-center gap-2 border-t border-card-border pt-2">
-                  <Clock className="size-5 text-primary md:size-6" />
-                  <div className="flex flex-1 items-baseline justify-between gap-3">
-                    <p className="text-lg font-bold text-card-text md:text-xl">kl. {nearestUpcomingDate.time}</p>
-                    <p className="text-sm font-semibold text-muted-foreground">{nearestUpcomingDuration} min</p>
-                  </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-primary md:text-sm">Neste time</p>
+                  <p className="text-sm text-muted-foreground md:text-base">
+                    {nearestUpcomingAppointment.company.name?.trim() ||
+                      `Bedrift #${nearestUpcomingAppointment.company.id}`}
+                  </p>
                 </div>
               </div>
-            )}
 
-            {getGroupedServices(nearestUpcomingAppointment).length > 0 && (
-              <div className="space-y-2">
-                {getGroupedServices(nearestUpcomingAppointment).map((group) => (
-                  <div key={group.id} className="space-y-2 rounded-lg border border-card-border bg-background p-3">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group.name}</p>
-                    <div className="space-y-1.5">
-                      {group.services.map((service) => (
-                        <div key={service.id} className="flex items-center gap-2">
-                          <Sparkles className="size-4 text-primary" />
-                          <span className="text-sm font-medium text-card-text md:text-base">{service.name}</span>
-                        </div>
-                      ))}
+              {nearestUpcomingDate && (
+                <div className="space-y-2 rounded-lg bg-background p-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="size-5 text-primary md:size-6" />
+                    <div>
+                      <p className="text-xs font-medium capitalize text-muted-foreground md:text-sm">
+                        {nearestUpcomingDate.dayName}
+                      </p>
+                      <p className="text-lg font-bold text-card-text md:text-xl">{nearestUpcomingDate.date}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                  <div className="flex items-center gap-2 border-t border-card-border pt-2">
+                    <Clock className="size-5 text-primary md:size-6" />
+                    <div className="flex flex-1 items-baseline justify-between gap-3">
+                      <p className="text-lg font-bold text-card-text md:text-xl">kl. {nearestUpcomingDate.time}</p>
+                      <p className="text-sm font-semibold text-muted-foreground">{nearestUpcomingDuration} min</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-            {(nearestNewBookingHref || nearestCalendarPayload || nearestMapsUrl || nearestCancelHref) && (
-              <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                {nearestNewBookingHref && (
-                  <Link to={nearestNewBookingHref} className={`${PRIMARY_ACTION_LINK_CLASS} w-full px-4 py-3`}>
-                    <CalendarPlus className="size-5" />
-                    Book ny time
-                  </Link>
-                )}
-                {nearestMapsUrl && (
-                  <a href={nearestMapsUrl} target="_blank" rel="noreferrer" className={`${SECONDARY_ACTION_LINK_CLASS} w-full px-4 py-3`}>
-                    <MapPin className="size-5" />
-                    Google Maps
-                  </a>
-                )}
-                {nearestCancelHref && (
-                  <Link to={nearestCancelHref} className={`${DANGER_ACTION_LINK_CLASS} w-full px-4 py-3`}>
-                    Avbestill
-                  </Link>
-                )}
-                {nearestCalendarPayload ? (
-                  <>
-                <a
-                  href={nearestCalendarPayload.googleUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`${SECONDARY_ACTION_LINK_CLASS} w-full px-4 py-3`}
-                >
-                  <ExternalLink className="size-5" />
-                  Google Kalender
-                </a>
-                <a
-                  href={nearestCalendarPayload.href}
-                  download={nearestCalendarPayload.filename}
-                  className={`${SECONDARY_ACTION_LINK_CLASS} w-full px-4 py-3`}
-                >
-                  <Calendar className="size-5" />
-                  Last ned kalenderfil
-                </a>
-                  </>
-                ) : null}
-              </div>
-            )}
-          </div>
+              {getGroupedServices(nearestUpcomingAppointment).length > 0 && (
+                <div className="space-y-2">
+                  {getGroupedServices(nearestUpcomingAppointment).map((group) => (
+                    <div key={group.id} className="space-y-2 border-b border-card-border pb-3 last:border-b-0">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        {group.name}
+                      </p>
+                      <div className="space-y-1.5">
+                        {group.services.map((service) => (
+                          <div key={service.id} className="flex items-center gap-2">
+                            <Sparkles className="size-4 text-primary" />
+                            <span className="text-sm font-medium text-card-text md:text-base">{service.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {(nearestNewBookingHref || nearestCalendarPayload || nearestMapsUrl || nearestCancelHref) && (
+                <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+                  {nearestNewBookingHref && (
+                    <Button asChild fullWidth>
+                      <Link to={nearestNewBookingHref}>
+                        <CalendarPlus className="size-5" />
+                        Book ny time
+                      </Link>
+                    </Button>
+                  )}
+                  {nearestMapsUrl && (
+                    <Button asChild variant="outline" fullWidth>
+                      <a href={nearestMapsUrl} target="_blank" rel="noreferrer">
+                        <MapPin className="size-5" />
+                        Google Maps
+                      </a>
+                    </Button>
+                  )}
+                  {nearestCancelHref && (
+                    <Button asChild variant="destructive" fullWidth>
+                      <Link to={nearestCancelHref}>Avbestill</Link>
+                    </Button>
+                  )}
+                  {nearestCalendarPayload ? (
+                    <>
+                      <Button asChild variant="outline" fullWidth>
+                        <a href={nearestCalendarPayload.googleUrl} target="_blank" rel="noreferrer">
+                          <ExternalLink className="size-5" />
+                          Google Kalender
+                        </a>
+                      </Button>
+                      <Button asChild variant="outline" fullWidth>
+                        <a href={nearestCalendarPayload.href} download={nearestCalendarPayload.filename}>
+                          <Calendar className="size-5" />
+                          Last ned kalenderfil
+                        </a>
+                      </Button>
+                    </>
+                  ) : null}
+                </div>
+              )}
+            </div>
           </BookingCard>
         )}
 
         <BookingSection title={`Kommende bookinger (${upcomingTotalElements})`}>
-        {upcomingAppointments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Ingen flere kommende bookinger.</p>
-        ) : (
-          <div className="space-y-3">
-            {upcomingAppointments.map((appointment) => {
-              const appointmentDate = formatDateParts(appointment.startTime);
-              const appointmentDuration = formatDurationMinutes(appointment.startTime, appointment.endTime);
-              const appointmentCalendarPayload = buildCalendarPayload(appointment);
-              const appointmentMapsUrl = buildGoogleMapsUrl(appointment);
-              const cancelHref = buildCancelHref(appointment);
-              const newBookingHref = buildNewBookingHref(appointment);
+          {upcomingAppointments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Ingen flere kommende bookinger.</p>
+          ) : (
+            <div className="space-y-3">
+              {upcomingAppointments.map((appointment) => {
+                const appointmentDate = formatDateParts(appointment.startTime);
+                const appointmentDuration = formatDurationMinutes(appointment.startTime, appointment.endTime);
+                const appointmentCalendarPayload = buildCalendarPayload(appointment);
+                const appointmentMapsUrl = buildGoogleMapsUrl(appointment);
+                const cancelHref = buildCancelHref(appointment);
+                const newBookingHref = buildNewBookingHref(appointment);
 
-              return (
-                <BookingCard key={appointment.id} className="overflow-hidden p-3 md:p-4">
-                  <details className="group">
-                    <summary className="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-card-text md:text-base">
-                            {appointment.company.name?.trim() || `Bedrift #${appointment.company.id}`}
-                          </p>
-                          <p className="text-xs text-muted-foreground md:text-sm">
-                            {appointmentDate.date} kl. {appointmentDate.time}
-                          </p>
+                return (
+                  <BookingCard key={appointment.id} className="overflow-hidden p-3 md:p-4">
+                    <details className="group">
+                      <summary className="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-card-text md:text-base">
+                              {appointment.company.name?.trim() || `Bedrift #${appointment.company.id}`}
+                            </p>
+                            <p className="text-xs text-muted-foreground md:text-sm">
+                              {appointmentDate.date} kl. {appointmentDate.time}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <Badge className={UPCOMING_BADGE_CLASS}>
+                              <CircleDot className="mr-1 size-3.5" />
+                              Kommende
+                            </Badge>
+                            <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                          </div>
                         </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          <Badge className={UPCOMING_BADGE_CLASS}>
-                            <CircleDot className="mr-1 size-3.5" />
-                            Kommende
-                          </Badge>
-                          <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                      </summary>
+
+                      <div className="mt-3 space-y-3 border-t border-card-border pt-3">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground md:text-sm">
+                          <Clock className="size-4 text-primary" />
+                          <span>Varighet: {appointmentDuration} min</span>
+                        </div>
+
+                        {getGroupedServices(appointment).length > 0 ? (
+                          <div className="space-y-2">
+                            {getGroupedServices(appointment).map((group) => (
+                              <div
+                                key={`${appointment.id}-${group.id}`}
+                                className="space-y-1.5 border-b border-card-border pb-2.5 last:border-b-0"
+                              >
+                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                  {group.name}
+                                </p>
+                                {group.services.map((service) => (
+                                  <div key={service.id} className="flex items-center gap-2">
+                                    <Sparkles className="size-4 text-primary" />
+                                    <span className="text-sm font-medium text-card-text">{service.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Ingen tjenester oppgitt</p>
+                        )}
+
+                        <div className="flex flex-wrap gap-2">
+                          {newBookingHref && (
+                            <Button asChild size="sm">
+                              <Link to={newBookingHref}>
+                                <CalendarPlus className="size-4.5" />
+                                Book ny time
+                              </Link>
+                            </Button>
+                          )}
+                          {appointmentCalendarPayload && (
+                            <>
+                              <Button asChild variant="outline" size="sm">
+                                <a href={appointmentCalendarPayload.googleUrl} target="_blank" rel="noreferrer">
+                                  <ExternalLink className="size-4.5" />
+                                  Google Kalender
+                                </a>
+                              </Button>
+                              <Button asChild variant="outline" size="sm">
+                                <a
+                                  href={appointmentCalendarPayload.href}
+                                  download={appointmentCalendarPayload.filename}
+                                >
+                                  <Calendar className="size-4.5" />
+                                  Last ned kalenderfil
+                                </a>
+                              </Button>
+                            </>
+                          )}
+                          {appointmentMapsUrl && (
+                            <Button asChild variant="outline" size="sm">
+                              <a href={appointmentMapsUrl} target="_blank" rel="noreferrer">
+                                <MapPin className="size-4.5" />
+                                Google Maps
+                              </a>
+                            </Button>
+                          )}
+                          {cancelHref && (
+                            <Button asChild variant="destructive" size="sm">
+                              <Link to={cancelHref}>Avbestill</Link>
+                            </Button>
+                          )}
                         </div>
                       </div>
-                    </summary>
-
-                    <div className="mt-3 space-y-3 border-t border-card-border pt-3">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground md:text-sm">
-                        <Clock className="size-4 text-primary" />
-                        <span>Varighet: {appointmentDuration} min</span>
-                      </div>
-
-                      {getGroupedServices(appointment).length > 0 ? (
-                        <div className="space-y-2">
-                          {getGroupedServices(appointment).map((group) => (
-                            <div
-                              key={`${appointment.id}-${group.id}`}
-                              className="space-y-1.5 rounded-lg border border-card-border bg-background p-2.5"
-                            >
-                              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                {group.name}
-                              </p>
-                              {group.services.map((service) => (
-                                <div key={service.id} className="flex items-center gap-2">
-                                  <Sparkles className="size-4 text-primary" />
-                                  <span className="text-sm font-medium text-card-text">{service.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">Ingen tjenester oppgitt</p>
-                      )}
-
-                      <div className="flex flex-wrap gap-2">
-                        {newBookingHref && (
-                          <Link to={newBookingHref} className={PRIMARY_ACTION_LINK_CLASS}>
-                            <CalendarPlus className="size-4.5" />
-                            Book ny time
-                          </Link>
-                        )}
-                        {appointmentCalendarPayload && (
-                          <>
-                            <a
-                              href={appointmentCalendarPayload.googleUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={SECONDARY_ACTION_LINK_CLASS}
-                            >
-                              <ExternalLink className="size-4.5" />
-                              Google Kalender
-                            </a>
-                            <a
-                              href={appointmentCalendarPayload.href}
-                              download={appointmentCalendarPayload.filename}
-                              className={SECONDARY_ACTION_LINK_CLASS}
-                            >
-                              <Calendar className="size-4.5" />
-                              Last ned kalenderfil
-                            </a>
-                          </>
-                        )}
-                        {appointmentMapsUrl && (
-                          <a
-                            href={appointmentMapsUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={SECONDARY_ACTION_LINK_CLASS}
-                          >
-                            <MapPin className="size-4.5" />
-                            Google Maps
-                          </a>
-                        )}
-                        {cancelHref && (
-                          <Link
-                            to={cancelHref}
-                            className={DANGER_ACTION_LINK_CLASS}
-                          >
-                            Avbestill
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </details>
-                </BookingCard>
-              );
-            })}
-          </div>
-        )}
-        {upcomingTotalElements > 0 && (
-          <div className="flex items-center justify-between gap-3 pt-1">
-            <Link to={buildSectionPageHref('upcoming', upcomingPage - 1)}>
-              <Button variant="outline" disabled={!upcomingHasPrevious || isLoading}>
-                Forrige
+                    </details>
+                  </BookingCard>
+                );
+              })}
+            </div>
+          )}
+          {upcomingTotalElements > 0 && (
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <Button asChild variant="outline" disabled={!upcomingHasPrevious || isLoading}>
+                <Link to={buildSectionPageHref('upcoming', upcomingPage - 1)}>Forrige</Link>
               </Button>
-            </Link>
-            <p className="text-sm text-muted-foreground">
-              Side {upcomingPage + 1} av {Math.max(upcomingTotalPages, 1)}
-            </p>
-            <Link to={buildSectionPageHref('upcoming', upcomingPage + 1)}>
-              <Button variant="outline" disabled={!upcomingHasNext || isLoading}>
-                Neste
+              <p className="text-sm text-muted-foreground">
+                Side {upcomingPage + 1} av {Math.max(upcomingTotalPages, 1)}
+              </p>
+              <Button asChild variant="outline" disabled={!upcomingHasNext || isLoading}>
+                <Link to={buildSectionPageHref('upcoming', upcomingPage + 1)}>Neste</Link>
               </Button>
-            </Link>
-          </div>
-        )}
+            </div>
+          )}
         </BookingSection>
 
         <BookingSection title={`Tidligere bookinger (${completedTotalElements})`}>
-        {expiredAppointments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Ingen tidligere bookinger å vise.</p>
-        ) : (
-          <div className="space-y-3">
-            {expiredAppointments.map((appointment) => {
-              const appointmentDate = formatDateParts(appointment.startTime);
-              const appointmentDuration = formatDurationMinutes(appointment.startTime, appointment.endTime);
-              const appointmentMapsUrl = buildGoogleMapsUrl(appointment);
-              const newBookingHref = buildNewBookingHref(appointment);
+          {expiredAppointments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Ingen tidligere bookinger å vise.</p>
+          ) : (
+            <div className="space-y-3">
+              {expiredAppointments.map((appointment) => {
+                const appointmentDate = formatDateParts(appointment.startTime);
+                const appointmentDuration = formatDurationMinutes(appointment.startTime, appointment.endTime);
+                const appointmentMapsUrl = buildGoogleMapsUrl(appointment);
+                const newBookingHref = buildNewBookingHref(appointment);
 
-              return (
-                <BookingCard key={appointment.id} className="overflow-hidden p-3 md:p-4">
-                  <details className="group">
-                    <summary className="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-card-text md:text-base">
-                            {appointment.company.name?.trim() || `Bedrift #${appointment.company.id}`}
-                          </p>
-                          <p className="text-xs text-muted-foreground md:text-sm">
-                            {appointmentDate.date} kl. {appointmentDate.time}
-                          </p>
+                return (
+                  <BookingCard key={appointment.id} className="overflow-hidden p-3 md:p-4">
+                    <details className="group">
+                      <summary className="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-card-text md:text-base">
+                              {appointment.company.name?.trim() || `Bedrift #${appointment.company.id}`}
+                            </p>
+                            <p className="text-xs text-muted-foreground md:text-sm">
+                              {appointmentDate.date} kl. {appointmentDate.time}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <Badge className={COMPLETED_BADGE_CLASS}>
+                              <CheckCircle2 className="mr-1 size-3.5" />
+                              Fullført
+                            </Badge>
+                            <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                          </div>
                         </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          <Badge className={COMPLETED_BADGE_CLASS}>
-                            <CheckCircle2 className="mr-1 size-3.5" />
-                            Fullført
-                          </Badge>
-                          <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                      </summary>
+
+                      <div className="mt-3 space-y-3 border-t border-card-border pt-3">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground md:text-sm">
+                          <Clock className="size-4 text-primary" />
+                          <span>Varighet: {appointmentDuration} min</span>
                         </div>
-                      </div>
-                    </summary>
 
-                    <div className="mt-3 space-y-3 border-t border-card-border pt-3">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground md:text-sm">
-                        <Clock className="size-4 text-primary" />
-                        <span>Varighet: {appointmentDuration} min</span>
-                      </div>
-
-                      {getGroupedServices(appointment).length > 0 ? (
-                        <div className="space-y-2">
-                          {getGroupedServices(appointment).map((group) => (
-                            <div
-                              key={`${appointment.id}-${group.id}`}
-                              className="space-y-1.5 rounded-lg border border-card-border bg-background p-2.5"
-                            >
-                              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                {group.name}
-                              </p>
-                              {group.services.map((service) => (
-                                <div key={service.id} className="flex items-center gap-2">
-                                  <Sparkles className="size-4 text-primary" />
-                                  <span className="text-sm font-medium text-card-text">{service.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">Ingen tjenester oppgitt</p>
-                      )}
-
-                      <div className="flex flex-wrap gap-2">
-                        {newBookingHref && (
-                          <Link to={newBookingHref} className={PRIMARY_ACTION_LINK_CLASS}>
-                            <CalendarPlus className="size-4.5" />
-                            Book ny time
-                          </Link>
+                        {getGroupedServices(appointment).length > 0 ? (
+                          <div className="space-y-2">
+                            {getGroupedServices(appointment).map((group) => (
+                              <div
+                                key={`${appointment.id}-${group.id}`}
+                                className="space-y-1.5 border-b border-card-border pb-2.5 last:border-b-0"
+                              >
+                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                  {group.name}
+                                </p>
+                                {group.services.map((service) => (
+                                  <div key={service.id} className="flex items-center gap-2">
+                                    <Sparkles className="size-4 text-primary" />
+                                    <span className="text-sm font-medium text-card-text">{service.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Ingen tjenester oppgitt</p>
                         )}
-                        {appointmentMapsUrl && (
-                          <a
-                            href={appointmentMapsUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={SECONDARY_ACTION_LINK_CLASS}
-                          >
-                            <MapPin className="size-4.5" />
-                            Google Maps
-                          </a>
-                        )}
+
+                        <div className="flex flex-wrap gap-2">
+                          {newBookingHref && (
+                            <Button asChild size="sm">
+                              <Link to={newBookingHref}>
+                                <CalendarPlus className="size-4.5" />
+                                Book ny time
+                              </Link>
+                            </Button>
+                          )}
+                          {appointmentMapsUrl && (
+                            <Button asChild variant="outline" size="sm">
+                              <a href={appointmentMapsUrl} target="_blank" rel="noreferrer">
+                                <MapPin className="size-4.5" />
+                                Google Maps
+                              </a>
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </details>
-                </BookingCard>
-              );
-            })}
-          </div>
-        )}
-        {completedTotalElements > 0 && (
-          <div className="flex items-center justify-between gap-3 pt-1">
-            <Link to={buildSectionPageHref('completed', completedPage - 1)}>
-              <Button variant="outline" disabled={!completedHasPrevious || isLoading}>
-                Forrige
+                    </details>
+                  </BookingCard>
+                );
+              })}
+            </div>
+          )}
+          {completedTotalElements > 0 && (
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <Button asChild variant="outline" disabled={!completedHasPrevious || isLoading}>
+                <Link to={buildSectionPageHref('completed', completedPage - 1)}>Forrige</Link>
               </Button>
-            </Link>
-            <p className="text-sm text-muted-foreground">
-              Side {completedPage + 1} av {Math.max(completedTotalPages, 1)}
-            </p>
-            <Link to={buildSectionPageHref('completed', completedPage + 1)}>
-              <Button variant="outline" disabled={!completedHasNext || isLoading}>
-                Neste
+              <p className="text-sm text-muted-foreground">
+                Side {completedPage + 1} av {Math.max(completedTotalPages, 1)}
+              </p>
+              <Button asChild variant="outline" disabled={!completedHasNext || isLoading}>
+                <Link to={buildSectionPageHref('completed', completedPage + 1)}>Neste</Link>
               </Button>
-            </Link>
-          </div>
-        )}
+            </div>
+          )}
         </BookingSection>
       </Stack>
     </BookingContainer>

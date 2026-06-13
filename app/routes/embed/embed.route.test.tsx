@@ -144,5 +144,8 @@ describe('embed route loader', () => {
     expect(getLocation(result)).toBe(`${ROUTES_MAP['embed.booking.appointment.session'].href}?companyId=8`);
     expect(setCookies).toContain('appointment_session=');
     expect(setCookies).toContain('Max-Age=0');
+    expect(setCookies).toContain('Path=/');
+    expect(setCookies).toContain('Secure');
+    expect(setCookies).toContain('SameSite=None');
   });
 });

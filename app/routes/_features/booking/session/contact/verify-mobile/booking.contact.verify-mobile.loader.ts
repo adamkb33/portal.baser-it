@@ -6,7 +6,7 @@ import { getBookingRouteMap } from '../../../_utils/booking.route-map';
 import type { BookingSurface } from '../../../_utils/booking.surface';
 import { ContactAuthService } from '../_services/contact-auth.service.server';
 import { VerificationTokenService } from '../_services/verification-token.service.server';
-import { redirectAuthStatusNextStepHref } from '../_utils/auth.utils';
+import { redirectAuthStatusNextStepHref, resolveAuthStatusNextStepHref } from '../_utils/auth.utils';
 
 type CreateBookingContactVerifyMobileLoaderOptions = {
   surface: BookingSurface;
@@ -43,10 +43,12 @@ export function createBookingContactVerifyMobileLoader({ surface }: CreateBookin
         return redirect(routes.contact);
       }
 
-      if (authStatus.nextStep !== 'VERIFY_MOBILE') {
+      const normalizedNextStepHref = resolveAuthStatusNextStepHref(authStatus, surface);
+      if (normalizedNextStepHref && normalizedNextStepHref !== routes.contactVerifyMobile) {
         console.info('[verify-mobile] redirect: nextStep is not VERIFY_MOBILE', {
           userId: session.userId,
           nextStep: authStatus.nextStep,
+          normalizedNextStepHref,
         });
         return redirectAuthStatusNextStepHref(authStatus, surface);
       }

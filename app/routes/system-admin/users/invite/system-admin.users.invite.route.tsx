@@ -1,11 +1,11 @@
-import { data } from 'react-router';
+import { data, NavLink } from 'react-router';
 import type { Route } from './+types/system-admin.users.invite.route';
 import { Base } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Button, CompanyPageTemplate, FormField, Notice } from '~/ui';
+import { Button, CompanyPageTemplate, FormField, Notice, Panel } from '~/ui';
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -45,18 +45,18 @@ export default function SystemAdminUsersInvitePage({ actionData }: Route.Compone
       title="Inviter systemadmin"
       description="Opprett systemadmin-invitasjon via base-service/system-admin/users."
       routeLinks={
-        <a href={ROUTES_MAP['system-admin.users'].href} className="inline-flex rounded-sm border border-border px-3 py-2 text-sm">
-          Tilbake til brukere
-        </a>
+        <Button asChild variant="outline">
+          <NavLink to={ROUTES_MAP['system-admin.users'].href}>Tilbake til brukere</NavLink>
+        </Button>
       }
     >
       {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke invitere bruker" message={actionData.error} /> : null}
-      <form method="post" className="space-y-3 rounded-md border border-border bg-surface p-4">
-        <FormField label="E-post" name="email" defaultValue={values.email} required type="email" />
-        <div>
+      <Panel title="Invitasjon" description="Send invitasjon til en ny systemadministrator.">
+        <form method="post" className="space-y-4">
+          <FormField label="E-post" name="email" defaultValue={values.email} required type="email" />
           <Button type="submit">Send invitasjon</Button>
-        </div>
-      </form>
+        </form>
+      </Panel>
     </CompanyPageTemplate>
   );
 }

@@ -8,18 +8,7 @@ import { addDays, addMonths, format, isSameDay, startOfDay } from 'date-fns';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { formatDateBoundaryInTimeZone, formatDateInputInTimeZone } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CompanyPageTemplate,
-  Text,
-  cn,
-  routeLinkButtonClass,
-} from '~/ui';
+import { Button, Card, CardContent, CardHead, CompanyPageTemplate, KeyValueList, KpiCard, Text } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -38,7 +27,11 @@ export async function loader({ request }: Route.LoaderArgs) {
           : range === '12m'
             ? addMonths(today, 12)
             : addMonths(today, 6);
-    const fromDateTime = formatDateBoundaryInTimeZone(formatDateInputInTimeZone(rangeStartDate, timezone), 'start', timezone);
+    const fromDateTime = formatDateBoundaryInTimeZone(
+      formatDateInputInTimeZone(rangeStartDate, timezone),
+      'start',
+      timezone,
+    );
     const toDateTime = formatDateBoundaryInTimeZone(formatDateInputInTimeZone(rangeEndDate, timezone), 'end', timezone);
 
     const getResponse = await withAuth(request, async () =>
@@ -120,205 +113,143 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
       description="Planlegg fravær og pauser i samme kompakte booking-layout som resten av domenet."
       routeLinks={
         <>
-          <NavLink
-            to={ROUTES_MAP['company.booking'].href}
-            className={routeLinkButtonClass}
-          >
-            Oversikt
-          </NavLink>
-          <NavLink
-            to={ROUTES_MAP['company.booking.profile'].href}
-            className={routeLinkButtonClass}
-          >
-            Bookingprofil
-          </NavLink>
+          <Button asChild variant="outline" size="sm">
+            <NavLink to={ROUTES_MAP['company.booking'].href}>Oversikt</NavLink>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <NavLink to={ROUTES_MAP['company.booking.profile'].href}>Bookingprofil</NavLink>
+          </Button>
         </>
       }
       hero={
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <UnavailabilityMetricCard label="Totalt" value={totalRanges} icon={<CalendarOff className="h-5 w-5 text-primary" />} accent="info" />
-          <UnavailabilityMetricCard label="Heldag" value={wholeDayRanges} icon={<CalendarOff className="h-5 w-5 text-secondary" />} accent="success" />
-          <UnavailabilityMetricCard label="Med klokkeslett" value={partialRanges} icon={<CalendarOff className="h-5 w-5 text-primary" />} accent="info" />
+          <KpiCard label="Totalt" value={totalRanges} icon={<CalendarOff className="h-5 w-5" />} tone="primary" />
+          <KpiCard label="Heldag" value={wholeDayRanges} icon={<CalendarOff className="h-5 w-5" />} tone="success" />
+          <KpiCard
+            label="Med klokkeslett"
+            value={partialRanges}
+            icon={<CalendarOff className="h-5 w-5" />}
+            tone="info"
+          />
         </div>
       }
     >
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <Card variant="default" className="bg-surface">
-          <CardHeader>
-            <CardTitle>Registrert fravær</CardTitle>
-            <CardDescription>De neste fraværsperiodene dine.</CardDescription>
-            <div className="space-y-3 pt-2">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                <span>Periode</span>
-                <span>
-                  {formatDate(rangeStartDate)} – {formatDate(rangeEndDate)}
-                </span>
+      <Card variant="default">
+        <CardHead
+          heading="Registrert fravær"
+          action={
+            <Button asChild size="sm">
+              <NavLink to={ROUTES_MAP['company.booking.schedule-unavailability.create'].href}>
+                <Plus className="h-4 w-4" />
+                Legg til fravær
+              </NavLink>
+            </Button>
+          }
+        >
+          <Text as="p" variant="body-sm" className="text-text-secondary">
+            De neste fraværsperiodene dine.
+          </Text>
+          <div className="space-y-3 pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span>Periode</span>
+              <span>
+                {formatDate(rangeStartDate)} – {formatDate(rangeEndDate)}
+              </span>
+            </div>
+            <KeyValueList
+              layout="compact"
+              items={[
+                { label: 'Totalt', value: totalRanges },
+                { label: 'Heldag', value: wholeDayRanges },
+                { label: 'Med klokkeslett', value: partialRanges },
+              ]}
+            />
+            <div className="space-y-2 border-t border-border pt-3">
+              <div className="text-xs font-medium uppercase tracking-wide text-text-secondary">Fremover</div>
+              <div className="flex flex-wrap gap-2">
+                {futureOptions.map((option) => (
+                  <Button
+                    key={option.value}
+                    type="button"
+                    size="sm"
+                    variant={selectedRange === option.value ? 'primary' : 'outline'}
+                    onClick={() => {
+                      setSelectedRange(option.value);
+                      const nextParams = new URLSearchParams(searchParams);
+                      nextParams.set('range', option.value);
+                      navigate({ search: `?${nextParams.toString()}` });
+                    }}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
               </div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                <div className="rounded-md bg-background px-3 py-2">
-                  <p className="text-xs text-text-secondary">Totalt</p>
-                  <p className="text-sm font-medium text-text-primary">{totalRanges}</p>
-                </div>
-                <div className="rounded-md bg-background px-3 py-2">
-                  <p className="text-xs text-text-secondary">Heldag</p>
-                  <p className="text-sm font-medium text-text-primary">{wholeDayRanges}</p>
-                </div>
-                <div className="rounded-md bg-background px-3 py-2">
-                  <p className="text-xs text-text-secondary">Med klokkeslett</p>
-                  <p className="text-sm font-medium text-text-primary">{partialRanges}</p>
-                </div>
-              </div>
-              <div className="space-y-2 rounded-md bg-background p-3">
-                <div className="text-xs font-medium uppercase tracking-wide text-text-secondary">Fremover</div>
-                <div className="flex flex-wrap gap-2">
-                  {futureOptions.map((option) => (
-                    <Button
-                      key={option.value}
-                      type="button"
-                      size="sm"
-                      variant={selectedRange === option.value ? 'primary' : 'outline'}
-                      onClick={() => {
-                        setSelectedRange(option.value);
-                        const nextParams = new URLSearchParams(searchParams);
-                        nextParams.set('range', option.value);
-                        navigate({ search: `?${nextParams.toString()}` });
-                      }}
-                    >
-                      {option.label}
-                    </Button>
-                  ))}
-                </div>
-                <div className="text-xs font-medium uppercase tracking-wide text-text-secondary">Tidligere</div>
-                <div className="flex flex-wrap gap-2">
-                  {pastOptions.map((option) => (
-                    <Button
-                      key={option.value}
-                      type="button"
-                      size="sm"
-                      variant={selectedRange === option.value ? 'secondary' : 'outline'}
-                      className={selectedRange === option.value ? 'bg-surface text-text-primary' : undefined}
-                      onClick={() => {
-                        setSelectedRange(option.value);
-                        const nextParams = new URLSearchParams(searchParams);
-                        nextParams.set('range', option.value);
-                        navigate({ search: `?${nextParams.toString()}` });
-                      }}
-                    >
-                      {option.label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground">
-                  Viser {visibleSchedules.length} av {totalRanges}
-                </div>
-                <NavLink
-                  to={ROUTES_MAP['company.booking.schedule-unavailability.create'].href}
-                  className="inline-flex h-8 items-center justify-center gap-2 rounded-sm border border-border bg-interactive px-3 text-sm font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
-                >
-                  <Plus className="h-4 w-4" />
-                  Legg til fravær
-                </NavLink>
+              <div className="text-xs font-medium uppercase tracking-wide text-text-secondary">Tidligere</div>
+              <div className="flex flex-wrap gap-2">
+                {pastOptions.map((option) => (
+                  <Button
+                    key={option.value}
+                    type="button"
+                    size="sm"
+                    variant={selectedRange === option.value ? 'secondary' : 'outline'}
+                    className={selectedRange === option.value ? 'bg-surface text-text-primary' : undefined}
+                    onClick={() => {
+                      setSelectedRange(option.value);
+                      const nextParams = new URLSearchParams(searchParams);
+                      nextParams.set('range', option.value);
+                      navigate({ search: `?${nextParams.toString()}` });
+                    }}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {visibleSchedules.length > 0 ? (
-              visibleSchedules.map((schedule: ScheduleUnavailabilityDto) => (
-                <div key={`${schedule.profileId}-${schedule.startTime}-${schedule.endTime}`} className="flex items-center gap-3 rounded-md bg-background p-3">
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-primary/10">
-                    <CalendarOff className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-text-primary">
-                      {formatDateTimeRange(schedule.startTime, schedule.endTime)}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="py-10 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-background">
-                  <CalendarOff className="h-6 w-6 text-text-secondary" />
-                </div>
-                <p className="text-sm text-text-secondary">{error || 'Ingen fraværsperioder registrert'}</p>
-                <NavLink
-                  to={ROUTES_MAP['company.booking.schedule-unavailability.create'].href}
-                  className="mt-4 inline-flex h-8 items-center justify-center gap-2 rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface"
-                >
-                  <Plus className="h-4 w-4" />
-                  Legg til fravær
-                </NavLink>
-              </div>
-            )}
-            {schedules && schedules.length > 5 ? (
-              <Button variant="ghost" size="sm" className="w-full">
-                Vis alle ({schedules.length})
-              </Button>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        <Card variant="default" className="h-full bg-surface xl:col-span-2">
-          <CardHeader>
-            <CardTitle>Tips</CardTitle>
-            <CardDescription>Husk å legge inn fravær i god tid.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-text-secondary">
-            <div className="flex items-start gap-3 rounded-md bg-background p-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
-                <Sparkles className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="font-medium text-text-primary">Hold kalenderen oppdatert</p>
-                <p className="text-xs text-text-secondary">Nye tider blir ikke booket når du er fraværende.</p>
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-muted-foreground">
+                Viser {visibleSchedules.length} av {totalRanges}
               </div>
             </div>
-            <div className="rounded-md bg-background p-3">
-              <p className="text-xs text-text-secondary">
-                Vises her: {visibleSchedules.length} av {totalRanges}
-              </p>
-              <p className="mt-1 text-sm font-medium text-text-primary">Planlegg ferie og pauser tidlig</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </CompanyPageTemplate>
-  );
-}
-
-function UnavailabilityMetricCard({
-  label,
-  value,
-  icon,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  icon: React.ReactNode;
-  accent: 'info' | 'success';
-}) {
-  const accentClasses = {
-    info: 'bg-primary/10',
-    success: 'bg-secondary/10',
-  } as const;
-
-  return (
-    <Card variant="default" size="sm" className="bg-surface">
-      <CardContent className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <Text as="p" variant="body-sm" className="text-text-secondary">
-              {label}
-            </Text>
-            <Text as="p" variant="heading-md">
-              {value}
-            </Text>
           </div>
-          <div className={cn('flex h-10 w-10 items-center justify-center rounded-md', accentClasses[accent])}>{icon}</div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardHead>
+        <CardContent className="space-y-2">
+          {visibleSchedules.length > 0 ? (
+            visibleSchedules.map((schedule: ScheduleUnavailabilityDto) => (
+              <div
+                key={`${schedule.profileId}-${schedule.startTime}-${schedule.endTime}`}
+                className="flex items-center gap-3 rounded-md bg-background p-3"
+              >
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-primary/10">
+                  <CalendarOff className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-text-primary">
+                    {formatDateTimeRange(schedule.startTime, schedule.endTime)}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="py-10 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-background">
+                <CalendarOff className="h-6 w-6 text-text-secondary" />
+              </div>
+              <p className="text-sm text-text-secondary">{error || 'Ingen fraværsperioder registrert'}</p>
+              <Button asChild variant="outline" size="sm" className="mt-4">
+                <NavLink to={ROUTES_MAP['company.booking.schedule-unavailability.create'].href}>
+                  <Plus className="h-4 w-4" />
+                  Legg til fravær
+                </NavLink>
+              </Button>
+            </div>
+          )}
+          {schedules && schedules.length > 5 ? (
+            <Button variant="ghost" size="sm" className="w-full">
+              Vis alle ({schedules.length})
+            </Button>
+          ) : null}
+        </CardContent>
+      </Card>
+    </CompanyPageTemplate>
   );
 }

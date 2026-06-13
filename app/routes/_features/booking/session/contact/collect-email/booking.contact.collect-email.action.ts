@@ -43,9 +43,13 @@ export function createBookingContactCollectEmailAction({ surface }: CreateBookin
       submittedEmail = email;
       const retryHref = buildCollectEmailRetryHref(request, email);
 
+      if (!email.trim()) {
+        return redirect(routes.employee);
+      }
+
       const response = await ContactAuthService.completeProfile({
         userId: session.userId,
-        email,
+        email: email.trim(),
       });
 
       const authStatus = await ContactAuthService.getUserStatus(request);

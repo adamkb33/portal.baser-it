@@ -166,6 +166,7 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
           description={loaderData.error ?? 'Kunne ikke hente avtalen.'}
         />
         <Notice
+          variant="booking"
           tone="emphasis"
           title="Kunne ikke hente avtalen"
           message={loaderData.error ?? 'Vi fant ikke en gyldig avtale for avbestilling.'}
@@ -245,6 +246,7 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
 
           {!canCancel ? (
             <Notice
+              variant="booking"
               tone="muted"
               title="Avbestilling ikke tilgjengelig"
               message="Denne avtalen kan ikke avbestilles fordi tidspunktet allerede har startet."
@@ -282,12 +284,9 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
 
             <Panel title="Tjenester">
               {services.length ? (
-                <div className="space-y-2">
+                <div className="divide-y divide-border">
                   {services.map((service) => (
-                    <div
-                      key={service.id}
-                      className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3"
-                    >
+                    <div key={service.id} className="flex items-center justify-between gap-3 py-3">
                       <span className="text-sm font-medium text-text-primary md:text-base">{service.name}</span>
                       <div className="flex shrink-0 items-center gap-3 text-xs text-text-secondary md:text-sm">
                         <span className="flex items-center gap-1">

@@ -4,7 +4,7 @@ import { Diagnostic } from '~/api/generated/diagnostic';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { CompanyPageTemplate, Notice, Panel, Text } from '~/ui';
+import { Button, Card, CardAction, CardContent, CardGrid, CardHead, CompanyPageTemplate, GridCol, Icon, Notice, Panel, Text } from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -38,47 +38,49 @@ export default function SystemAdminDiagnosticsBookingPage({ loaderData }: Route.
       title="Diagnostikk: Booking"
       description="Tilgjengelige diagnostikk-flyter for booking."
       routeLinks={
-        <NavLink to={ROUTES_MAP['system-admin.diagnostics'].href} className="inline-flex rounded-sm border border-border px-3 py-2 text-sm">
-          Tilbake til diagnostikk
-        </NavLink>
+        <Button asChild variant="outline">
+          <NavLink to={ROUTES_MAP['system-admin.diagnostics'].href}>Tilbake til diagnostikk</NavLink>
+        </Button>
       }
     >
       {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente booking-flyter" message={loaderData.error} /> : null}
 
       <Panel title="Flyter" description="Status per diagnostikkflyt.">
         {loaderData.flowsData?.flows?.length ? (
-          <div className="space-y-2">
+          <CardGrid gap="md">
             {loaderData.flowsData.flows.map((flow) => {
               const href = flowLinkById[flow.id];
-              const content = (
-                <div className="space-y-1">
-                  <Text as="p" variant="body-sm" className="font-semibold">
-                    {flow.title}
-                  </Text>
-                  <Text as="p" variant="caption" className="text-text-secondary">
-                    Status: {flow.status} · Severity: {flow.severity} · Errors: {flow.totalCount}
-                  </Text>
-                  <Text as="p" variant="caption" className="text-text-secondary">
-                    Siste feil: {flow.lastOccurredAt ?? '—'}
-                  </Text>
-                </div>
-              );
-
-              if (!href) {
-                return (
-                  <div key={flow.id} className="rounded-md border border-border bg-background p-3">
-                    {content}
-                  </div>
-                );
-              }
 
               return (
-                <NavLink key={flow.id} to={href} className="block rounded-md border border-border bg-background p-3 hover:bg-surface">
-                  {content}
-                </NavLink>
+                <GridCol key={flow.id} span={12}>
+                  <Card as="article" size="sm">
+                    <CardHead
+                      eyebrow={flow.status}
+                      heading={flow.title}
+                      action={
+                        href ? (
+                          <CardAction asChild>
+                            <NavLink to={href}>
+                              Åpne
+                              <Icon name="arrow-right" />
+                            </NavLink>
+                          </CardAction>
+                        ) : null
+                      }
+                    />
+                    <CardContent className="space-y-1">
+                      <Text as="p" variant="caption" className="text-text-secondary">
+                        Severity: {flow.severity} · Errors: {flow.totalCount}
+                      </Text>
+                      <Text as="p" variant="caption" className="text-text-secondary">
+                        Siste feil: {flow.lastOccurredAt ?? '—'}
+                      </Text>
+                    </CardContent>
+                  </Card>
+                </GridCol>
               );
             })}
-          </div>
+          </CardGrid>
         ) : (
           <Text as="p" variant="body-sm" className="text-text-secondary">
             Ingen flyter tilgjengelig.

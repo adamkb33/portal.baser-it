@@ -1,6 +1,6 @@
 import { Text } from '../atoms/text';
 import type { SectionHeaderProps } from '../molecules/section-header';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, type CardVariant } from './card';
+import { Card, CardContent, CardHead, type CardVariant } from './card';
 
 export type PanelTone = 'default' | 'muted' | 'emphasis';
 
@@ -46,16 +46,13 @@ export function Panel({
   return (
     <Card as={Component} variant={toneClasses[resolvedTone]} className={className} {...props}>
       {headerProps ? (
-        <CardHeader>
-          {headerProps.label ? (
-            <Text as="p" variant="overline" className="text-text-secondary">
-              {headerProps.label}
+        <CardHead eyebrow={headerProps.label} heading={headerProps.title} action={headerProps.action}>
+          {headerProps.description ? (
+            <Text as="p" variant="body-sm" className="text-text-secondary">
+              {headerProps.description}
             </Text>
           ) : null}
-          <CardTitle>{headerProps.title}</CardTitle>
-          {headerProps.description ? <CardDescription>{headerProps.description}</CardDescription> : null}
-          {headerProps.action ? <div className="pt-2">{headerProps.action}</div> : null}
-        </CardHeader>
+        </CardHead>
       ) : null}
       <CardContent>{children}</CardContent>
     </Card>

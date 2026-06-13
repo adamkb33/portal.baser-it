@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Form, useLoaderData, useNavigation } from 'react-router';
 import { Check, Clock, DollarSign, Image as ImageIcon, Search, Sparkles, X } from 'lucide-react';
 import {
@@ -10,7 +10,6 @@ import {
   Button,
   Card,
   CardFooter,
-  CardHeader,
   Carousel,
   CarouselContent,
   CarouselItem,
@@ -53,7 +52,8 @@ function ServiceCard({ service, index, quantity, onQuantityChange, onViewImages 
         'group relative h-full overflow-hidden border-booking-border shadow-[var(--shadow-booking-card)] transition-all',
         alternatingSurface,
         !isSelected && 'hover:bg-booking-action-muted',
-        isSelected && 'border-booking-action bg-booking-action-muted ring-[length:var(--border-booking-focus-ring)] ring-booking-action/35',
+        isSelected &&
+          'border-booking-action bg-booking-action-muted ring-[length:var(--border-booking-focus-ring)] ring-booking-action/35',
       )}
     >
       {previewImage && (
@@ -83,7 +83,7 @@ function ServiceCard({ service, index, quantity, onQuantityChange, onViewImages 
         </div>
       )}
 
-      <CardHeader className="space-y-2">
+      <div className="mb-4 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <h3 className="flex-1 text-base font-bold text-booking-text md:text-lg">{service.name}</h3>
 
@@ -109,7 +109,7 @@ function ServiceCard({ service, index, quantity, onQuantityChange, onViewImages 
             <span>{service.duration} min</span>
           </div>
         </div>
-      </CardHeader>
+      </div>
 
       <CardFooter className="mt-0 flex gap-2">
         {hasImages && (
@@ -119,7 +119,7 @@ function ServiceCard({ service, index, quantity, onQuantityChange, onViewImages 
               e.stopPropagation();
               onViewImages?.();
             }}
-            variant="outline"
+            variant="booking-secondary"
             className="flex-1 gap-2"
           >
             <ImageIcon className="size-4" />
@@ -142,7 +142,6 @@ interface ServiceGroupProps {
 }
 
 function ServiceGroup({ group, selectedServiceQuantities, onSetServiceQuantity, onViewImages }: ServiceGroupProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const selectedInGroup = group.services.reduce(
     (sum, service) => sum + (selectedServiceQuantities.get(service.id) ?? 0),
     0,
@@ -154,20 +153,11 @@ function ServiceGroup({ group, selectedServiceQuantities, onSetServiceQuantity, 
     }))
     .filter((item) => item.quantity > 1);
 
-  const handleAccordionChange = (nextValue: string | undefined) => {
-    if (nextValue) {
-      requestAnimationFrame(() => {
-        containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    }
-  };
-
   return (
-    <div ref={containerRef}>
+    <div>
       <Accordion
         type="single"
         collapsible
-        onValueChange={handleAccordionChange}
         className="rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-muted"
       >
         <AccordionItem value={String(group.id)} className="border-none">
@@ -198,9 +188,7 @@ function ServiceGroup({ group, selectedServiceQuantities, onSetServiceQuantity, 
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-booking-text">Du har valgt flere av samme tjeneste</p>
                     <p className="mt-1 text-sm text-booking-text-muted">
-                      {multiQuantityServices
-                        .map((item) => `${item.quantity} x ${item.service.name}`)
-                        .join(', ')}
+                      {multiQuantityServices.map((item) => `${item.quantity} x ${item.service.name}`).join(', ')}
                     </p>
                   </div>
                 </div>
@@ -328,6 +316,7 @@ export function BookingSelectServicesPage() {
               placeholder="Søk etter tjenester..."
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
+              variant="booking"
               className="pl-11 pr-11"
             />
 

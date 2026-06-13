@@ -1,4 +1,4 @@
-import { data } from 'react-router';
+import { data, NavLink } from 'react-router';
 import type { Route } from './+types/system-admin.smtp.diagnostics.route';
 import { Base } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
@@ -22,19 +22,27 @@ export default function SystemAdminSmtpDiagnosticsPage({ loaderData }: Route.Com
       title="SMTP diagnostikk"
       description="Viser status fra base-service/system-admin/smtp/diagnostics."
       routeLinks={
-        <a href={ROUTES_MAP['system-admin.smtp'].href} className="inline-flex rounded-sm border border-border px-3 py-2 text-sm">
-          Tilbake til SMTP
-        </a>
+        <Button asChild variant="outline">
+          <NavLink to={ROUTES_MAP['system-admin.smtp'].href}>Tilbake til SMTP</NavLink>
+        </Button>
       }
     >
       {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente diagnostikk" message={loaderData.error} /> : null}
       <Panel title="Diagnostikk" description="Backend-respons">
         {loaderData.diagnostics ? (
           <div className="space-y-1">
-            <Text as="p" variant="body-sm">Host: {loaderData.diagnostics.host ?? '—'}</Text>
-            <Text as="p" variant="body-sm">Port: {String(loaderData.diagnostics.port ?? '—')}</Text>
-            <Text as="p" variant="body-sm">SSL: {String(loaderData.diagnostics.ssl ?? '—')}</Text>
-            <Text as="p" variant="body-sm">Auth enabled: {String(loaderData.diagnostics.authEnabled ?? '—')}</Text>
+            <Text as="p" variant="body-sm">
+              Host: {loaderData.diagnostics.host ?? '—'}
+            </Text>
+            <Text as="p" variant="body-sm">
+              Port: {String(loaderData.diagnostics.port ?? '—')}
+            </Text>
+            <Text as="p" variant="body-sm">
+              SSL: {String(loaderData.diagnostics.ssl ?? '—')}
+            </Text>
+            <Text as="p" variant="body-sm">
+              Auth enabled: {String(loaderData.diagnostics.authEnabled ?? '—')}
+            </Text>
           </div>
         ) : (
           <Text as="p" variant="body-sm" className="text-text-secondary">

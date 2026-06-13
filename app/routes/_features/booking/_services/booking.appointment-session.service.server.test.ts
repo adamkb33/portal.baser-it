@@ -1,0 +1,69 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mocks = vi.hoisted(() => ({
+  createAppointmentSession: vi.fn(),
+  deleteAppointmentSession: vi.fn(),
+}));
+
+vi.mock('~/api/generated/booking', () => ({
+  PublicAppointmentSessionController: {
+    createAppointmentSession: mocks.createAppointmentSession,
+    deleteAppointmentSession: mocks.deleteAppointmentSession,
+  },
+}));
+
+import { AppointmentSessionService } from './booking.appointment-session.service.server';
+
+describe('AppointmentSessionService cookie policy', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.createAppointmentSession.mockResolvedValue({
+      data: {
+        data: {
+          sessionId: 'session-123',
+          companyId: 1,
+        },
+      },
+    });
+  });
+
+  it('sets iframe-compatible appointment session cookie attributes for embed routes', async () => {
+    const result = await AppointmentSessionService.create(
+      1,
+      new Request('https://portal.pitell.no/embed/booking/appointment/session?companyId=1'),
+    );
+
+    expect(result.setCookieHeader).toContain('appointment_session=');
+    expect(result.setCookieHeader).toContain('Path=/');
+    expect(result.setCookieHeader).toContain('HttpOnly');
+    expect(result.setCookieHeader).toContain('Secure');
+    expect(result.setCookieHeader).toContain('SameSite=None');
+    expect(result.setCookieHeader).toContain('Max-Age=86400');
+  });
+
+  it('keeps the existing same-site policy for normal public booking routes', async () => {
+    const result = await AppointmentSessionService.create(
+      1,
+      new Request('https://portal.pitell.no/booking/public/appointment/session?companyId=1'),
+    );
+
+    expect(result.setCookieHeader).toContain('appointment_session=');
+    expect(result.setCookieHeader).toContain('Path=/');
+    expect(result.setCookieHeader).toContain('HttpOnly');
+    expect(result.setCookieHeader).toContain('SameSite=Lax');
+    expect(result.setCookieHeader).not.toContain('SameSite=None');
+  });
+
+  it('clears the embed appointment session cookie with matching iframe-compatible attributes', async () => {
+    const setCookieHeader = await AppointmentSessionService.delete(
+      new Request('https://portal.pitell.no/embed?companyId=1&reset=1'),
+    );
+
+    expect(setCookieHeader).toContain('appointment_session=');
+    expect(setCookieHeader).toContain('Path=/');
+    expect(setCookieHeader).toContain('HttpOnly');
+    expect(setCookieHeader).toContain('Secure');
+    expect(setCookieHeader).toContain('SameSite=None');
+    expect(setCookieHeader).toContain('Max-Age=0');
+  });
+});

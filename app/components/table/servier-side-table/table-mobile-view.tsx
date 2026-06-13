@@ -25,11 +25,11 @@ function DefaultMobileCard<T>({
   const actionsCell = cells[cells.length - 1] as any;
 
   return (
-    <Card variant="interactive" size="sm" className="bg-surface">
+    <Card variant="interactive" size="sm" className="border-border bg-background shadow-sm">
       <CardContent className="p-4">
         {/* Index badge */}
-        <div className="mb-3 flex items-center gap-2 border-b border-border pb-3">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-background">
+        <div className="mb-3 flex items-center gap-2 border-b border-border-soft pb-3">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-50">
             <span className="text-xs font-bold text-text-primary">#{index + 1}</span>
           </div>
         </div>
@@ -41,9 +41,13 @@ function DefaultMobileCard<T>({
             const cellContent = cell.props?.children;
 
             return (
-              <div key={cellIndex} className="flex flex-col gap-1 min-w-0">
-                <dt className="text-xs font-semibold uppercase tracking-wider text-text-secondary">{columnHeader}</dt>
-                <dd className="break-words text-sm font-medium text-text-primary">{cellContent}</dd>
+              <div key={cellIndex} className="flex min-w-0 flex-col gap-1">
+                <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-text-disabled">
+                  {columnHeader}
+                </dt>
+                <dd className="break-words text-sm font-medium text-text-primary [&_[data-slot=badge]]:rounded-full">
+                  {cellContent}
+                </dd>
               </div>
             );
           })}
@@ -51,7 +55,7 @@ function DefaultMobileCard<T>({
 
         {/* Actions footer */}
         {actionsCell && (
-          <div className="border-t border-border pt-3">
+          <div className="border-t border-border-soft pt-3">
             <div className="flex items-center justify-end gap-2">{actionsCell.props?.children}</div>
           </div>
         )}
@@ -75,7 +79,7 @@ export function TableMobileView<T>({
   return (
     <div className="space-y-3 md:hidden">
       {(mobileHeaderSlot || mobilePrimaryAction) && (
-        <div className="rounded-lg border border-border bg-surface-variant-2 p-3">
+        <div className="rounded-lg border border-border bg-background p-3 shadow-sm">
           <div className="flex flex-col gap-2">
             {mobileHeaderSlot ? <div>{mobileHeaderSlot}</div> : null}
             {mobilePrimaryAction ? <div>{mobilePrimaryAction}</div> : null}
@@ -96,10 +100,10 @@ export function TableMobileView<T>({
             </React.Fragment>
           ))
         ) : (
-          <Card variant="default" size="sm" className="bg-surface-variant-2">
+          <Card variant="default" size="sm" className="border-border bg-background">
             <CardContent className="p-8">
               <div className="flex flex-col items-center justify-center gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-variant-3">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface">
                   <Database className="h-7 w-7 text-text-secondary" />
                 </div>
                 <Text as="p" variant="body-sm" className="text-center text-text-secondary">

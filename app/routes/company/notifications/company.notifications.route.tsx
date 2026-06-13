@@ -8,7 +8,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { serializeQueryParams } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
-import { CompanyMetricCard, CompanyPageTemplate, Notice } from '~/ui';
+import { CompanyPageTemplate, KpiCard, Notice } from '~/ui';
 import { NotificationsFilterCard } from './_components/notifications-filter-card';
 import { NotificationCardRow } from './_components/notification-card-row';
 import { NotificationTableRow } from './_components/notification-table-row';
@@ -154,9 +154,9 @@ export default function CompanyNotificationsRoute({ loaderData }: Route.Componen
       label="Varsler"
       hero={
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <CompanyMetricCard label="Totalt i listen" value={summary.total} icon={<Inbox className="h-5 w-5" />} />
-          <CompanyMetricCard label="Uleste" value={summary.unread} icon={<BellRing className="h-5 w-5" />} />
-          <CompanyMetricCard label="Leste" value={summary.read} icon={<Eye className="h-5 w-5" />} />
+          <KpiCard label="Totalt i listen" value={summary.total} icon={<Inbox className="h-5 w-5" />} tone="primary" />
+          <KpiCard label="Uleste" value={summary.unread} icon={<BellRing className="h-5 w-5" />} tone="warning" />
+          <KpiCard label="Leste" value={summary.read} icon={<Eye className="h-5 w-5" />} tone="success" />
         </div>
       }
     >

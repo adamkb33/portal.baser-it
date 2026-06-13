@@ -21,7 +21,6 @@ import {
   Input,
   Notice,
   Text,
-  routeLinkButtonClass,
 } from '~/ui';
 
 const EDITOR_SIZE = 240;
@@ -295,21 +294,16 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
       title="Last opp avtalebilder"
       description="Ta bilde med kamera eller last opp eksisterende bilde, og flytt/zoom for å få hodet nær midten."
       routeLinks={
-        <Link
-          to={ROUTES_MAP['company.booking.appointments'].href}
-          className={routeLinkButtonClass}
-        >
-          Tilbake til timebestillinger
-        </Link>
+        <Button asChild variant="outline" size="sm">
+          <Link to={ROUTES_MAP['company.booking.appointments'].href}>Tilbake til timebestillinger</Link>
+        </Button>
       }
     >
       {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente avtale" message={loaderData.error} /> : null}
 
       {appointment ? (
-        <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-surface via-background to-surface p-3 sm:p-4">
-          <div className="pointer-events-none absolute -right-14 -top-14 h-28 w-28 rounded-full bg-primary/10 blur-xl" />
-          <div className="pointer-events-none absolute -bottom-16 -left-8 h-28 w-28 rounded-full bg-secondary/10 blur-xl" />
-          <div className="relative grid gap-3 lg:grid-cols-2">
+        <section className="rounded-xl bg-surface p-3 sm:p-4">
+          <div className="grid gap-3 lg:grid-cols-2">
             <div className="space-y-2">
               <Badge variant="outline" size="sm" className="rounded-full">
                 Avtaledetaljer
@@ -364,9 +358,7 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
             </div>
 
             {existingImages.length === 0 ? (
-              <div className="rounded-lg bg-surface p-3 text-xs text-text-secondary">
-                Ingen bilder lastet opp ennå.
-              </div>
+              <Notice tone="default" title="Ingen bilder" message="Ingen bilder lastet opp ennå." />
             ) : (
               <div className="-mx-1 overflow-x-auto px-1 pb-1">
                 <div className="flex min-w-max gap-2">
@@ -434,28 +426,32 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
             </div>
 
             <div className="flex flex-wrap gap-1.5">
-              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-sm border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-text-primary hover:bg-surface">
-                <Camera className="h-3.5 w-3.5" />
-                Ta bilde
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="sr-only"
-                  onChange={(event) => setNewFile(event.currentTarget.files?.[0] ?? null)}
-                />
-              </label>
+              <Button asChild variant="outline" size="sm">
+                <label className="cursor-pointer">
+                  <Camera className="h-3.5 w-3.5" />
+                  Ta bilde
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="sr-only"
+                    onChange={(event) => setNewFile(event.currentTarget.files?.[0] ?? null)}
+                  />
+                </label>
+              </Button>
 
-              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-sm border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-text-primary hover:bg-surface">
-                <ImageIcon className="h-3.5 w-3.5" />
-                Last opp bilde
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="sr-only"
-                  onChange={(event) => setNewFile(event.currentTarget.files?.[0] ?? null)}
-                />
-              </label>
+              <Button asChild variant="outline" size="sm">
+                <label className="cursor-pointer">
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  Last opp bilde
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(event) => setNewFile(event.currentTarget.files?.[0] ?? null)}
+                  />
+                </label>
+              </Button>
 
               {selectedFile ? (
                 <Button variant="outline" size="sm" type="button" onClick={resetEditor}>

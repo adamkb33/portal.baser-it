@@ -11,11 +11,11 @@ export function resolveAuthNextStepHref(
 
   switch (nextStep) {
     case 'COLLECT_EMAIL':
-      return routes.contactCollectEmail;
+      return routes.employee;
     case 'COLLECT_MOBILE':
       return routes.contactCollectMobile;
     case 'VERIFY_EMAIL':
-      return routes.contactVerifyEmail;
+      return routes.employee;
     case 'VERIFY_MOBILE':
       return routes.contactVerifyMobile;
     case 'DONE':
@@ -29,12 +29,27 @@ export function resolveAuthStatusNextStepHref(
   authStatus: UserAuthStatusDto | null | undefined,
   surface: BookingSurface = 'public',
 ) {
+  if (!authStatus) {
+    return null;
+  }
+
+  if (authStatus.nextStep === 'COLLECT_EMAIL' || authStatus.nextStep === 'VERIFY_EMAIL') {
+    const routes = getBookingRouteMap(surface);
+    if (!authStatus.user.mobileNumber) {
+      return routes.contactCollectMobile;
+    }
+    if (!authStatus.user.mobileVerified) {
+      return routes.contactVerifyMobile;
+    }
+    return routes.employee;
+  }
+
   return resolveAuthNextStepHref(authStatus?.nextStep, surface);
 }
 
 export function redirectAuthStatusNextStepHref(authStatus: UserAuthStatusDto, surface: BookingSurface = 'public') {
   const routes = getBookingRouteMap(surface);
-  const nextStepHref = resolveAuthNextStepHref(authStatus.nextStep, surface);
+  const nextStepHref = resolveAuthStatusNextStepHref(authStatus, surface);
   if (nextStepHref) {
     return redirect(nextStepHref);
   }
@@ -45,7 +60,7 @@ export function redirectAuthStatusNextStepHref(authStatus: UserAuthStatusDto, su
 export function shouldStoreVerificationToken(
   nextStep: SignInResponseDto['nextStep'] | SignUpResponseDto['nextStep'] | null | undefined,
 ) {
-  return nextStep !== 'DONE';
+  return nextStep === 'VERIFY_MOBILE';
 }
 
 export function hasAuthErrors(

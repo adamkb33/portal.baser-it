@@ -92,9 +92,9 @@ export function NotificationsFilterCard({
       <input type="hidden" name="size" value={pageSize} />
 
       <div className="flex items-center gap-2 xl:pb-0.5">
-        <Link to={resetHref} className="text-xs text-muted-foreground underline">
-          Nullstill filtre
-        </Link>
+        <Button asChild variant="ghost" size="sm">
+          <Link to={resetHref}>Nullstill filtre</Link>
+        </Button>
       </div>
     </Form>
   );

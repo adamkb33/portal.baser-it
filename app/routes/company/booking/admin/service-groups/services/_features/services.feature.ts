@@ -36,7 +36,7 @@ export async function servicesActions({ request }: Route.ActionArgs) {
 
       return redirectWithSuccess(
         request,
-        ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+        ROUTES_MAP['company.booking.admin.services'].href,
         'Tjeneste opprettet',
       );
     }
@@ -66,7 +66,7 @@ export async function servicesActions({ request }: Route.ActionArgs) {
 
       return redirectWithSuccess(
         request,
-        ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+        ROUTES_MAP['company.booking.admin.services'].href,
         'Tjeneste oppdatert',
       );
     }
@@ -80,20 +80,20 @@ export async function servicesActions({ request }: Route.ActionArgs) {
 
       return redirectWithSuccess(
         request,
-        ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+        ROUTES_MAP['company.booking.admin.services'].href,
         'Tjeneste slettet',
       );
     }
 
     return redirectWithError(
       request,
-      ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+      ROUTES_MAP['company.booking.admin.services'].href,
       'Ugyldig handling',
     );
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke utføre handling');
 
-    return redirectWithError(request, ROUTES_MAP['company.booking.admin.service-groups.services'].href, message);
+    return redirectWithError(request, ROUTES_MAP['company.booking.admin.services'].href, message);
   }
 }
 

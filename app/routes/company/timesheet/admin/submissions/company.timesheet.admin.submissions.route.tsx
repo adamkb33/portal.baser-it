@@ -6,7 +6,7 @@ import { AdminTimeSheetEntryController, type AdminEmployeeTimesheetEntriesDto } 
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
-import { Accordion, CompanyEmptyState, CompanyMetricCard, CompanyPageTemplate, Notice } from '~/ui';
+import { Accordion, CompanyEmptyState, CompanyPageTemplate, KpiCard, Notice } from '~/ui';
 import { TimesheetPaginationFilterCard } from '~/routes/company/timesheet/_components/timesheet-pagination-filters';
 import type { CalendarDateRange } from '~/ui';
 import { SubmissionGroupCard } from './_components/submission-group-card';
@@ -228,10 +228,10 @@ export default function CompanyTimesheetSubmissionsPage({ loaderData, actionData
       label="Timelister"
       hero={
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <CompanyMetricCard label="Ansatte" value={summary.employees} icon={<ClipboardList className="h-5 w-5" />} />
-          <CompanyMetricCard label="Innsendt" value={summary.submitted} icon={<ClipboardList className="h-5 w-5" />} />
-          <CompanyMetricCard label="Godkjent" value={summary.accepted} icon={<UserCheck className="h-5 w-5" />} />
-          <CompanyMetricCard label="Avvist" value={summary.declined} icon={<UserX className="h-5 w-5" />} />
+          <KpiCard label="Ansatte" value={summary.employees} icon={<ClipboardList className="h-5 w-5" />} tone="primary" />
+          <KpiCard label="Innsendt" value={summary.submitted} icon={<ClipboardList className="h-5 w-5" />} tone="warning" />
+          <KpiCard label="Godkjent" value={summary.accepted} icon={<UserCheck className="h-5 w-5" />} tone="success" />
+          <KpiCard label="Avvist" value={summary.declined} icon={<UserX className="h-5 w-5" />} tone="danger" />
         </div>
       }
     >

@@ -132,20 +132,14 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
           />
         }
         primaryAction={
-          <NavLink
-            to={ROUTES_MAP['company.admin.contacts.create'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
-          >
-            Legg til ny kontakt
-          </NavLink>
+          <Button asChild size="sm">
+            <NavLink to={ROUTES_MAP['company.admin.contacts.create'].href}>Legg til ny kontakt</NavLink>
+          </Button>
         }
         mobilePrimaryAction={
-          <NavLink
-            to={ROUTES_MAP['company.admin.contacts.create'].href}
-            className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-interactive px-3 text-xs font-medium text-text-inverse transition-colors hover:bg-interactive-hover"
-          >
-            Legg til ny kontakt
-          </NavLink>
+          <Button asChild size="sm">
+            <NavLink to={ROUTES_MAP['company.admin.contacts.create'].href}>Legg til ny kontakt</NavLink>
+          </Button>
         }
         renderRow={(contact) => (
           <TableRow>
@@ -154,13 +148,12 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
             <TableCell>{contact.mobileNumber || '—'}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <NavLink
-                  to={`${ROUTES_MAP['company.admin.contacts.edit'].href}?contactId=${contact.id}`}
-                  className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface"
-                >
-                  <Pen className="h-4 w-4" />
-                  <span className="sr-only">Rediger</span>
-                </NavLink>
+                <Button asChild variant="outline" size="sm">
+                  <NavLink to={`${ROUTES_MAP['company.admin.contacts.edit'].href}?contactId=${contact.id}`}>
+                    <Pen className="h-4 w-4" />
+                    <span className="sr-only">Rediger</span>
+                  </NavLink>
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"

@@ -4,7 +4,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '~
 import { Button } from '~/ui';
 import { FormDialog } from '~/components/dialog/form-dialog';
 import { toast } from 'sonner';
-import { ROUTES_MAP } from '~/lib/routing/route-tree';
+import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/routing/route-tree';
 import type { ContactDto } from '~/api/generated/base';
 
 export type ContactPickerProps = {
@@ -41,12 +41,12 @@ export function ContactPicker({ value, onChange, contacts }: ContactPickerProps)
     fd.append('intent', 'create');
     fd.append('givenName', (form.givenName || '').trim());
     fd.append('familyName', (form.familyName || '').trim());
-    fd.append('redirectTo', ROUTES_MAP['booking.appointments'].href);
+    fd.append('redirectTo', ROUTES_MAP['company.booking.appointments'].href);
     if (form.email) fd.append('email', form.email.trim());
     if (form.mobileNumber) fd.append('mobileNumber', form.mobileNumber.trim());
 
     // post to the contacts route action
-    submit(fd, { method: 'post', action: ROUTES_MAP['company.contacts'].href });
+    submit(fd, { method: 'post', action: API_ROUTES_MAP['company.admin.contacts.create'].url });
 
     setIsDialogOpen(false);
     setForm({ givenName: '', familyName: '', email: '', mobileNumber: '' });

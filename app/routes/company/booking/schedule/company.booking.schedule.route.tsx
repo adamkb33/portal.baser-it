@@ -26,6 +26,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  KeyValueList,
   Notice,
   Text,
 } from '~/ui';
@@ -647,7 +648,7 @@ export default function CompanyBookingSchedulePage({ loaderData }: Route.Compone
           {selectedAppointment ? (
             <div className="grid gap-3">
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-md border border-border bg-surface p-3">
+                <div className="space-y-2">
                   <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
                     Kunde
                   </Text>
@@ -655,24 +656,18 @@ export default function CompanyBookingSchedulePage({ loaderData }: Route.Compone
                     {selectedAppointment.user?.givenName} {selectedAppointment.user?.familyName}
                   </Text>
                 </div>
-                <div className="rounded-md border border-border bg-surface p-3">
+                <div className="space-y-2">
                   <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
                     Oppsummering
                   </Text>
-                  <div className="mt-2 space-y-1.5 text-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-text-secondary">Tjenester</span>
-                      <span className="font-medium text-text-primary">{getTotalServiceCount(selectedAppointment)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-text-secondary">Varighet</span>
-                      <span className="font-medium text-text-primary">{getTotalDuration(selectedAppointment)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-text-secondary">Total pris</span>
-                      <span className="font-semibold text-primary">{getTotalPrice(selectedAppointment)}</span>
-                    </div>
-                  </div>
+                  <KeyValueList
+                    layout="compact"
+                    items={[
+                      { label: 'Tjenester', value: getTotalServiceCount(selectedAppointment) },
+                      { label: 'Varighet', value: getTotalDuration(selectedAppointment) },
+                      { label: 'Total pris', value: getTotalPrice(selectedAppointment) },
+                    ]}
+                  />
                 </div>
               </div>
             </div>
@@ -681,9 +676,9 @@ export default function CompanyBookingSchedulePage({ loaderData }: Route.Compone
               <div className="flex items-center gap-2">
                 <Badge>{selectedItem.kind === 'availability' ? 'Tilgjengelighet' : 'Utilgjengelighet'}</Badge>
               </div>
-              <div className="rounded-md border border-border bg-surface p-3 text-sm text-text-secondary">
+              <Text as="p" variant="body-sm" className="text-text-secondary">
                 {selectedItem.text}
-              </div>
+              </Text>
               {selectedItem.kind === 'availability' && selectedItem.availabilityId ? (
                 <div className="flex items-center gap-2">
                   <Button

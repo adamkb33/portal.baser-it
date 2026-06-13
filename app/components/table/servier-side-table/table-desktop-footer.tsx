@@ -18,10 +18,12 @@ export function TableDesktopFooter({ pagination, onPageChange }: TableDesktopFoo
   const canNext = page < totalPages - 1;
 
   return (
-    <div className="bg-surface p-4">
+    <div className="border-t border-border-soft bg-background p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex items-center gap-2 self-start rounded-lg border border-border bg-background px-3 py-1.5">
-          <span className="text-xs font-semibold text-text-secondary">Side</span>
+        <div className="inline-flex items-center gap-2 self-start rounded-[8px] border border-border bg-surface px-3 py-1.5">
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-text-disabled">
+            Side
+          </span>
           <span className="text-sm font-bold text-text-primary">{page + 1}</span>
           <span className="text-xs text-text-secondary">/</span>
           <span className="text-sm font-semibold text-text-primary">{totalPages || 1}</span>

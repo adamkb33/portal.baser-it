@@ -41,9 +41,18 @@ export function createBookingContactCollectMobileAction({ surface }: CreateBooki
       const formData = await request.formData();
       const mobileNumber = String(formData.get('mobileNumber') || '');
       submittedMobileNumber = mobileNumber;
+
+      if (!mobileNumber.trim()) {
+        return redirectWithError(
+          request,
+          buildCollectMobileRetryHref(request, mobileNumber),
+          'Mobilnummer er påkrevd for å bestille time.',
+        );
+      }
+
       const response = await ContactAuthService.completeProfile({
         userId: session.userId,
-        mobileNumber,
+        mobileNumber: mobileNumber.trim(),
       });
 
       const authStatus = await ContactAuthService.getUserStatus(request);

@@ -1,4 +1,4 @@
-import { data } from 'react-router';
+import { data, NavLink } from 'react-router';
 import type { Route } from './+types/system-admin.users.details.route';
 import { Base } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
@@ -35,24 +35,30 @@ export default function SystemAdminUsersDetailsPage({ actionData }: Route.Compon
       title="Hent bruker"
       description="Hent brukerdetaljer via base-service/system-admin/users/{userId}."
       routeLinks={
-        <a href={ROUTES_MAP['system-admin.users'].href} className="inline-flex rounded-sm border border-border px-3 py-2 text-sm">
-          Tilbake til brukere
-        </a>
+        <Button asChild variant="outline">
+          <NavLink to={ROUTES_MAP['system-admin.users'].href}>Tilbake til brukere</NavLink>
+        </Button>
       }
     >
       {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke hente bruker" message={actionData.error} /> : null}
-      <form method="post" className="space-y-3 rounded-md border border-border bg-surface p-4">
-        <FormField label="Bruker-ID" name="userId" defaultValue={values.userId} required type="number" />
-        <div>
+      <Panel title="Søk" description="Oppgi bruker-ID for å hente backend-payload.">
+        <form method="post" className="space-y-4">
+          <FormField label="Bruker-ID" name="userId" defaultValue={values.userId} required type="number" />
           <Button type="submit">Hent bruker</Button>
-        </div>
-      </form>
+        </form>
+      </Panel>
 
       {actionData?.user ? (
         <Panel title="Resultat" description="Autentisert brukerpayload fra backend.">
-          <Text as="p" variant="body-sm">ID: {actionData.user.id}</Text>
-          <Text as="p" variant="body-sm">E-post: {actionData.user.email ?? '—'}</Text>
-          <Text as="p" variant="body-sm">Company ID: {actionData.user.companyId ?? '—'}</Text>
+          <Text as="p" variant="body-sm">
+            ID: {actionData.user.id}
+          </Text>
+          <Text as="p" variant="body-sm">
+            E-post: {actionData.user.email ?? '—'}
+          </Text>
+          <Text as="p" variant="body-sm">
+            Company ID: {actionData.user.companyId ?? '—'}
+          </Text>
         </Panel>
       ) : null}
     </CompanyPageTemplate>

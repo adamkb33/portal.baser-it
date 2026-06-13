@@ -19,7 +19,6 @@ import {
   Notice,
   Text,
   Textarea,
-  routeLinkButtonClass,
 } from '~/ui';
 
 const DAY_LABELS: Record<DailyScheduleDto['dayOfWeek'], string> = {
@@ -82,7 +81,7 @@ export function BookingProfileForm({
 
   useEffect(() => {
     if (!selectedImageFile) {
-      setImagePreviewUrl(removeImage ? null : bookingProfile?.image?.url ?? null);
+      setImagePreviewUrl(removeImage ? null : (bookingProfile?.image?.url ?? null));
       return;
     }
 
@@ -117,23 +116,17 @@ export function BookingProfileForm({
       description="Bruk en dedikert ruteside for å oppdatere profil, tjenester og arbeidstider uten modal eller accordion-form."
       routeLinks={
         <>
-          <NavLink
-            to={ROUTES_MAP['company.booking.profile'].href}
-            className={routeLinkButtonClass}
-          >
-            Tilbake til bookingprofil
-          </NavLink>
-          <NavLink
-            to={ROUTES_MAP['company.booking.schedule-unavailability'].href}
-            className={routeLinkButtonClass}
-          >
-            Mitt fravik
-          </NavLink>
+          <Button asChild variant="outline" size="sm">
+            <NavLink to={ROUTES_MAP['company.booking.profile'].href}>Tilbake til bookingprofil</NavLink>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <NavLink to={ROUTES_MAP['company.booking.schedule-unavailability'].href}>Mitt fravik</NavLink>
+          </Button>
         </>
       }
       hero={
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Card variant="default" size="sm" className="bg-surface">
+          <Card variant="default" size="sm">
             <CardContent className="space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -150,7 +143,7 @@ export function BookingProfileForm({
               </div>
             </CardContent>
           </Card>
-          <Card variant="default" size="sm" className="bg-surface">
+          <Card variant="default" size="sm">
             <CardContent className="space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -167,7 +160,7 @@ export function BookingProfileForm({
               </div>
             </CardContent>
           </Card>
-          <Card variant="default" size="sm" className="bg-surface">
+          <Card variant="default" size="sm">
             <CardContent className="space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -209,7 +202,7 @@ export function BookingProfileForm({
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2">
-                <div className="rounded-md border border-border bg-background p-3">
+                <div className="space-y-3 border-b border-border pb-4">
                   <div className="mb-2 space-y-0.5">
                     <Text as="p" variant="label" className="text-text-primary">
                       Profilbilde
@@ -262,7 +255,7 @@ export function BookingProfileForm({
                   </div>
                 </div>
 
-                <div className="rounded-md border border-border bg-background p-3">
+                <div className="space-y-3">
                   <div className="mb-2 space-y-0.5">
                     <Text as="p" variant="label" className="text-text-primary">
                       Beskrivelse
@@ -300,7 +293,7 @@ export function BookingProfileForm({
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <div className="rounded-md border border-border bg-background p-3">
+              <div className="space-y-3">
                 <div className="mb-2 space-y-0.5">
                   <Text as="p" variant="label" className="text-text-primary">
                     Tjenestevalg
@@ -314,7 +307,9 @@ export function BookingProfileForm({
                   serviceGroups={filteredServiceGroups}
                   selectedServiceIds={selectedServiceIds}
                   onSelectService={(serviceId) =>
-                    setSelectedServiceIds((current) => (current.includes(serviceId) ? current : [...current, serviceId]))
+                    setSelectedServiceIds((current) =>
+                      current.includes(serviceId) ? current : [...current, serviceId],
+                    )
                   }
                   onDeselectService={(serviceId) =>
                     setSelectedServiceIds((current) => current.filter((currentId) => currentId !== serviceId))
@@ -343,7 +338,7 @@ export function BookingProfileForm({
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <div className="rounded-md border border-border bg-background p-3">
+              <div className="space-y-3">
                 <div className="mb-2 space-y-0.5">
                   <Text as="p" variant="label" className="text-text-primary">
                     Tilgjengelighet
@@ -366,12 +361,9 @@ export function BookingProfileForm({
         <input type="hidden" name="removeImage" value={removeImage ? 'true' : 'false'} />
 
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-          <NavLink
-            to={ROUTES_MAP['company.booking.profile'].href}
-            className="inline-flex h-10 items-center justify-center rounded-sm border border-border bg-background px-4 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
-          >
-            Avbryt
-          </NavLink>
+          <Button asChild variant="outline">
+            <NavLink to={ROUTES_MAP['company.booking.profile'].href}>Avbryt</NavLink>
+          </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Lagrer...' : isEdit ? 'Lagre endringer' : 'Opprett bookingprofil'}
           </Button>

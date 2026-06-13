@@ -3,13 +3,14 @@ import { FolderKanban, Briefcase } from 'lucide-react';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import {
   Card,
+  CardAction,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  CardHead,
+  Button,
   CompanyPageTemplate,
+  Icon,
+  KpiCard,
   Text,
-  routeLinkButtonClass,
 } from '~/ui';
 
 const adminNavigation = [
@@ -24,7 +25,7 @@ const adminNavigation = [
     id: 'services',
     title: 'Tjenester',
     description: 'Opprett og vedlikehold tjenester, varighet og priser.',
-    href: ROUTES_MAP['company.booking.admin.service-groups.services'].href,
+    href: ROUTES_MAP['company.booking.admin.services'].href,
     icon: Briefcase,
   },
 ];
@@ -36,18 +37,12 @@ export default function CompanyBookingAdminPage() {
       description="Administrer bookingkatalogen med samme kompakte overflate og farger som resten av booking-domenet."
       routeLinks={
         <>
-          <NavLink
-            to={ROUTES_MAP['company.booking'].href}
-            className={routeLinkButtonClass}
-          >
-            Oversikt
-          </NavLink>
-          <NavLink
-            to={ROUTES_MAP['company.booking.appointments'].href}
-            className={routeLinkButtonClass}
-          >
-            Timebestillinger
-          </NavLink>
+          <Button asChild variant="outline" size="sm">
+            <NavLink to={ROUTES_MAP['company.booking'].href}>Oversikt</NavLink>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <NavLink to={ROUTES_MAP['company.booking.appointments'].href}>Timebestillinger</NavLink>
+          </Button>
         </>
       }
       hero={
@@ -74,23 +69,27 @@ export default function CompanyBookingAdminPage() {
           return (
             <Link key={item.id} to={item.href} className="group">
               <Card variant="interactive" size="md" className="h-full bg-surface">
-                <CardHeader>
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-background">
+                <CardHead
+                  heading={item.title}
+                  action={
+                    <CardAction>
+                      Åpne
+                      <Icon name="arrow-right" />
+                    </CardAction>
+                  }
+                >
+                  <div className="mt-2 flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-control)] bg-background">
                       <Icon className="h-5 w-5 text-primary" />
                     </div>
-                    <div className="space-y-1">
-                      <CardTitle>{item.title}</CardTitle>
-                      <CardDescription>{item.description}</CardDescription>
-                    </div>
+                    <Text as="p" variant="body-sm" className="text-text-secondary">
+                      {item.description}
+                    </Text>
                   </div>
-                </CardHeader>
+                </CardHead>
                 <CardContent className="space-y-3">
                   <Text as="p" variant="body-sm" className="text-text-secondary">
                     Gå til {item.title.toLowerCase()}
-                  </Text>
-                  <Text as="p" variant="label" className="text-text-primary">
-                    Åpne
                   </Text>
                 </CardContent>
               </Card>
@@ -115,29 +114,5 @@ function AdminMetricCard({
   icon: React.ReactNode;
   accent?: 'info' | 'success';
 }) {
-  const accentClasses = {
-    info: 'bg-primary/10',
-    success: 'bg-secondary/10',
-  } as const;
-
-  return (
-    <Card variant="default" size="sm" className="bg-surface">
-      <CardContent className="space-y-3">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <Text as="p" variant="body-sm" className="text-text-secondary">
-              {label}
-            </Text>
-            <Text as="p" variant="heading-lg">
-              {value}
-            </Text>
-          </div>
-          <div className={`flex h-11 w-11 items-center justify-center rounded-md ${accentClasses[accent]}`}>{icon}</div>
-        </div>
-        <Text as="p" variant="body-sm" className="text-text-secondary">
-          {description}
-        </Text>
-      </CardContent>
-    </Card>
-  );
+  return <KpiCard label={label} value={value} icon={icon} compare={description} tone={accent} />;
 }

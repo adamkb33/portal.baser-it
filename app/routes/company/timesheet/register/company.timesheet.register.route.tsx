@@ -129,12 +129,9 @@ export default function CompanyTimeSheetsRegisterRoute() {
       description="Opprett timer eller tidsintervaller i samme kompakte formulamønster som resten av company-domenet."
       label="Timelister"
       actions={
-        <Link
-          to={ROUTES_MAP['company.timesheet'].href}
-          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
-        >
-          Avbryt
-        </Link>
+        <Button asChild variant="outline" size="sm">
+          <Link to={ROUTES_MAP['company.timesheet'].href}>Avbryt</Link>
+        </Button>
       }
     >
       <Panel
@@ -189,7 +186,7 @@ export default function CompanyTimeSheetsRegisterRoute() {
 
             <div className="space-y-3">
               {visibleEntries.map((entry) => (
-                <div key={entry.id} className="flex flex-wrap gap-2 rounded-md border border-border bg-background p-3">
+                <div key={entry.id} className="flex flex-wrap gap-2 border-b border-border pb-3 last:border-b-0">
                   <div className="min-w-[220px] flex-1">
                     <Popover
                       open={openDateEntryId === entry.id}
@@ -247,12 +244,9 @@ export default function CompanyTimeSheetsRegisterRoute() {
           </section>
 
           <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
-            <Link
-              to={ROUTES_MAP['company.timesheet'].href}
-              className="inline-flex h-10 items-center justify-center rounded-sm border border-border bg-background px-4 text-base font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
-            >
-              Avbryt
-            </Link>
+            <Button asChild variant="outline">
+              <Link to={ROUTES_MAP['company.timesheet'].href}>Avbryt</Link>
+            </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Lagrer...' : 'Lagre'}
             </Button>

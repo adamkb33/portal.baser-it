@@ -13,6 +13,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  KeyValueList,
   Text,
   cn,
 } from '~/ui';
@@ -155,16 +156,18 @@ export function AppointmentCardRow({ appointment, onDelete, onUploadImage, isDel
             </Button>
           </div>
 
-          <div className="rounded-lg border border-border bg-surface-variant-1 p-2.5">
-            <div className="flex items-center gap-2 text-text-secondary">
-              <CalendarClock className="h-4 w-4" />
-              <Text as="p" variant="body-sm">
-                {format(parseISO(appointment.startTime), "EEEE d. MMMM 'kl.' HH:mm", { locale: nb })}
-              </Text>
-            </div>
-          </div>
+          <KeyValueList
+            layout="compact"
+            items={[
+              {
+                label: 'Tidspunkt',
+                icon: <CalendarClock className="h-4 w-4" />,
+                value: format(parseISO(appointment.startTime), "EEEE d. MMMM 'kl.' HH:mm", { locale: nb }),
+              },
+            ]}
+          />
 
-          <div className="rounded-lg border border-border bg-surface-variant-2 p-2.5">
+          <div className="space-y-2 border-t border-border pt-2.5">
             <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
               Kunde
             </Text>
@@ -182,7 +185,7 @@ export function AppointmentCardRow({ appointment, onDelete, onUploadImage, isDel
             </div>
           </div>
 
-          <div className="rounded-lg border border-border bg-surface-variant-3 p-2.5">
+          <div className="space-y-2 border-t border-border pt-2.5">
             <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
               Tjenester
             </Text>

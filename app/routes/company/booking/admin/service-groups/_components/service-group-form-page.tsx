@@ -1,5 +1,5 @@
 import { Form, useNavigate, useNavigation } from 'react-router';
-import { Button, CompanyFormPageTemplate, FormField, Text } from '~/ui';
+import { Button, CompanyFormPageTemplate, FormField } from '~/ui';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 
 export type ServiceGroupFormValues = {
@@ -41,15 +41,13 @@ export function ServiceGroupFormPage({ mode, values, actionData }: ServiceGroupF
     >
       <Form id="service-group-form" method="post" className="space-y-3">
         {currentValues.id ? <input type="hidden" name="id" value={currentValues.id} /> : null}
-        <div className="rounded-md border border-border bg-background p-3">
-          <Text as="p" variant="label" className="text-text-primary">
-            Navn
-          </Text>
-          <Text as="p" variant="body-sm" className="mb-3 text-text-secondary">
-            Dette navnet brukes for å organisere og filtrere tjenester i bookingadministrasjonen.
-          </Text>
-          <FormField name="name" defaultValue={currentValues.name} placeholder="Skriv inn navn" />
-        </div>
+        <FormField
+          label="Navn"
+          name="name"
+          defaultValue={currentValues.name}
+          helperText="Dette navnet brukes for å organisere og filtrere tjenester i bookingadministrasjonen."
+          placeholder="Skriv inn navn"
+        />
       </Form>
     </CompanyFormPageTemplate>
   );

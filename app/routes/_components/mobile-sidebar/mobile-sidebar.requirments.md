@@ -161,7 +161,7 @@ Visible child sections:
 Important nested children:
 
 - `company.booking.admin.service-groups`
-- `company.booking.admin.service-groups.services`
+- `company.booking.admin.services`
 - `company.booking.appointments.create`
 
 Hidden booking children that still matter for active-state and drilldown:
@@ -169,8 +169,8 @@ Hidden booking children that still matter for active-state and drilldown:
 - `company.booking.admin.settings`
 - `company.booking.admin.service-groups.create`
 - `company.booking.admin.service-groups.edit`
-- `company.booking.admin.service-groups.services.create`
-- `company.booking.admin.service-groups.services.edit`
+- `company.booking.admin.services.create`
+- `company.booking.admin.services.edit`
 - `company.booking.profile.create`
 - `company.booking.profile.edit`
 - `company.booking.schedule-unavailability.create`

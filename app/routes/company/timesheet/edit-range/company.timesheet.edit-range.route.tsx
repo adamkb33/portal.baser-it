@@ -110,12 +110,9 @@ export default function CompanyTimesheetEditRange() {
       description="Oppdater tidsintervaller med samme kompakte formulamønster som resten av company-domenet."
       label="Timelister"
       actions={
-        <Link
-          to={ROUTES_MAP['company.timesheet'].href}
-          className="inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-3 text-sm font-medium text-text-primary transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-interactive"
-        >
-          Tilbake
-        </Link>
+        <Button asChild variant="outline" size="sm">
+          <Link to={ROUTES_MAP['company.timesheet'].href}>Tilbake</Link>
+        </Button>
       }
     >
       <Panel title="Oppdater registrering" description="Dato, pause og intervall for valgt registrering.">
@@ -135,8 +132,6 @@ export default function CompanyTimesheetEditRange() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Fra kl.</Label>
-              <Label>Til kl.</Label>
               <StartEndTimeSelector
                 startValue={fromTime}
                 endValue={toTime}

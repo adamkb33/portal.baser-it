@@ -17,7 +17,7 @@ export function ServiceQuantityControl({ quantity, onChange, className }: Servic
           onChange(1);
         }}
         className={cn('flex-1 gap-2', className)}
-        variant="primary"
+        variant="booking-primary"
       >
         Velg
       </Button>
@@ -47,7 +47,7 @@ export function ServiceQuantityControl({ quantity, onChange, className }: Servic
             onChange(2);
           }}
           className="w-full gap-1 px-2 text-sm md:gap-2 md:px-4 md:text-base"
-          variant="primary"
+          variant="booking-primary"
           aria-label="Legg til en til"
         >
           <Plus className="size-5" />
@@ -60,8 +60,8 @@ export function ServiceQuantityControl({ quantity, onChange, className }: Servic
     <ButtonGroup className={cn('flex-1', className)}>
       <Button
         type="button"
-        variant="outline"
-        className="w-full border-booking-action bg-booking-action text-booking-action-contrast hover:bg-booking-action-hover"
+        variant="booking-primary"
+        className="w-full"
         aria-label="Reduser antall"
         onClick={(event) => {
           event.stopPropagation();
@@ -72,7 +72,7 @@ export function ServiceQuantityControl({ quantity, onChange, className }: Servic
       </Button>
       <Button
         type="button"
-        variant="outline"
+        variant="booking-secondary"
         className="w-full"
         aria-label="Øk antall"
         onClick={(event) => {
