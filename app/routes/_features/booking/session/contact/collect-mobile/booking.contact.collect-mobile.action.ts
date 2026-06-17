@@ -6,7 +6,6 @@ import { getBookingRouteMap } from '../../../_utils/booking.route-map';
 import type { BookingSurface } from '../../../_utils/booking.surface';
 import { ContactAuthService } from '../_services/contact-auth.service.server';
 import { resolveMappedAuthError } from '../_utils/auth-step-error';
-import { resolveAuthNextStepHref } from '../_utils/auth.utils';
 
 type CreateBookingContactCollectMobileActionOptions = {
   surface: BookingSurface;
@@ -55,9 +54,7 @@ export function createBookingContactCollectMobileAction({ surface }: CreateBooki
         mobileNumber: mobileNumber.trim(),
       });
 
-      const authStatus = await ContactAuthService.getUserStatus(request);
-      const nextStepHref = resolveAuthNextStepHref(authStatus?.nextStep ?? response?.nextStep, surface);
-      const { verificationCookieHeader } = await ContactAuthService.resolvePostAuthRedirect(response, { surface });
+      const { nextStepHref, verificationCookieHeader } = await ContactAuthService.resolvePostAuthRedirect(response, { surface });
       if (verificationCookieHeader) {
         const headers = new Headers();
         headers.append('Set-Cookie', verificationCookieHeader);

@@ -298,6 +298,36 @@ describe('booking contact auth routes matrix', () => {
       expect(getLocation(result)).toBe(ROUTES_MAP['booking.public.appointment.session.employee'].href);
     });
 
+    it('collect mobile uses complete-profile response directly when user-status is unauthenticated', async () => {
+      mocks.completeProfile.mockResolvedValueOnce({
+        userId: 10,
+        mobileNumber: '+4712345678',
+        nextStep: 'VERIFY_MOBILE',
+        verificationToken: {
+          value: 'verification-token',
+          expiresAt: '2026-06-17T22:47:34',
+        },
+      });
+      mocks.resolvePostAuthRedirect.mockResolvedValueOnce({
+        nextStepHref: ROUTES_MAP['booking.public.appointment.session.contact.verify-mobile'].href,
+        verificationCookieHeader: 'verification_session_token=verification-token; Path=/; HttpOnly',
+      });
+      mocks.getUserStatus.mockRejectedValueOnce(new Error('UNAUTHENTICATED'));
+
+      const formData = new FormData();
+      formData.set('mobileNumber', '+4712345678');
+
+      const result = await bookingCollectMobileAction({
+        request: new Request('http://localhost/booking/collect-mobile', { method: 'POST', body: formData }),
+      } as never);
+
+      expect(mocks.completeProfile).toHaveBeenCalledOnce();
+      expect(mocks.getUserStatus).not.toHaveBeenCalled();
+      expect(getStatus(result)).toBe(302);
+      expect(getLocation(result)).toBe(ROUTES_MAP['booking.public.appointment.session.contact.verify-mobile'].href);
+      expect((result as Response).headers.get('Set-Cookie')).toContain('verification_session_token=');
+    });
+
     it.each([
       {
         name: 'collect email error',
