@@ -135,6 +135,36 @@ describe('AppointmentSessionService cookie policy', () => {
     expect(result.status).toBe('stale-cookie');
   });
 
+  it('returns stale-cookie when an Axios-like Error carries SESSION_NOT_FOUND response data', async () => {
+    const axiosLikeError = Object.assign(new Error('Request failed with status code 400'), {
+      response: {
+        status: 400,
+        data: {
+          success: false,
+          message: {
+            id: 'SESSION_NOT_FOUND',
+            value: 'Sesjonen finnes ikke',
+          },
+        },
+      },
+    });
+    mocks.getAppointmentSession.mockRejectedValueOnce(axiosLikeError);
+
+    const cookie = await AppointmentSessionService.create(
+      1,
+      new Request('https://portal.pitell.no/embed/booking/appointment/session?companyId=1'),
+    );
+    const result = await AppointmentSessionService.getResult(
+      new Request('https://portal.pitell.no/embed/booking/appointment/session', {
+        headers: {
+          Cookie: cookie.setCookieHeader,
+        },
+      }),
+    );
+
+    expect(result.status).toBe('stale-cookie');
+  });
+
   it('returns found when backend resolves the cookie session', async () => {
     const cookie = await AppointmentSessionService.create(
       1,

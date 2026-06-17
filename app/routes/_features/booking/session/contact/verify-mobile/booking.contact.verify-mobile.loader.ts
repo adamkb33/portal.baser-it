@@ -4,9 +4,7 @@ import { redirectWithError } from '~/lib/flash-message.server';
 import { AppointmentSessionService } from '../../../_services/booking.appointment-session.service.server';
 import { getBookingRouteMap } from '../../../_utils/booking.route-map';
 import type { BookingSurface } from '../../../_utils/booking.surface';
-import { ContactAuthService } from '../_services/contact-auth.service.server';
 import { VerificationTokenService } from '../_services/verification-token.service.server';
-import { redirectAuthStatusNextStepHref, resolveAuthStatusNextStepHref } from '../_utils/auth.utils';
 
 type CreateBookingContactVerifyMobileLoaderOptions = {
   surface: BookingSurface;
@@ -27,14 +25,6 @@ export function createBookingContactVerifyMobileLoader({ surface }: CreateBookin
         return redirect(routes.session);
       }
 
-      const authStatus = await ContactAuthService.getUserStatus(request);
-      if (!authStatus) {
-        console.info('[verify-mobile] redirect: missing auth status data', {
-          userId: session.userId,
-        });
-        return redirect(routes.session);
-      }
-
       const verificationSessionToken = await VerificationTokenService.readVerificationToken(request);
       if (!verificationSessionToken) {
         console.info('[verify-mobile] redirect: missing verification token cookie', {
@@ -43,22 +33,12 @@ export function createBookingContactVerifyMobileLoader({ surface }: CreateBookin
         return redirect(routes.contact);
       }
 
-      const normalizedNextStepHref = resolveAuthStatusNextStepHref(authStatus, surface);
-      if (normalizedNextStepHref && normalizedNextStepHref !== routes.contactVerifyMobile) {
-        console.info('[verify-mobile] redirect: nextStep is not VERIFY_MOBILE', {
-          userId: session.userId,
-          nextStep: authStatus.nextStep,
-          normalizedNextStepHref,
-        });
-        return redirectAuthStatusNextStepHref(authStatus, surface);
-      }
-
       return data({
         session,
-        authStatus,
         verificationSessionToken,
         surface,
         navigation: {
+          currentStep: routes.contactVerifyMobile,
           previousStep: routes.contactCollectMobile,
         },
       });

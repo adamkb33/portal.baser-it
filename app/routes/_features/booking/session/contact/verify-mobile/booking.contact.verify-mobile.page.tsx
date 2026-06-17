@@ -4,9 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import { API_ROUTES_MAP } from '~/lib/routing/route-tree';
 import type { action as resendVerificationMobileAction } from '~/routes/api/auth/resend-verification/mobile/auth.resend-verification.mobile.api-route';
 import type { action as verifyMobileAction } from '~/routes/api/auth/verify-mobile/auth.verify-mobile.api-route';
-import type { loader as userStatusLoader } from '~/routes/api/auth/user-status/auth.user-status.api-route';
 import { Button, Notice, PageHeader, Stack, VerificationCodeInput } from '~/ui';
-import { resolveAuthStatusNextStepHref } from '../_utils/auth.utils';
+import { resolveAuthNextStepHref } from '../_utils/auth.utils';
 import { BOOKING_CONTACT_PAGE_HEADER_CLASS } from '../_utils/booking-contact-theme';
 import type { createBookingContactVerifyMobileLoader } from './booking.contact.verify-mobile.loader';
 
@@ -15,7 +14,6 @@ const CODE_LENGTH = 6;
 export function BookingContactVerifyMobilePage() {
   const loaderData = useLoaderData<ReturnType<typeof createBookingContactVerifyMobileLoader>>();
   const fetcher = useFetcher<typeof verifyMobileAction>();
-  const statusFetcher = useFetcher<typeof userStatusLoader>();
   const resendFetcher = useFetcher<typeof resendVerificationMobileAction>();
   const [code, setCode] = React.useState('');
   const navigate = useNavigate();
@@ -37,24 +35,15 @@ export function BookingContactVerifyMobilePage() {
     if (fetcher.state !== 'idle') return;
     if (!fetcher.data || typeof fetcher.data !== 'object') return;
     if (!('success' in fetcher.data) || fetcher.data.success !== true) return;
-    if (!loaderData.session?.userId) return;
+    if (!('nextStep' in fetcher.data) || !fetcher.data.nextStep) return;
 
-    const params = new URLSearchParams({ userId: String(loaderData.session.userId) });
-    statusFetcher.load(`${API_ROUTES_MAP['auth.user-status'].url}?${params.toString()}`);
-  }, [fetcher.state, fetcher.data, loaderData.session?.userId, statusFetcher]);
-
-  React.useEffect(() => {
-    if (didNavigateRef.current) return;
-    if (!statusFetcher.data || typeof statusFetcher.data !== 'object') return;
-    if ('error' in statusFetcher.data) return;
-    if (!('nextStep' in statusFetcher.data) || !statusFetcher.data.nextStep) return;
-
-    const nextStepHref = resolveAuthStatusNextStepHref(statusFetcher.data, loaderData.surface);
+    const nextStepHref = resolveAuthNextStepHref(fetcher.data.nextStep, loaderData.surface);
     if (!nextStepHref) return;
+    if (nextStepHref === loaderData.navigation.currentStep) return;
 
     didNavigateRef.current = true;
     navigate(nextStepHref, { replace: true });
-  }, [statusFetcher.data, loaderData.surface, navigate]);
+  }, [fetcher.state, fetcher.data, loaderData.surface, loaderData.navigation.currentStep, navigate]);
 
   return (
     <Stack space="xl">

@@ -34,19 +34,31 @@ type AppointmentSessionGetResult =
   | { status: 'stale-cookie' }
   | { status: 'failed'; error: unknown };
 
-function getApiMessageId(error: unknown): ApiMessage['id'] | null {
+function getApiMessage(error: unknown): { id: ApiMessage['id'] | null; value: string | null } {
   const candidate = error as {
     error?: { message?: { id?: unknown } };
-    response?: { data?: { message?: { id?: unknown } } };
+    response?: { data?: { message?: { id?: unknown; value?: unknown } | string } };
   };
 
-  const id = candidate.error?.message?.id ?? candidate.response?.data?.message?.id;
-  return typeof id === 'string' ? (id as ApiMessage['id']) : null;
+  const responseMessage = candidate.response?.data?.message;
+  const id = candidate.error?.message?.id ?? (typeof responseMessage === 'object' ? responseMessage?.id : undefined);
+  const value = typeof responseMessage === 'object' ? responseMessage?.value : responseMessage;
+
+  return {
+    id: typeof id === 'string' ? (id as ApiMessage['id']) : null,
+    value: typeof value === 'string' ? value : null,
+  };
 }
 
 function isSessionNotFoundError(error: unknown): boolean {
+  const message = getApiMessage(error);
   const candidate = error as { response?: { status?: number } };
-  return candidate.response?.status === 404 || getApiMessageId(error) === 'SESSION_NOT_FOUND';
+  return (
+    candidate.response?.status === 404 ||
+    message.id === 'SESSION_NOT_FOUND' ||
+    message.value === 'SESSION_NOT_FOUND' ||
+    message.value === 'Sesjonen finnes ikke'
+  );
 }
 
 export class AppointmentSessionService {
