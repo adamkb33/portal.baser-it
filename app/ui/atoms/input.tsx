@@ -41,8 +41,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
         variantClasses[variant],
         invalid && 'border-danger focus-visible:border-danger focus-visible:ring-danger-soft',
         disabled && 'cursor-not-allowed',
-        startIcon && 'pl-9',
         sizeClasses[size],
+        startIcon && (size === 'lg' ? 'pl-11' : 'pl-10'),
         className,
       )}
       disabled={disabled}
@@ -54,7 +54,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
 
   return (
     <div className="relative w-full">
-      <span className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-text-disabled [&_svg]:size-full">
+      <span className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-text-disabled [&_svg]:size-full">
         {startIcon}
       </span>
       {input}

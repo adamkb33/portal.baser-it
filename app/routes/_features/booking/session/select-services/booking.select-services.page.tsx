@@ -307,17 +307,14 @@ export function BookingSelectServicesPage() {
       <Stack space="lg">
         {totalServices > 6 && (
           <div className="relative rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-muted p-2 md:p-3">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2">
-              <Search className="size-5 text-booking-text-muted" />
-            </div>
-
             <Input
               type="text"
               placeholder="Søk etter tjenester..."
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               variant="booking"
-              className="pl-11 pr-11"
+              startIcon={<Search className="text-booking-text-muted" />}
+              className="pr-11"
             />
 
             {searchQuery && (
