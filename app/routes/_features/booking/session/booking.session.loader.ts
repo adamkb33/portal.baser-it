@@ -24,12 +24,44 @@ export function createBookingSessionLoader({ surface }: CreateBookingSessionLoad
     const routes = getBookingRouteMap(surface);
 
     try {
-      const session = await AppointmentSessionService.get(args.request);
+      const sessionResult = await AppointmentSessionService.getResult(args.request);
       const url = new URL(args.request.url);
+      const companyIdParam = url.searchParams.get('companyId');
+
+      if (sessionResult.status === 'stale-cookie') {
+        const clearSessionCookie = await AppointmentSessionService.delete(args.request);
+
+        if (!companyIdParam) {
+          return redirectWithError(args.request, routes.appointment, 'Bookingøkten er utløpt. Start på nytt.', {
+            'Set-Cookie': clearSessionCookie,
+          });
+        }
+
+        const companyIdNumber = parseCompanyId(companyIdParam);
+
+        if (companyIdNumber === null) {
+          return redirectWithError(args.request, routes.appointment, 'Selskaps-ID er ugyldig.', {
+            'Set-Cookie': clearSessionCookie,
+          });
+        }
+
+        await AppointmentsController.validateCompanyBooking({
+          path: {
+            companyId: companyIdNumber,
+          },
+        });
+
+        const created = await AppointmentSessionService.create(companyIdNumber, args.request);
+        const headers = new Headers();
+        headers.append('Set-Cookie', clearSessionCookie);
+        headers.append('Set-Cookie', created.setCookieHeader);
+
+        return redirect(routes.contact, { headers });
+      }
+
+      const session = sessionResult.status === 'found' ? sessionResult.session : null;
 
       if (session) {
-        const companyIdParam = url.searchParams.get('companyId');
-
         if (companyIdParam) {
           const companyIdNumber = parseCompanyId(companyIdParam);
 
@@ -55,8 +87,6 @@ export function createBookingSessionLoader({ surface }: CreateBookingSessionLoad
 
         return redirect(routes.contact);
       }
-
-      const companyIdParam = url.searchParams.get('companyId');
 
       if (!companyIdParam) {
         return redirectWithError(args.request, routes.appointment, 'Selskaps-ID mangler.');

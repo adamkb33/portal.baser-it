@@ -4,6 +4,7 @@ import { redirectWithError } from '~/lib/flash-message.server';
 import { getBookingRouteMap } from '../../_utils/booking.route-map';
 import type { BookingSurface } from '../../_utils/booking.surface';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { AppointmentSessionService } from '../../_services/booking.appointment-session.service.server';
 
 type CreateBookingSessionContactLoaderOptions = {
   surface: BookingSurface;
@@ -14,10 +15,17 @@ export function createBookingSessionContactLoader({ surface }: CreateBookingSess
     const routes = getBookingRouteMap(surface);
 
     try {
-      const { session, sessionUser, auth, verificationSessionToken } =
+      const { session, sessionStatus, sessionUser, auth, verificationSessionToken } =
         await ContactSessionService.getContactContext(request);
 
       if (!session) {
+        if (sessionStatus === 'stale-cookie') {
+          const clearSessionCookie = await AppointmentSessionService.delete(request);
+          return redirectWithError(request, routes.appointment, 'Bookingøkten er utløpt. Start på nytt.', {
+            'Set-Cookie': clearSessionCookie,
+          });
+        }
+
         return redirectWithError(request, routes.session, 'Kunne ikke hente session');
       }
 

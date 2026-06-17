@@ -7,6 +7,7 @@ import { withAuth } from '~/api/utils/with-auth';
 
 export type ContactSessionContext = {
   session: Awaited<ReturnType<typeof AppointmentSessionService.get>>;
+  sessionStatus: Awaited<ReturnType<typeof AppointmentSessionService.getResult>>['status'];
   sessionUser: UserAuthStatusDto | null;
   auth: Awaited<ReturnType<typeof authService.getAuth>>;
   verificationSessionToken: string | null;
@@ -29,7 +30,8 @@ export class ContactSessionService {
   }
 
   static async getContactContext(request: Request): Promise<ContactSessionContext> {
-    const session = await AppointmentSessionService.get(request);
+    const sessionResult = await AppointmentSessionService.getResult(request);
+    const session = sessionResult.status === 'found' ? sessionResult.session : null;
     const auth = await authService.getAuth(request);
     const verificationSessionToken = await VerificationTokenService.readVerificationToken(request);
     const shouldResolveSessionUser = Boolean(auth) || Boolean(verificationSessionToken);
@@ -37,6 +39,7 @@ export class ContactSessionService {
 
     return {
       session,
+      sessionStatus: sessionResult.status,
       sessionUser,
       auth,
       verificationSessionToken,

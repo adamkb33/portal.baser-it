@@ -1,6 +1,5 @@
 import { redirect } from 'react-router';
 import type { AppointmentSessionDto } from '~/api/generated/booking';
-import { getSession } from '~/lib/appointments.server';
 import { resolveAuthStatusNextStepHref } from '~/routes/_features/booking/session/contact/_utils/auth.utils';
 import { AppointmentSessionService } from '../_services/booking.appointment-session.service.server';
 import { ContactAuthService } from '../session/contact/_services/contact-auth.service.server';
@@ -16,7 +15,18 @@ export async function requireAuthenticatedBookingFlow(
   surface: BookingSurface = 'public',
 ): Promise<GuardResult | Response> {
   const routes = getBookingRouteMap(surface);
-  const session = await getSession(request);
+  const sessionResult = await AppointmentSessionService.getResult(request);
+  const session = sessionResult.status === 'found' ? sessionResult.session : null;
+
+  if (sessionResult.status === 'stale-cookie') {
+    const clearSessionCookie = await AppointmentSessionService.delete(request);
+    return redirect(routes.appointment, {
+      headers: {
+        'Set-Cookie': clearSessionCookie,
+      },
+    });
+  }
+
   if (!session || !session.userId) {
     return redirect(routes.contact);
   }

@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   createAppointmentSession: vi.fn(),
+  getAppointmentSession: vi.fn(),
   deleteAppointmentSession: vi.fn(),
 }));
 
 vi.mock('~/api/generated/booking', () => ({
   PublicAppointmentSessionController: {
     createAppointmentSession: mocks.createAppointmentSession,
+    getAppointmentSession: mocks.getAppointmentSession,
     deleteAppointmentSession: mocks.deleteAppointmentSession,
   },
 }));
@@ -18,6 +20,14 @@ describe('AppointmentSessionService cookie policy', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.createAppointmentSession.mockResolvedValue({
+      data: {
+        data: {
+          sessionId: 'session-123',
+          companyId: 1,
+        },
+      },
+    });
+    mocks.getAppointmentSession.mockResolvedValue({
       data: {
         data: {
           sessionId: 'session-123',
@@ -65,5 +75,55 @@ describe('AppointmentSessionService cookie policy', () => {
     expect(setCookieHeader).toContain('Secure');
     expect(setCookieHeader).toContain('SameSite=None');
     expect(setCookieHeader).toContain('Max-Age=0');
+  });
+
+  it('returns stale-cookie when backend reports SESSION_NOT_FOUND', async () => {
+    mocks.getAppointmentSession.mockResolvedValueOnce({
+      error: {
+        message: {
+          id: 'SESSION_NOT_FOUND',
+          value: 'Session not found',
+        },
+      },
+      response: {
+        status: 404,
+      },
+    });
+
+    const cookie = await AppointmentSessionService.create(
+      1,
+      new Request('https://portal.pitell.no/booking/public/appointment/session?companyId=1'),
+    );
+    const result = await AppointmentSessionService.getResult(
+      new Request('https://portal.pitell.no/booking/public/appointment/session/contact', {
+        headers: {
+          Cookie: cookie.setCookieHeader,
+        },
+      }),
+    );
+
+    expect(result.status).toBe('stale-cookie');
+  });
+
+  it('returns found when backend resolves the cookie session', async () => {
+    const cookie = await AppointmentSessionService.create(
+      1,
+      new Request('https://portal.pitell.no/booking/public/appointment/session?companyId=1'),
+    );
+    const result = await AppointmentSessionService.getResult(
+      new Request('https://portal.pitell.no/booking/public/appointment/session/contact', {
+        headers: {
+          Cookie: cookie.setCookieHeader,
+        },
+      }),
+    );
+
+    expect(result).toMatchObject({
+      status: 'found',
+      session: {
+        sessionId: 'session-123',
+        companyId: 1,
+      },
+    });
   });
 });
