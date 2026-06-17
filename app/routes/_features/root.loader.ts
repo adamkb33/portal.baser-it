@@ -122,7 +122,9 @@ export const defaultResponse = async (
 ) => {
   const authHeaders = await authService.clearAuthCookies();
   const headers = mergeResponseHeaders(authHeaders, additionalHeaders);
-  const embedConfig = request ? await parseEmbedConfig(request) : { theme: 'pitell' as const, parentOrigin: null };
+  const embedConfig = request
+    ? await parseEmbedConfig(request)
+    : { companyId: null, theme: 'pitell' as const, parentOrigin: null };
 
   return data(
     {

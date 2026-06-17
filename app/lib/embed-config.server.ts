@@ -3,12 +3,14 @@ import type { EmbedThemeKey } from './embed-shell';
 import { isEmbedThemeKey } from './embed-shell';
 
 type EmbedConfig = {
+  companyId: number | null;
   theme: EmbedThemeKey;
   parentOrigin: string | null;
 };
 
 const DEFAULT_EMBED_THEME: EmbedThemeKey = 'pitell';
 const DEFAULT_EMBED_CONFIG: EmbedConfig = {
+  companyId: null,
   theme: DEFAULT_EMBED_THEME,
   parentOrigin: null,
 };
@@ -29,11 +31,15 @@ export async function parseEmbedConfig(request: Request): Promise<EmbedConfig> {
   }
 
   const themeCandidate = (value as Record<string, unknown>).theme;
+  const companyIdCandidate = (value as Record<string, unknown>).companyId;
   const parentOriginCandidate = (value as Record<string, unknown>).parentOrigin;
+  const companyId = typeof companyIdCandidate === 'number' && Number.isInteger(companyIdCandidate) && companyIdCandidate > 0
+    ? companyIdCandidate
+    : null;
   const parentOrigin = typeof parentOriginCandidate === 'string' ? resolveEmbedParentOrigin(parentOriginCandidate) : null;
 
   if (typeof themeCandidate === 'string' && isEmbedThemeKey(themeCandidate)) {
-    return { theme: themeCandidate, parentOrigin };
+    return { companyId, theme: themeCandidate, parentOrigin };
   }
 
   return DEFAULT_EMBED_CONFIG;

@@ -22,6 +22,7 @@ vi.mock('~/api/generated/booking', () => ({
 }));
 
 import { createBookingSessionLoader } from './booking.session.loader';
+import { serializeEmbedConfig } from '~/lib/embed-config.server';
 
 describe('booking session loader', () => {
   beforeEach(() => {
@@ -61,6 +62,30 @@ describe('booking session loader', () => {
     expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment');
     expect(mocks.deleteSession).toHaveBeenCalledOnce();
     expect(mocks.createSession).not.toHaveBeenCalled();
+    expect((result as Response).headers.get('Set-Cookie')).toContain('appointment_session=');
+  });
+
+  it('uses embed_config companyId to recreate a stale embedded session when query params are gone', async () => {
+    mocks.getResult.mockResolvedValue({ status: 'stale-cookie' });
+    const embedConfigCookie = await serializeEmbedConfig({
+      companyId: 1,
+      theme: 'fredrikstad-barbershop',
+      parentOrigin: 'https://www.fredrikstadbarbershop.no',
+    });
+
+    const loader = createBookingSessionLoader({ surface: 'embed' });
+    const result = await loader({
+      request: new Request('https://portal.pitell.no/embed/booking/appointment/session', {
+        headers: {
+          Cookie: embedConfigCookie,
+        },
+      }),
+    } as never);
+
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).headers.get('Location')).toBe('/embed/booking/appointment/session/contact');
+    expect(mocks.validateCompanyBooking).toHaveBeenCalledWith({ path: { companyId: 1 } });
+    expect(mocks.createSession).toHaveBeenCalledWith(1, expect.any(Request));
     expect((result as Response).headers.get('Set-Cookie')).toContain('appointment_session=');
   });
 });

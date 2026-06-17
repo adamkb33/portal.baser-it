@@ -1,5 +1,6 @@
 import { redirect, type LoaderFunctionArgs } from 'react-router';
 import { AppointmentsController } from '~/api/generated/booking';
+import { parseEmbedConfig } from '~/lib/embed-config.server';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { AppointmentSessionService } from '../_services/booking.appointment-session.service.server';
 import { getBookingRouteMap } from '../_utils/booking.route-map';
@@ -26,7 +27,8 @@ export function createBookingSessionLoader({ surface }: CreateBookingSessionLoad
     try {
       const sessionResult = await AppointmentSessionService.getResult(args.request);
       const url = new URL(args.request.url);
-      const companyIdParam = url.searchParams.get('companyId');
+      const embedConfig = surface === 'embed' ? await parseEmbedConfig(args.request) : null;
+      const companyIdParam = url.searchParams.get('companyId') ?? (embedConfig?.companyId ? String(embedConfig.companyId) : null);
 
       if (sessionResult.status === 'stale-cookie') {
         const clearSessionCookie = await AppointmentSessionService.delete(args.request);

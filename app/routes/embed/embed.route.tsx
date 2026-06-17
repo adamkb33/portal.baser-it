@@ -32,7 +32,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   const headers: [string, string][] = [];
-  headers.push(['Set-Cookie', await serializeEmbedConfig({ theme, parentOrigin })]);
+  headers.push(['Set-Cookie', await serializeEmbedConfig({ companyId, theme, parentOrigin })]);
 
   if (reset) {
     const clearSessionCookie = await AppointmentSessionService.delete(request);

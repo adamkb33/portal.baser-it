@@ -8,12 +8,13 @@ import {
 
 describe('embed config cookie', () => {
   it('roundtrips an allowlisted theme through the scoped cookie', async () => {
-    const setCookie = await serializeEmbedConfig({ theme: 'fredrikstad-barbershop', parentOrigin: null });
+    const setCookie = await serializeEmbedConfig({ companyId: 8, theme: 'fredrikstad-barbershop', parentOrigin: null });
     const request = new Request('http://localhost/embed/booking', {
       headers: { Cookie: setCookie },
     });
 
     await expect(parseEmbedConfig(request)).resolves.toEqual({
+      companyId: 8,
       theme: 'fredrikstad-barbershop',
       parentOrigin: null,
     });
@@ -29,6 +30,7 @@ describe('embed config cookie', () => {
 
   it('roundtrips parent origin through the scoped cookie', async () => {
     const setCookie = await serializeEmbedConfig({
+      companyId: 8,
       theme: 'pitell',
       parentOrigin: 'https://client.example',
     });
@@ -37,6 +39,7 @@ describe('embed config cookie', () => {
     });
 
     await expect(parseEmbedConfig(request)).resolves.toEqual({
+      companyId: 8,
       theme: 'pitell',
       parentOrigin: 'https://client.example',
     });
