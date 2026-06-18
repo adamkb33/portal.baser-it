@@ -2,7 +2,6 @@ import { API_ROUTES_TREE } from './api/routes';
 import { AUTH_ROUTES } from './auth/routes';
 import { BOOKING_ROUTES } from './booking/routes';
 import { COMPANY_ROUTES } from './company/routes';
-import { EMBEDDED_ROUTES } from './embedded/routes';
 import { SYSTEM_ADMIN_ROUTES } from './system-admin/routes';
 import { USER_ROUTES } from './user/routes';
 import type { UserContextDto } from '~/api/generated/base';
@@ -18,7 +17,6 @@ export const ROUTE_TREE: RouteBranch[] = [
   ...SYSTEM_ADMIN_ROUTES,
   ...COMPANY_ROUTES,
   ...BOOKING_ROUTES,
-  ...EMBEDDED_ROUTES,
 ];
 
 export { API_ROUTES_TREE };

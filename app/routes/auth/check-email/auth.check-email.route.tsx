@@ -7,10 +7,10 @@ import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { AuthController, type DeliveryStatusDto, type VerificationStatusResponseDto } from '~/api/generated/base';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
-import { getVerificationTokenFromRequest } from '~/routes/_features/booking/session/contact/_utils/auth.utils.server';
+import { getVerificationTokenFromRequest } from '~/routes/booking/public/appointment/session/contact/_utils/auth.utils.server';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { AuthPageTemplate, Notice } from '~/ui';
-import { VerificationTokenService } from '~/routes/_features/booking/session/contact/_services/verification-token.service.server';
+import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
 
 type CheckEmailLoaderData = {
   emailDelivery: DeliveryStatusDto['status'] | null;

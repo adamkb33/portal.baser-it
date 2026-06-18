@@ -26,10 +26,10 @@
 2. No raw hardcoded colors in route/component JSX.
 3. No `<a>` for internal navigation; use React Router `Link`/`NavLink`.
 4. Reuse shared UI primitives and patterns before adding new one-off wrappers.
-5. Token usage must remain compatible with embed theme overrides:
+5. Token usage must remain compatible with booking theme overrides:
    - Components must consume semantic tokens/aliases only.
    - No fixed brand hues in booking-public route code.
-   - `EMBED_THEME_TOKENS` must be able to remap colors without visual breakage.
+   - `BOOKING_THEME_TOKENS` must be able to remap colors without visual breakage.
 
 ## Visual Hierarchy System
 

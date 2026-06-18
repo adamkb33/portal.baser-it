@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
   redirectWithInfo: vi.fn(),
 }));
 
-vi.mock('~/routes/_features/booking/session/contact/_services/contact-auth.service.server', () => ({
+vi.mock('~/routes/booking/public/appointment/session/contact/_services/contact-auth.service.server', () => ({
   ContactAuthService: {
     signInWithProvider: mocks.signInWithProvider,
     signInLocal: mocks.signInLocal,
@@ -30,7 +30,7 @@ vi.mock('~/routes/_features/booking/session/contact/_services/contact-auth.servi
   },
 }));
 
-vi.mock('~/routes/_features/booking/_services/booking.appointment-session.service.server', () => ({
+vi.mock('~/routes/booking/public/_services/booking.appointment-session.service.server', () => ({
   AppointmentSessionService: {
     get: mocks.getSession,
   },

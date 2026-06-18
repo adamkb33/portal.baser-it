@@ -88,6 +88,10 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
   }
 
   const { companySummary } = loaderData;
+  const newBookingHref = `${ROUTES_MAP['booking.public.appointment.session'].href}?${new URLSearchParams({
+    companyId: String(companySummary.id),
+    reset: '1',
+  }).toString()}`;
 
   const formatAddress = () => {
     const address = companySummary.businessAddress;
@@ -182,7 +186,7 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
             </Link>
           }
           secondaryAction={
-            <Link to={ROUTES_MAP['booking.public.appointment.session.contact'].href}>
+            <Link to={newBookingHref}>
               <BookingButton variant="booking-secondary" size="md" fullWidth>
                 Book en ny time
               </BookingButton>

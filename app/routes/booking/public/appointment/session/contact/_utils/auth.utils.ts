@@ -1,0 +1,89 @@
+import { redirect } from 'react-router';
+import type { SignInResponseDto, SignUpResponseDto, UserAuthStatusDto } from '~/api/generated/base';
+import { getBookingRouteMap } from '../../../../_utils/booking.route-map';
+
+export function resolveAuthNextStepHref(
+  nextStep: SignInResponseDto['nextStep'] | SignUpResponseDto['nextStep'] | null | undefined,
+) {
+  const routes = getBookingRouteMap();
+
+  switch (nextStep) {
+    case 'COLLECT_EMAIL':
+      return routes.employee;
+    case 'COLLECT_MOBILE':
+      return routes.contactCollectMobile;
+    case 'VERIFY_EMAIL':
+      return routes.employee;
+    case 'VERIFY_MOBILE':
+      return routes.contactVerifyMobile;
+    case 'DONE':
+      return routes.employee;
+    default:
+      return null;
+  }
+}
+
+export function resolveAuthStatusNextStepHref(authStatus: UserAuthStatusDto | null | undefined) {
+  if (!authStatus) {
+    return null;
+  }
+
+  if (authStatus.nextStep === 'COLLECT_EMAIL' || authStatus.nextStep === 'VERIFY_EMAIL') {
+    const routes = getBookingRouteMap();
+    if (!authStatus.user.mobileNumber) {
+      return routes.contactCollectMobile;
+    }
+    if (!authStatus.user.mobileVerified) {
+      return routes.contactVerifyMobile;
+    }
+    return routes.employee;
+  }
+
+  return resolveAuthNextStepHref(authStatus?.nextStep);
+}
+
+export function redirectAuthStatusNextStepHref(authStatus: UserAuthStatusDto) {
+  const routes = getBookingRouteMap();
+  const nextStepHref = resolveAuthStatusNextStepHref(authStatus);
+  if (nextStepHref) {
+    return redirect(nextStepHref);
+  }
+
+  return redirect(routes.contact);
+}
+
+export function shouldStoreVerificationToken(
+  nextStep: SignInResponseDto['nextStep'] | SignUpResponseDto['nextStep'] | null | undefined,
+) {
+  return nextStep === 'VERIFY_MOBILE';
+}
+
+export function hasAuthErrors(
+  payload:
+    | SignInResponseDto
+    | SignUpResponseDto
+    | { error?: string; errors?: unknown; success?: boolean }
+    | null
+    | undefined,
+) {
+  if (!payload || typeof payload !== 'object') {
+    return false;
+  }
+  return (
+    ('error' in payload && typeof payload.error === 'string' && payload.error.length > 0) ||
+    ('errors' in payload && Array.isArray(payload.errors) && payload.errors.length > 0) ||
+    ('success' in payload && payload.success === false)
+  );
+}
+
+export function getFetcherError(
+  payload: SignInResponseDto | SignUpResponseDto | { error?: string } | null | undefined,
+) {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+  if ('error' in payload && typeof payload.error === 'string') {
+    return payload.error;
+  }
+  return null;
+}

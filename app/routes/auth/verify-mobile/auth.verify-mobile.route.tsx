@@ -6,12 +6,12 @@ import type { Route } from './+types/auth.verify-mobile.route';
 import { AuthController, type VerificationStatusResponseDto } from '~/api/generated/base';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { requireVerificationToken } from '~/routes/_features/booking/session/contact/_utils/auth.utils.server';
+import { requireVerificationToken } from '~/routes/booking/public/appointment/session/contact/_utils/auth.utils.server';
 import { resolveAuthNextStepHref } from '../_utils/auth-flow';
 import { authService } from '~/lib/auth-service';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { AuthPageTemplate, Button, Label, Notice, VerificationCodeInput } from '~/ui';
-import { VerificationTokenService } from '~/routes/_features/booking/session/contact/_services/verification-token.service.server';
+import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
 
 type VerifyMobileLoaderData = {
   verificationSessionToken: string;
@@ -169,7 +169,11 @@ export default function AuthVerifyMobile({ loaderData }: Route.ComponentProps) {
           </Link>
         </span>
       }
-      bottom={canVerifyMobile ? 'Skriv inn koden fra SMS-en vi sendte deg.' : 'Du kan fortsette når verifiseringen er fullført.'}
+      bottom={
+        canVerifyMobile
+          ? 'Skriv inn koden fra SMS-en vi sendte deg.'
+          : 'Du kan fortsette når verifiseringen er fullført.'
+      }
     >
       <div className="space-y-4">
         {!status?.emailVerified ? (

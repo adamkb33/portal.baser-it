@@ -6,7 +6,7 @@ import type { FlashMessage } from '~/lib/flash-message.server';
 import { AuthController } from '~/api/generated/base';
 import type { UserContextDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
-import { parseEmbedConfig } from '~/lib/embed-config.server';
+import { parseBookingContext } from '~/lib/booking-context.server';
 
 function mergeResponseHeaders(...headersInit: Array<HeadersInit | undefined>): Headers {
   const merged = new Headers();
@@ -103,15 +103,15 @@ export const buildResponseData = async (request: Request, accessToken: string, f
 
   const navigation = createNavigation(userContext, systemRoles, Boolean(authPayload));
 
-  const embedConfig = await parseEmbedConfig(request);
+  const bookingContext = await parseBookingContext(request);
 
   return {
     user: authPayload,
     userNavigation: navigation,
     companyContext: companySummary,
     flashMessage,
-    embedTheme: embedConfig.theme,
-    embedConfig,
+    bookingTheme: bookingContext.theme,
+    bookingContext,
   };
 };
 
@@ -122,9 +122,7 @@ export const defaultResponse = async (
 ) => {
   const authHeaders = await authService.clearAuthCookies();
   const headers = mergeResponseHeaders(authHeaders, additionalHeaders);
-  const embedConfig = request
-    ? await parseEmbedConfig(request)
-    : { companyId: null, theme: 'pitell' as const, parentOrigin: null };
+  const bookingContext = request ? await parseBookingContext(request) : { companyId: null, theme: 'pitell' as const };
 
   return data(
     {
@@ -132,8 +130,8 @@ export const defaultResponse = async (
       companyContext: null,
       userNavigation: createNavigation(undefined, [], false),
       flashMessage,
-      embedTheme: embedConfig.theme,
-      embedConfig,
+      bookingTheme: bookingContext.theme,
+      bookingContext,
     },
     { status: 200, headers },
   );

@@ -4,6 +4,8 @@ import type { Route } from './+types/booking.public.appointment.route';
 import { AppointmentsController, type CompanySummaryDto } from '~/api/generated/booking';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { parseBookingContext, resolveBookingTheme } from '~/lib/booking-context.server';
+import type { BookingThemeKey } from '~/lib/booking-theme';
 import {
   Container,
   Card,
@@ -157,8 +159,12 @@ async function geocodeCompanies(companies: CompanySummaryDto[]): Promise<Company
   return locations;
 }
 
-export async function loader({ request: _request }: Route.LoaderArgs) {
+export async function loader({ request }: Route.LoaderArgs) {
   try {
+    const url = new URL(request.url);
+    const context = await parseBookingContext(request);
+    const urlTheme = url.searchParams.has('theme') ? resolveBookingTheme(url.searchParams.get('theme')) : null;
+    const theme = urlTheme ?? context.theme;
     const response = await AppointmentsController.getBookingReadyCompanies();
     const companies = response.data?.data ?? [];
 
@@ -179,7 +185,7 @@ export async function loader({ request: _request }: Route.LoaderArgs) {
         message,
         status: response.status,
       });
-      return data({ companies: [], locations: [], error: message }, { status: 400 });
+      return data({ companies: [], locations: [], theme, error: message }, { status: 400 });
     }
 
     const locations = await geocodeCompanies(companies);
@@ -187,21 +193,29 @@ export async function loader({ request: _request }: Route.LoaderArgs) {
       companyCount: companies.length,
       locationCount: locations.length,
     });
-    return data({ companies, locations, error: null as string | null });
+    return data({ companies, locations, theme, error: null as string | null });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente timebestillinger');
     console.error('[companies-map] loader failed', {
       message,
       status,
     });
-    return data({ companies: [], locations: [], error: message }, { status: status ?? 400 });
+    return data(
+      { companies: [], locations: [], theme: 'pitell' as BookingThemeKey, error: message },
+      { status: status ?? 400 },
+    );
   }
+}
+
+export async function action({ request: _request }: Route.ActionArgs) {
+  return data(null, { status: 405 });
 }
 
 export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) {
   const companies = loaderData.companies ?? [];
   const locations = loaderData.locations ?? [];
   const error = loaderData.error ?? null;
+  const theme = loaderData.theme;
   const errorMessage = typeof error === 'string' ? error : (error?.value ?? null);
   const [showMap, setShowMap] = useState(false);
   const [activeCompanyId, setActiveCompanyId] = useState<number | null>(null);
@@ -261,7 +275,11 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
             <Grid columns={2}>
               {companies.map((company) => {
                 const companyName = company.name || `Selskap ${company.orgNumber}`;
-                const startUrl = `${ROUTES_MAP['booking.public.appointment.session'].href}?companyId=${company.id}`;
+                const startParams = new URLSearchParams({ companyId: String(company.id) });
+                if (theme && theme !== 'pitell') {
+                  startParams.set('theme', theme);
+                }
+                const startUrl = `${ROUTES_MAP['booking.public.appointment.session'].href}?${startParams.toString()}`;
                 const addressLine = buildAddressLine(company);
                 const orgTypeDescription = company.organizationType?.description;
                 const isLoading = isNavigatingToSession && activeCompanyId === company.id;

@@ -1,6 +1,6 @@
 import type { ProviderCompleteProfileResponseDto, SignInResponseDto, SignUpResponseDto } from '~/api/generated/base';
 import { resolveAuthNextStepHref } from './auth-flow';
-import { VerificationTokenService } from '~/routes/_features/booking/session/contact/_services/verification-token.service.server';
+import { VerificationTokenService } from '~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server';
 
 type AuthFlowPayload = SignInResponseDto | SignUpResponseDto | ProviderCompleteProfileResponseDto | null | undefined;
 

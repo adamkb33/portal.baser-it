@@ -1,4 +1,4 @@
-import { data, Link, useLocation, useNavigate, useNavigation, useSearchParams } from 'react-router';
+import { data, Link, useNavigate, useNavigation, useSearchParams } from 'react-router';
 import type { Route } from './+types/booking.public.my-appointments.route';
 import {
   ArrowLeft,
@@ -17,8 +17,7 @@ import { AppointmentsController, type MyAppointmentDto } from '~/api/generated/b
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { getBookingRouteHref } from '~/routes/_features/booking/_utils/booking.route-map';
-import type { BookingSurface } from '~/routes/_features/booking/_utils/booking.surface';
+import { getBookingRouteHref } from '~/routes/booking/public/_utils/booking.route-map';
 import {
   Badge,
   Button,
@@ -198,7 +197,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.ComponentProps) {
-  const location = useLocation();
   const navigate = useNavigate();
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
@@ -218,9 +216,6 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
   const completedHasNext = loaderData.completedHasNext ?? false;
   const completedHasPrevious = loaderData.completedHasPrevious ?? false;
   const completedTotalElements = loaderData.completedTotalElements ?? 0;
-  const bookingSurface: BookingSurface =
-    location.pathname === '/embed' || location.pathname.startsWith('/embed/') ? 'embed' : 'public';
-
   const buildSectionPageHref = (section: 'upcoming' | 'completed', nextPage: number) => {
     const params = new URLSearchParams(searchParams);
     if (section === 'upcoming') {
@@ -242,7 +237,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
     if (!companyId) return null;
 
     const params = new URLSearchParams({ companyId: String(companyId) });
-    return `${getBookingRouteHref(bookingSurface, 'session')}?${params.toString()}`;
+    return `${getBookingRouteHref('session')}?${params.toString()}`;
   };
 
   const nearestUpcomingAppointment = nearestAppointment;
@@ -258,7 +253,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
     buildNewBookingHref(nearestUpcomingAppointment) ??
     buildNewBookingHref(upcomingAppointments[0]) ??
     buildNewBookingHref(completedAppointments[0]) ??
-    getBookingRouteHref(bookingSurface, 'session');
+    ROUTES_MAP['booking.public.appointment'].href;
   const expiredAppointments = completedAppointments;
 
   const handleBack = () => {
