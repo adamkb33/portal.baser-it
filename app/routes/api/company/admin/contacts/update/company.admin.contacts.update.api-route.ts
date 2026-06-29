@@ -15,7 +15,7 @@ export async function action({ request }: Route.ActionArgs) {
     const mobileNumber = formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined;
 
     await withAuth(request, async () => {
-      await CompanyUserContactController.updateContact({
+      await CompanyUserContactController.updateContact1({
         path: {
           id,
         },

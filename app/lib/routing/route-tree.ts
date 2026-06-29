@@ -1,14 +1,23 @@
-import { API_ROUTES_TREE } from './api/routes';
-import { AUTH_ROUTES } from './auth/routes';
-import { BOOKING_ROUTES } from './booking/routes';
-import { COMPANY_ROUTES } from './company/routes';
-import { SYSTEM_ADMIN_ROUTES } from './system-admin/routes';
-import { USER_ROUTES } from './user/routes';
+import { API_ROUTES_TREE } from './api/api.routes';
+import { AUTH_ROUTES } from './auth/auth.routes';
+import { BOOKING_ROUTES } from './booking/booking.routes';
+import { COMPANY_ROUTES } from './company/company.routes';
+import { OFFER_ROUTES } from './offer/offer.routes';
+import { SYSTEM_ADMIN_ROUTES } from './system-admin/system-admin.routes';
+import { USER_ROUTES } from './user/user.routes';
 import type { UserContextDto } from '~/api/generated/base';
 import { buildApiRoutesMap, buildRoutesMap, createNavigationForTree, type UserNavigation } from './route-utils';
 import type { ApiRoute, RouteBranch } from './route-types';
 
-export { Access, BrachCategory, CompanyRole, RoutePlaceMent, UserRole, type ApiRoute, type RouteBranch } from './route-types';
+export {
+  Access,
+  BrachCategory,
+  CompanyRole,
+  RoutePlaceMent,
+  UserRole,
+  type ApiRoute,
+  type RouteBranch,
+} from './route-types';
 export type { UserNavigation } from './route-utils';
 
 export const ROUTE_TREE: RouteBranch[] = [
@@ -17,6 +26,7 @@ export const ROUTE_TREE: RouteBranch[] = [
   ...SYSTEM_ADMIN_ROUTES,
   ...COMPANY_ROUTES,
   ...BOOKING_ROUTES,
+  ...OFFER_ROUTES,
 ];
 
 export { API_ROUTES_TREE };

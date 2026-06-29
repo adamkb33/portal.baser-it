@@ -20,7 +20,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const search = url.searchParams.get('search')?.trim() || undefined;
 
     const response = await withAuth(request, async () => {
-      return await CompanyUserContactController.getContacts({
+      return await CompanyUserContactController.getContacts1({
         query: {
           page,
           size,

@@ -10,7 +10,7 @@ export async function action({ request }: Route.ActionArgs) {
     const id = Number(formData.get('id'));
 
     await withAuth(request, async () => {
-      await CompanyUserContactController.deleteContact({
+      await CompanyUserContactController.deleteContact1({
         path: {
           id,
         },

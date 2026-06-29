@@ -7,7 +7,7 @@ import { setFlashMessage } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, Checkbox, CompanyPageTemplate, FormField, Notice, Panel } from '~/ui';
 
-const PRODUCT_VALUES = ['BOOKING', 'EVENT', 'TIMESHEET'] as const;
+const PRODUCT_VALUES = ['BOOKING', 'EVENT', 'OFFER', 'TIMESHEET'] as const;
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();

@@ -87,6 +87,168 @@ export type UpdateHoursEntryRequest = {
     note?: string;
 };
 
+export type JsonNode = {
+    [key: string]: unknown;
+};
+
+export type UpdateOfferRequest = {
+    validUntil?: string;
+    data?: JsonNode;
+};
+
+export type ApiResponseOfferDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: OfferDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type OfferDto = {
+    id: number;
+    companyId: number;
+    customerId: number;
+    templateId: string;
+    status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED';
+    validUntil?: string;
+    data: JsonNode;
+    declineReason?: string;
+    acceptedByRecipientId?: number;
+    declinedByRecipientId?: number;
+    sentAt?: string;
+    revision: number;
+    openForAction: boolean;
+    expired: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export type SetOfferRecipientsRequest = {
+    contactIds: Array<number>;
+};
+
+export type ApiResponseListOfferRecipientDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<OfferRecipientDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type OfferRecipientDto = {
+    id: number;
+    offerId: number;
+    contactId: number;
+    nameSnapshot?: string;
+    emailSnapshot: string;
+    mobileNumberSnapshot?: string;
+    revokedAt?: string;
+    sentAt?: string;
+    openedAt?: string;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export type ReplaceOfferLineRequest = {
+    catalogItemId?: number;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    vatRate?: number;
+    position?: number;
+};
+
+export type ReplaceOfferLinesRequest = {
+    lines: Array<ReplaceOfferLineRequest>;
+};
+
+export type ApiResponseOfferLineSetDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: OfferLineSetDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type OfferLineDto = {
+    id: number;
+    offerId: number;
+    catalogItemId?: number;
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    vatRate: number;
+    position: number;
+    lineSubtotal: number;
+    lineVat: number;
+    lineTotal: number;
+};
+
+export type OfferLineSetDto = {
+    lines: Array<OfferLineDto>;
+    totals: OfferTotalsDto;
+};
+
+export type OfferTotalsDto = {
+    subtotal: number;
+    vat: number;
+    total: number;
+};
+
+export type UpdateOfferCustomerContactRequest = {
+    name?: string;
+    email: string;
+    mobileNumber?: string;
+};
+
+export type ApiResponseOfferCustomerContactDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: OfferCustomerContactDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type OfferCustomerContactDto = {
+    id: number;
+    customerId: number;
+    name?: string;
+    email: string;
+    mobileNumber?: string;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export type UpdateOfferCatalogItemRequest = {
+    name: string;
+    defaultUnitPrice: number;
+    defaultVatRate?: number;
+};
+
+export type ApiResponseOfferCatalogItemDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: OfferCatalogItemDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type OfferCatalogItemDto = {
+    id: number;
+    companyId: number;
+    name: string;
+    defaultUnitPrice: number;
+    defaultVatRate: number;
+    active: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
 export type Delete = Omit<ImageAction, 'type'> & {
     imageId: number;
     type: 'Delete';
@@ -242,6 +404,156 @@ export type DeclineTimesheetEntriesRequest = {
 
 export type AcceptTimesheetEntriesRequest = {
     entryIds: Array<number>;
+};
+
+export type CreateOfferMessageRequest = {
+    body: string;
+};
+
+export type ApiResponseOfferMessageDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: OfferMessageDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type OfferMessageDto = {
+    id: number;
+    offerId: number;
+    sender: 'COMPANY' | 'CUSTOMER';
+    senderCompanyUserId?: number;
+    senderRecipientId?: number;
+    senderNameSnapshot?: string;
+    senderEmailSnapshot?: string;
+    body: string;
+    createdAt?: string;
+};
+
+export type PublicDeclineOfferRequest = {
+    reason: string;
+};
+
+export type ApiResponsePublicOfferPageDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: PublicOfferPageDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type OfferTemplateDto = {
+    id: string;
+    name: string;
+    fields: Array<OfferTemplateFieldDto>;
+    createdAt?: string;
+};
+
+export type OfferTemplateFieldDto = {
+    key: string;
+    label: string;
+    type: string;
+    required: boolean;
+    validation?: OfferTemplateFieldValidationDto;
+    options?: Array<OfferTemplateFieldOptionDto>;
+};
+
+export type OfferTemplateFieldOptionDto = {
+    value: string;
+    label: string;
+};
+
+export type OfferTemplateFieldValidationDto = {
+    pattern?: string;
+};
+
+export type PublicOfferPageDto = {
+    offerId: number;
+    templateId: string;
+    template: OfferTemplateDto;
+    status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED';
+    validUntil?: string;
+    revision: number;
+    snapshot: JsonNode;
+    recipient: PublicOfferRecipientDto;
+    openForAction: boolean;
+    expired: boolean;
+    declineReason?: string;
+    sentAt?: string;
+};
+
+export type PublicOfferRecipientDto = {
+    id: number;
+    name?: string;
+    email: string;
+    mobileNumber?: string;
+};
+
+export type CreateOfferRequest = {
+    customerId: number;
+    templateId: string;
+    validUntil?: string;
+    data?: JsonNode;
+};
+
+export type ApiResponseOfferRecipientDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: OfferRecipientDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ApiResponseGeneratedOfferRecipientTokenDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: GeneratedOfferRecipientTokenDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type GeneratedOfferRecipientTokenDto = {
+    recipientId: number;
+    email: string;
+    rawToken: string;
+};
+
+export type ResolveOfferCustomerRequest = {
+    orgNumber: string;
+};
+
+export type ApiResponseOfferCustomerDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: OfferCustomerDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type OfferCustomerDto = {
+    id: number;
+    companyId: number;
+    orgNumber: string;
+    displayName: string;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export type CreateOfferCustomerContactRequest = {
+    name?: string;
+    email: string;
+    mobileNumber?: string;
+};
+
+export type CreateOfferCatalogItemRequest = {
+    name: string;
+    defaultUnitPrice: number;
+    defaultVatRate?: number;
 };
 
 export type SendSmsNotificationRequestDto = {
@@ -645,7 +957,7 @@ export type AuthenticatedUserPayload = {
     email?: string;
     companyId?: number;
     companyRoles?: Array<'ADMIN' | 'EMPLOYEE'>;
-    companyProducts?: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+    companyProducts?: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
 };
 
 /**
@@ -653,7 +965,7 @@ export type AuthenticatedUserPayload = {
  */
 export type AddProductToCompanyDto = {
     companyId: number;
-    products: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+    products: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
 };
 
 export type GetCompanyUsersByIdDto = {
@@ -1367,6 +1679,60 @@ export type DiagnosticServiceFlowsResponseDto = {
     flows: Array<DiagnosticFlowSummaryDto>;
 };
 
+export type ApiResponseListOfferDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<OfferDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ApiResponseListOfferMessageDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<OfferMessageDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ApiResponseListOfferTemplateDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<OfferTemplateDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ApiResponseOfferTemplateDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: OfferTemplateDto;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ApiResponseListOfferCustomerContactDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<OfferCustomerContactDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
+export type ApiResponseListOfferCatalogItemDto = {
+    success: boolean;
+    message: ApiMessage;
+    data?: Array<OfferCatalogItemDto>;
+    errors?: Array<ApiError>;
+    meta?: ApiMeta;
+    timestamp: string;
+};
+
 export type GetInAppNotificationsRequest = {
     page?: number;
     size?: number;
@@ -1810,10 +2176,10 @@ export type ApiResponseListCompanyRole = {
     timestamp: string;
 };
 
-export type ApiResponseListBiTProduct = {
+export type ApiResponseListPitellProduct = {
     success: boolean;
     message: ApiMessage;
-    data?: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+    data?: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
     errors?: Array<ApiError>;
     meta?: ApiMeta;
     timestamp: string;
@@ -1869,7 +2235,7 @@ export type ApiResponseCompanyDto = {
 export type CompanyDto = {
     id: number;
     orgNum: string;
-    products: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+    products: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
 };
 
 export type ApiResponseVerifyEmailResponseDto = {
@@ -1951,7 +2317,7 @@ export type ApiResponseUserContextDto = {
 export type UserCompanyContextDto = {
     company: CompanySummaryDto;
     roles: Array<'ADMIN' | 'EMPLOYEE'>;
-    products: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+    products: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
 };
 
 export type UserContextDto = {
@@ -1971,6 +2337,7 @@ export type ApiResponseAuthPermissionsDto = {
 export type AuthPermissionFlagsDto = {
     canAccessCompany: boolean;
     canAccessBooking: boolean;
+    canAccessOffer: boolean;
     canAccessTimesheet: boolean;
     canAccessSystemAdmin: boolean;
 };
@@ -1980,7 +2347,7 @@ export type AuthPermissionsDto = {
     companyId?: number;
     systemRoles: Array<'SYSTEM_ADMIN'>;
     companyRoles: Array<'ADMIN' | 'EMPLOYEE'>;
-    products: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+    products: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
     flags: AuthPermissionFlagsDto;
     permissionsVersion: number;
 };
@@ -2086,7 +2453,7 @@ export type CompanyOverview = {
     roleDistribution: {
         [key: string]: number;
     };
-    enabledProducts: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+    enabledProducts: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
     accountCreatedAt: string;
 };
 

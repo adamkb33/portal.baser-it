@@ -19,7 +19,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   try {
     const response = await withAuth(request, async () =>
-      CompanyUserContactController.getContacts({
+      CompanyUserContactController.getContacts1({
         query: {
           page: 0,
           size: 1000,
@@ -92,7 +92,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   try {
     await withAuth(request, async () => {
-      await CompanyUserContactController.updateContact({
+      await CompanyUserContactController.updateContact1({
         path: { id },
         body: {
           givenName: parsed.data.givenName,

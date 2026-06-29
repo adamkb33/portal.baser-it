@@ -39,10 +39,13 @@ export function buildRoutesMap(routeTree: RouteBranch[]): Record<string, { id: s
   return map;
 }
 
-function extractProductFromRoute(routeId: string): 'BOOKING' | 'EVENT' | 'TIMESHEET' | null {
+type CompanyProduct = 'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET';
+
+function extractProductFromRoute(routeId: string): CompanyProduct | null {
   const routeParts = routeId.split('.');
   if (routeParts.includes('booking')) return 'BOOKING';
   if (routeParts.includes('event')) return 'EVENT';
+  if (routeParts.includes('offer')) return 'OFFER';
   if (routeParts.includes('timesheet')) return 'TIMESHEET';
   return null;
 }
@@ -61,7 +64,7 @@ function hasRoleAccessAcrossCompanies(userContext: UserContextDto, requiredRoles
 
 function hasProductAccessAcrossCompanies(
   userContext: UserContextDto,
-  product: 'BOOKING' | 'EVENT' | 'TIMESHEET',
+  product: CompanyProduct,
   requiredRoles?: CompanyRole[],
 ): boolean {
   return userContext.companies.some((entry) => {

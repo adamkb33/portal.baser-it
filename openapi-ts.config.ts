@@ -80,4 +80,19 @@ export default defineConfig([
       },
     ],
   },
+  {
+    client: '@hey-api/client-axios',
+    input: groupedDocsUrl('offer-service'),
+    output: './app/api/generated/offer',
+    plugins: [
+      {
+        name: '@hey-api/client-axios',
+        runtimeConfigPath: '~/api/config/offer-client',
+      },
+      {
+        name: '@hey-api/sdk',
+        asClass: true,
+      },
+    ],
+  },
 ]);

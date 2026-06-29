@@ -16,6 +16,7 @@ import {
   LogOut,
   Key,
   UserPlus,
+  FileText,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -36,6 +37,7 @@ export const ICON_MAP = {
   LogOut,
   Key,
   UserPlus,
+  FileText,
 } as const;
 
 export type IconName = keyof typeof ICON_MAP;

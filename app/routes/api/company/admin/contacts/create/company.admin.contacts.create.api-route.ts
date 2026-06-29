@@ -14,7 +14,7 @@ export async function action({ request }: Route.ActionArgs) {
     const mobileNumber = formData.get('mobileNumber') ? String(formData.get('mobileNumber')) : undefined;
 
     await withAuth(request, async () => {
-      await CompanyUserContactController.createContact({
+      await CompanyUserContactController.createContact1({
         body: {
           givenName,
           familyName,

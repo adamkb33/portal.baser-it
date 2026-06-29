@@ -47,7 +47,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   try {
     await withAuth(request, async () => {
-      await CompanyUserContactController.createContact({
+      await CompanyUserContactController.createContact1({
         body: {
           givenName: parsed.data.givenName,
           familyName: parsed.data.familyName,

@@ -9,7 +9,7 @@ export interface AuthenticatedUserPayload {
   email?: string;
   companyId?: number;
   companyRoles?: Array<'ADMIN' | 'EMPLOYEE'>;
-  companyProducts?: Array<'BOOKING' | 'EVENT' | 'TIMESHEET'>;
+  companyProducts?: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
 }
 
 export type UserSession = {
