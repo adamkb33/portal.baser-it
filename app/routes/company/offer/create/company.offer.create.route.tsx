@@ -407,29 +407,28 @@ export default function CompanyOfferCreateRoute({ loaderData, actionData }: Rout
             {recipientRows.map((recipient, index) => (
               <div
                 key={recipient.key}
-                className="grid gap-2 rounded-md border border-border bg-surface p-3 md:grid-cols-[1fr_1fr_12rem_auto] md:items-end"
+                className="grid gap-3 rounded-md border border-border bg-surface p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_12rem_auto] md:items-end"
               >
-                <label className="grid gap-1 text-xs font-medium text-text-primary">
+                <label className="grid min-w-0 gap-1 text-xs font-medium text-text-primary">
                   Navn
-                  <Input name="recipientName" defaultValue={recipient.name} className="w-max max-w-full" />
+                  <Input name="recipientName" defaultValue={recipient.name} className="w-full min-w-0" />
                 </label>
-                <label className="grid gap-1 text-xs font-medium text-text-primary">
+
+                <label className="grid min-w-0 gap-1 text-xs font-medium text-text-primary">
                   E-post
-                  <Input
-                    name="recipientEmail"
-                    type="email"
-                    defaultValue={recipient.email}
-                    className="w-max max-w-full"
-                  />
+                  <Input name="recipientEmail" type="email" defaultValue={recipient.email} className="w-full min-w-0" />
                 </label>
-                <label className="grid gap-1 text-xs font-medium text-text-primary">
+
+                <label className="grid min-w-0 gap-1 text-xs font-medium text-text-primary">
                   Mobil
-                  <Input name="recipientMobile" defaultValue={recipient.mobileNumber} className="w-max max-w-full" />
+                  <Input name="recipientMobile" defaultValue={recipient.mobileNumber} className="w-full min-w-0" />
                 </label>
+
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
+                  className="md:self-end"
                   onClick={() => removeRecipientRow(recipient.key)}
                   disabled={recipientRows.length === 1}
                   aria-label={`Fjern mottaker ${index + 1}`}
@@ -439,6 +438,7 @@ export default function CompanyOfferCreateRoute({ loaderData, actionData }: Rout
               </div>
             ))}
           </div>
+
           <div className="mt-3">
             <Button type="button" variant="outline" size="sm" onClick={addRecipientRow}>
               <Plus className="size-4" aria-hidden />
