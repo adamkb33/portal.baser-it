@@ -38,8 +38,10 @@ type GoogleSignInButtonProps = {
 };
 
 export function GoogleSignInButton({ onCredential, disabled }: GoogleSignInButtonProps) {
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
   const buttonRef = React.useRef<HTMLDivElement | null>(null);
   const [scriptReady, setScriptReady] = React.useState(false);
+  const [buttonWidth, setButtonWidth] = React.useState<number | null>(null);
 
   React.useEffect(() => {
     if (!googleClientId || disabled) {
@@ -81,7 +83,24 @@ export function GoogleSignInButton({ onCredential, disabled }: GoogleSignInButto
   }, [disabled]);
 
   React.useEffect(() => {
-    if (!scriptReady || !googleClientId || !buttonRef.current) {
+    const target = containerRef.current;
+    if (!target || typeof ResizeObserver === 'undefined') {
+      setButtonWidth(target?.clientWidth || null);
+      return;
+    }
+
+    const updateWidth = () => {
+      setButtonWidth(Math.floor(target.getBoundingClientRect().width));
+    };
+    const observer = new ResizeObserver(updateWidth);
+    updateWidth();
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, []);
+
+  React.useEffect(() => {
+    if (!scriptReady || !googleClientId || !buttonRef.current || !buttonWidth) {
       return;
     }
     if (!window.google?.accounts?.id) {
@@ -102,14 +121,14 @@ export function GoogleSignInButton({ onCredential, disabled }: GoogleSignInButto
     window.google.accounts.id.renderButton(buttonRef.current, {
       theme: 'outline',
       size: 'large',
-      width: '100%',
+      width: buttonWidth,
       text: 'continue_with',
     });
-  }, [onCredential, scriptReady]);
+  }, [buttonWidth, onCredential, scriptReady]);
 
   return (
-    <div className="space-y-2">
-      <div ref={buttonRef} aria-disabled={disabled} />
+    <div ref={containerRef} className="w-full space-y-2">
+      <div ref={buttonRef} className="min-h-10 w-full" aria-disabled={disabled} />
       <p className="text-xs text-center text-form-text-muted">Fortsett med Google-kontoen din.</p>
     </div>
   );
