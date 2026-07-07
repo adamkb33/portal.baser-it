@@ -52,6 +52,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 const CODE_LENGTH = 6;
+const AUTO_RESEND_STORAGE_PREFIX = 'booking-contact-mobile-code-sent';
 
 export default function BookingContactVerifyMobilePage({ loaderData }: Route.ComponentProps) {
   const fetcher = useFetcher<typeof verifyMobileAction>();
@@ -60,6 +61,7 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
   const navigate = useNavigate();
   const didNavigateRef = React.useRef(false);
   const verificationSessionToken = loaderData.verificationSessionToken;
+  const autoResendStorageKey = `${AUTO_RESEND_STORAGE_PREFIX}:${verificationSessionToken}`;
   const errorMessage =
     typeof fetcher.data === 'object' && fetcher.data && 'error' in fetcher.data ? fetcher.data.error : null;
   const resendMessage =
@@ -70,6 +72,19 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
     typeof resendFetcher.data === 'object' && resendFetcher.data && 'error' in resendFetcher.data
       ? String(resendFetcher.data.error)
       : null;
+  const isSendingCode = resendFetcher.state !== 'idle';
+
+  React.useEffect(() => {
+    if (!verificationSessionToken || resendFetcher.state !== 'idle') return;
+    if (typeof window === 'undefined') return;
+    if (window.sessionStorage.getItem(autoResendStorageKey)) return;
+
+    window.sessionStorage.setItem(autoResendStorageKey, 'true');
+    resendFetcher.submit(
+      { verificationSessionToken },
+      { method: 'post', action: API_ROUTES_MAP['auth.resend-verification.mobile'].url },
+    );
+  }, [autoResendStorageKey, resendFetcher, verificationSessionToken]);
 
   React.useEffect(() => {
     if (didNavigateRef.current) return;
@@ -108,6 +123,7 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
         {resendError ? (
           <Notice variant="booking" tone="emphasis" title="Kunne ikke sende ny SMS" message={String(resendError)} />
         ) : null}
+        {isSendingCode ? <Notice variant="booking" title="Sender SMS" message="Vi sender en ny kode til mobilnummeret ditt." /> : null}
         {resendMessage ? <Notice variant="booking" title="Ny kode sendt" message={resendMessage} /> : null}
         <fetcher.Form method="post" action={API_ROUTES_MAP['auth.verify-mobile'].url}>
           <Stack space="md">
@@ -134,9 +150,9 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
               type="submit"
               fullWidth
               variant="booking-secondary"
-              disabled={!verificationSessionToken || resendFetcher.state !== 'idle'}
+              disabled={!verificationSessionToken || isSendingCode}
             >
-              Send SMS på nytt
+              {isSendingCode ? 'Sender SMS...' : 'Send SMS på nytt'}
             </Button>
           </Stack>
         </resendFetcher.Form>
