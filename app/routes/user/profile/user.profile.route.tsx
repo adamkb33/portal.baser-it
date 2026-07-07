@@ -1,13 +1,32 @@
-import { Form, data } from 'react-router';
+import * as React from 'react';
+import { Form, data, useMatches } from 'react-router';
 import { AuthController } from '~/api/generated/base';
 import type { UserDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { authService } from '~/lib/auth-service';
+import type { FlashMessage } from '~/lib/flash-message.server';
 import { redirectWithError, redirectWithSuccess } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, FormField, PageTemplate, Panel, Text } from '~/ui';
 import type { Route } from './+types/user.profile.route';
+
+const PASSWORD_UPDATED_MESSAGE = 'Passordet ble oppdatert.';
+
+type RootFlashLoaderData = {
+  flashMessage?: FlashMessage | null;
+};
+
+const getFlashMessageFromMatches = (matches: ReturnType<typeof useMatches>): FlashMessage | null => {
+  for (const match of matches) {
+    const data = match.data as RootFlashLoaderData | undefined;
+    if (data?.flashMessage) {
+      return data.flashMessage;
+    }
+  }
+
+  return null;
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
   await authService.requireAuth(request);
@@ -52,7 +71,7 @@ export async function action({ request }: Route.ActionArgs) {
       }),
     );
 
-    return redirectWithSuccess(request, ROUTES_MAP['user.profile'].href, 'Passordet ble oppdatert.');
+    return redirectWithSuccess(request, ROUTES_MAP['user.profile'].href, PASSWORD_UPDATED_MESSAGE);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke oppdatere passord.');
     return redirectWithError(request, ROUTES_MAP['user.profile'].href, message);
@@ -60,8 +79,17 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function Profile({ loaderData }: Route.ComponentProps) {
+  const matches = useMatches();
+  const formRef = React.useRef<HTMLFormElement>(null);
+  const flashMessage = getFlashMessageFromMatches(matches);
   const user = loaderData.user;
   const fullName = [user.givenName, user.familyName].filter(Boolean).join(' ').trim();
+
+  React.useEffect(() => {
+    if (flashMessage?.type === 'success' && flashMessage.text === PASSWORD_UPDATED_MESSAGE) {
+      formRef.current?.reset();
+    }
+  }, [flashMessage]);
 
   return (
     <PageTemplate
@@ -85,7 +113,7 @@ export default function Profile({ loaderData }: Route.ComponentProps) {
       }
     >
       <Panel title="Oppdater passord" description="Endre passord for innlogget bruker.">
-        <Form method="post" className="space-y-3">
+        <Form ref={formRef} method="post" className="space-y-3">
           <FormField
             label="Nåværende passord"
             name="currentPassword"
