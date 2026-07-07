@@ -122,7 +122,7 @@ export function GoogleSignInButton({ onCredential, disabled }: GoogleSignInButto
 
   return (
     <div ref={containerRef} className="w-full max-w-[400px] space-y-2">
-      <div ref={buttonRef} className="min-h-10 w-full" aria-disabled={disabled} />
+      <div ref={buttonRef} className="google-sign-in-button h-11 w-full overflow-hidden" aria-disabled={disabled} />
       <p className="text-xs text-center text-form-text-muted">Fortsett med Google-kontoen din.</p>
     </div>
   );

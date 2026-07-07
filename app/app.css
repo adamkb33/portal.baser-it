@@ -23,3 +23,22 @@
     @apply bg-surface;
   }
 }
+
+@layer components {
+  .google-sign-in-button {
+    color-scheme: normal;
+  }
+
+  .google-sign-in-button iframe {
+    color-scheme: normal;
+  }
+
+  .google-sign-in-button > div {
+    height: 44px !important;
+    overflow: hidden;
+  }
+
+  .google-sign-in-button > div > div:first-child {
+    display: none !important;
+  }
+}
