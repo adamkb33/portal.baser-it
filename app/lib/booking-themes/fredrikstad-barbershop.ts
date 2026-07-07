@@ -1,15 +1,15 @@
 import type { CSSProperties } from 'react';
 
 export const fredrikstadBarbershopTheme = {
-  '--color-background': '#101010',
-  '--color-surface': '#1d1d1d',
-  '--color-surface-raised': '#262626',
-  '--color-border': '#343434',
+  '--color-background': '#ffffff',
+  '--color-surface': '#f8f8f8',
+  '--color-surface-raised': '#ffffff',
+  '--color-border': '#e6ded5',
   '--color-border-strong': '#d19f68',
 
-  '--color-text-primary': '#f8f8f8',
-  '--color-text-secondary': '#c7c0b7',
-  '--color-text-disabled': '#837b72',
+  '--color-text-primary': '#212025',
+  '--color-text-secondary': '#10285d',
+  '--color-text-disabled': '#8b8278',
   '--color-text-inverse': '#101010',
 
   '--color-primary': '#d19f68',
@@ -24,28 +24,28 @@ export const fredrikstadBarbershopTheme = {
   '--color-secondary': '#b8892f',
 
   // Route-level booking background
-  '--color-booking-background': 'transparent',
+  '--color-booking-background': '#ffffff',
 
   // Main booking cards/panels
-  '--color-booking-surface': '#181818',
+  '--color-booking-surface': '#ffffff',
 
   // Grouped/quiet sections
-  '--color-booking-surface-muted': '#222222',
+  '--color-booking-surface-muted': '#f8f8f8',
 
   // Inputs/cards that need to sit above normal panels
-  '--color-booking-surface-raised': '#2a2a2a',
+  '--color-booking-surface-raised': '#ffffff',
 
   // Soft rows and low-emphasis cards
-  '--color-booking-surface-subtle': '#202020',
+  '--color-booking-surface-subtle': '#f3f0ec',
 
   // Selected non-primary surfaces
-  '--color-booking-surface-strong': '#332716',
+  '--color-booking-surface-strong': '#fff4e8',
 
-  '--color-booking-border': '#383838',
+  '--color-booking-border': '#e6ded5',
   '--color-booking-border-strong': '#d19f68',
 
-  '--color-booking-text': '#f8f8f8',
-  '--color-booking-text-muted': '#c7c0b7',
+  '--color-booking-text': '#212025',
+  '--color-booking-text-muted': '#10285d',
   '--color-booking-text-inverse': '#101010',
 
   '--color-booking-action': '#d19f68',
@@ -77,10 +77,10 @@ export const fredrikstadBarbershopTheme = {
   '--border-booking-selected': '3px',
   '--border-booking-focus-ring': '3px',
 
-  '--shadow-card': '0 12px 34px rgb(0 0 0 / 0.28)',
-  '--shadow-panel': '0 20px 56px rgb(0 0 0 / 0.34)',
-  '--shadow-floating': '0 22px 70px rgb(0 0 0 / 0.42)',
-  '--shadow-booking-card': '0 12px 34px rgb(0 0 0 / 0.28)',
-  '--shadow-booking-panel': '0 20px 56px rgb(0 0 0 / 0.34)',
-  '--shadow-booking-floating': '0 22px 70px rgb(0 0 0 / 0.42)',
+  '--shadow-card': '0 0 10px 3px rgb(108 98 98 / 0.12)',
+  '--shadow-panel': '0 10px 24px rgb(25 25 25 / 0.08)',
+  '--shadow-floating': '0 14px 34px rgb(25 25 25 / 0.14)',
+  '--shadow-booking-card': '0 0 10px 3px rgb(108 98 98 / 0.12)',
+  '--shadow-booking-panel': '0 10px 24px rgb(25 25 25 / 0.08)',
+  '--shadow-booking-floating': '0 14px 34px rgb(25 25 25 / 0.14)',
 } as CSSProperties;
