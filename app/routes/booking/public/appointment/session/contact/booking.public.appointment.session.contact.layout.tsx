@@ -6,6 +6,8 @@ import { ContactSessionService } from './_services/contact-session.service.serve
 import { AppointmentSessionService } from '~/routes/booking/public/_services/booking.appointment-session.service.server';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
+import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
@@ -25,11 +27,14 @@ export async function loader({ request }: Route.LoaderArgs) {
       return redirectWithError(request, routes.session, 'Kunne ikke hente session');
     }
 
+    const companySummary = await getBookingCompanySummary(session.companyId);
+
     return data({
       session,
       sessionUser,
       auth,
       verificationSessionToken,
+      companySummary,
     });
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke hente session');
@@ -38,9 +43,10 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
-export default function BookingPublicAppointmentSessionContactLayout() {
+export default function BookingPublicAppointmentSessionContactLayout({ loaderData }: Route.ComponentProps) {
   return (
     <Container size="lg">
+      <BookingCompanyBadge company={loaderData.companySummary} className="mb-4" />
       <Outlet />
     </Container>
   );

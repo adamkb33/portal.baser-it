@@ -2,6 +2,8 @@ import { Form, data, redirect, useNavigation } from 'react-router';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
+import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
+import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { requireAuthenticatedBookingFlow } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
@@ -30,11 +32,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
 
     const { session } = guardResult;
-    const profilesResponse = await PublicAppointmentSessionController.getAppointmentSessionProfiles({
-      query: {
-        sessionId: session.sessionId,
-      },
-    });
+    const [profilesResponse, companySummary] = await Promise.all([
+      PublicAppointmentSessionController.getAppointmentSessionProfiles({
+        query: {
+          sessionId: session.sessionId,
+        },
+      }),
+      getBookingCompanySummary(session.companyId),
+    ]);
 
     const profiles = profilesResponse.data?.data || [];
 
@@ -57,6 +62,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       session,
       profiles,
       selectedProfileId: session.selectedProfileId,
+      companySummary,
       navigation: {
         contact: routes.contact,
         selectServices: routes.selectServices,
@@ -111,6 +117,7 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
           ? 'Du har allerede valgt en frisør. Du kan endre valget eller fortsette.'
           : 'Velg en frisør for å fortsette med timebestilling'
       }
+      headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
       <Grid columns={2}>
         {profiles.map((profile) => {

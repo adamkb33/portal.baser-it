@@ -1,6 +1,8 @@
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
+import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
+import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { requireAuthenticatedBookingFlow } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { redirect } from 'react-router';
@@ -21,11 +23,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
 
     const { session } = guardResult;
-    const response = await PublicAppointmentSessionController.getAppointmentSessionOverview({
-      query: {
-        sessionId: session.sessionId,
-      },
-    });
+    const [response, companySummary] = await Promise.all([
+      PublicAppointmentSessionController.getAppointmentSessionOverview({
+        query: {
+          sessionId: session.sessionId,
+        },
+      }),
+      getBookingCompanySummary(session.companyId),
+    ]);
 
     if (!response.data?.data) {
       const message = response.data?.message || 'Kunne ikke hente oversikt';
@@ -34,6 +39,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     return {
       sessionOverview: response.data.data,
+      companySummary,
       navigation: {
         contact: routes.contact,
         employee: routes.employee,
@@ -149,7 +155,11 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
   const confirmFormId = 'booking-overview-confirm-form';
 
   return (
-    <BookingStepTemplate title="Bekreft timebestilling" description="Gjennomgå detaljene før du bekrefter.">
+    <BookingStepTemplate
+      title="Bekreft timebestilling"
+      description="Gjennomgå detaljene før du bekrefter."
+      headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
+    >
       <Stack space="lg">
         <Form id={changeTimeFormId} method="get" action={loaderData.navigation.selectTime} className="hidden" />
         <Form id={confirmFormId} method="post" className="hidden" />

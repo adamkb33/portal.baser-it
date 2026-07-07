@@ -5,6 +5,8 @@ import type { GroupedServiceDto, GroupedServiceGroupDto } from '~/api/generated/
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
+import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
+import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { requireAuthenticatedBookingFlow } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
@@ -47,7 +49,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     const { session } = guardResult;
 
-    const [serviceGroupsResponse, profilesResponse] = await Promise.all([
+    const [serviceGroupsResponse, profilesResponse, companySummary] = await Promise.all([
       PublicAppointmentSessionController.getAppointmentSessionProfileServices({
         query: {
           sessionId: session.sessionId,
@@ -58,6 +60,7 @@ export async function loader({ request }: Route.LoaderArgs) {
           sessionId: session.sessionId,
         },
       }),
+      getBookingCompanySummary(session.companyId),
     ]);
 
     const profiles = profilesResponse.data?.data || [];
@@ -66,6 +69,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     return data({
       session,
       serviceGroups: serviceGroupsResponse.data?.data || [],
+      companySummary,
       navigation: {
         employee: backHref,
       },
@@ -389,6 +393,7 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
       label="Velg tjenester"
       title="Hvilke tjenester ønsker du?"
       description={`Velg én eller flere tjenester fra ${totalServices} tilgjengelige tjenester.`}
+      headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
       <Stack space="lg">
         {totalServices > 6 && (

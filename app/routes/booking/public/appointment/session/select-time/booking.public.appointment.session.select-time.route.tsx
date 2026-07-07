@@ -4,6 +4,8 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { requireAuthenticatedBookingFlow } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
+import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
+import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { redirect } from 'react-router';
 import { useNavigation, useRevalidator, useSearchParams, useSubmit } from 'react-router';
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -32,15 +34,19 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { session } = guardResult;
 
   try {
-    const schedulesResponse = await PublicAppointmentSessionController.getAppointmentSessionSchedules({
-      query: {
-        sessionId: session.sessionId,
-      },
-    });
+    const [schedulesResponse, companySummary] = await Promise.all([
+      PublicAppointmentSessionController.getAppointmentSessionSchedules({
+        query: {
+          sessionId: session.sessionId,
+        },
+      }),
+      getBookingCompanySummary(session.companyId),
+    ]);
 
     return data({
       session,
       schedules: schedulesResponse.data?.data || [],
+      companySummary,
       navigation: {
         overview: routes.overview,
         selectServices: routes.selectServices,
@@ -558,6 +564,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
       label="Velg tidspunkt"
       title="Hva er ett tidspunkt du ønsker?"
       description={displayTime ? 'Valgt tidspunkt kan endres' : 'Velg dato og klokkeslett for avtalen'}
+      headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
       <Stack space="xl">
         {/* ========================================
