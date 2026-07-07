@@ -56,31 +56,4 @@ export const fredrikstadBarbershopTheme = {
 
   '--color-booking-accent': '#b8892f',
   '--color-booking-accent-muted': 'rgb(184 137 47 / 0.18)',
-
-  '--radius-control': '0px',
-  '--radius-field': '0px',
-  '--radius-card': '7px',
-  '--radius-panel': '0px',
-  '--radius-badge': '9999px',
-  '--radius-booking-control': '0px',
-  '--radius-booking-field': '0px',
-  '--radius-booking-card': '7px',
-  '--radius-booking-panel': '0px',
-  '--radius-booking-badge': '9999px',
-
-  '--border-control': '1px',
-  '--border-card': '1px',
-  '--border-selected': '3px',
-  '--border-focus-ring': '3px',
-  '--border-booking-control': '1px',
-  '--border-booking-card': '1px',
-  '--border-booking-selected': '3px',
-  '--border-booking-focus-ring': '3px',
-
-  '--shadow-card': '0 0 10px 3px rgb(108 98 98 / 0.12)',
-  '--shadow-panel': '0 10px 24px rgb(25 25 25 / 0.08)',
-  '--shadow-floating': '0 14px 34px rgb(25 25 25 / 0.14)',
-  '--shadow-booking-card': '0 0 10px 3px rgb(108 98 98 / 0.12)',
-  '--shadow-booking-panel': '0 10px 24px rgb(25 25 25 / 0.08)',
-  '--shadow-booking-floating': '0 14px 34px rgb(25 25 25 / 0.14)',
 } as CSSProperties;
