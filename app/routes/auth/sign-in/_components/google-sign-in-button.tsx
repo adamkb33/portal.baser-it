@@ -37,11 +37,18 @@ type GoogleSignInButtonProps = {
   disabled: boolean;
 };
 
+const GOOGLE_BUTTON_MAX_WIDTH = 400;
+
 export function GoogleSignInButton({ onCredential, disabled }: GoogleSignInButtonProps) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const buttonRef = React.useRef<HTMLDivElement | null>(null);
+  const onCredentialRef = React.useRef(onCredential);
+  const hasRenderedButtonRef = React.useRef(false);
   const [scriptReady, setScriptReady] = React.useState(false);
-  const [buttonWidth, setButtonWidth] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    onCredentialRef.current = onCredential;
+  }, [onCredential]);
 
   React.useEffect(() => {
     if (!googleClientId || disabled) {
@@ -83,35 +90,21 @@ export function GoogleSignInButton({ onCredential, disabled }: GoogleSignInButto
   }, [disabled]);
 
   React.useEffect(() => {
-    const target = containerRef.current;
-    if (!target || typeof ResizeObserver === 'undefined') {
-      setButtonWidth(target?.clientWidth || null);
-      return;
-    }
-
-    const updateWidth = () => {
-      setButtonWidth(Math.floor(target.getBoundingClientRect().width));
-    };
-    const observer = new ResizeObserver(updateWidth);
-    updateWidth();
-    observer.observe(target);
-
-    return () => observer.disconnect();
-  }, []);
-
-  React.useEffect(() => {
-    if (!scriptReady || !googleClientId || !buttonRef.current || !buttonWidth) {
+    if (!scriptReady || !googleClientId || !containerRef.current || !buttonRef.current || hasRenderedButtonRef.current) {
       return;
     }
     if (!window.google?.accounts?.id) {
       return;
     }
 
+    const measuredWidth = Math.floor(containerRef.current.getBoundingClientRect().width);
+    const buttonWidth = Math.min(Math.max(measuredWidth || GOOGLE_BUTTON_MAX_WIDTH, 1), GOOGLE_BUTTON_MAX_WIDTH);
+
     window.google.accounts.id.initialize({
       client_id: googleClientId,
       callback: (response) => {
         if (response.credential) {
-          onCredential(response.credential);
+          onCredentialRef.current(response.credential);
         }
       },
       cancel_on_tap_outside: true,
@@ -124,10 +117,11 @@ export function GoogleSignInButton({ onCredential, disabled }: GoogleSignInButto
       width: buttonWidth,
       text: 'continue_with',
     });
-  }, [buttonWidth, onCredential, scriptReady]);
+    hasRenderedButtonRef.current = true;
+  }, [scriptReady]);
 
   return (
-    <div ref={containerRef} className="w-full space-y-2">
+    <div ref={containerRef} className="w-full max-w-[400px] space-y-2">
       <div ref={buttonRef} className="min-h-10 w-full" aria-disabled={disabled} />
       <p className="text-xs text-center text-form-text-muted">Fortsett med Google-kontoen din.</p>
     </div>
