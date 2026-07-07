@@ -1158,10 +1158,10 @@ export type VerifyMobileResponseDto = {
 export type SignUpDto = {
     givenName: string;
     familyName: string;
-    email: string;
+    email?: string;
     password: string;
     password2: string;
-    mobileNumber?: string;
+    mobileNumber: string;
 };
 
 export type ApiResponseSignUpResponseDto = {
@@ -2529,6 +2529,14 @@ export type PublicPendingUserClearedResponseDto = {
 
 export type CompanyAdminCancelAppointmentDto = {
     reason: string;
+};
+
+/**
+ * Request to delete products from a company
+ */
+export type DeleteProductsFromCompanyDto = {
+    companyId: number;
+    products: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
 };
 
 export type PublicAppointmentCancellationByTokenData = {

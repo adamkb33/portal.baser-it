@@ -1158,10 +1158,10 @@ export type VerifyMobileResponseDto = {
 export type SignUpDto = {
     givenName: string;
     familyName: string;
-    email: string;
+    email?: string;
     password: string;
     password2: string;
-    mobileNumber?: string;
+    mobileNumber: string;
 };
 
 export type ApiResponseSignUpResponseDto = {
@@ -2531,6 +2531,14 @@ export type CompanyAdminCancelAppointmentDto = {
     reason: string;
 };
 
+/**
+ * Request to delete products from a company
+ */
+export type DeleteProductsFromCompanyDto = {
+    companyId: number;
+    products: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
+};
+
 export type DeleteContact1Data = {
     body?: never;
     path: {
@@ -3816,6 +3824,22 @@ export type GetDashboardMetricsResponses = {
 };
 
 export type GetDashboardMetricsResponse = GetDashboardMetricsResponses[keyof GetDashboardMetricsResponses];
+
+export type DeleteProductsFromCompanyData = {
+    body: DeleteProductsFromCompanyDto;
+    path?: never;
+    query?: never;
+    url: '/base-service/system-admin/companies/products';
+};
+
+export type DeleteProductsFromCompanyResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseUnit;
+};
+
+export type DeleteProductsFromCompanyResponse = DeleteProductsFromCompanyResponses[keyof DeleteProductsFromCompanyResponses];
 
 export type DeleteCompanyUserData = {
     body?: never;

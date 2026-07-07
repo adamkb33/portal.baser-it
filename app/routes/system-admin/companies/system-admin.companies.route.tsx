@@ -21,6 +21,9 @@ export default function SystemAdminCompaniesPage(_props: Route.ComponentProps) {
           <Button asChild variant="outline">
             <NavLink to={ROUTES_MAP['system-admin.companies.products'].href}>Tildel produkter</NavLink>
           </Button>
+          <Button asChild variant="outline">
+            <NavLink to={ROUTES_MAP['system-admin.companies.products.delete'].href}>Fjern produkter</NavLink>
+          </Button>
         </div>
       </Panel>
     </CompanyPageTemplate>

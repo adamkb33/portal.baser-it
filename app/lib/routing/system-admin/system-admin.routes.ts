@@ -68,6 +68,16 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
               category: BrachCategory.USER,
               accessType: Access.AUTHENTICATED,
               userRoles: [UserRole.SYSTEM_ADMIN],
+              children: [
+                {
+                  id: 'system-admin.companies.products.delete',
+                  href: '/system-admin/companies/products/delete',
+                  label: 'Fjern produkter',
+                  category: BrachCategory.USER,
+                  accessType: Access.AUTHENTICATED,
+                  userRoles: [UserRole.SYSTEM_ADMIN],
+                },
+              ],
             },
           ],
         },

@@ -35,6 +35,12 @@ const links = [
     desc: 'Aktiver BOOKING/EVENT/TIMESHEET for selskap.',
   },
   {
+    to: ROUTES_MAP['system-admin.companies.products.delete'].href,
+    eyebrow: 'Selskaper',
+    title: 'Fjern produkter',
+    desc: 'Deaktiver produkter for selskap.',
+  },
+  {
     to: ROUTES_MAP['system-admin.diagnostics'].href,
     eyebrow: 'Diagnostikk',
     title: 'Diagnostikk',

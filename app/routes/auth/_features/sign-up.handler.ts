@@ -28,7 +28,7 @@ export async function handleSignUp(formData: FormData): Promise<SignUpHandlerRes
         email,
         password,
         password2,
-        ...(mobileNumberValue ? { mobileNumber: mobileNumberValue } : {}),
+        mobileNumber: mobileNumberValue,
       },
     });
 
