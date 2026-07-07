@@ -1,4 +1,4 @@
-import { data, NavLink } from 'react-router';
+import { data, Form, NavLink } from 'react-router';
 import type { Route } from './+types/system-admin.companies.products.delete.route';
 import { Base } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
@@ -40,7 +40,7 @@ export async function action({ request }: Route.ActionArgs) {
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
     return data(
       { error: message, values: { companyId: String(companyId), products } },
-      { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } },
+      { status: status && status !== 405 ? status : 400, headers: { 'Set-Cookie': flashCookie } },
     );
   }
 }
@@ -65,7 +65,7 @@ export default function SystemAdminCompaniesProductsDeletePage({ actionData }: R
     >
       {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke fjerne produkter" message={actionData.error} /> : null}
       <Panel title="Fjern produkter" description="Velg produktene som skal deaktiveres for selskapet.">
-        <form method="post" className="space-y-4">
+        <Form method="post" className="space-y-4">
           <FormField label="Selskap-ID" name="companyId" type="number" defaultValue={values.companyId} required />
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium text-text-primary">Produkter</legend>
@@ -82,7 +82,7 @@ export default function SystemAdminCompaniesProductsDeletePage({ actionData }: R
           <Button type="submit" variant="destructive">
             Fjern produkter
           </Button>
-        </form>
+        </Form>
       </Panel>
     </CompanyPageTemplate>
   );
