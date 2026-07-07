@@ -1,6 +1,20 @@
 import * as React from 'react';
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, type LinksFunction } from 'react-router';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, type LinksFunction, type MetaFunction } from 'react-router';
+import { getRouteMetadata } from './lib/route-meta';
 import './app.css';
+
+export const meta: MetaFunction = ({ location }) => {
+  const metadata = getRouteMetadata(location.pathname);
+
+  return [
+    { title: metadata.title },
+    { name: 'description', content: metadata.description },
+    { property: 'og:title', content: metadata.title },
+    { property: 'og:description', content: metadata.description },
+    { name: 'twitter:title', content: metadata.title },
+    { name: 'twitter:description', content: metadata.description },
+  ];
+};
 
 export const links: LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -15,7 +29,7 @@ export const links: LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="bg-foreground">
+    <html lang="nb" className="bg-foreground">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
