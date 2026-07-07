@@ -26,9 +26,9 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   const url = new URL(request.url);
-  const email = url.searchParams.get('email') || '';
+  const emailOrMobile = url.searchParams.get('emailOrMobile') || '';
 
-  return data({ session, email, contactHref: routes.contact });
+  return data({ session, emailOrMobile, contactHref: routes.contact });
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -38,11 +38,11 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const provider = String(formData.get('provider') || 'LOCAL');
   const idToken = String(formData.get('idToken') || '');
-  const email = String(formData.get('email') || '');
+  const emailOrMobile = String(formData.get('emailOrMobile') || '');
   const password = String(formData.get('password') || '');
   const redirectUrl = String(formData.get('redirectUrl') || '');
   const isGoogleLogin = provider === 'GOOGLE';
-  const retryHref = buildSignInRetryHref(request, email, provider);
+  const retryHref = buildSignInRetryHref(request, emailOrMobile, provider);
 
   if (isGoogleLogin && !idToken) {
     return redirectWithError(request, retryHref, 'Kunne ikke logge inn med Google. Prøv igjen.');
@@ -56,7 +56,7 @@ export async function action({ request }: Route.ActionArgs) {
           redirectUrl,
         })
       : await ContactAuthService.signInLocal({
-          emailOrMobile: email,
+          emailOrMobile,
           password,
           redirectUrl,
         });
@@ -100,14 +100,14 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-function buildSignInRetryHref(request: Request, email: string, provider: string): string {
+function buildSignInRetryHref(request: Request, emailOrMobile: string, provider: string): string {
   const currentUrl = new URL(request.url);
   const retryUrl = new URL(`${currentUrl.pathname}${currentUrl.search}`, currentUrl.origin);
 
-  if (email) {
-    retryUrl.searchParams.set('email', email);
+  if (emailOrMobile) {
+    retryUrl.searchParams.set('emailOrMobile', emailOrMobile);
   } else {
-    retryUrl.searchParams.delete('email');
+    retryUrl.searchParams.delete('emailOrMobile');
   }
 
   if (provider === 'GOOGLE') {
@@ -123,7 +123,7 @@ export default function BookingContactSignInPage({ loaderData }: Route.Component
   const navigation = useNavigation();
   const location = useLocation();
   const isSubmitting = navigation.state === 'submitting';
-  const [email, setEmail] = React.useState<string | null>(loaderData.email || null);
+  const [emailOrMobile, setEmailOrMobile] = React.useState<string | null>(loaderData.emailOrMobile || null);
   const isGoogleProvider = React.useMemo(() => {
     const params = new URLSearchParams(location.search);
     return params.get('provider') === 'GOOGLE';
@@ -131,9 +131,9 @@ export default function BookingContactSignInPage({ loaderData }: Route.Component
 
   React.useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const emailParam = params.get('email') || '';
-    if (emailParam) {
-      setEmail(emailParam);
+    const emailOrMobileParam = params.get('emailOrMobile') || '';
+    if (emailOrMobileParam) {
+      setEmailOrMobile(emailOrMobileParam);
     }
   }, [location.search]);
 
@@ -155,7 +155,7 @@ export default function BookingContactSignInPage({ loaderData }: Route.Component
         </Link>
       </div>
 
-      <Panel title="Logg inn med e-post" tone="muted" className={BOOKING_CONTACT_PANEL_CLASS}>
+      <Panel title="Logg inn med e-post eller mobil" tone="muted" className={BOOKING_CONTACT_PANEL_CLASS}>
         <Form method="post" aria-busy={isSubmitting}>
           <Stack space="md">
             <ProviderButtons showDivider={!isGoogleProvider} />
@@ -164,17 +164,17 @@ export default function BookingContactSignInPage({ loaderData }: Route.Component
             {!isGoogleProvider ? (
               <>
                 <Stack space="xs">
-                  <Label htmlFor="email" className={BOOKING_CONTACT_LABEL_CLASS}>
-                    E-post
+                  <Label htmlFor="emailOrMobile" className={BOOKING_CONTACT_LABEL_CLASS}>
+                    E-post eller mobilnummer
                   </Label>
                   <Input
-                    id="email"
-                    name="email"
-                    type="email"
+                    id="emailOrMobile"
+                    name="emailOrMobile"
+                    type="text"
                     inputMode="email"
-                    autoComplete="email"
-                    value={email || undefined}
-                    onChange={(event) => setEmail(event.target.value)}
+                    autoComplete="username"
+                    value={emailOrMobile || undefined}
+                    onChange={(event) => setEmailOrMobile(event.target.value)}
                     disabled={isSubmitting}
                     variant="booking"
                   />

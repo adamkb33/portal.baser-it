@@ -12,18 +12,28 @@ import { logger } from '~/lib/logger';
 import React from 'react';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
 import { Button, FormField, AuthPageTemplate, Stack } from '~/ui';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 
-function redactEmail(value: string) {
+function redactIdentifier(value: string) {
   const normalized = value.trim();
-  const [localPart = '', domain = ''] = normalized.split('@');
   if (!normalized) {
     return '';
   }
-  if (!domain) {
-    return `${localPart.slice(0, 2)}***`;
+
+  if (normalized.includes('@')) {
+    const [localPart = '', domain = ''] = normalized.split('@');
+    if (!domain) {
+      return `${localPart.slice(0, 2)}***`;
+    }
+    return `${localPart.slice(0, 2)}***@${domain}`;
   }
-  return `${localPart.slice(0, 2)}***@${domain}`;
+
+  // Treat as a phone/mobile number: mask all but the last 4 digits.
+  const digitsOnly = normalized.replace(/\D/g, '');
+  if (digitsOnly.length <= 4) {
+    return '***';
+  }
+  return `***${digitsOnly.slice(-4)}`;
 }
 
 function buildSignInHref(redirectUrl?: string) {
@@ -39,7 +49,7 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const provider = String(formData.get('provider') || 'LOCAL');
   const idToken = String(formData.get('idToken') || '');
-  const email = String(formData.get('email') || '');
+  const emailOrMobile = String(formData.get('emailOrMobile') || '');
   const password = String(formData.get('password') || '');
   const redirectUrl = String(formData.get('redirectUrl') || '');
   const isGoogleLogin = provider === 'GOOGLE';
@@ -47,7 +57,7 @@ export async function action({ request }: Route.ActionArgs) {
   logger.info('[auth.sign-in] Action started', {
     provider,
     isGoogleLogin,
-    email: redactEmail(email),
+    emailOrMobile: redactIdentifier(emailOrMobile),
     hasPassword: password.length > 0,
     hasIdToken: idToken.length > 0,
     redirectUrl: redirectUrl || null,
@@ -69,13 +79,13 @@ export async function action({ request }: Route.ActionArgs) {
       query: {
         redirectUrl: redirectUrl || undefined,
       },
-      body: isGoogleLogin ? { provider: 'GOOGLE', idToken } : { provider: 'LOCAL', emailOrMobile: email, password },
+      body: isGoogleLogin ? { provider: 'GOOGLE', idToken } : { provider: 'LOCAL', emailOrMobile, password },
     });
     const payload = response.data?.data;
 
     logger.info('[auth.sign-in] Sign-in response received', {
       provider,
-      email: redactEmail(email),
+      emailOrMobile: redactIdentifier(emailOrMobile),
       nextStep: payload?.nextStep ?? null,
       hasAuthTokens: Boolean(payload?.authTokens),
       hasVerificationToken: Boolean(payload?.verificationToken),
@@ -118,7 +128,7 @@ export async function action({ request }: Route.ActionArgs) {
               }
             } catch (companyContextError) {
               logger.warn('[auth.sign-in] Failed to resolve company context after DONE', {
-                email: redactEmail(email),
+                emailOrMobile: redactIdentifier(emailOrMobile),
                 error: companyContextError,
               });
             }
@@ -143,7 +153,7 @@ export async function action({ request }: Route.ActionArgs) {
       }
 
       logger.info('[auth.sign-in] Redirecting to auth next step', {
-        email: redactEmail(email),
+        emailOrMobile: redactIdentifier(emailOrMobile),
         nextStep: payload.nextStep ?? null,
         nextStepHref: resolvedNextStepHref,
       });
@@ -153,7 +163,7 @@ export async function action({ request }: Route.ActionArgs) {
       }
 
       logger.info('[auth.sign-in] Returning verification payload to client', {
-        email: redactEmail(email),
+        emailOrMobile: redactIdentifier(emailOrMobile),
         nextStep: payload.nextStep ?? null,
       });
       return data(payload, { headers: headers.entries().next().done ? undefined : headers });
@@ -161,7 +171,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     logger.warn('[auth.sign-in] Missing expected sign-in payload branch', {
       provider,
-      email: redactEmail(email),
+      emailOrMobile: redactIdentifier(emailOrMobile),
       nextStep: payload?.nextStep ?? null,
     });
     return redirectWithWarning(request, ROUTES_MAP['auth.sign-in'].href, 'Kunne ikke logge inn. Prøv igjen.');
@@ -169,7 +179,7 @@ export async function action({ request }: Route.ActionArgs) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke logge inn. Prøv igjen.');
     logger.error('[auth.sign-in] Sign-in failed', {
       provider,
-      email: redactEmail(email),
+      emailOrMobile: redactIdentifier(emailOrMobile),
       redirectUrl: redirectUrl || null,
       status: 400,
       error,
@@ -221,7 +231,10 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
       topRight={
         <span>
           Ny bruker?{' '}
-          <Link to={ROUTES_MAP['auth.sign-up'].href} className="font-semibold text-interactive hover:text-interactive-hover">
+          <Link
+            to={ROUTES_MAP['auth.sign-up'].href}
+            className="font-semibold text-interactive hover:text-interactive-hover"
+          >
             Opprett konto
           </Link>
         </span>
@@ -238,22 +251,18 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
           </div>
         </Stack>
       }
-      bottom={
-        <span>
-          Ved å logge inn godtar du gjeldende vilkår for bruk av Pitell Portal.
-        </span>
-      }
+      bottom={<span>Ved å logge inn godtar du gjeldende vilkår for bruk av Pitell Portal.</span>}
     >
       <Form method="post" aria-busy={isSubmitting}>
         <Stack space="md">
           <FormField
-            id="email"
-            name="email"
-            label="E-post"
-            type="email"
-            autoComplete="email"
-            placeholder="deg@firma.no"
-            startIcon={<Mail />}
+            id="emailOrMobile"
+            name="emailOrMobile"
+            label="E-post eller mobilnummer"
+            type="text"
+            autoComplete="username"
+            placeholder="deg@firma.no eller 40 00 00 00"
+            startIcon={<User />}
             disabled={isSubmitting}
           />
 
