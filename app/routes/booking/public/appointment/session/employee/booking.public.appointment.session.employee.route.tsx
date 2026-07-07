@@ -36,9 +36,26 @@ export async function loader({ request }: Route.LoaderArgs) {
       },
     });
 
+    const profiles = profilesResponse.data?.data || [];
+
+    if (profiles.length === 1) {
+      const onlyProfile = profiles[0];
+
+      if (session.selectedProfileId !== onlyProfile.id) {
+        await PublicAppointmentSessionController.selectAppointmentSessionProfile({
+          query: {
+            sessionId: session.sessionId,
+            selectedProfileId: onlyProfile.id,
+          },
+        });
+      }
+
+      return redirect(routes.selectServices);
+    }
+
     return data({
       session,
-      profiles: profilesResponse.data?.data || [],
+      profiles,
       selectedProfileId: session.selectedProfileId,
       navigation: {
         contact: routes.contact,

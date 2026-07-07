@@ -46,17 +46,28 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
 
     const { session } = guardResult;
-    const serviceGroupsResponse = await PublicAppointmentSessionController.getAppointmentSessionProfileServices({
-      query: {
-        sessionId: session.sessionId,
-      },
-    });
+
+    const [serviceGroupsResponse, profilesResponse] = await Promise.all([
+      PublicAppointmentSessionController.getAppointmentSessionProfileServices({
+        query: {
+          sessionId: session.sessionId,
+        },
+      }),
+      PublicAppointmentSessionController.getAppointmentSessionProfiles({
+        query: {
+          sessionId: session.sessionId,
+        },
+      }),
+    ]);
+
+    const profiles = profilesResponse.data?.data || [];
+    const backHref = profiles.length === 1 ? routes.contact : routes.employee;
 
     return data({
       session,
       serviceGroups: serviceGroupsResponse.data?.data || [],
       navigation: {
-        employee: routes.employee,
+        employee: backHref,
       },
     });
   } catch (error) {
@@ -238,7 +249,7 @@ function ServiceGroup({ group, selectedServiceQuantities, onSetServiceQuantity, 
       >
         <AccordionItem value={String(group.id)} className="border-none">
           <div className="flex items-start gap-3 px-3 py-3 md:px-4 md:py-4">
-            <AccordionTrigger className="flex-1 bg-booking-surface-muted p-0 text-left hover:bg-booking-surface-muted hover:no-underline data-[state=open]:bg-booking-surface-muted">
+            <AccordionTrigger className="flex-1 p-0 text-left hover:no-underline data-[state=open]:bg-booking-surface-muted">
               <div className="flex-1">
                 <div className="flex items-center gap-3">
                   <h2 className="text-base font-bold text-booking-text md:text-lg">{group.name}</h2>

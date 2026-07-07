@@ -194,7 +194,14 @@ export default function BookingContactSignInPage({ loaderData }: Route.Component
                   />
                 </Stack>
 
-                <Button type="submit" size="lg" fullWidth variant="booking-primary" className="gap-3">
+                <Button
+                  type="submit"
+                  size="lg"
+                  fullWidth
+                  variant="booking-primary"
+                  className="gap-3"
+                  loading={isSubmitting}
+                >
                   <LogIn className="size-5" />
                   Logg inn
                 </Button>
