@@ -1,5 +1,5 @@
-import { Form, data, redirect, useNavigation } from 'react-router';
-import { Smartphone } from 'lucide-react';
+import { Form, Link, data, redirect, useNavigation } from 'react-router';
+import { ChevronLeft, Smartphone } from 'lucide-react';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
@@ -23,7 +23,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   const url = new URL(request.url);
-  return data({ session, mobileNumber: url.searchParams.get('mobileNumber') || '' });
+  return data({ session, mobileNumber: url.searchParams.get('mobileNumber') || '', contactHref: routes.contact });
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -109,6 +109,15 @@ export default function BookingContactCollectMobilePage({ loaderData }: Route.Co
         description="Mobilnummer er påkrevd for å bestille time."
         className={BOOKING_CONTACT_PAGE_HEADER_CLASS}
       />
+      <div>
+        <Link
+          to={loaderData.contactHref}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-booking-text-muted hover:text-booking-text"
+        >
+          <ChevronLeft className="size-4" />
+          Tilbake til kontakt
+        </Link>
+      </div>
 
       <Panel title="Mobilnummer" tone="muted" className={BOOKING_CONTACT_PANEL_CLASS}>
         <Form method="post" aria-busy={isSubmitting}>

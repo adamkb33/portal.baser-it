@@ -1,5 +1,5 @@
-import { Form, data, redirect, useNavigation } from 'react-router';
-import { Mail } from 'lucide-react';
+import { Form, Link, data, redirect, useNavigation } from 'react-router';
+import { ChevronLeft, Mail } from 'lucide-react';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError, redirectWithInfo } from '~/lib/flash-message.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
@@ -19,7 +19,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   const url = new URL(request.url);
-  return data({ session, email: url.searchParams.get('email') || '' });
+  return data({ session, email: url.searchParams.get('email') || '', contactHref: routes.contact });
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -101,6 +101,15 @@ export default function BookingContactCollectEmailPage({ loaderData }: Route.Com
         description="E-post er valgfritt. Du kan fortsette uten e-post hvis mobilnummeret ditt er bekreftet."
         className={BOOKING_CONTACT_PAGE_HEADER_CLASS}
       />
+      <div>
+        <Link
+          to={loaderData.contactHref}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-booking-text-muted hover:text-booking-text"
+        >
+          <ChevronLeft className="size-4" />
+          Tilbake til kontakt
+        </Link>
+      </div>
 
       <Panel title="E-post" tone="muted" className={BOOKING_CONTACT_PANEL_CLASS}>
         <Form method="post" aria-busy={isSubmitting}>
