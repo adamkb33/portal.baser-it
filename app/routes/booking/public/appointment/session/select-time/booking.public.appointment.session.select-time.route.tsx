@@ -5,7 +5,7 @@ import { requireAuthenticatedBookingFlow } from '~/routes/booking/public/_utils/
 import { redirectWithError } from '~/lib/flash-message.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { redirect } from 'react-router';
-import { useNavigation, useSearchParams, useSubmit } from 'react-router';
+import { useNavigation, useRevalidator, useSearchParams, useSubmit } from 'react-router';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock, Zap, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,6 +20,8 @@ import {
 } from '~/ui';
 import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
 import type { Route } from './+types/booking.public.appointment.session.select-time.route';
+
+const SCHEDULE_REFRESH_INTERVAL_MS = 30_000;
 
 export async function loader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
@@ -331,6 +333,8 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
   const navigation = useNavigation();
+  const revalidator = useRevalidator();
+  const revalidatorStateRef = useRef(revalidator.state);
   const isSubmitting = navigation.state === 'submitting';
 
   if (!session) {
@@ -354,7 +358,8 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
 
   const urlSelectedTime = searchParams.get('time');
   const persistedTime = urlSelectedTime || session.selectedStartTime;
-  const displayTime = selectedTime || persistedTime;
+  const persistedTimeIsAvailable = persistedTime ? findScheduleWithTime(schedules, persistedTime) !== null : false;
+  const displayTime = selectedTime || (persistedTimeIsAvailable ? persistedTime : null);
 
   const currentWeek = weekGroups[selectedWeekIndex];
   const currentWeekSchedules = currentWeek?.schedules || [];
@@ -363,6 +368,22 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
     isDateListCollapsed && selectedDate
       ? currentWeekSchedules.filter((schedule) => schedule.date === selectedDate)
       : currentWeekSchedules;
+
+  useEffect(() => {
+    revalidatorStateRef.current = revalidator.state;
+  }, [revalidator.state]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === 'hidden' || revalidatorStateRef.current !== 'idle') {
+        return;
+      }
+
+      revalidator.revalidate();
+    }, SCHEDULE_REFRESH_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [revalidator]);
 
   // Initialize: find week with selected time or default to first week
   useEffect(() => {
@@ -382,6 +403,14 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
       }
     }
   }, [session.selectedStartTime, urlSelectedTime, persistedTime, schedules, weekGroups, setSearchParams]);
+
+  useEffect(() => {
+    if (!selectedTime || findScheduleWithTime(schedules, selectedTime)) {
+      return;
+    }
+
+    setSelectedTime(null);
+  }, [schedules, selectedTime]);
 
   const handleTimeSelect = (startTime: string) => {
     setSelectedTime(startTime);
