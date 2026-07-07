@@ -6,6 +6,8 @@ import {
   CalendarClock,
   CalendarPlus,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle2,
   CircleDot,
   Clock,
@@ -30,6 +32,14 @@ import {
 } from '~/ui';
 const UPCOMING_BADGE_CLASS = 'border-border bg-muted text-foreground';
 const COMPLETED_BADGE_CLASS = 'border-secondary/30 bg-secondary/15 text-foreground';
+const APPOINTMENTS_PAGE_SIZE = 5;
+
+type AppointmentPageSection = 'upcoming' | 'completed';
+
+const getSafePage = (value: string | null): number => {
+  const page = Number(value || '0');
+  return Number.isNaN(page) || page < 0 ? 0 : Math.floor(page);
+};
 
 const formatDurationMinutes = (startIso: string, endIso: string): number => {
   const start = new Date(startIso).getTime();
@@ -118,17 +128,85 @@ const buildCancelHref = (appointment?: MyAppointmentDto): string | null => {
   return ROUTES_MAP['booking.public.appointment.cancel-by-id'].href.replace(':appointmentId', String(appointment.id));
 };
 
+type AppointmentPaginationProps = {
+  page: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+  itemCount: number;
+  previousHref: string;
+  nextHref: string;
+  isLoading: boolean;
+};
+
+function AppointmentPagination({
+  page,
+  pageSize,
+  totalElements,
+  totalPages,
+  hasPrevious,
+  hasNext,
+  itemCount,
+  previousHref,
+  nextHref,
+  isLoading,
+}: AppointmentPaginationProps) {
+  if (totalElements === 0) return null;
+
+  const pageCount = Math.max(totalPages, 1);
+  const startItem = page * pageSize + 1;
+  const endItem = Math.min(page * pageSize + itemCount, totalElements);
+  const hasMultiplePages = pageCount > 1;
+
+  return (
+    <div className="flex flex-col gap-3 border-t border-card-border pt-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm text-muted-foreground">
+        Viser <span className="font-semibold text-card-text">{startItem}</span>-
+        <span className="font-semibold text-card-text">{endItem}</span> av{' '}
+        <span className="font-semibold text-card-text">{totalElements}</span>
+        <span className="ml-2 text-xs">Side {page + 1} av {pageCount}</span>
+      </p>
+      {hasMultiplePages && (
+        <div className="grid grid-cols-2 gap-2 sm:flex">
+          {hasPrevious && !isLoading ? (
+            <Button asChild variant="outline" size="sm">
+              <Link to={previousHref}>
+                <ChevronLeft className="size-4" />
+                Forrige
+              </Link>
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" size="sm" disabled>
+              <ChevronLeft className="size-4" />
+              Forrige
+            </Button>
+          )}
+          {hasNext && !isLoading ? (
+            <Button asChild variant="outline" size="sm">
+              <Link to={nextHref}>
+                Neste
+                <ChevronRight className="size-4" />
+              </Link>
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" size="sm" disabled>
+              Neste
+              <ChevronRight className="size-4" />
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
   try {
     const url = new URL(request.url);
-    const upcomingPage = Number(url.searchParams.get('upcomingPage') || '0');
-    const upcomingSize = Number(url.searchParams.get('upcomingSize') || '24');
-    const completedPage = Number(url.searchParams.get('completedPage') || '0');
-    const completedSize = Number(url.searchParams.get('completedSize') || '24');
-    const safeUpcomingPage = Number.isNaN(upcomingPage) || upcomingPage < 0 ? 0 : upcomingPage;
-    const safeUpcomingSize = Number.isNaN(upcomingSize) || upcomingSize <= 0 ? 24 : upcomingSize;
-    const safeCompletedPage = Number.isNaN(completedPage) || completedPage < 0 ? 0 : completedPage;
-    const safeCompletedSize = Number.isNaN(completedSize) || completedSize <= 0 ? 24 : completedSize;
+    const safeUpcomingPage = getSafePage(url.searchParams.get('upcomingPage'));
+    const safeCompletedPage = getSafePage(url.searchParams.get('completedPage'));
 
     const [nearestResult, upcomingResult, completedResult] = await withAuth(request, async () => {
       return Promise.allSettled([
@@ -136,13 +214,13 @@ export async function loader({ request }: Route.LoaderArgs) {
         AppointmentsController.getMyUpcomingAppointments({
           query: {
             page: safeUpcomingPage,
-            size: safeUpcomingSize,
+            size: APPOINTMENTS_PAGE_SIZE,
           },
         }),
         AppointmentsController.getMyCompletedAppointments({
           query: {
             page: safeCompletedPage,
-            size: safeCompletedSize,
+            size: APPOINTMENTS_PAGE_SIZE,
           },
         }),
       ]);
@@ -157,14 +235,14 @@ export async function loader({ request }: Route.LoaderArgs) {
       upcomingAppointments: upcomingPayload?.content ?? [],
       upcomingTotalElements: upcomingPayload?.totalElements ?? 0,
       upcomingPage: upcomingPayload?.page ?? safeUpcomingPage,
-      upcomingSize: upcomingPayload?.size ?? safeUpcomingSize,
+      upcomingSize: upcomingPayload?.size ?? APPOINTMENTS_PAGE_SIZE,
       upcomingTotalPages: upcomingPayload?.totalPages ?? 0,
       upcomingHasNext: upcomingPayload?.hasNext ?? false,
       upcomingHasPrevious: upcomingPayload?.hasPrevious ?? false,
       completedAppointments: completedPayload?.content ?? [],
       completedTotalElements: completedPayload?.totalElements ?? 0,
       completedPage: completedPayload?.page ?? safeCompletedPage,
-      completedSize: completedPayload?.size ?? safeCompletedSize,
+      completedSize: completedPayload?.size ?? APPOINTMENTS_PAGE_SIZE,
       completedTotalPages: completedPayload?.totalPages ?? 0,
       completedHasNext: completedPayload?.hasNext ?? false,
       completedHasPrevious: completedPayload?.hasPrevious ?? false,
@@ -178,14 +256,14 @@ export async function loader({ request }: Route.LoaderArgs) {
         upcomingAppointments: [] as MyAppointmentDto[],
         upcomingTotalElements: 0,
         upcomingPage: 0,
-        upcomingSize: 24,
+        upcomingSize: APPOINTMENTS_PAGE_SIZE,
         upcomingTotalPages: 0,
         upcomingHasNext: false,
         upcomingHasPrevious: false,
         completedAppointments: [] as MyAppointmentDto[],
         completedTotalElements: 0,
         completedPage: 0,
-        completedSize: 24,
+        completedSize: APPOINTMENTS_PAGE_SIZE,
         completedTotalPages: 0,
         completedHasNext: false,
         completedHasPrevious: false,
@@ -216,18 +294,16 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
   const completedHasNext = loaderData.completedHasNext ?? false;
   const completedHasPrevious = loaderData.completedHasPrevious ?? false;
   const completedTotalElements = loaderData.completedTotalElements ?? 0;
-  const buildSectionPageHref = (section: 'upcoming' | 'completed', nextPage: number) => {
+  const buildSectionPageHref = (section: AppointmentPageSection, nextPage: number) => {
     const params = new URLSearchParams(searchParams);
+    params.delete('upcomingSize');
+    params.delete('completedSize');
     if (section === 'upcoming') {
       params.set('upcomingPage', String(Math.max(0, nextPage)));
-      params.set('upcomingSize', String(upcomingPageSize));
       if (!params.get('completedPage')) params.set('completedPage', String(completedPage));
-      if (!params.get('completedSize')) params.set('completedSize', String(completedPageSize));
     } else {
       params.set('completedPage', String(Math.max(0, nextPage)));
-      params.set('completedSize', String(completedPageSize));
       if (!params.get('upcomingPage')) params.set('upcomingPage', String(upcomingPage));
-      if (!params.get('upcomingSize')) params.set('upcomingSize', String(upcomingPageSize));
     }
     return `?${params.toString()}`;
   };
@@ -495,19 +571,18 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
               })}
             </div>
           )}
-          {upcomingTotalElements > 0 && (
-            <div className="flex items-center justify-between gap-3 pt-1">
-              <Button asChild variant="outline" disabled={!upcomingHasPrevious || isLoading}>
-                <Link to={buildSectionPageHref('upcoming', upcomingPage - 1)}>Forrige</Link>
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                Side {upcomingPage + 1} av {Math.max(upcomingTotalPages, 1)}
-              </p>
-              <Button asChild variant="outline" disabled={!upcomingHasNext || isLoading}>
-                <Link to={buildSectionPageHref('upcoming', upcomingPage + 1)}>Neste</Link>
-              </Button>
-            </div>
-          )}
+          <AppointmentPagination
+            page={upcomingPage}
+            pageSize={upcomingPageSize}
+            totalElements={upcomingTotalElements}
+            totalPages={upcomingTotalPages}
+            hasPrevious={upcomingHasPrevious}
+            hasNext={upcomingHasNext}
+            itemCount={upcomingAppointments.length}
+            previousHref={buildSectionPageHref('upcoming', upcomingPage - 1)}
+            nextHref={buildSectionPageHref('upcoming', upcomingPage + 1)}
+            isLoading={isLoading}
+          />
         </BookingSection>
 
         <BookingSection title={`Tidligere bookinger (${completedTotalElements})`}>
@@ -598,19 +673,18 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
               })}
             </div>
           )}
-          {completedTotalElements > 0 && (
-            <div className="flex items-center justify-between gap-3 pt-1">
-              <Button asChild variant="outline" disabled={!completedHasPrevious || isLoading}>
-                <Link to={buildSectionPageHref('completed', completedPage - 1)}>Forrige</Link>
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                Side {completedPage + 1} av {Math.max(completedTotalPages, 1)}
-              </p>
-              <Button asChild variant="outline" disabled={!completedHasNext || isLoading}>
-                <Link to={buildSectionPageHref('completed', completedPage + 1)}>Neste</Link>
-              </Button>
-            </div>
-          )}
+          <AppointmentPagination
+            page={completedPage}
+            pageSize={completedPageSize}
+            totalElements={completedTotalElements}
+            totalPages={completedTotalPages}
+            hasPrevious={completedHasPrevious}
+            hasNext={completedHasNext}
+            itemCount={completedAppointments.length}
+            previousHref={buildSectionPageHref('completed', completedPage - 1)}
+            nextHref={buildSectionPageHref('completed', completedPage + 1)}
+            isLoading={isLoading}
+          />
         </BookingSection>
       </Stack>
     </BookingContainer>
