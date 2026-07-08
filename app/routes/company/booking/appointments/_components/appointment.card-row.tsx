@@ -1,22 +1,16 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router';
 import { parseISO, format } from 'date-fns';
 import { nb } from 'date-fns/locale';
-import { CalendarClock, ChevronRight, Clock3, Trash2, Wallet } from 'lucide-react';
+import { ChevronRight, Clock3, Trash2, Wallet } from 'lucide-react';
 import { getTotalServiceCount, getTotalDuration, getTotalPrice, isAppointmentCompleted } from '../_utils/appointments.utils';
 import type { AppointmentDto } from '~/api/generated/booking';
 import {
   Badge,
   Button,
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  KeyValueList,
-  Text,
   cn,
 } from '~/ui';
+import { AppointmentDetailsContent } from './appointment-details-content';
 
 type AppointmentCardRowProps = {
   appointment: AppointmentDto;
@@ -127,84 +121,13 @@ export function AppointmentCardRow({ appointment, onDelete, onUploadImage, isDel
         </div>
       </div>
 
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Avtaledetaljer</DialogTitle>
-          <DialogDescription>
-            {format(parseISO(appointment.startTime), 'PPPp', { locale: nb })} · {totalServices}{' '}
-            {totalServices === 1 ? 'tjeneste' : 'tjenester'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-2.5">
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => onUploadImage(appointment.id!)}>
-              Last opp bilde
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => {
-                setDetailsOpen(false);
-                onDelete(appointment.id!);
-              }}
-              disabled={isDeleting || isPast}
-              title={isPast ? 'Fullførte avtaler kan ikke slettes' : undefined}
-            >
-              Slett
-            </Button>
-          </div>
-
-          <KeyValueList
-            layout="compact"
-            items={[
-              {
-                label: 'Tidspunkt',
-                icon: <CalendarClock className="h-4 w-4" />,
-                value: format(parseISO(appointment.startTime), "EEEE d. MMMM 'kl.' HH:mm", { locale: nb }),
-              },
-            ]}
-          />
-
-          <div className="space-y-2 border-t border-border pt-2.5">
-            <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
-              Kunde
-            </Text>
-            <Text as="p" variant="body-sm" className="mt-1 font-semibold">
-              {appointment.user.givenName} {appointment.user.familyName}
-            </Text>
-            <div className="mt-2 text-sm text-text-secondary">
-              {appointment.user.email ? (
-                <Link to={`mailto:${appointment.user.email}`} className="break-all text-primary hover:underline">
-                  {appointment.user.email}
-                </Link>
-              ) : (
-                'Ingen e-post registrert'
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2 border-t border-border pt-2.5">
-            <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
-              Tjenester
-            </Text>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {serviceNames.length > 0 ? (
-                serviceNames.map((name, idx) => (
-                  <Badge key={`${name}-${idx}`} variant="outline" size="sm" className="rounded-full">
-                    {name}
-                  </Badge>
-                ))
-              ) : (
-                <Text as="p" variant="body-sm" className="text-text-secondary">
-                  Ingen tjenester registrert.
-                </Text>
-              )}
-            </div>
-          </div>
-        </div>
-      </DialogContent>
+      <AppointmentDetailsContent
+        appointment={appointment}
+        onDelete={onDelete}
+        onUploadImage={onUploadImage}
+        isDeleting={isDeleting}
+        onClose={() => setDetailsOpen(false)}
+      />
     </Dialog>
   );
 }

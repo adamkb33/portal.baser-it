@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Filter, Search, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { format } from 'date-fns';
@@ -22,7 +22,10 @@ export function AppointmentTableHeaderSlot() {
   const [searchParams] = useSearchParams();
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
 
-  const paginationService = new AppointmentPaginationService(searchParams, navigate);
+  const paginationService = useMemo(
+    () => new AppointmentPaginationService(searchParams, navigate),
+    [searchParams, navigate],
+  );
 
   const fromDateTime = searchParams.get('fromDateTime') || '';
   const toDateTime = searchParams.get('toDateTime') || '';
@@ -33,11 +36,32 @@ export function AppointmentTableHeaderSlot() {
 
   const [localFromDate, setLocalFromDate] = useState(fromDate);
   const [localToDate, setLocalToDate] = useState(toDate);
+  const [localSearchFilter, setLocalSearchFilter] = useState(searchFilter);
+  const lastSubmittedSearchRef = useRef(searchFilter.trim());
 
   useEffect(() => {
     setLocalFromDate(fromDate);
     setLocalToDate(toDate);
   }, [fromDate, toDate]);
+
+  useEffect(() => {
+    const normalizedSearchFilter = searchFilter.trim();
+    if (normalizedSearchFilter === lastSubmittedSearchRef.current) return;
+
+    setLocalSearchFilter(searchFilter);
+    lastSubmittedSearchRef.current = normalizedSearchFilter;
+  }, [searchFilter]);
+
+  useEffect(() => {
+    const normalizedSearch = localSearchFilter.trim();
+    const timeoutId = setTimeout(() => {
+      if (normalizedSearch === lastSubmittedSearchRef.current) return;
+      lastSubmittedSearchRef.current = normalizedSearch;
+      paginationService.handleSearchChange(normalizedSearch);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [localSearchFilter, paginationService]);
 
   const activeQuickFilter = paginationService.getActiveQuickFilter();
   const hasDateFilter = Boolean(fromDate || toDate);
@@ -47,6 +71,19 @@ export function AppointmentTableHeaderSlot() {
 
   const handleApplyDateFilters = () => {
     paginationService.applyDateFilters(localFromDate, localToDate);
+    setIsFilterPopoverOpen(false);
+  };
+
+  const handleRemoveSearchFilter = () => {
+    lastSubmittedSearchRef.current = '';
+    setLocalSearchFilter('');
+    paginationService.handleRemoveFilter('search');
+  };
+
+  const handleClearFilters = () => {
+    lastSubmittedSearchRef.current = '';
+    setLocalSearchFilter('');
+    paginationService.handleClearFilters();
     setIsFilterPopoverOpen(false);
   };
 
@@ -79,16 +116,16 @@ export function AppointmentTableHeaderSlot() {
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Søk avtaler..."
-            value={searchFilter}
-            onChange={(e) => paginationService.handleSearchChange(e.target.value)}
+            value={localSearchFilter}
+            onChange={(e) => setLocalSearchFilter(e.target.value)}
             className="h-11 border-border bg-surface-variant-1 pl-9 pr-9 text-base md:h-10"
           />
-          {searchFilter && (
+          {localSearchFilter && (
             <Button
               variant="ghost"
               size="icon"
               className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"
-              onClick={() => paginationService.handleRemoveFilter('search')}
+              onClick={handleRemoveSearchFilter}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -117,10 +154,7 @@ export function AppointmentTableHeaderSlot() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        paginationService.handleClearFilters();
-                        setIsFilterPopoverOpen(false);
-                      }}
+                      onClick={handleClearFilters}
                       className="h-7 border border-border bg-chip-surface px-2 text-xs text-destructive hover:bg-chip-surface-hover"
                     >
                       Nullstill alle

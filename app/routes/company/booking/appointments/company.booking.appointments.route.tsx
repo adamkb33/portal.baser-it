@@ -8,6 +8,7 @@ import { withAuth } from '~/api/utils/with-auth';
 import { CompanyUserAppointmentController, type AppointmentDto } from '~/api/generated/booking';
 import type { Route } from './+types/company.booking.appointments.route';
 import { AppointmentCardRow } from './_components/appointment.card-row';
+import { AppointmentDetailsContent } from './_components/appointment-details-content';
 import { AppointmentTableHeaderSlot } from './_components/appointment.table-header-slot';
 import { AppointmentTableRow } from './_components/appointment.table-row';
 import { AppointmentPaginationService } from './_services/appointment.pagination-service';
@@ -22,11 +23,6 @@ import {
   CardContent,
   CompanyPageTemplate,
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  KeyValueList,
   Label,
   Notice,
   Text,
@@ -34,8 +30,6 @@ import {
 } from '~/ui';
 import {
   getTotalDuration,
-  getTotalPrice,
-  getTotalServiceCount,
   isAppointmentCompleted,
 } from './_utils/appointments.utils';
 
@@ -495,65 +489,15 @@ function SpotlightAppointmentDetailsDialog({
 }) {
   if (!appointment) return null;
 
-  const totalServices = getTotalServiceCount(appointment);
-  const isCompleted = isAppointmentCompleted(appointment);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Avtaledetaljer</DialogTitle>
-          <DialogDescription>
-            {format(parseISO(appointment.startTime), 'PPPp', { locale: nb })} · {totalServices}{' '}
-            {totalServices === 1 ? 'tjeneste' : 'tjenester'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-3">
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => onUploadImage(appointment.id)}>
-              Last opp bilde
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => onDelete(appointment.id)}
-              disabled={isDeleting || isCompleted}
-              title={isCompleted ? 'Fullførte avtaler kan ikke slettes' : undefined}
-            >
-              Slett
-            </Button>
-          </div>
-
-          <div className="space-y-2">
-            <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
-              Kunde
-            </Text>
-            <Text as="p" variant="body-sm" className="mt-1 font-semibold">
-              {appointment.user.givenName} {appointment.user.familyName}
-            </Text>
-            <div className="mt-2 text-sm text-text-secondary">
-              {appointment.user.email || 'Ingen e-post registrert'}
-            </div>
-          </div>
-
-          <div className="space-y-2 border-t border-border pt-3">
-            <Text as="p" variant="caption" className="uppercase tracking-wide text-text-secondary">
-              Oppsummering
-            </Text>
-            <KeyValueList
-              layout="compact"
-              items={[
-                { label: 'Tjenester', value: totalServices },
-                { label: 'Varighet', value: getTotalDuration(appointment) },
-                { label: 'Pris', value: getTotalPrice(appointment) },
-              ]}
-            />
-          </div>
-        </div>
-      </DialogContent>
+      <AppointmentDetailsContent
+        appointment={appointment}
+        onDelete={onDelete}
+        onUploadImage={onUploadImage}
+        isDeleting={isDeleting}
+        onClose={() => onOpenChange(false)}
+      />
     </Dialog>
   );
 }
