@@ -13,6 +13,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { resolveAuthNextStepHref } from '../_utils/auth.utils';
 import { BOOKING_CONTACT_PAGE_HEADER_CLASS } from '../_utils/booking-contact-theme';
+import { MobileVerificationAutoSendService } from './_services/mobile-verification-auto-send.server';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
@@ -36,13 +37,17 @@ export async function loader({ request }: Route.LoaderArgs) {
       return redirect(routes.contact);
     }
 
+    const autoSendResult = await MobileVerificationAutoSendService.ensureSentOnce(request, verificationSessionToken);
+
     return data({
       session,
-      verificationSessionToken,
+      verificationSessionToken: autoSendResult.verificationSessionToken,
       navigation: {
         currentStep: routes.contactVerifyMobile,
         previousStep: routes.contactCollectMobile,
       },
+    }, {
+      headers: autoSendResult.headers,
     });
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke hente brukerdata');

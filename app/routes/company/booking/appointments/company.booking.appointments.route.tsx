@@ -1,6 +1,5 @@
 import { NavLink, useFetcher, useNavigate, useSearchParams } from 'react-router';
-import { useMemo, useState } from 'react';
-import { CalendarClock } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
@@ -33,7 +32,12 @@ import {
   Text,
   Textarea,
 } from '~/ui';
-import { getTotalDuration, getTotalPrice, getTotalServiceCount, isAppointmentCompleted } from './_utils/appointments.utils';
+import {
+  getTotalDuration,
+  getTotalPrice,
+  getTotalServiceCount,
+  isAppointmentCompleted,
+} from './_utils/appointments.utils';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -141,6 +145,7 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
   const [deleteReason, setDeleteReason] = useState('');
   const [selectedSpotlightAppointment, setSelectedSpotlightAppointment] = useState<AppointmentDto | null>(null);
   const [isSpotlightDetailsOpen, setIsSpotlightDetailsOpen] = useState(false);
+  const linkedAppointmentId = Number(searchParams.get('appointmentId'));
 
   const paginationService = useMemo(
     () => new AppointmentPaginationService(searchParams, navigate),
@@ -149,10 +154,7 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
 
   const now = useMemo(() => new Date(), [appointments]);
   const sortedByStart = useMemo(
-    () =>
-      [...appointments].sort(
-        (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
-      ),
+    () => [...appointments].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()),
     [appointments],
   );
 
@@ -168,11 +170,23 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
     [appointments, now],
   );
   const nextUpcomingAppointment = useMemo(
-    () =>
-      sortedByStart.find((appointment) => new Date(appointment.startTime).getTime() >= now.getTime()) ??
-      null,
+    () => sortedByStart.find((appointment) => new Date(appointment.startTime).getTime() >= now.getTime()) ?? null,
     [sortedByStart, now],
   );
+
+  useEffect(() => {
+    if (!Number.isInteger(linkedAppointmentId) || linkedAppointmentId <= 0) {
+      return;
+    }
+
+    const linkedAppointment = appointments.find((appointment) => appointment.id === linkedAppointmentId);
+    if (!linkedAppointment) {
+      return;
+    }
+
+    setSelectedSpotlightAppointment(linkedAppointment);
+    setIsSpotlightDetailsOpen(true);
+  }, [appointments, linkedAppointmentId]);
 
   const handleDeleteClick = (id: number) => {
     const appointment = appointments.find((item) => item.id === id);
@@ -422,7 +436,9 @@ function SpotlightAppointmentCard({
   return (
     <Card className={`relative overflow-hidden rounded-xl ${toneClasses[tone].card}`}>
       <div className={`h-1 w-full ${toneClasses[tone].bar}`} />
-      <div className={`pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-xl ${toneClasses[tone].orb}`} />
+      <div
+        className={`pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-xl ${toneClasses[tone].orb}`}
+      />
       <CardContent className="space-y-2 p-3">
         <div className="flex items-center justify-between gap-2">
           <Text as="p" variant="body-sm" className="font-semibold">
@@ -495,12 +511,7 @@ function SpotlightAppointmentDetailsDialog({
 
         <div className="space-y-3">
           <div className="flex flex-wrap justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onUploadImage(appointment.id)}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={() => onUploadImage(appointment.id)}>
               Last opp bilde
             </Button>
             <Button
@@ -523,7 +534,9 @@ function SpotlightAppointmentDetailsDialog({
             <Text as="p" variant="body-sm" className="mt-1 font-semibold">
               {appointment.user.givenName} {appointment.user.familyName}
             </Text>
-            <div className="mt-2 text-sm text-text-secondary">{appointment.user.email || 'Ingen e-post registrert'}</div>
+            <div className="mt-2 text-sm text-text-secondary">
+              {appointment.user.email || 'Ingen e-post registrert'}
+            </div>
           </div>
 
           <div className="space-y-2 border-t border-border pt-3">
