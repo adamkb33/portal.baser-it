@@ -1,10 +1,14 @@
 import type { Route } from './+types/company.booking.schedule-unavailability.route';
-import { CompanyUserScheduleUnavailabilityController, type ScheduleUnavailabilityDto } from '~/api/generated/booking';
-import { NavLink, data, useNavigate, useSearchParams } from 'react-router';
-import { CalendarOff, Clock, Plus } from 'lucide-react';
+import {
+  CompanyUserScheduleUnavailabilityController,
+  type ScheduleUnavailabilityGroupDto,
+} from '~/api/generated/booking';
+import { Form, NavLink, data, useNavigate, useNavigation, useSearchParams } from 'react-router';
+import { CalendarOff, Clock, Plus, Trash2 } from 'lucide-react';
 import { withAuth } from '~/api/utils/with-auth';
 import { addDays, addMonths, format, isSameDay, startOfDay } from 'date-fns';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { redirectWithError, redirectWithSuccess } from '~/lib/flash-message.server';
 import { formatDateBoundaryInTimeZone, formatDateInputInTimeZone } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Badge, Button, Card, CardContent, CardHead, CompanyPageTemplate, Text } from '~/ui';
@@ -37,7 +41,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const toDateTime = formatDateBoundaryInTimeZone(formatDateInputInTimeZone(end, timezone), 'end', timezone);
 
     const getResponse = await withAuth(request, async () =>
-      CompanyUserScheduleUnavailabilityController.companyUserGetUnavailabilityRanges({
+      CompanyUserScheduleUnavailabilityController.companyUserGetGroupedUnavailabilityRanges({
         query: {
           fromDateTime,
           toDateTime,
@@ -47,19 +51,51 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     return data({
       range,
-      schedules: getResponse.data?.data ?? [],
+      groups: getResponse.data?.data ?? [],
       error: null as string | null,
     });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente fravær');
-    return data({ range, schedules: [], error: message }, { status: status ?? 400 });
+    return data({ range, groups: [] as ScheduleUnavailabilityGroupDto[], error: message }, { status: status ?? 400 });
+  }
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const intent = String(formData.get('intent') ?? '');
+
+  if (intent !== 'delete') {
+    return redirectWithError(request, request.url, 'Ukjent handling');
+  }
+
+  const ids = String(formData.get('ids') ?? '')
+    .split(',')
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id) && id > 0);
+
+  if (ids.length === 0) {
+    return redirectWithError(request, request.url, 'Fant ingen fraværsperioder å slette');
+  }
+
+  try {
+    await withAuth(request, async () =>
+      CompanyUserScheduleUnavailabilityController.companyUserDeleteUnavailabilityRanges({
+        body: { ids },
+      }),
+    );
+
+    return redirectWithSuccess(request, request.url, ids.length === 1 ? 'Fravær slettet' : 'Fraværsperiode slettet');
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke slette fravær');
+    return redirectWithError(request, request.url, message);
   }
 }
 
 export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }: Route.ComponentProps) {
-  const { schedules, error } = loaderData;
+  const { groups, error } = loaderData;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const navigation = useNavigation();
   const selectedRange = loaderData.range ?? searchParams.get('range') ?? '6m';
   const today = startOfDay(new Date());
 
@@ -72,7 +108,14 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
     }).format(date);
   };
   const formatTime = (dateString: string) => format(new Date(dateString), 'HH:mm');
-  const formatDateTimeRange = (start: string, end: string) => {
+  const formatDateTimeRange = (start: string, end: string, wholeDay: boolean) => {
+    if (wholeDay) {
+      if (isSameDay(new Date(start), new Date(end))) {
+        return formatDate(start);
+      }
+      return `${formatDate(start)} – ${formatDate(end)}`;
+    }
+
     if (isSameDay(new Date(start), new Date(end))) {
       return `${formatDate(start)} ${formatTime(start)}–${formatTime(end)}`;
     }
@@ -81,13 +124,14 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
   const isWholeDay = (start: string, end: string) => {
     const startDate = new Date(start);
     const endDate = new Date(end);
-    return (
-      isSameDay(startDate, endDate) && format(startDate, 'HH:mm') === '00:00' && format(endDate, 'HH:mm') === '23:59'
-    );
+    return format(startDate, 'HH:mm') === '00:00' && ['00:00', '23:59'].includes(format(endDate, 'HH:mm'));
   };
 
-  const totalRanges = schedules?.length ?? 0;
-  const wholeDayRanges = schedules?.filter((range) => isWholeDay(range.startTime, range.endTime)).length ?? 0;
+  const groupedSchedules = groups;
+  const totalRanges = groupedSchedules.length;
+  const wholeDayRanges = groupedSchedules.filter((group) =>
+    group.blockedSlots.every((slot) => isWholeDay(slot.startTime, slot.endTime)),
+  ).length;
   const partialRanges = Math.max(totalRanges - wholeDayRanges, 0);
   const rangeOptions = [
     { value: '30d', label: '30 dager' },
@@ -97,6 +141,7 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
     { value: 'prev6m', label: 'Siste 6 måneder' },
   ];
   const { start: rangeStartDate, end: rangeEndDate } = getRangeBounds(selectedRange, today);
+  const deletingIds = navigation.state === 'submitting' ? String(navigation.formData?.get('ids') ?? '') : null;
 
   return (
     <CompanyPageTemplate
@@ -166,14 +211,17 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
           </div>
         </CardHead>
         <CardContent className="space-y-3">
-          {schedules.length > 0 ? (
-            schedules.map((schedule: ScheduleUnavailabilityDto) => {
-              const isWholeDayRange = isWholeDay(schedule.startTime, schedule.endTime);
-              const isPast = isPastInterval(schedule.endTime);
+          {groupedSchedules.length > 0 ? (
+            groupedSchedules.map((schedule) => {
+              const isWholeDayRange = schedule.blockedSlots.every((slot) => isWholeDay(slot.startTime, slot.endTime));
+              const isPast = isPastInterval(schedule.to);
+              const idsValue = schedule.ids.join(',');
+              const isDeleting = deletingIds === idsValue;
+              const blockedSlotCount = schedule.blockedSlots.length;
 
               return (
                 <div
-                  key={`${schedule.profileId}-${schedule.startTime}-${schedule.endTime}`}
+                  key={schedule.id}
                   className="flex flex-col gap-3 rounded-lg border border-border bg-background p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex min-w-0 items-center gap-3">
@@ -182,10 +230,16 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
                     </div>
                     <div className="min-w-0">
                       <Text as="p" variant="label" className="truncate text-text-primary">
-                        {formatDateTimeRange(schedule.startTime, schedule.endTime)}
+                        {formatDateTimeRange(schedule.from, schedule.to, isWholeDayRange)}
                       </Text>
                       <Text as="p" variant="body-sm" className="text-text-secondary">
-                        {isWholeDayRange ? 'Hele dagen er blokkert' : 'Bookinger er blokkert i dette tidsrommet'}
+                        {isWholeDayRange
+                          ? blockedSlotCount > 1
+                            ? `${blockedSlotCount} dager er blokkert`
+                            : 'Hele dagen er blokkert'
+                          : blockedSlotCount > 1
+                            ? `${blockedSlotCount} arbeidsdager er blokkert i perioden`
+                            : 'Bookinger er blokkert i dette tidsrommet'}
                       </Text>
                     </div>
                   </div>
@@ -198,6 +252,22 @@ export default function CompanyBookingScheduleUnavailabilityRoute({ loaderData }
                         Tidligere
                       </Badge>
                     ) : null}
+                    <Form method="post">
+                      <input name="intent" type="hidden" value="delete" />
+                      <input name="ids" type="hidden" value={idsValue} />
+                      <Button
+                        type="submit"
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive"
+                        disabled={isPast || isDeleting}
+                        loading={isDeleting}
+                        title={isPast ? 'Tidligere fravær kan ikke slettes' : undefined}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Slett
+                      </Button>
+                    </Form>
                   </div>
                 </div>
               );

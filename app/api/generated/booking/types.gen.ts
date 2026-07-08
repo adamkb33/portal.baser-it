@@ -857,6 +857,7 @@ export type ApiResponseListScheduleUnavailabilityDto = {
 };
 
 export type ScheduleUnavailabilityDto = {
+  id: number;
   profileId: number;
   startTime: string;
   endTime: string;
@@ -1983,6 +1984,30 @@ export type ScheduleAppointmentDto = {
   noShow: boolean;
 };
 
+export type ApiResponseListScheduleUnavailabilityGroupDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: Array<ScheduleUnavailabilityGroupDto>;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type ScheduleUnavailabilityBlockedSlotDto = {
+  id: number;
+  startTime: string;
+  endTime: string;
+};
+
+export type ScheduleUnavailabilityGroupDto = {
+  id: string;
+  profileId: number;
+  from: string;
+  to: string;
+  ids: Array<number>;
+  blockedSlots: Array<ScheduleUnavailabilityBlockedSlotDto>;
+};
+
 export type ApiResponsePaginatedResponseScheduleAvailabilityDto = {
   success: boolean;
   message: ApiMessage;
@@ -2604,6 +2629,10 @@ export type PublicPendingUserClearedResponseDto = {
   sessionId: string;
   pendingUserId?: number;
   nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
+};
+
+export type DeleteScheduleUnavailabilityRangesDto = {
+  ids: Array<number>;
 };
 
 export type CompanyAdminCancelAppointmentDto = {
@@ -3376,6 +3405,26 @@ export type GetScheduleOverviewResponses = {
 
 export type GetScheduleOverviewResponse = GetScheduleOverviewResponses[keyof GetScheduleOverviewResponses];
 
+export type CompanyUserGetGroupedUnavailabilityRangesData = {
+  body?: never;
+  path?: never;
+  query?: {
+    fromDateTime?: string;
+    toDateTime?: string;
+  };
+  url: '/booking-service/company-user/schedule-unavailability/groups';
+};
+
+export type CompanyUserGetGroupedUnavailabilityRangesResponses = {
+  /**
+   * OK
+   */
+  200: ApiResponseListScheduleUnavailabilityGroupDto;
+};
+
+export type CompanyUserGetGroupedUnavailabilityRangesResponse =
+  CompanyUserGetGroupedUnavailabilityRangesResponses[keyof CompanyUserGetGroupedUnavailabilityRangesResponses];
+
 export type GetDailySchedulesData = {
   body?: never;
   path?: never;
@@ -3629,6 +3678,23 @@ export type CompanyUserDeleteUnavailabilityResponses = {
 
 export type CompanyUserDeleteUnavailabilityResponse =
   CompanyUserDeleteUnavailabilityResponses[keyof CompanyUserDeleteUnavailabilityResponses];
+
+export type CompanyUserDeleteUnavailabilityRangesData = {
+  body: DeleteScheduleUnavailabilityRangesDto;
+  path?: never;
+  query?: never;
+  url: '/booking-service/company-user/schedule-unavailability/batch';
+};
+
+export type CompanyUserDeleteUnavailabilityRangesResponses = {
+  /**
+   * OK
+   */
+  200: ApiResponseUnit;
+};
+
+export type CompanyUserDeleteUnavailabilityRangesResponse =
+  CompanyUserDeleteUnavailabilityRangesResponses[keyof CompanyUserDeleteUnavailabilityRangesResponses];
 
 export type DeleteDailyScheduleData = {
   body?: never;

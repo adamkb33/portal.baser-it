@@ -14,8 +14,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "hooks:install": "git config core.hooksPath .githooks",
-    "gen:api": "openapi-ts && tsx scripts/openapi/post-generate-aliases.ts",
-    "generate:api": "openapi-ts && tsx scripts/openapi/post-generate-aliases.ts"
+    "gen:api": "openapi-ts && tsx scripts/openapi/post-generate-aliases.ts && prettier --write app/api/generated",
+    "generate:api": "openapi-ts && tsx scripts/openapi/post-generate-aliases.ts && prettier --write app/api/generated"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.21",

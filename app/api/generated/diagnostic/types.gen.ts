@@ -857,6 +857,7 @@ export type ApiResponseListScheduleUnavailabilityDto = {
 };
 
 export type ScheduleUnavailabilityDto = {
+  id: number;
   profileId: number;
   startTime: string;
   endTime: string;
@@ -1983,6 +1984,30 @@ export type ScheduleAppointmentDto = {
   noShow: boolean;
 };
 
+export type ApiResponseListScheduleUnavailabilityGroupDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: Array<ScheduleUnavailabilityGroupDto>;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type ScheduleUnavailabilityBlockedSlotDto = {
+  id: number;
+  startTime: string;
+  endTime: string;
+};
+
+export type ScheduleUnavailabilityGroupDto = {
+  id: string;
+  profileId: number;
+  from: string;
+  to: string;
+  ids: Array<number>;
+  blockedSlots: Array<ScheduleUnavailabilityBlockedSlotDto>;
+};
+
 export type ApiResponsePaginatedResponseScheduleAvailabilityDto = {
   success: boolean;
   message: ApiMessage;
@@ -2604,6 +2629,10 @@ export type PublicPendingUserClearedResponseDto = {
   sessionId: string;
   pendingUserId?: number;
   nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
+};
+
+export type DeleteScheduleUnavailabilityRangesDto = {
+  ids: Array<number>;
 };
 
 export type CompanyAdminCancelAppointmentDto = {

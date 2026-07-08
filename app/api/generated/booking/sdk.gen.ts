@@ -14,7 +14,11 @@ import type {
   CompanyUserCreateUnavailabilityRangesData,
   CompanyUserCreateUnavailabilityRangesResponses,
   CompanyUserDeleteUnavailabilityData,
+  CompanyUserDeleteUnavailabilityRangesData,
+  CompanyUserDeleteUnavailabilityRangesResponses,
   CompanyUserDeleteUnavailabilityResponses,
+  CompanyUserGetGroupedUnavailabilityRangesData,
+  CompanyUserGetGroupedUnavailabilityRangesResponses,
   CompanyUserGetUnavailabilityRangesData,
   CompanyUserGetUnavailabilityRangesResponses,
   CreateAppointmentSessionData,
@@ -578,6 +582,16 @@ export class Booking {
     });
   }
 
+  public static companyUserGetGroupedUnavailabilityRanges<ThrowOnError extends boolean = false>(
+    options?: Options<CompanyUserGetGroupedUnavailabilityRangesData, ThrowOnError>,
+  ) {
+    return (options?.client ?? client).get<CompanyUserGetGroupedUnavailabilityRangesResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/booking-service/company-user/schedule-unavailability/groups',
+      ...options,
+    });
+  }
+
   public static getDailySchedules<ThrowOnError extends boolean = false>(
     options?: Options<GetDailySchedulesData, ThrowOnError>,
   ) {
@@ -717,6 +731,20 @@ export class Booking {
       security: [{ scheme: 'bearer', type: 'http' }],
       url: '/booking-service/company-user/schedule-unavailability/{id}',
       ...options,
+    });
+  }
+
+  public static companyUserDeleteUnavailabilityRanges<ThrowOnError extends boolean = false>(
+    options: Options<CompanyUserDeleteUnavailabilityRangesData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).delete<CompanyUserDeleteUnavailabilityRangesResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/booking-service/company-user/schedule-unavailability/batch',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
     });
   }
 

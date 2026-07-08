@@ -100,6 +100,7 @@ describe('fullcalendar adapter', () => {
         ],
         unavailabilities: [
           {
+            id: 7,
             profileId: 10,
             startTime: '2026-07-08T12:00:00+02:00',
             endTime: '2026-07-08T13:00:00+02:00',
