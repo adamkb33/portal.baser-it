@@ -341,6 +341,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const navigation = useNavigation();
   const revalidator = useRevalidator();
   const revalidatorStateRef = useRef(revalidator.state);
+  const submitInFlightRef = useRef(false);
   const isSubmitting = navigation.state === 'submitting';
 
   if (!session) {
@@ -378,6 +379,12 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   useEffect(() => {
     revalidatorStateRef.current = revalidator.state;
   }, [revalidator.state]);
+
+  useEffect(() => {
+    if (navigation.state === 'idle') {
+      submitInFlightRef.current = false;
+    }
+  }, [navigation.state]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -497,6 +504,12 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   };
 
   const handleSubmit = () => {
+    if (isSubmitting || submitInFlightRef.current) {
+      return;
+    }
+
+    submitInFlightRef.current = true;
+
     if (selectedTime) {
       const scheduleDate = selectedDate ?? findScheduleWithTime(schedules, selectedTime);
       const rawDateTime = selectedTime.includes('T')
@@ -862,6 +875,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
             to: loaderData.navigation.selectServices,
             label: 'Tilbake',
             variant: 'secondary',
+            disabled: isSubmitting,
           },
           {
             id: 'continue',

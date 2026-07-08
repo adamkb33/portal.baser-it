@@ -125,6 +125,7 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
     typeof resendFetcher.data === 'object' && resendFetcher.data && 'error' in resendFetcher.data
       ? String(resendFetcher.data.error)
       : null;
+  const isVerifyingCode = fetcher.state !== 'idle';
   const isSendingCode = resendFetcher.state !== 'idle';
 
   React.useEffect(() => {
@@ -171,7 +172,7 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
         {resendMessage ? (
           <Notice variant="booking" tone={resendMessageTone} title="SMS-kode" message={resendMessage} />
         ) : null}
-        <fetcher.Form method="post" action={API_ROUTES_MAP['auth.verify-mobile'].url}>
+        <fetcher.Form method="post" action={API_ROUTES_MAP['auth.verify-mobile'].url} aria-busy={isVerifyingCode}>
           <Stack space="md">
             <Stack space="xs">
               <input type="hidden" name="verificationSessionToken" value={verificationSessionToken} />
@@ -181,21 +182,33 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
                 onChange={setCode}
                 length={CODE_LENGTH}
                 aria-invalid={Boolean(errorMessage)}
+                disabled={isVerifyingCode}
                 boxClassName="border-booking-border bg-booking-surface-strong text-booking-text data-[active=true]:border-booking-action data-[active=true]:ring-booking-action/25 data-[filled=true]:border-booking-action hover:border-booking-action"
               />
             </Stack>
-            <Button type="submit" variant="booking-primary" className="w-full" disabled={code.length !== CODE_LENGTH}>
-              Bekreft kode
+            <Button
+              type="submit"
+              variant="booking-primary"
+              className="w-full"
+              loading={isVerifyingCode}
+              disabled={code.length !== CODE_LENGTH}
+            >
+              {isVerifyingCode ? 'Bekrefter...' : 'Bekreft kode'}
             </Button>
           </Stack>
         </fetcher.Form>
-        <resendFetcher.Form method="post" action={API_ROUTES_MAP['auth.resend-verification.mobile'].url}>
+        <resendFetcher.Form
+          method="post"
+          action={API_ROUTES_MAP['auth.resend-verification.mobile'].url}
+          aria-busy={isSendingCode}
+        >
           <Stack space="sm">
             <input type="hidden" name="verificationSessionToken" value={verificationSessionToken} />
             <Button
               type="submit"
               fullWidth
               variant="booking-secondary"
+              loading={isSendingCode}
               disabled={!verificationSessionToken || isSendingCode}
             >
               {isSendingCode ? 'Sender SMS...' : 'Send SMS på nytt'}

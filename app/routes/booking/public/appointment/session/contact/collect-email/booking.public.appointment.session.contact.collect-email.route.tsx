@@ -128,9 +128,9 @@ export default function BookingContactCollectEmailPage({ loaderData }: Route.Com
               />
             </Stack>
 
-            <Button type="submit" size="lg" fullWidth variant="booking-primary" className="gap-3">
+            <Button type="submit" size="lg" fullWidth variant="booking-primary" className="gap-3" loading={isSubmitting}>
               <Mail className="size-5" />
-              Lagre og fortsett
+              {isSubmitting ? 'Lagrer...' : 'Lagre og fortsett'}
             </Button>
           </Stack>
         </Form>

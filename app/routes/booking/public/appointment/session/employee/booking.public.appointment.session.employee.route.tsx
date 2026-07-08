@@ -260,6 +260,7 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
             to: loaderData.navigation.contact,
             label: 'Tilbake',
             variant: 'secondary',
+            disabled: isSubmitting,
           },
           {
             id: 'continue',
@@ -267,7 +268,7 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
             to: loaderData.navigation.selectServices,
             label: selectedProfileId ? 'Fortsett' : 'Velg behandler',
             variant: 'primary',
-            disabled: !selectedProfileId,
+            disabled: !selectedProfileId || isSubmitting,
           },
         ]}
         compact

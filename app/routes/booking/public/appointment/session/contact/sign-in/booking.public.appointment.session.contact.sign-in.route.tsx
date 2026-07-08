@@ -158,7 +158,7 @@ export default function BookingContactSignInPage({ loaderData }: Route.Component
       <Panel title="Logg inn med e-post eller mobil" tone="muted" className={BOOKING_CONTACT_PANEL_CLASS}>
         <Form method="post" aria-busy={isSubmitting}>
           <Stack space="md">
-            <ProviderButtons showDivider={!isGoogleProvider} />
+            <ProviderButtons showDivider={!isGoogleProvider} disabled={isSubmitting} />
             <input type="hidden" name="redirectUrl" value="booking" />
 
             {!isGoogleProvider ? (

@@ -515,6 +515,7 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
             to: loaderData.navigation.employee,
             label: 'Tilbake',
             variant: 'secondary',
+            disabled: isSubmitting,
           },
           {
             id: 'continue',

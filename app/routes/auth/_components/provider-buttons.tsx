@@ -36,6 +36,8 @@ export function ProviderButtons({
         {hasGoogle ? (
           <GoogleSignInButton 
             onCredential={(token) => {
+              if (disabled) return;
+
               // Set hidden inputs and submit the closest parent form.
               const form = containerRef.current?.closest('form');
               if (form) {

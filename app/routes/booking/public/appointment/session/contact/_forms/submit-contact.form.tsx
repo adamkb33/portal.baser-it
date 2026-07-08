@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Loader2 } from 'lucide-react';
 
 import {
   type SubmitContactFormInput,
@@ -82,6 +81,7 @@ export function SubmitContactForm({
           {...field}
           {...inputOptions}
           aria-invalid={Boolean(fieldError)}
+          disabled={isSubmitting || inputOptions.disabled}
           invalid={Boolean(fieldError)}
           variant="booking"
         />
@@ -129,15 +129,8 @@ export function SubmitContactForm({
       </div>
 
       <div className="mt-6 hidden md:block">
-        <Button type="submit" variant="booking-primary" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 size-4 animate-spin" />
-              Lagrer…
-            </>
-          ) : (
-            'Fortsett'
-          )}
+        <Button type="submit" variant="booking-primary" loading={isSubmitting}>
+          {isSubmitting ? 'Lagrer...' : 'Fortsett'}
         </Button>
       </div>
     </form>

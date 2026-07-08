@@ -8,10 +8,11 @@ export function ClearSessionAction() {
   const location = useLocation();
   const action = `${location.pathname}${location.search}`;
   const [open, setOpen] = React.useState(false);
+  const isSubmitting = fetcher.state !== 'idle';
 
   return (
     <>
-      <Button type="button" variant="destructive" onClick={() => setOpen(true)}>
+      <Button type="button" variant="destructive" onClick={() => setOpen(true)} disabled={isSubmitting}>
         Slett brukerdata
       </Button>
       <ConfirmDialog
@@ -25,10 +26,10 @@ export function ClearSessionAction() {
           </Button>
         }
         confirmAction={
-          <fetcher.Form method="post" action={action}>
+          <fetcher.Form method="post" action={action} aria-busy={isSubmitting}>
             <input type="hidden" name="intent" value={ACTION_INTENT.CLEAR_SESSION} />
-            <Button type="submit" variant="destructive">
-              Slett
+            <Button type="submit" variant="destructive" loading={isSubmitting}>
+              {isSubmitting ? 'Sletter...' : 'Slett'}
             </Button>
           </fetcher.Form>
         }

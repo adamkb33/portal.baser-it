@@ -6,7 +6,7 @@ import { AppointmentSessionService } from '~/routes/booking/public/_services/boo
 import { data, redirect } from 'react-router';
 import { resolveErrorPayload } from '~/lib/api-error';
 import React from 'react';
-import { Form, Link, useNavigate } from 'react-router';
+import { Form, Link, useNavigate, useNavigation } from 'react-router';
 import { CalendarClock, LogIn, RefreshCcw, UserCheck, UserPlus } from 'lucide-react';
 import { ProviderButtons } from '~/routes/auth/_components/provider-buttons';
 import type { UserAuthStatusDto } from '~/api/generated/base';
@@ -188,7 +188,10 @@ export default function BookingSessionContactPage({ loaderData }: Route.Componen
   const { sessionUser, auth, navigation } = loaderData;
 
   const navigate = useNavigate();
+  const routeNavigation = useNavigation();
   const [showSwitchOptions, setShowSwitchOptions] = React.useState(false);
+  const isSubmitting = routeNavigation.state === 'submitting';
+  const submittingIntent = routeNavigation.formData?.get('intent');
 
   const sessionUserEmail = sessionUser?.user.email?.toLowerCase();
   const authEmail = auth?.email?.toLowerCase();
@@ -288,11 +291,21 @@ export default function BookingSessionContactPage({ loaderData }: Route.Componen
                 </Inline>
               </div>
 
-              <Form method="post" className="mt-4">
+              <Form method="post" className="mt-4" aria-busy={isSubmitting}>
                 <input type="hidden" name="intent" value={ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER} />
-                <Button type="submit" size="lg" fullWidth variant="booking-primary" className="gap-3">
+                <Button
+                  type="submit"
+                  size="lg"
+                  fullWidth
+                  variant="booking-primary"
+                  className="gap-3"
+                  loading={submittingIntent === ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER}
+                  disabled={isSubmitting}
+                >
                   <UserCheck className="size-5" />
-                  Fortsett med denne brukeren
+                  {submittingIntent === ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER
+                    ? 'Fortsetter...'
+                    : 'Fortsett med denne brukeren'}
                 </Button>
               </Form>
             </div>
@@ -305,6 +318,7 @@ export default function BookingSessionContactPage({ loaderData }: Route.Componen
               cta="Fortsett med denne brukeren"
               initials={sessionInitials}
               intentValue={ACTION_INTENT.CONTINUE_WITH_SESSION_USER}
+              isSubmitting={submittingIntent === ACTION_INTENT.CONTINUE_WITH_SESSION_USER}
             />
           )}
 
@@ -328,10 +342,10 @@ export default function BookingSessionContactPage({ loaderData }: Route.Componen
                   </div>
                 ) : null}
 
-                <Form method="post">
+                <Form method="post" aria-busy={isSubmitting}>
                   <input type="hidden" name="intent" value={ACTION_INTENT.CONTINUE_WITH_PROVIDER} />
                   <input type="hidden" name="redirectUrl" value="booking" />
-                  <ProviderButtons />
+                  <ProviderButtons disabled={isSubmitting} />
                 </Form>
 
                 <Grid columns={2} gap="md">
@@ -341,6 +355,7 @@ export default function BookingSessionContactPage({ loaderData }: Route.Componen
                       size="lg"
                       fullWidth
                       variant="booking-primary"
+                      disabled={isSubmitting}
                       onClick={() => goToSignIn()}
                       className="gap-3"
                     >
@@ -357,6 +372,7 @@ export default function BookingSessionContactPage({ loaderData }: Route.Componen
                       size="lg"
                       fullWidth
                       variant="booking-secondary"
+                      disabled={isSubmitting}
                       onClick={goToSignUp}
                       className="gap-3"
                     >

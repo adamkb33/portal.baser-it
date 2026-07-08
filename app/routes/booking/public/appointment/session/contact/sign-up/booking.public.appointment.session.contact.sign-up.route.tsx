@@ -262,9 +262,9 @@ export default function BookingContactSignUpPage({ loaderData }: Route.Component
               />
             </Stack>
 
-            <Button type="submit" size="lg" fullWidth variant="booking-primary" className="gap-3">
+            <Button type="submit" size="lg" fullWidth variant="booking-primary" className="gap-3" loading={isSubmitting}>
               <UserPlus className="size-5" />
-              Opprett konto
+              {isSubmitting ? 'Oppretter konto...' : 'Opprett konto'}
             </Button>
           </Stack>
         </Form>

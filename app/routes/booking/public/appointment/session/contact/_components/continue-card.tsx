@@ -8,21 +8,23 @@ type ContinueCardProps = {
   cta: string;
   initials?: string;
   intentValue: string;
+  isSubmitting?: boolean;
 };
 
-export function ContinueCard({ title, description, cta, initials, intentValue }: ContinueCardProps) {
+export function ContinueCard({ title, description, cta, initials, intentValue, isSubmitting = false }: ContinueCardProps) {
   return (
-    <Form method="post">
+    <Form method="post" aria-busy={isSubmitting}>
       <button
         type="submit"
         name="intent"
         value={intentValue}
+        disabled={isSubmitting}
         className="group w-full rounded-[var(--radius-booking-card)] focus-visible:outline-none focus-visible:ring-[length:var(--border-booking-focus-ring)] focus-visible:ring-booking-action"
       >
         <Card
           variant="interactive"
           size="sm"
-          className="cursor-pointer border-booking-border bg-booking-surface transition-colors group-hover:bg-booking-surface-muted group-focus-visible:border-booking-action"
+          className="cursor-pointer border-booking-border bg-booking-surface transition-colors group-hover:bg-booking-surface-muted group-disabled:cursor-not-allowed group-disabled:opacity-60 group-focus-visible:border-booking-action"
         >
           <CardContent>
             <div className="flex flex-col items-center gap-2 text-center">
@@ -46,7 +48,7 @@ export function ContinueCard({ title, description, cta, initials, intentValue }:
           <CardFooter>
             <div className="inline-flex w-full items-center justify-center gap-2 text-sm font-medium text-booking-text">
               <LogIn className="size-5" />
-              {cta}
+              {isSubmitting ? 'Fortsetter...' : cta}
             </div>
           </CardFooter>
         </Card>

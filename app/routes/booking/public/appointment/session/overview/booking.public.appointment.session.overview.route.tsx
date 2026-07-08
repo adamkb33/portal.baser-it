@@ -378,6 +378,7 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
             form: changeTimeFormId,
             label: 'Endre tid',
             variant: 'secondary',
+            disabled: isSubmitting,
           },
           {
             id: 'confirm',
