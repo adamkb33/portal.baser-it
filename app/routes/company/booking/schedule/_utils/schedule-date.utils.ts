@@ -1,5 +1,8 @@
-import { endOfWeek, format, startOfWeek } from 'date-fns';
+import { addWeeks, endOfWeek, format, startOfWeek } from 'date-fns';
 import type { Weekday } from '../_types/schedule.types';
+
+export const PAST_WEEK_NAVIGATION_LIMIT = 4;
+export const FUTURE_WEEK_NAVIGATION_LIMIT = 4;
 
 export const WEEKDAY: Record<number, Weekday> = {
   0: 'SUNDAY',
@@ -22,11 +25,26 @@ export function toWeekStart(date: Date): Date {
   return startOfWeek(date, { weekStartsOn: 1 });
 }
 
+export function getEarliestScheduleWeekStart(today = new Date()): Date {
+  return addWeeks(toWeekStart(today), -PAST_WEEK_NAVIGATION_LIMIT);
+}
+
+export function getLatestScheduleWeekStart(today = new Date()): Date {
+  return addWeeks(toWeekStart(today), FUTURE_WEEK_NAVIGATION_LIMIT);
+}
+
 export function toSafeScheduleDate(rawDate: string | null): string {
   const today = new Date();
   const currentWeekStart = toWeekStart(today);
+  const earliestWeekStart = getEarliestScheduleWeekStart(today);
+  const latestWeekStart = getLatestScheduleWeekStart(today);
   const parsed = rawDate ? new Date(`${rawDate}T00:00:00`) : today;
   const requestedWeekStart = Number.isNaN(parsed.getTime()) ? currentWeekStart : toWeekStart(parsed);
-  const clamped = requestedWeekStart < currentWeekStart ? currentWeekStart : requestedWeekStart;
+  const clamped =
+    requestedWeekStart < earliestWeekStart
+      ? earliestWeekStart
+      : requestedWeekStart > latestWeekStart
+        ? latestWeekStart
+        : requestedWeekStart;
   return format(clamped, 'yyyy-MM-dd');
 }

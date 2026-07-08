@@ -139,8 +139,6 @@ export default function CompanyBookingAppointmentDetailPage({ loaderData }: Rout
 
   return (
     <CompanyPageTemplate
-      title="Timebestilling"
-      description="Detaljvisning for én timebestilling i company booking."
       actions={
         <Button asChild variant="outline" size="sm">
           <Link to={ROUTES_MAP['company.booking.appointments'].href}>

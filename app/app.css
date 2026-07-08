@@ -41,4 +41,100 @@
   .google-sign-in-button > div > div:first-child {
     display: none !important;
   }
+
+  .schedule-calendar {
+    @apply overflow-hidden rounded-2xl border border-border bg-surface shadow-sm;
+  }
+
+  .schedule-calendar .fc {
+    --fc-border-color: var(--color-border);
+    --fc-page-bg-color: var(--color-surface);
+    --fc-neutral-bg-color: var(--color-background);
+    --fc-today-bg-color: var(--color-surface-primary-subtle);
+    --fc-now-indicator-color: var(--color-interactive);
+    @apply text-text-primary;
+  }
+
+  .schedule-calendar .fc-theme-standard td,
+  .schedule-calendar .fc-theme-standard th,
+  .schedule-calendar .fc-scrollgrid {
+    @apply border-border;
+  }
+
+  .schedule-calendar .fc-col-header-cell {
+    @apply bg-background py-3 text-xs font-semibold uppercase text-text-secondary;
+  }
+
+  .schedule-calendar .fc-timegrid-axis,
+  .schedule-calendar .fc-timegrid-slot-label {
+    @apply bg-background text-xs font-medium text-text-secondary;
+  }
+
+  .schedule-calendar .fc-timegrid-slot {
+    @apply h-9;
+  }
+
+  .schedule-calendar .fc-timegrid-slot-minor {
+    @apply border-border/50;
+  }
+
+  .schedule-calendar .fc-non-business {
+    @apply bg-background/70;
+  }
+
+  .schedule-calendar .fc-timegrid-now-indicator-line {
+    @apply border-interactive;
+  }
+
+  .schedule-calendar .fc-timegrid-now-indicator-arrow {
+    border-color: var(--color-interactive);
+  }
+
+  .schedule-calendar .fc-highlight {
+    @apply bg-interactive/15;
+  }
+
+  .schedule-calendar .fc-event {
+    @apply cursor-pointer overflow-hidden rounded-lg border-0 px-1.5 py-0 shadow-sm;
+  }
+
+  .schedule-calendar .fc-event-main {
+    @apply flex h-full min-w-0 items-center overflow-hidden;
+  }
+
+  .schedule-calendar .schedule-event-content {
+    @apply flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap text-[11px] leading-none;
+  }
+
+  .schedule-calendar .schedule-event-time {
+    @apply shrink-0 font-semibold;
+  }
+
+  .schedule-calendar .schedule-event-title {
+    @apply min-w-0 truncate font-medium;
+  }
+
+  .schedule-calendar .schedule-event-appointment {
+    @apply bg-interactive text-text-inverse;
+  }
+
+  .schedule-calendar .schedule-event-availability {
+    @apply bg-success text-text-inverse;
+  }
+
+  .schedule-calendar .schedule-event-unavailability {
+    @apply bg-warning text-text-primary;
+  }
+
+  .schedule-calendar .schedule-event-cancelled {
+    @apply opacity-60;
+  }
+
+  .schedule-calendar .schedule-event-cancelled .schedule-event-title {
+    @apply line-through;
+  }
+
+  .schedule-calendar .schedule-event-no-show {
+    @apply bg-danger text-text-inverse;
+  }
 }
