@@ -7,7 +7,10 @@ export function SimpleShinyBackground() {
   const glowId = `${id}-surface-shape-glow`;
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" style={{ opacity: 'var(--opacity-background-shine)' }}>
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      style={{ opacity: 'var(--opacity-background-shine)' }}
+    >
       <svg
         className="absolute inset-0 h-full w-full"
         viewBox="0 0 1440 560"

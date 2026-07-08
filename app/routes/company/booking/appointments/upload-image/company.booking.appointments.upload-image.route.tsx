@@ -154,7 +154,9 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [label, setLabel] = useState('');
-  const [selectedPreviewImage, setSelectedPreviewImage] = useState<{ url: string; label: string; size: number } | null>(null);
+  const [selectedPreviewImage, setSelectedPreviewImage] = useState<{ url: string; label: string; size: number } | null>(
+    null,
+  );
   const dragStateRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
 
   const appointment = loaderData.appointment;
@@ -312,7 +314,8 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
                 {appointment.user.givenName} {appointment.user.familyName}
               </Text>
               <Text as="p" variant="caption" className="text-text-secondary">
-                {new Date(appointment.startTime).toLocaleString('nb-NO')} - {new Date(appointment.endTime).toLocaleTimeString('nb-NO')}
+                {new Date(appointment.startTime).toLocaleString('nb-NO')} -{' '}
+                {new Date(appointment.endTime).toLocaleTimeString('nb-NO')}
               </Text>
             </div>
 
@@ -363,7 +366,10 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
               <div className="-mx-1 overflow-x-auto px-1 pb-1">
                 <div className="flex min-w-max gap-2">
                   {existingImages.map((image, index) => (
-                    <article key={image.id ?? `${image.url}-${index}`} className="w-28 shrink-0 overflow-hidden rounded-lg bg-surface">
+                    <article
+                      key={image.id ?? `${image.url}-${index}`}
+                      className="w-28 shrink-0 overflow-hidden rounded-lg bg-surface"
+                    >
                       <button
                         type="button"
                         className="block w-full text-left"
@@ -495,7 +501,10 @@ export default function CompanyBookingAppointmentUploadImagePage({ loaderData, a
 
                 <div className="grid gap-2 md:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label className="flex items-center gap-1.5 text-xs font-medium text-text-primary" htmlFor="zoom-range">
+                    <label
+                      className="flex items-center gap-1.5 text-xs font-medium text-text-primary"
+                      htmlFor="zoom-range"
+                    >
                       <ZoomIn className="h-3.5 w-3.5" /> Zoom
                     </label>
                     <input

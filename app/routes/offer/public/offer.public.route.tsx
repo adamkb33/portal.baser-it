@@ -83,7 +83,9 @@ export default function PublicOfferRoute({ loaderData, actionData }: Route.Compo
           </div>
         </header>
 
-        {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente tilbudet" message={loaderData.error} /> : null}
+        {loaderData.error ? (
+          <Notice tone="emphasis" title="Kunne ikke hente tilbudet" message={loaderData.error} />
+        ) : null}
         {actionData?.error ? <Notice tone="emphasis" title="Handlingen feilet" message={actionData.error} /> : null}
         {actionData?.ok ? <Notice title="Oppdatert" message="Tilbudet er oppdatert." /> : null}
 
@@ -113,9 +115,7 @@ function PublicOfferContent({ offer }: { offer: PublicOfferPageDto }) {
         </pre>
       </Panel>
 
-      {offer.declineReason ? (
-        <Notice tone="emphasis" title="Avslagsårsak" message={offer.declineReason} />
-      ) : null}
+      {offer.declineReason ? <Notice tone="emphasis" title="Avslagsårsak" message={offer.declineReason} /> : null}
 
       <Panel
         title={isOpen ? 'Svar på tilbudet' : 'Tilbudet er lukket'}

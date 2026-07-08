@@ -1,17 +1,7 @@
 import { Link, NavLink } from 'react-router';
 import { FolderKanban, Briefcase } from 'lucide-react';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHead,
-  Button,
-  CompanyPageTemplate,
-  Icon,
-  KpiCard,
-  Text,
-} from '~/ui';
+import { Card, CardAction, CardContent, CardHead, Button, CompanyPageTemplate, Icon, KpiCard, Text } from '~/ui';
 
 const adminNavigation = [
   {

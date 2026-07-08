@@ -50,4 +50,3 @@ export function mapAuthErrorCodeToMessage(code: string | null, fallback: string)
 export function resolveMappedAuthError(error: unknown, fallback: string): string {
   return mapAuthErrorCodeToMessage(extractAuthErrorCode(error), fallback);
 }
-

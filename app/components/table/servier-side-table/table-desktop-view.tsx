@@ -68,11 +68,7 @@ export function TableDesktopView<T>({
             <TableHeader>
               <TableRow style={{ height: `${CELL_HEIGHT}px` }}>
                 {columns.map((c, i) => (
-                  <TableHead
-                    key={i}
-                    className="sticky top-0 z-10 bg-surface-variant-1"
-                    style={{ width: columnWidth }}
-                  >
+                  <TableHead key={i} className="sticky top-0 z-10 bg-surface-variant-1" style={{ width: columnWidth }}>
                     {c.header}
                   </TableHead>
                 ))}
@@ -80,9 +76,7 @@ export function TableDesktopView<T>({
             </TableHeader>
             <TableBody>
               {items.length ? (
-                items.map((item, index) =>
-                  React.cloneElement(renderRow(item, index), { key: getRowKey(item, index) }),
-                )
+                items.map((item, index) => React.cloneElement(renderRow(item, index), { key: getRowKey(item, index) }))
               ) : (
                 <TableRow style={{ height: `${CELL_HEIGHT * 3}px` }}>
                   <TableCell colSpan={columns.length} className="text-center">

@@ -32,12 +32,10 @@ export function NotificationCardRow({ notification, isViewed, onOpen }: Notifica
       <CardContent className="space-y-3 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-foreground">{getNotificationHeadline(notification)}</p>
-            {!isViewed && (
-              <Badge className="h-5 rounded-full px-2 text-[10px]">Ny</Badge>
-            )}
-          </div>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold text-foreground">{getNotificationHeadline(notification)}</p>
+              {!isViewed && <Badge className="h-5 rounded-full px-2 text-[10px]">Ny</Badge>}
+            </div>
             <p className="text-xs text-muted-foreground">
               Opprettet {formatNotificationTimestamp(notification.createdAt)}
             </p>

@@ -51,7 +51,9 @@ describe('booking pending submission UI', () => {
     expect(source).toContain('disabled={action.disabled}');
     expect(source).toContain('if (action.disabled || action.loading)');
     expect(source).toContain('event.preventDefault()');
-    expect(source).toContain("(action.disabled || action.loading) && 'pointer-events-none cursor-not-allowed opacity-50'");
+    expect(source).toContain(
+      "(action.disabled || action.loading) && 'pointer-events-none cursor-not-allowed opacity-50'",
+    );
   });
 
   it('disables contact landing submissions while React Router navigation is submitting', () => {
@@ -73,7 +75,9 @@ describe('booking pending submission UI', () => {
   it('provider auth cannot submit while the provider button group is disabled', () => {
     const providerButtonsSource = readWorkspaceFile('app/routes/auth/_components/provider-buttons.tsx');
     const contactSource = readSessionRoute('contact/booking.public.appointment.session.contact.route.tsx');
-    const signInSource = readSessionRoute('contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx');
+    const signInSource = readSessionRoute(
+      'contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx',
+    );
 
     expect(providerButtonsSource).toContain('if (disabled) return;');
     expect(providerButtonsSource).toContain('disabled={disabled}');
@@ -82,8 +86,12 @@ describe('booking pending submission UI', () => {
   });
 
   it('shows loading-disabled submit buttons across contact substeps', () => {
-    const signInSource = readSessionRoute('contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx');
-    const signUpSource = readSessionRoute('contact/sign-up/booking.public.appointment.session.contact.sign-up.route.tsx');
+    const signInSource = readSessionRoute(
+      'contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx',
+    );
+    const signUpSource = readSessionRoute(
+      'contact/sign-up/booking.public.appointment.session.contact.sign-up.route.tsx',
+    );
     const collectMobileSource = readSessionRoute(
       'contact/collect-mobile/booking.public.appointment.session.contact.collect-mobile.route.tsx',
     );

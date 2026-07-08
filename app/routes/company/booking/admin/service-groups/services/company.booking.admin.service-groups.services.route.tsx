@@ -195,7 +195,9 @@ export default function BookingAdminServices({ loaderData }: Route.ComponentProp
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
-                  <NavLink to={`${ROUTES_MAP['company.booking.admin.services.edit'].href}?id=${service.id}`}>Rediger</NavLink>
+                  <NavLink to={`${ROUTES_MAP['company.booking.admin.services.edit'].href}?id=${service.id}`}>
+                    Rediger
+                  </NavLink>
                 </Button>
                 <Button
                   variant="ghost"

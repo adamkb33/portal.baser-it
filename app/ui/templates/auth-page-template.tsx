@@ -26,7 +26,12 @@ export function AuthPageTemplate({
   className,
 }: AuthPageTemplateProps) {
   return (
-    <div className={cn('grid min-h-[calc(100vh-var(--app-header-height)-var(--app-footer-height))] bg-surface lg:grid-cols-2', className)}>
+    <div
+      className={cn(
+        'grid min-h-[calc(100vh-var(--app-header-height)-var(--app-footer-height))] bg-surface lg:grid-cols-2',
+        className,
+      )}
+    >
       <aside className="hidden min-h-full flex-col justify-between overflow-hidden bg-[linear-gradient(145deg,var(--color-interactive),var(--color-blue-700))] p-10 text-text-inverse lg:flex">
         {aside ?? <DefaultAuthAside />}
       </aside>
@@ -42,7 +47,9 @@ export function AuthPageTemplate({
         <div className="flex flex-1 items-center justify-center py-10">
           <section className="w-full max-w-md rounded-[var(--radius-card)] border border-border bg-background p-6 shadow-[var(--shadow-card)] sm:p-8">
             <header className="mb-6 space-y-2">
-              <h1 className="font-display text-2xl font-bold leading-tight tracking-tight text-text-primary">{title}</h1>
+              <h1 className="font-display text-2xl font-bold leading-tight tracking-tight text-text-primary">
+                {title}
+              </h1>
               {description ? <p className="text-sm leading-relaxed text-text-secondary">{description}</p> : null}
             </header>
 

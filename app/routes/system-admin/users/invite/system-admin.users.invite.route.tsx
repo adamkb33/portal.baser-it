@@ -33,7 +33,10 @@ export async function action({ request }: Route.ActionArgs) {
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke invitere bruker.');
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
-    return data({ error: message, values: { email } }, { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: message, values: { email } },
+      { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } },
+    );
   }
 }
 
@@ -50,7 +53,9 @@ export default function SystemAdminUsersInvitePage({ actionData }: Route.Compone
         </Button>
       }
     >
-      {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke invitere bruker" message={actionData.error} /> : null}
+      {actionData?.error ? (
+        <Notice tone="emphasis" title="Kunne ikke invitere bruker" message={actionData.error} />
+      ) : null}
       <Panel title="Invitasjon" description="Send invitasjon til en ny systemadministrator.">
         <form method="post" className="space-y-4">
           <FormField label="E-post" name="email" defaultValue={values.email} required type="email" />

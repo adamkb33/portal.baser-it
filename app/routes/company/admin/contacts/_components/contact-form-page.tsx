@@ -44,47 +44,47 @@ export function ContactFormPage({ mode, values, actionData, returnTo }: ContactF
         {currentValues.id ? <input type="hidden" name="id" value={currentValues.id} /> : null}
 
         <div className="grid gap-3 md:grid-cols-2">
-            <FormField
-              label="Fornavn"
-              name="givenName"
-              defaultValue={currentValues.givenName}
-              error={fieldErrors.givenName}
-              helperText="Navnet kunden møter i tabeller og bookingflater."
-              placeholder="Skriv inn fornavn"
-              autoComplete="given-name"
-            />
-            <FormField
-              label="Etternavn"
-              name="familyName"
-              defaultValue={currentValues.familyName}
-              error={fieldErrors.familyName}
-              helperText="Bruk fullt navn for tydelig søk og oversikt."
-              placeholder="Skriv inn etternavn"
-              autoComplete="family-name"
-            />
+          <FormField
+            label="Fornavn"
+            name="givenName"
+            defaultValue={currentValues.givenName}
+            error={fieldErrors.givenName}
+            helperText="Navnet kunden møter i tabeller og bookingflater."
+            placeholder="Skriv inn fornavn"
+            autoComplete="given-name"
+          />
+          <FormField
+            label="Etternavn"
+            name="familyName"
+            defaultValue={currentValues.familyName}
+            error={fieldErrors.familyName}
+            helperText="Bruk fullt navn for tydelig søk og oversikt."
+            placeholder="Skriv inn etternavn"
+            autoComplete="family-name"
+          />
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-            <FormField
-              label="E-post"
-              name="email"
-              type="email"
-              defaultValue={currentValues.email ?? ''}
-              error={fieldErrors.email}
-              helperText="Valgfritt, men anbefalt for oppfølging og booking."
-              placeholder="fornavn@firma.no"
-              autoComplete="email"
-            />
-            <FormField
-              label="Mobil"
-              name="mobileNumber"
-              type="tel"
-              defaultValue={currentValues.mobileNumber ?? ''}
-              error={fieldErrors.mobileNumber}
-              helperText="Bruk fullt nummer, gjerne med landskode."
-              placeholder="+47 412 34 567"
-              autoComplete="tel"
-            />
+          <FormField
+            label="E-post"
+            name="email"
+            type="email"
+            defaultValue={currentValues.email ?? ''}
+            error={fieldErrors.email}
+            helperText="Valgfritt, men anbefalt for oppfølging og booking."
+            placeholder="fornavn@firma.no"
+            autoComplete="email"
+          />
+          <FormField
+            label="Mobil"
+            name="mobileNumber"
+            type="tel"
+            defaultValue={currentValues.mobileNumber ?? ''}
+            error={fieldErrors.mobileNumber}
+            helperText="Bruk fullt nummer, gjerne med landskode."
+            placeholder="+47 412 34 567"
+            autoComplete="tel"
+          />
         </div>
       </Form>
     </CompanyFormPageTemplate>

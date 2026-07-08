@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+prettier_bin="node_modules/.bin/prettier"
+
+if [ ! -x "$prettier_bin" ]; then
+  echo "Prettier is not installed. Run npm install before committing." >&2
+  exit 1
+fi
+
+staged_file_list=$(mktemp)
+trap 'rm -f "$staged_file_list"' EXIT
+
+git diff --cached --name-only --diff-filter=ACMR -z > "$staged_file_list"
+
+if [ ! -s "$staged_file_list" ]; then
+  exit 0
+fi
+
+xargs -0 "$prettier_bin" --write --ignore-unknown < "$staged_file_list"
+xargs -0 git add < "$staged_file_list"

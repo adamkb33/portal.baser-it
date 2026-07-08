@@ -90,7 +90,9 @@ describe('company.booking.appointments.create.route', () => {
     const companyBranch = ROUTE_TREE.find((branch) => branch.id === 'company');
     const bookingBranch = companyBranch?.children?.find((branch) => branch.id === 'company.booking');
     const appointmentsBranch = bookingBranch?.children?.find((branch) => branch.id === 'company.booking.appointments');
-    const createBranch = appointmentsBranch?.children?.find((branch) => branch.id === 'company.booking.appointments.create');
+    const createBranch = appointmentsBranch?.children?.find(
+      (branch) => branch.id === 'company.booking.appointments.create',
+    );
 
     expect(createBranch).toBeTruthy();
     expect(createBranch?.children).toBeUndefined();

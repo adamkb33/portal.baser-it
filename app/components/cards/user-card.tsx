@@ -69,7 +69,13 @@ export const UserProfileCard = React.forwardRef<HTMLElement, UserProfileCardProp
           <Button type="button" variant="primary" size="md" onClick={onEditDetails}>
             Rediger detaljer
           </Button>
-          <Button type="button" variant="ghost" size="md" className="px-0 underline-offset-2 hover:underline" onClick={onSwitchAccount}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="md"
+            className="px-0 underline-offset-2 hover:underline"
+            onClick={onSwitchAccount}
+          >
             Bruk en annen konto
           </Button>
         </div>

@@ -34,15 +34,11 @@ export function PageTemplate({
 
   return (
     <Container size={size} className={cn('space-y-6', className)} {...props}>
-      {(title || description || eyebrowContent || actions || routeLinks) ? (
+      {title || description || eyebrowContent || actions || routeLinks ? (
         <header className="space-y-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0 space-y-2">
-              {eyebrowContent ? (
-                <Eyebrow>
-                  {eyebrowContent}
-                </Eyebrow>
-              ) : null}
+              {eyebrowContent ? <Eyebrow>{eyebrowContent}</Eyebrow> : null}
               {title ? (
                 <Text as="h1" className="font-display text-2xl font-bold leading-tight tracking-tight md:text-3xl">
                   {title}
@@ -55,9 +51,7 @@ export function PageTemplate({
               ) : null}
             </div>
             {actions ? (
-              <div className="flex shrink-0 flex-wrap items-center gap-2 md:justify-end">
-                {actions}
-              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2 md:justify-end">{actions}</div>
             ) : null}
           </div>
 

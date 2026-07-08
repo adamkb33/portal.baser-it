@@ -138,11 +138,7 @@ const cardContentVariants = cva(['relative z-10'], {
 });
 
 const cardFooterVariants = cva(
-  [
-    'relative z-10',
-    'flex flex-wrap items-center gap-2 md:gap-3',
-    '[&_button]:w-full [&_button]:sm:w-auto',
-  ],
+  ['relative z-10', 'flex flex-wrap items-center gap-2 md:gap-3', '[&_button]:w-full [&_button]:sm:w-auto'],
   {
     variants: {
       size: {

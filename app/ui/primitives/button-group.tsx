@@ -12,21 +12,19 @@ export function ButtonGroup({ className, orientation = 'horizontal', ...props }:
       data-orientation={orientation}
       className={cn(
         'isolate inline-flex w-fit items-stretch [&>*]:relative [&>*]:focus-visible:z-20 [&>*]:hover:z-10',
-        orientation === 'horizontal' &&
-          [
-            '[&>*:not(:first-child)]:-ml-px',
-            '[&>*:not(:first-child)]:rounded-l-none',
-            '[&>*:not(:last-child)]:rounded-r-none',
-            '[&>*:not(:first-child):not(:last-child)]:rounded-none',
-          ],
-        orientation === 'vertical' &&
-          [
-            'flex-col',
-            '[&>*:not(:first-child)]:-mt-px',
-            '[&>*:not(:first-child)]:rounded-t-none',
-            '[&>*:not(:last-child)]:rounded-b-none',
-            '[&>*:not(:first-child):not(:last-child)]:rounded-none',
-          ],
+        orientation === 'horizontal' && [
+          '[&>*:not(:first-child)]:-ml-px',
+          '[&>*:not(:first-child)]:rounded-l-none',
+          '[&>*:not(:last-child)]:rounded-r-none',
+          '[&>*:not(:first-child):not(:last-child)]:rounded-none',
+        ],
+        orientation === 'vertical' && [
+          'flex-col',
+          '[&>*:not(:first-child)]:-mt-px',
+          '[&>*:not(:first-child)]:rounded-t-none',
+          '[&>*:not(:last-child)]:rounded-b-none',
+          '[&>*:not(:first-child):not(:last-child)]:rounded-none',
+        ],
         className,
       )}
       {...props}

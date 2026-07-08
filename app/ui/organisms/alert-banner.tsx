@@ -7,7 +7,13 @@ export interface AlertBannerProps extends React.HTMLAttributes<HTMLDivElement> {
   sticky?: boolean;
 }
 
-export function AlertBanner({ title = 'Noe gikk galt', message, sticky = false, className, ...props }: AlertBannerProps) {
+export function AlertBanner({
+  title = 'Noe gikk galt',
+  message,
+  sticky = false,
+  className,
+  ...props
+}: AlertBannerProps) {
   return (
     <Notice
       title={title}

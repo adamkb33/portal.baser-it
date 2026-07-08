@@ -28,14 +28,19 @@ export function ScheduleMobileView({ weekDays, initialDayKey, onDayChange, onNav
   const selectedDay = weekDays.find((day) => day.key === mobileDayKey) ?? weekDays[0];
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-3 shadow-sm md:hidden" aria-label="Mobil kalendernavigasjon">
+    <section
+      className="rounded-2xl border border-border bg-surface p-3 shadow-sm md:hidden"
+      aria-label="Mobil kalendernavigasjon"
+    >
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Velg dag</div>
           <div className="text-lg font-semibold text-text-primary">{selectedDay?.label ?? 'Denne uken'}</div>
         </div>
         {selectedDay?.isToday ? (
-          <span className="rounded-full bg-surface-primary-strong px-3 py-1 text-xs font-semibold text-primary shadow-sm">I dag</span>
+          <span className="rounded-full bg-surface-primary-strong px-3 py-1 text-xs font-semibold text-primary shadow-sm">
+            I dag
+          </span>
         ) : null}
       </div>
 

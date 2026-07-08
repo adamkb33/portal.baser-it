@@ -52,16 +52,18 @@ export function EmployeeFormPage({ mode, values, actionData }: EmployeeFormPageP
         {currentValues.userId ? <input type="hidden" name="userId" value={currentValues.userId} /> : null}
         <input type="hidden" name="roles" value={JSON.stringify(roles)} />
 
-          <FormField
-            label="E-postadresse"
-            name="email"
-            type="email"
-            defaultValue={currentValues.email}
-            helperText={isEdit ? 'E-post kan ikke endres her. Oppdater kun roller.' : 'Invitasjonen sendes til denne adressen.'}
-            placeholder="fornavn@firma.no"
-            autoComplete="email"
-            disabled={isEdit}
-          />
+        <FormField
+          label="E-postadresse"
+          name="email"
+          type="email"
+          defaultValue={currentValues.email}
+          helperText={
+            isEdit ? 'E-post kan ikke endres her. Oppdater kun roller.' : 'Invitasjonen sendes til denne adressen.'
+          }
+          placeholder="fornavn@firma.no"
+          autoComplete="email"
+          disabled={isEdit}
+        />
 
         <div className="space-y-3">
           <Label>Roller</Label>

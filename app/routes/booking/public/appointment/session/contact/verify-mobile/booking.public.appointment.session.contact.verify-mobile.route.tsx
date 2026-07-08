@@ -166,9 +166,16 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
           <Notice variant="booking" tone="emphasis" title="Kunne ikke sende ny SMS" message={String(resendError)} />
         ) : null}
         {!resendMessage && initialMobileDeliveryMessage ? (
-          <Notice variant="booking" tone={initialMobileDeliveryTone} title="SMS-kode" message={initialMobileDeliveryMessage} />
+          <Notice
+            variant="booking"
+            tone={initialMobileDeliveryTone}
+            title="SMS-kode"
+            message={initialMobileDeliveryMessage}
+          />
         ) : null}
-        {isSendingCode ? <Notice variant="booking" title="Sender SMS" message="Vi sender en ny kode til mobilnummeret ditt." /> : null}
+        {isSendingCode ? (
+          <Notice variant="booking" title="Sender SMS" message="Vi sender en ny kode til mobilnummeret ditt." />
+        ) : null}
         {resendMessage ? (
           <Notice variant="booking" tone={resendMessageTone} title="SMS-kode" message={resendMessage} />
         ) : null}

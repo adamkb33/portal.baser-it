@@ -27,7 +27,9 @@ export default function SystemAdminSmtpDiagnosticsPage({ loaderData }: Route.Com
         </Button>
       }
     >
-      {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente diagnostikk" message={loaderData.error} /> : null}
+      {loaderData.error ? (
+        <Notice tone="emphasis" title="Kunne ikke hente diagnostikk" message={loaderData.error} />
+      ) : null}
       <Panel title="Diagnostikk" description="Backend-respons">
         {loaderData.diagnostics ? (
           <div className="space-y-1">
@@ -51,7 +53,9 @@ export default function SystemAdminSmtpDiagnosticsPage({ loaderData }: Route.Com
         )}
       </Panel>
       <form method="get" className="mt-3">
-        <Button type="submit" variant="outline">Oppdater</Button>
+        <Button type="submit" variant="outline">
+          Oppdater
+        </Button>
       </form>
     </CompanyPageTemplate>
   );

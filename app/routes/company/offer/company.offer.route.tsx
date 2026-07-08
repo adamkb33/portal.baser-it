@@ -6,7 +6,13 @@ import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { OfferStatusBadge } from './_components';
-import { formatOfferDate, getCompanyOfferDetailHref, OFFER_STATUS_LABELS, OFFER_STATUS_OPTIONS, parseOfferStatus } from './_utils';
+import {
+  formatOfferDate,
+  getCompanyOfferDetailHref,
+  OFFER_STATUS_LABELS,
+  OFFER_STATUS_OPTIONS,
+  parseOfferStatus,
+} from './_utils';
 import {
   Button,
   CompanyEmptyState,
@@ -27,9 +33,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const status = parseOfferStatus(url.searchParams.get('status'));
 
   try {
-    const response = await withAuth(request, () =>
-      Offer.getOffers(status ? { query: { status } } : undefined),
-    );
+    const response = await withAuth(request, () => Offer.getOffers(status ? { query: { status } } : undefined));
 
     return {
       offers: response.data?.data ?? [],
@@ -73,7 +77,12 @@ export default function CompanyOfferRoute({ loaderData }: Route.ComponentProps) 
           <KpiCard label="Totalt" value={offers.length} icon={<FileText className="h-5 w-5" />} tone="primary" />
           <KpiCard label="Utkast" value={summary.DRAFT} icon={<FileText className="h-5 w-5" />} tone="info" />
           <KpiCard label="Sendt" value={summary.SENT} icon={<Send className="h-5 w-5" />} tone="warning" />
-          <KpiCard label="Akseptert" value={summary.ACCEPTED} icon={<CheckCircle2 className="h-5 w-5" />} tone="success" />
+          <KpiCard
+            label="Akseptert"
+            value={summary.ACCEPTED}
+            icon={<CheckCircle2 className="h-5 w-5" />}
+            tone="success"
+          />
         </div>
       }
     >
@@ -124,10 +133,7 @@ export default function CompanyOfferRoute({ loaderData }: Route.ComponentProps) 
             {offers.map((offer) => (
               <TableRow key={offer.id}>
                 <TableCell>
-                  <Link
-                    to={getCompanyOfferDetailHref(offer.id)}
-                    className="text-interactive hover:underline"
-                  >
+                  <Link to={getCompanyOfferDetailHref(offer.id)} className="text-interactive hover:underline">
                     #{offer.id}
                   </Link>
                 </TableCell>

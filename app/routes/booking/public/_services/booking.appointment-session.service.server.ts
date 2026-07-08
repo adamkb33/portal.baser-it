@@ -1,5 +1,9 @@
 import { createCookie } from 'react-router';
-import { PublicAppointmentSessionController, type ApiMessage, type AppointmentSessionDto } from '~/api/generated/booking';
+import {
+  PublicAppointmentSessionController,
+  type ApiMessage,
+  type AppointmentSessionDto,
+} from '~/api/generated/booking';
 
 const appointmentSessionCookie = createCookie('appointment_session', {
   httpOnly: true,
@@ -47,7 +51,10 @@ export class AppointmentSessionService {
    * Create a new appointment session for a company.
    * Returns the session and a Set-Cookie header to persist the session ID.
    */
-  static async create(companyId: number, _request: Request): Promise<{ session: AppointmentSessionDto; setCookieHeader: string }> {
+  static async create(
+    companyId: number,
+    _request: Request,
+  ): Promise<{ session: AppointmentSessionDto; setCookieHeader: string }> {
     const response = await PublicAppointmentSessionController.createAppointmentSession({
       query: { companyId },
     });

@@ -82,10 +82,6 @@ describe('company.layout loader guards', () => {
     await loader({ request } as never);
 
     expect(mocks.redirectWithError).toHaveBeenCalledOnce();
-    expect(mocks.redirectWithError).toHaveBeenCalledWith(
-      request,
-      '/',
-      'Kunne ikke laste selskapssiden. Prøv igjen.',
-    );
+    expect(mocks.redirectWithError).toHaveBeenCalledWith(request, '/', 'Kunne ikke laste selskapssiden. Prøv igjen.');
   });
 });

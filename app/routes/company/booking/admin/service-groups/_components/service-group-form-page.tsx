@@ -30,7 +30,11 @@ export function ServiceGroupFormPage({ mode, values, actionData }: ServiceGroupF
       backLink={{ to: ROUTES_MAP['company.booking.admin.service-groups'].href, label: 'Tilbake til tjenestegrupper' }}
       footer={
         <>
-          <Button type="button" variant="outline" onClick={() => navigate(ROUTES_MAP['company.booking.admin.service-groups'].href)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate(ROUTES_MAP['company.booking.admin.service-groups'].href)}
+          >
             Avbryt
           </Button>
           <Button type="submit" form="service-group-form" loading={isSubmitting}>

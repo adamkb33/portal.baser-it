@@ -14,7 +14,21 @@ import {
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Badge, Button, CompanyPageTemplate, Input, Notice, Panel, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '~/ui';
+import {
+  Badge,
+  Button,
+  CompanyPageTemplate,
+  Input,
+  Notice,
+  Panel,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from '~/ui';
 import { OfferStatusBadge } from '../_components';
 import {
   canCancelOffer,
@@ -50,31 +64,44 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   try {
-    const [offerResponse, linesResponse, recipientsResponse, messagesResponse, templatesResponse, catalogItemsResponse, contactsResponse] =
-      await withAuth(request, async () => {
-        const loadedOfferResponse = await Offer.getOffer({ path: { offerId } });
-        const loadedOffer = loadedOfferResponse.data?.data;
+    const [
+      offerResponse,
+      linesResponse,
+      recipientsResponse,
+      messagesResponse,
+      templatesResponse,
+      catalogItemsResponse,
+      contactsResponse,
+    ] = await withAuth(request, async () => {
+      const loadedOfferResponse = await Offer.getOffer({ path: { offerId } });
+      const loadedOffer = loadedOfferResponse.data?.data;
 
-        const [loadedLinesResponse, loadedRecipientsResponse, loadedMessagesResponse, loadedTemplatesResponse, loadedCatalogItemsResponse, loadedContactsResponse] =
-          await Promise.all([
-            Offer.getOfferLines({ path: { offerId } }),
-            Offer.getRecipients({ path: { offerId } }),
-            Offer.getMessages({ path: { offerId } }),
-            Offer.getTemplates(),
-            Offer.getCatalogItems(),
-            loadedOffer ? Offer.getContacts({ path: { customerId: loadedOffer.customerId } }) : Promise.resolve(null),
-          ]);
+      const [
+        loadedLinesResponse,
+        loadedRecipientsResponse,
+        loadedMessagesResponse,
+        loadedTemplatesResponse,
+        loadedCatalogItemsResponse,
+        loadedContactsResponse,
+      ] = await Promise.all([
+        Offer.getOfferLines({ path: { offerId } }),
+        Offer.getRecipients({ path: { offerId } }),
+        Offer.getMessages({ path: { offerId } }),
+        Offer.getTemplates(),
+        Offer.getCatalogItems(),
+        loadedOffer ? Offer.getContacts({ path: { customerId: loadedOffer.customerId } }) : Promise.resolve(null),
+      ]);
 
-        return [
-          loadedOfferResponse,
-          loadedLinesResponse,
-          loadedRecipientsResponse,
-          loadedMessagesResponse,
-          loadedTemplatesResponse,
-          loadedCatalogItemsResponse,
-          loadedContactsResponse,
-        ] as const;
-      });
+      return [
+        loadedOfferResponse,
+        loadedLinesResponse,
+        loadedRecipientsResponse,
+        loadedMessagesResponse,
+        loadedTemplatesResponse,
+        loadedCatalogItemsResponse,
+        loadedContactsResponse,
+      ] as const;
+    });
 
     return data({
       offer: offerResponse.data?.data ?? null,
@@ -220,7 +247,11 @@ export default function CompanyOfferDetailRoute({ loaderData, actionData }: Rout
       <CompanyPageTemplate
         title="Tilbud"
         description="Kunne ikke vise tilbudet."
-        routeLinks={<Button asChild variant="outline" size="sm"><Link to={ROUTES_MAP['company.offer'].href}>Tilbake</Link></Button>}
+        routeLinks={
+          <Button asChild variant="outline" size="sm">
+            <Link to={ROUTES_MAP['company.offer'].href}>Tilbake</Link>
+          </Button>
+        }
       >
         <Notice tone="emphasis" title="Kunne ikke hente tilbud" message={error ?? 'Tilbudet finnes ikke.'} />
       </CompanyPageTemplate>
@@ -237,10 +268,17 @@ export default function CompanyOfferDetailRoute({ loaderData, actionData }: Rout
       title={`Tilbud #${offer.id}`}
       description="Detaljvisning for tilbud, mottakere, linjer og meldinger."
       label="Tilbud"
-      routeLinks={<Button asChild variant="outline" size="sm"><Link to={ROUTES_MAP['company.offer'].href}>Tilbake til tilbud</Link></Button>}
+      routeLinks={
+        <Button asChild variant="outline" size="sm">
+          <Link to={ROUTES_MAP['company.offer'].href}>Tilbake til tilbud</Link>
+        </Button>
+      }
       actions={
         <div className="flex flex-wrap gap-2">
-          <OfferActionButton intent={offer.status === 'DRAFT' ? OFFER_ACTION_INTENTS.send : OFFER_ACTION_INTENTS.resend} disabled={!canSend}>
+          <OfferActionButton
+            intent={offer.status === 'DRAFT' ? OFFER_ACTION_INTENTS.send : OFFER_ACTION_INTENTS.resend}
+            disabled={!canSend}
+          >
             <Send className="size-4" aria-hidden />
             {offer.status === 'DRAFT' ? 'Send' : 'Send på nytt'}
           </OfferActionButton>
@@ -261,7 +299,13 @@ export default function CompanyOfferDetailRoute({ loaderData, actionData }: Rout
     >
       {actionData?.error ? <Notice tone="emphasis" title="Handlingen feilet" message={actionData.error} /> : null}
       {actionData?.ok ? <Notice title="Oppdatert" message="Tilbudet er oppdatert." /> : null}
-      {offer.expired ? <Notice tone="emphasis" title="Tilbudet er utløpt" message="Handlinger er begrenset fordi tilbudet er utløpt." /> : null}
+      {offer.expired ? (
+        <Notice
+          tone="emphasis"
+          title="Tilbudet er utløpt"
+          message="Handlinger er begrenset fordi tilbudet er utløpt."
+        />
+      ) : null}
 
       <Panel title="Linjer" description="Redigerer hele linjesettet samlet. Tomme beskrivelser ignoreres.">
         {lines.length === 0 ? (
@@ -295,22 +339,46 @@ export default function CompanyOfferDetailRoute({ loaderData, actionData }: Rout
           <input type="hidden" name="intent" value={OFFER_ACTION_INTENTS.replaceLines} />
           <div className="grid gap-3">
             {[...lines.map(toOfferLineFormRow), ...createBlankOfferLineRows(3)].map((line, index) => (
-              <div key={line.key} className="grid gap-2 rounded-md border border-border bg-surface p-3 md:grid-cols-[1fr_7rem_9rem_7rem]">
+              <div
+                key={line.key}
+                className="grid gap-2 rounded-md border border-border bg-surface p-3 md:grid-cols-[1fr_7rem_9rem_7rem]"
+              >
                 <label className="grid gap-1 text-xs font-medium text-text-primary">
                   Beskrivelse
                   <Input name="lineDescription" defaultValue={line.description} disabled={!canEdit} />
                 </label>
                 <label className="grid gap-1 text-xs font-medium text-text-primary">
                   Antall
-                  <Input name="lineQuantity" type="number" min="0" step="0.01" defaultValue={line.quantity} disabled={!canEdit} />
+                  <Input
+                    name="lineQuantity"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={line.quantity}
+                    disabled={!canEdit}
+                  />
                 </label>
                 <label className="grid gap-1 text-xs font-medium text-text-primary">
                   Enhetspris
-                  <Input name="lineUnitPrice" type="number" min="0" step="0.01" defaultValue={line.unitPrice} disabled={!canEdit} />
+                  <Input
+                    name="lineUnitPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={line.unitPrice}
+                    disabled={!canEdit}
+                  />
                 </label>
                 <label className="grid gap-1 text-xs font-medium text-text-primary">
                   MVA %
-                  <Input name="lineVatRate" type="number" min="0" step="0.01" defaultValue={line.vatRate} disabled={!canEdit} />
+                  <Input
+                    name="lineVatRate"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={line.vatRate}
+                    disabled={!canEdit}
+                  />
                 </label>
                 <input type="hidden" name="lineCatalogItemId" value={line.catalogItemId} />
                 <input type="hidden" name="linePosition" value={index} />
@@ -318,7 +386,9 @@ export default function CompanyOfferDetailRoute({ loaderData, actionData }: Rout
             ))}
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-text-secondary">{catalogItems.length} katalogelementer er tilgjengelige for manuell kopiering.</p>
+            <p className="text-xs text-text-secondary">
+              {catalogItems.length} katalogelementer er tilgjengelige for manuell kopiering.
+            </p>
             <Button type="submit" size="sm" disabled={!canEdit}>
               Lagre linjer
             </Button>
@@ -327,7 +397,10 @@ export default function CompanyOfferDetailRoute({ loaderData, actionData }: Rout
       </Panel>
 
       <Panel title="Mottakere" description="Velg kundekontakter som skal ha tilgang til tilbudet.">
-        <Form method="post" className="mb-4 grid gap-3 rounded-md border border-border bg-surface p-3 md:grid-cols-[1fr_1fr_12rem_auto] md:items-end">
+        <Form
+          method="post"
+          className="mb-4 grid gap-3 rounded-md border border-border bg-surface p-3 md:grid-cols-[1fr_1fr_12rem_auto] md:items-end"
+        >
           <input type="hidden" name="intent" value={OFFER_ACTION_INTENTS.createContact} />
           <input type="hidden" name="customerId" value={offer.customerId} />
           <label className="grid gap-1 text-xs font-medium text-text-primary">
@@ -354,12 +427,17 @@ export default function CompanyOfferDetailRoute({ loaderData, actionData }: Rout
           ) : (
             <div className="grid gap-2">
               {contacts.map((contact) => (
-                <label key={contact.id} className="flex items-start gap-2 rounded-md border border-border bg-surface p-3 text-sm text-text-primary">
+                <label
+                  key={contact.id}
+                  className="flex items-start gap-2 rounded-md border border-border bg-surface p-3 text-sm text-text-primary"
+                >
                   <input
                     type="checkbox"
                     name="contactId"
                     value={contact.id}
-                    defaultChecked={recipients.some((recipient) => recipient.contactId === contact.id && !recipient.revokedAt)}
+                    defaultChecked={recipients.some(
+                      (recipient) => recipient.contactId === contact.id && !recipient.revokedAt,
+                    )}
                     disabled={!canEdit}
                     className="mt-1"
                   />
@@ -381,19 +459,32 @@ export default function CompanyOfferDetailRoute({ loaderData, actionData }: Rout
         ) : (
           <div className="grid gap-2">
             {recipients.map((recipient) => (
-              <div key={recipient.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-surface p-3">
+              <div
+                key={recipient.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-surface p-3"
+              >
                 <div>
-                  <p className="text-sm font-semibold text-text-primary">{recipient.nameSnapshot ?? recipient.emailSnapshot}</p>
+                  <p className="text-sm font-semibold text-text-primary">
+                    {recipient.nameSnapshot ?? recipient.emailSnapshot}
+                  </p>
                   <p className="text-xs text-text-secondary">{recipient.emailSnapshot}</p>
                 </div>
                 <Badge variant={recipient.revokedAt ? 'danger' : 'success'} size="sm">
                   {recipient.revokedAt ? 'Tilbakekalt' : 'Aktiv'}
                 </Badge>
                 <div className="flex flex-wrap gap-2">
-                  <RecipientActionButton intent={OFFER_ACTION_INTENTS.enableRecipient} recipientId={recipient.id} disabled={!canEdit}>
+                  <RecipientActionButton
+                    intent={OFFER_ACTION_INTENTS.enableRecipient}
+                    recipientId={recipient.id}
+                    disabled={!canEdit}
+                  >
                     Aktiver token
                   </RecipientActionButton>
-                  <RecipientActionButton intent={OFFER_ACTION_INTENTS.revokeRecipient} recipientId={recipient.id} disabled={!canEdit || Boolean(recipient.revokedAt)}>
+                  <RecipientActionButton
+                    intent={OFFER_ACTION_INTENTS.revokeRecipient}
+                    recipientId={recipient.id}
+                    disabled={!canEdit || Boolean(recipient.revokedAt)}
+                  >
                     Tilbakekall
                   </RecipientActionButton>
                 </div>

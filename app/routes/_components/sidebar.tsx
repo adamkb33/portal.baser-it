@@ -148,11 +148,7 @@ function SidebarGroup({ item, pathname }: { item: RouteBranch; pathname: string 
           to={item.href}
           aria-current={parentActive ? 'page' : undefined}
           onClick={() => setOpen(true)}
-          className={cn(
-            navLinkBase,
-            'min-w-0 flex-1 bg-transparent',
-            !parentActive && 'hover:text-text-primary',
-          )}
+          className={cn(navLinkBase, 'min-w-0 flex-1 bg-transparent', !parentActive && 'hover:text-text-primary')}
         >
           {LucideIcon ? <LucideIcon className="size-[17px] shrink-0" strokeWidth={1.75} aria-hidden /> : null}
           <span className="min-w-0 flex-1 truncate">{item.label ?? item.id}</span>

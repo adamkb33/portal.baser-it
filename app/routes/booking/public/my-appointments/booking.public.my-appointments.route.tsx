@@ -166,7 +166,9 @@ function AppointmentPagination({
         Viser <span className="font-semibold text-card-text">{startItem}</span>-
         <span className="font-semibold text-card-text">{endItem}</span> av{' '}
         <span className="font-semibold text-card-text">{totalElements}</span>
-        <span className="ml-2 text-xs">Side {page + 1} av {pageCount}</span>
+        <span className="ml-2 text-xs">
+          Side {page + 1} av {pageCount}
+        </span>
       </p>
       {hasMultiplePages && (
         <div className="grid grid-cols-2 gap-2 sm:flex">

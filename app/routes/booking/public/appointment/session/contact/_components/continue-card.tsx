@@ -11,7 +11,14 @@ type ContinueCardProps = {
   isSubmitting?: boolean;
 };
 
-export function ContinueCard({ title, description, cta, initials, intentValue, isSubmitting = false }: ContinueCardProps) {
+export function ContinueCard({
+  title,
+  description,
+  cta,
+  initials,
+  intentValue,
+  isSubmitting = false,
+}: ContinueCardProps) {
   return (
     <Form method="post" aria-busy={isSubmitting}>
       <button

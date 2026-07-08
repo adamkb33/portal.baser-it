@@ -8,7 +8,16 @@ import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { CalendarView, type CalendarEntry } from '~/components/calendar/CalendarView';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Button, CompanyEmptyState, CompanyPageTemplate, KpiCard, Notice, Popover, PopoverContent, PopoverTrigger } from '~/ui';
+import {
+  Button,
+  CompanyEmptyState,
+  CompanyPageTemplate,
+  KpiCard,
+  Notice,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '~/ui';
 import { parseTimesheetListRequest, serializeTimesheetQuery, TIMESHEET_STATUS_LABELS } from './_utils';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -81,8 +90,18 @@ export default function CompanyTimesheetRoute({ loaderData }: Route.ComponentPro
       }
       hero={
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <KpiCard label="Registreringer" value={summary.total} icon={<CalendarDays className="h-5 w-5" />} tone="primary" />
-          <KpiCard label="Timer totalt" value={formatDurationHours(summary.minutes)} icon={<Clock3 className="h-5 w-5" />} tone="info" />
+          <KpiCard
+            label="Registreringer"
+            value={summary.total}
+            icon={<CalendarDays className="h-5 w-5" />}
+            tone="primary"
+          />
+          <KpiCard
+            label="Timer totalt"
+            value={formatDurationHours(summary.minutes)}
+            icon={<Clock3 className="h-5 w-5" />}
+            tone="info"
+          />
           <KpiCard label="Sendt inn" value={summary.SUBMITTED} icon={<PenLine className="h-5 w-5" />} tone="warning" />
           <KpiCard label="Godkjent" value={summary.ACCEPTED} icon={<Clock3 className="h-5 w-5" />} tone="success" />
         </div>
@@ -116,11 +135,7 @@ function toCalendarEntryLabel(entry: TimesheetDayEntryDto) {
   return `${hours}t`;
 }
 
-function TimesheetCalendarEntry({
-  entry,
-}: {
-  entry: Route.ComponentProps['loaderData']['entries'][number];
-}) {
+function TimesheetCalendarEntry({ entry }: { entry: Route.ComponentProps['loaderData']['entries'][number] }) {
   const [open, setOpen] = React.useState(false);
   const trigger = entry.href ? (
     <Link

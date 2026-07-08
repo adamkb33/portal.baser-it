@@ -110,7 +110,11 @@ const envValidationIssues = validateE2eEnvironment();
 
 if (e2eDebug) {
   const maskedEmail = companyEmail ? companyEmail.replace(/(^.).+(@.*$)/, '$1***$2') : '<missing>';
-  const gatewaySource = process.env.E2E_GATEWAY_URL ? 'E2E_GATEWAY_URL' : process.env.VITE_API_GATEWAY_URL ? 'VITE_API_GATEWAY_URL' : 'default';
+  const gatewaySource = process.env.E2E_GATEWAY_URL
+    ? 'E2E_GATEWAY_URL'
+    : process.env.VITE_API_GATEWAY_URL
+      ? 'VITE_API_GATEWAY_URL'
+      : 'default';
   console.log(
     `[e2e-debug] env gateway=${gatewayUrl} source=${gatewaySource} email=${maskedEmail} companyId=${explicitCompanyIdRaw || '<auto>'}`,
   );
@@ -128,7 +132,10 @@ function isFutureIso(value: string): boolean {
   return Number.isFinite(ts) && ts > Date.now() + 5 * 60 * 1000;
 }
 
-async function failWithResponseBody(response: { status(): number; text(): Promise<string> }, label: string): Promise<never> {
+async function failWithResponseBody(
+  response: { status(): number; text(): Promise<string> },
+  label: string,
+): Promise<never> {
   let body = '';
   try {
     body = await response.text();
@@ -225,12 +232,15 @@ async function signInCompanyUser(request: APIRequestContext): Promise<AuthTokens
   }
   const contextsPayload = (await contextsResponse.json()) as ApiEnvelope<CompanyContextPayload>;
   expect(contextsPayload.success).toBe(true);
-  const availableCompanyIds = (contextsPayload.data || []).map((entry) => entry.id).filter((id) => Number.isInteger(id));
+  const availableCompanyIds = (contextsPayload.data || [])
+    .map((entry) => entry.id)
+    .filter((id) => Number.isInteger(id));
   expect(availableCompanyIds.length, 'No company context available for this user.').toBeGreaterThan(0);
 
-  const candidateIds = Number.isInteger(explicitCompanyId) && explicitCompanyId > 0
-    ? [explicitCompanyId, ...availableCompanyIds.filter((id) => id !== explicitCompanyId)]
-    : availableCompanyIds;
+  const candidateIds =
+    Number.isInteger(explicitCompanyId) && explicitCompanyId > 0
+      ? [explicitCompanyId, ...availableCompanyIds.filter((id) => id !== explicitCompanyId)]
+      : availableCompanyIds;
 
   let lastFailure = 'No company context evaluated.';
   for (const companyId of candidateIds) {
@@ -246,8 +256,7 @@ async function signInCompanyUser(request: APIRequestContext): Promise<AuthTokens
     const hasRequiredRole = roleList.includes('ADMIN') || roleList.includes('EMPLOYEE');
     const hasBookingProduct = productList.includes('BOOKING');
     if (!hasRequiredRole || !hasBookingProduct) {
-      lastFailure =
-        `companyId=${companyId} rejected: roles=[${roleList.join(',') || '<none>'}] products=[${productList.join(',') || '<none>'}]`;
+      lastFailure = `companyId=${companyId} rejected: roles=[${roleList.join(',') || '<none>'}] products=[${productList.join(',') || '<none>'}]`;
       if (e2eDebug) {
         console.log(`[e2e-debug] ${lastFailure}`);
       }
@@ -256,8 +265,7 @@ async function signInCompanyUser(request: APIRequestContext): Promise<AuthTokens
 
     const bookingProbe = await probeBookingProfile(request, scopedAccessToken);
     if (!bookingProbe.ok) {
-      lastFailure =
-        `companyId=${companyId} rejected: booking-profile status=${bookingProbe.status} body=${bookingProbe.body.slice(0, 600)}`;
+      lastFailure = `companyId=${companyId} rejected: booking-profile status=${bookingProbe.status} body=${bookingProbe.body.slice(0, 600)}`;
       if (e2eDebug) {
         console.log(`[e2e-debug] ${lastFailure}`);
       }
@@ -387,14 +395,19 @@ test.describe('Company User Appointment Creation API', () => {
     expect(createJson.data?.userId).toBe(resolveJson.data?.userId);
   });
 
-  test('returns conflict when email and mobile belong to different users (if fixture data exists)', async ({ request }) => {
+  test('returns conflict when email and mobile belong to different users (if fixture data exists)', async ({
+    request,
+  }) => {
     const tokens = await signInCompanyUser(request);
     const customersEnvelope = await getCustomers(request, tokens.accessToken);
     const customers = customersEnvelope.data?.content || [];
     const withEmail = customers.find((customer) => customer.email);
     const withMobile = customers.find((customer) => customer.mobileNumber && customer.id !== withEmail?.id);
 
-    test.skip(!withEmail?.email || !withMobile?.mobileNumber, 'Need at least two distinct customers with email/mobile.');
+    test.skip(
+      !withEmail?.email || !withMobile?.mobileNumber,
+      'Need at least two distinct customers with email/mobile.',
+    );
     const conflictEmail = withEmail!.email!;
     const conflictMobile = withMobile!.mobileNumber!;
 

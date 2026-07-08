@@ -1,14 +1,12 @@
 import { NavLink, useFetcher, useNavigate, useSearchParams } from 'react-router';
-import { useEffect, useMemo, useState } from 'react';
-import { format, parseISO } from 'date-fns';
-import { nb } from 'date-fns/locale';
+import { useMemo, useState } from 'react';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
 import { DeleteConfirmDialog } from '~/components/dialog/delete-confirm-dialog';
 import { withAuth } from '~/api/utils/with-auth';
 import { CompanyUserAppointmentController, type AppointmentDto } from '~/api/generated/booking';
 import type { Route } from './+types/company.booking.appointments.route';
 import { AppointmentCardRow } from './_components/appointment.card-row';
-import { AppointmentDetailsContent } from './_components/appointment-details-content';
+import { SpotlightAppointmentCard } from './_components/appointment.spotlight-card';
 import { AppointmentTableHeaderSlot } from './_components/appointment.table-header-slot';
 import { AppointmentTableRow } from './_components/appointment.table-row';
 import { AppointmentPaginationService } from './_services/appointment.pagination-service';
@@ -16,22 +14,8 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError, redirectWithSuccess } from '~/lib/flash-message.server';
 import { formatCurrentDateTimeInTimeZone } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CompanyPageTemplate,
-  Dialog,
-  Label,
-  Notice,
-  Text,
-  Textarea,
-} from '~/ui';
-import {
-  getTotalDuration,
-  isAppointmentCompleted,
-} from './_utils/appointments.utils';
+import { Button, CompanyPageTemplate, Label, Notice, Textarea } from '~/ui';
+import { isAppointmentCompleted } from './_utils/appointments.utils';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
@@ -137,9 +121,6 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingAppointmentId, setDeletingAppointmentId] = useState<number | null>(null);
   const [deleteReason, setDeleteReason] = useState('');
-  const [selectedSpotlightAppointment, setSelectedSpotlightAppointment] = useState<AppointmentDto | null>(null);
-  const [isSpotlightDetailsOpen, setIsSpotlightDetailsOpen] = useState(false);
-  const linkedAppointmentId = Number(searchParams.get('appointmentId'));
 
   const paginationService = useMemo(
     () => new AppointmentPaginationService(searchParams, navigate),
@@ -167,20 +148,6 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
     () => sortedByStart.find((appointment) => new Date(appointment.startTime).getTime() >= now.getTime()) ?? null,
     [sortedByStart, now],
   );
-
-  useEffect(() => {
-    if (!Number.isInteger(linkedAppointmentId) || linkedAppointmentId <= 0) {
-      return;
-    }
-
-    const linkedAppointment = appointments.find((appointment) => appointment.id === linkedAppointmentId);
-    if (!linkedAppointment) {
-      return;
-    }
-
-    setSelectedSpotlightAppointment(linkedAppointment);
-    setIsSpotlightDetailsOpen(true);
-  }, [appointments, linkedAppointmentId]);
 
   const handleDeleteClick = (id: number) => {
     const appointment = appointments.find((item) => item.id === id);
@@ -220,14 +187,12 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
     }
   };
 
-  const openSpotlightDetails = (appointment: AppointmentDto) => {
-    setSelectedSpotlightAppointment(appointment);
-    setIsSpotlightDetailsOpen(true);
-  };
+  const openAppointmentDetails = (appointment: AppointmentDto) => {
+    if (!appointment.id) {
+      return;
+    }
 
-  const openUploadImagePage = (appointmentId: number) => {
-    const href = `${ROUTES_MAP['company.booking.appointments.upload-image'].href}?id=${appointmentId}`;
-    navigate(href);
+    navigate(getAppointmentDetailHref(appointment.id));
   };
 
   return (
@@ -259,7 +224,7 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
                   hint="Pågår nå"
                   appointment={ongoingAppointment}
                   tone="ongoing"
-                  onOpen={openSpotlightDetails}
+                  onOpen={openAppointmentDetails}
                 />
               ) : lastCompletedAppointment ? (
                 <SpotlightAppointmentCard
@@ -267,7 +232,7 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
                   hint="Sist gjennomført"
                   appointment={lastCompletedAppointment}
                   tone="recent"
-                  onOpen={openSpotlightDetails}
+                  onOpen={openAppointmentDetails}
                 />
               ) : nextUpcomingAppointment ? (
                 <SpotlightAppointmentCard
@@ -275,7 +240,7 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
                   hint="Kommende"
                   appointment={nextUpcomingAppointment}
                   tone="upcoming"
-                  onOpen={openSpotlightDetails}
+                  onOpen={openAppointmentDetails}
                 />
               ) : null}
 
@@ -285,7 +250,7 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
                   hint="Sist gjennomført"
                   appointment={lastCompletedAppointment}
                   tone="recent"
-                  onOpen={openSpotlightDetails}
+                  onOpen={openAppointmentDetails}
                 />
               ) : null}
             </div>
@@ -314,8 +279,8 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
               <AppointmentCardRow
                 appointment={appointment}
                 index={index}
+                onOpen={openAppointmentDetails}
                 onDelete={handleDeleteClick}
-                onUploadImage={openUploadImagePage}
                 isDeleting={fetcher.state !== 'idle' && deletingAppointmentId === appointment.id}
               />
             )}
@@ -324,8 +289,8 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
             renderRow={(appointment) => (
               <AppointmentTableRow
                 appointment={appointment}
+                onOpen={openAppointmentDetails}
                 onDelete={handleDeleteClick}
-                onUploadImage={openUploadImagePage}
                 isDeleting={fetcher.state !== 'idle' && deletingAppointmentId === appointment.id}
               />
             )}
@@ -356,24 +321,12 @@ export default function CompanyBookingAppointmentsPage({ loaderData }: Route.Com
           </div>
         </DeleteConfirmDialog>
       </CompanyPageTemplate>
-
-      <SpotlightAppointmentDetailsDialog
-        appointment={selectedSpotlightAppointment}
-        onUploadImage={openUploadImagePage}
-        onDelete={(id) => {
-          setIsSpotlightDetailsOpen(false);
-          setSelectedSpotlightAppointment(null);
-          handleDeleteClick(id);
-        }}
-        isDeleting={fetcher.state !== 'idle' && deletingAppointmentId === selectedSpotlightAppointment?.id}
-        open={isSpotlightDetailsOpen}
-        onOpenChange={(next) => {
-          setIsSpotlightDetailsOpen(next);
-          if (!next) setSelectedSpotlightAppointment(null);
-        }}
-      />
     </>
   );
+}
+
+export function getAppointmentDetailHref(appointmentId: number): string {
+  return ROUTES_MAP['company.booking.appointments.detail'].href.replace(':appointmentId', String(appointmentId));
 }
 
 function isAppointmentInProgress(appointment: AppointmentDto, now: Date): boolean {
@@ -385,119 +338,4 @@ function isAppointmentInProgress(appointment: AppointmentDto, now: Date): boolea
 
 function isAppointmentPast(appointment: AppointmentDto, now: Date): boolean {
   return new Date(appointment.endTime).getTime() < now.getTime();
-}
-
-function SpotlightAppointmentCard({
-  title,
-  hint,
-  appointment,
-  tone,
-  onOpen,
-}: {
-  title: string;
-  hint: string;
-  appointment: AppointmentDto;
-  tone: 'ongoing' | 'recent' | 'upcoming';
-  onOpen: (appointment: AppointmentDto) => void;
-}) {
-  const toneClasses: Record<
-    'ongoing' | 'recent' | 'upcoming',
-    { card: string; chip: string; bar: string; orb: string; inner: string }
-  > = {
-    ongoing: {
-      card: 'border-primary/30 bg-surface-primary-subtle',
-      chip: 'border-primary/30 bg-surface-primary-strong text-primary',
-      bar: 'bg-primary/85',
-      orb: 'bg-primary/20',
-      inner: 'bg-background/80',
-    },
-    recent: {
-      card: 'border-tertiary/35 bg-surface-tertiary-subtle',
-      chip: 'border-tertiary/35 bg-surface-tertiary-strong text-tertiary',
-      bar: 'bg-tertiary/80',
-      orb: 'bg-tertiary/20',
-      inner: 'bg-background/75',
-    },
-    upcoming: {
-      card: 'border-secondary/35 bg-surface-secondary-subtle',
-      chip: 'border-secondary/35 bg-surface-secondary-strong text-secondary',
-      bar: 'bg-secondary/80',
-      orb: 'bg-secondary/20',
-      inner: 'bg-background/78',
-    },
-  };
-
-  return (
-    <Card className={`relative overflow-hidden rounded-xl ${toneClasses[tone].card}`}>
-      <div className={`h-1 w-full ${toneClasses[tone].bar}`} />
-      <div
-        className={`pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-xl ${toneClasses[tone].orb}`}
-      />
-      <CardContent className="space-y-2 p-3">
-        <div className="flex items-center justify-between gap-2">
-          <Text as="p" variant="body-sm" className="font-semibold">
-            {title}
-          </Text>
-          <Badge variant="outline" size="sm" className={`rounded-full text-[11px] ${toneClasses[tone].chip}`}>
-            {hint}
-          </Badge>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => onOpen(appointment)}
-          className={`w-full rounded-lg border border-border p-2.5 text-left transition-all hover:border-primary/40 hover:shadow-sm ${toneClasses[tone].inner}`}
-        >
-          <div className="flex items-center justify-between gap-2.5">
-            <div className="min-w-0">
-              <Text as="p" variant="body-sm" className="truncate font-semibold">
-                {appointment.user.givenName} {appointment.user.familyName}
-              </Text>
-              <Text as="p" variant="caption" className="text-text-secondary">
-                {format(parseISO(appointment.startTime), "EEE d. MMM 'kl.' HH:mm", { locale: nb })}
-              </Text>
-            </div>
-            <div className="text-right text-xs">
-              <Text as="p" variant="caption" className="text-text-secondary">
-                Varighet
-              </Text>
-              <Text as="p" variant="caption" className="font-semibold text-text-primary">
-                {getTotalDuration(appointment)}
-              </Text>
-            </div>
-          </div>
-        </button>
-      </CardContent>
-    </Card>
-  );
-}
-
-function SpotlightAppointmentDetailsDialog({
-  appointment,
-  onUploadImage,
-  onDelete,
-  isDeleting,
-  open,
-  onOpenChange,
-}: {
-  appointment: AppointmentDto | null;
-  onUploadImage: (appointmentId: number) => void;
-  onDelete: (appointmentId: number) => void;
-  isDeleting?: boolean;
-  open: boolean;
-  onOpenChange: (next: boolean) => void;
-}) {
-  if (!appointment) return null;
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <AppointmentDetailsContent
-        appointment={appointment}
-        onDelete={onDelete}
-        onUploadImage={onUploadImage}
-        isDeleting={isDeleting}
-        onClose={() => onOpenChange(false)}
-      />
-    </Dialog>
-  );
 }

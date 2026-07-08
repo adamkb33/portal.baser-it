@@ -1,11 +1,7 @@
 // ~/services/appointment-pagination.service.ts
 import { addDays, endOfDay, isSameDay } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import {
-  formatCurrentDateTimeInTimeZone,
-  formatDateBoundaryInTimeZone,
-  formatEndOfDayInTimeZone,
-} from '~/lib/query';
+import { formatCurrentDateTimeInTimeZone, formatDateBoundaryInTimeZone, formatEndOfDayInTimeZone } from '~/lib/query';
 
 export enum AppointmentPaginationQuickFilter {
   UPCOMING,

@@ -82,10 +82,13 @@ try {
   const response = await api.call();
   return redirect('/success');
 } catch (error) {
-  return data({
-    error: 'User-friendly message',
-    values: formValues // Preserve form state
-  }, { status: 400 });
+  return data(
+    {
+      error: 'User-friendly message',
+      values: formValues, // Preserve form state
+    },
+    { status: 400 },
+  );
 }
 ```
 
@@ -128,10 +131,13 @@ app/routes/
 Always return form values on error:
 
 ```typescript
-return data({
-  error: 'Validation failed',
-  values: { email } // Preserve user input
-}, { status: 400 });
+return data(
+  {
+    error: 'Validation failed',
+    values: { email }, // Preserve user input
+  },
+  { status: 400 },
+);
 ```
 
 ## Server-Side Utilities
@@ -141,7 +147,7 @@ return data({
 ```typescript
 // _features/auth.cookies.server.ts
 const accessCookie = await accessTokenCookie.serialize(token, {
-  expires: new Date(expiresAt * 1000)
+  expires: new Date(expiresAt * 1000),
 });
 ```
 
@@ -150,7 +156,7 @@ const accessCookie = await accessTokenCookie.serialize(token, {
 ```typescript
 // Use generated API clients
 const response = await baseApi().AuthControllerService.signIn({
-  requestBody: { email, password }
+  requestBody: { email, password },
 });
 ```
 

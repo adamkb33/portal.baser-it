@@ -15,6 +15,7 @@
 ### File Naming Conventions
 
 **Routes follow dot notation pattern:**
+
 - **Route files**: `[category].[feature].route.tsx` (e.g., `auth.sign-in.route.tsx`)
 - **Layout files**: `[category].[feature].layout.tsx` (e.g., `auth.sign-in.layout.tsx`)
 - **Feature modules**: Group in `_features/`, `_schemas/`, `_forms/`, `_utils/` folders
@@ -173,6 +174,7 @@ useEffect(() => {
 ### Route Organization
 
 **Centralized route definitions in `lib/route-tree.ts`:**
+
 ```typescript
 {
   id: 'auth.sign-in',
@@ -185,6 +187,7 @@ useEffect(() => {
 ```
 
 **Feature-based folder structure:**
+
 ```
 app/routes/auth/sign-in/
 ├── _features/auth.sign-in.action.ts

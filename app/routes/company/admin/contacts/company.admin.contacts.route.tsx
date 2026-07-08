@@ -54,9 +54,7 @@ export default function CompanyContactsRoute({ loaderData }: Route.ComponentProp
   const [deletingContactId, setDeletingContactId] = useState<number | null>(null);
 
   if ('error' in loaderData) {
-    return (
-      <Notice tone="emphasis" title="Kunne ikke hente kontakter" message={loaderData.error} />
-    );
+    return <Notice tone="emphasis" title="Kunne ikke hente kontakter" message={loaderData.error} />;
   }
 
   const { contacts, pagination } = loaderData;

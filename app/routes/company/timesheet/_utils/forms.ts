@@ -86,7 +86,9 @@ export const buildPendingEntries = (weekForms: Record<string, DayFormState>) =>
           },
     );
 
-export const parseBulkEntries = (entriesRaw: FormDataEntryValue | null): { error?: string; entries: BulkEntryInput[] } => {
+export const parseBulkEntries = (
+  entriesRaw: FormDataEntryValue | null,
+): { error?: string; entries: BulkEntryInput[] } => {
   if (!entriesRaw) {
     return { error: 'Ingen endringer å lagre.', entries: [] };
   }

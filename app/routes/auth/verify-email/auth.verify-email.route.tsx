@@ -70,11 +70,14 @@ export async function loader({ request }: Route.LoaderArgs) {
       }
     }
 
-    return data({
-      error: null,
-      nextStep: payload?.nextStep ?? 'DONE',
-      redirectUrl,
-    }, { headers: headers.entries().next().done ? undefined : headers });
+    return data(
+      {
+        error: null,
+        nextStep: payload?.nextStep ?? 'DONE',
+        redirectUrl,
+      },
+      { headers: headers.entries().next().done ? undefined : headers },
+    );
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Ugyldig eller utløpt verifiseringslenke.');
     return redirectWithError(request, ROUTES_MAP['auth.sign-in'].href, message);

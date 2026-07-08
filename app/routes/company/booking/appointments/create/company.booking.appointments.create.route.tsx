@@ -286,7 +286,8 @@ export async function action({ request }: Route.ActionArgs) {
     }
   } catch (error) {
     if (getStatusCode(error) === 409) {
-      const conflictError = 'Email and mobile belong to different customers. Please use only one or correct contact info.';
+      const conflictError =
+        'Email and mobile belong to different customers. Please use only one or correct contact info.';
       const flashCookie = await setFlashMessage(request, { type: 'error', text: conflictError });
       return data({ error: conflictError }, { status: 409, headers: { 'Set-Cookie': flashCookie } });
     }

@@ -138,9 +138,7 @@ export function CustomerSelector({
                           </div>
                         ) : null}
                         {!customer.email && !customer.mobileNumber ? (
-                          <div className="text-xs italic text-muted-foreground">
-                            Ingen kontaktinformasjon
-                          </div>
+                          <div className="text-xs italic text-muted-foreground">Ingen kontaktinformasjon</div>
                         ) : null}
                       </div>
                     </div>

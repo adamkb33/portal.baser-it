@@ -62,7 +62,9 @@ import { ContactAuthService } from './contact-auth.service.server';
 describe('ContactAuthService matrix', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.resolveAuthNextStepHref.mockImplementation((nextStep: string) => (nextStep ? `/booking/next/${nextStep}` : null));
+    mocks.resolveAuthNextStepHref.mockImplementation((nextStep: string) =>
+      nextStep ? `/booking/next/${nextStep}` : null,
+    );
     mocks.buildVerificationCookieHeaderFromDto.mockResolvedValue(null);
     mocks.setAuthCookies.mockResolvedValue(new Headers([['Set-Cookie', 'auth=1']]));
   });

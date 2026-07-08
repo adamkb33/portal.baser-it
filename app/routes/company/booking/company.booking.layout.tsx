@@ -8,7 +8,9 @@ import { resolveErrorPayload } from '~/lib/api-error';
 
 export async function loader({ request }: Route.LoaderArgs) {
   try {
-    const bookingInfoResponse = await withAuth(request, async () => CompanyUserBookingController.getCompanyBookingInfo());
+    const bookingInfoResponse = await withAuth(request, async () =>
+      CompanyUserBookingController.getCompanyBookingInfo(),
+    );
 
     return { bookingInfo: bookingInfoResponse.data?.data ?? null, error: null as string | null };
   } catch (error) {

@@ -19,15 +19,66 @@ import {
   type ButtonVariant,
 } from '~/ui';
 
-const SOLID_BUTTON_VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'success', 'warning', 'danger', 'info', 'ghost'];
-const SOFT_BUTTON_VARIANTS: ButtonVariant[] = ['soft-primary', 'soft-success', 'soft-warning', 'soft-danger', 'soft-info'];
+const SOLID_BUTTON_VARIANTS: ButtonVariant[] = [
+  'primary',
+  'secondary',
+  'success',
+  'warning',
+  'danger',
+  'info',
+  'ghost',
+];
+const SOFT_BUTTON_VARIANTS: ButtonVariant[] = [
+  'soft-primary',
+  'soft-success',
+  'soft-warning',
+  'soft-danger',
+  'soft-info',
+];
 const OUTLINE_BUTTON_VARIANTS: ButtonVariant[] = ['outline-primary', 'outline-success', 'outline-danger', 'ghost'];
-const BADGE_VARIANTS: BadgeVariant[] = ['default', 'primary', 'success', 'warning', 'danger', 'info', 'purple', 'solid'];
+const BADGE_VARIANTS: BadgeVariant[] = [
+  'default',
+  'primary',
+  'success',
+  'warning',
+  'danger',
+  'info',
+  'purple',
+  'solid',
+];
 const TABLE_ROWS = [
-  { invoice: 'INV-2026-001', customer: 'Northwind AS', status: 'Paid', statusVariant: 'success', total: '24,800 kr', date: '13 Jun 2026' },
-  { invoice: 'INV-2026-002', customer: 'Fjord Digital', status: 'Pending', statusVariant: 'warning', total: '8,450 kr', date: '12 Jun 2026' },
-  { invoice: 'INV-2026-003', customer: 'Adminator Labs', status: 'Draft', statusVariant: 'muted', total: '15,200 kr', date: '11 Jun 2026' },
-  { invoice: 'INV-2026-004', customer: 'Baser IT', status: 'Failed', statusVariant: 'danger', total: '3,900 kr', date: '10 Jun 2026' },
+  {
+    invoice: 'INV-2026-001',
+    customer: 'Northwind AS',
+    status: 'Paid',
+    statusVariant: 'success',
+    total: '24,800 kr',
+    date: '13 Jun 2026',
+  },
+  {
+    invoice: 'INV-2026-002',
+    customer: 'Fjord Digital',
+    status: 'Pending',
+    statusVariant: 'warning',
+    total: '8,450 kr',
+    date: '12 Jun 2026',
+  },
+  {
+    invoice: 'INV-2026-003',
+    customer: 'Adminator Labs',
+    status: 'Draft',
+    statusVariant: 'muted',
+    total: '15,200 kr',
+    date: '11 Jun 2026',
+  },
+  {
+    invoice: 'INV-2026-004',
+    customer: 'Baser IT',
+    status: 'Failed',
+    statusVariant: 'danger',
+    total: '3,900 kr',
+    date: '10 Jun 2026',
+  },
 ] satisfies Array<{
   invoice: string;
   customer: string;
@@ -52,7 +103,9 @@ function Section({
     <section className={`rounded-[var(--radius-card)] border border-border bg-background p-5 shadow-card ${className}`}>
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-text-disabled">{eyebrow}</span>
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-text-disabled">
+            {eyebrow}
+          </span>
           <h2 className="mt-1 font-display text-lg font-semibold text-text-primary">{title}</h2>
         </div>
       </div>
@@ -107,7 +160,10 @@ function AlertPreview({
 
   return (
     <div className={`flex gap-3 rounded-[var(--radius-card)] border p-4 ${toneClasses}`}>
-      <Icon name={tone === 'success' ? 'check' : tone === 'danger' ? 'close' : 'ui'} className="mt-0.5 size-4 shrink-0" />
+      <Icon
+        name={tone === 'success' ? 'check' : tone === 'danger' ? 'close' : 'ui'}
+        className="mt-0.5 size-4 shrink-0"
+      />
       <div className="text-sm leading-relaxed">
         {title ? <div className="font-semibold text-text-primary">{title}</div> : null}
         <div className="text-text-secondary">{children}</div>
@@ -122,10 +178,13 @@ export default function Styleguide() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <header className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-background p-5 shadow-card md:flex-row md:items-end md:justify-between">
           <div>
-            <span className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-text-disabled">Components - audit</span>
+            <span className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-text-disabled">
+              Components - audit
+            </span>
             <h1 className="mt-2 font-display text-3xl font-semibold text-text-primary">Styleguide</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
-              Mirror of the template primitives in <code>buttons.html</code>, <code>ui.html</code>, and <code>forms.html</code>
+              Mirror of the template primitives in <code>buttons.html</code>, <code>ui.html</code>, and{' '}
+              <code>forms.html</code>
               using the project UI layer.
             </p>
           </div>
@@ -385,14 +444,17 @@ export default function Styleguide() {
                 Notifications - 02
               </span>
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-                {['Weekly product updates', 'Mentions and replies', 'Marketing newsletter', 'Two-factor auth reminders'].map(
-                  (label, index) => (
-                    <label key={label} className="flex items-center gap-3 text-sm text-text-primary">
-                      <Checkbox defaultChecked={index !== 2} />
-                      {label}
-                    </label>
-                  ),
-                )}
+                {[
+                  'Weekly product updates',
+                  'Mentions and replies',
+                  'Marketing newsletter',
+                  'Two-factor auth reminders',
+                ].map((label, index) => (
+                  <label key={label} className="flex items-center gap-3 text-sm text-text-primary">
+                    <Checkbox defaultChecked={index !== 2} />
+                    {label}
+                  </label>
+                ))}
               </div>
             </div>
             <div className="mt-6 flex flex-col gap-3 border-t border-border-soft pt-5 sm:flex-row sm:items-center">
@@ -411,7 +473,12 @@ export default function Styleguide() {
               <FormField label="Filled" defaultValue="hello@adminator.app" />
               <FormField label="Disabled" defaultValue="Read only" disabled />
               <FormField label="With icon" startIcon={<Icon name="search" />} placeholder="Search..." />
-              <FormField label="Invalid" defaultValue="not-an-email" invalid error="Please enter a valid email address." />
+              <FormField
+                label="Invalid"
+                defaultValue="not-an-email"
+                invalid
+                error="Please enter a valid email address."
+              />
             </div>
           </Section>
 

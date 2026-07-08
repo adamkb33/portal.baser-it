@@ -75,8 +75,12 @@ export default function CompanyNotificationsViewRoute({ loaderData }: Route.Comp
       }
       hero={
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <KpiCard label="Status" value={isViewed ? 'Lest' : 'Ulest'} icon={<Eye className="h-5 w-5" />} tone={isViewed ? 'success' : 'warning'} />
-          <KpiCard label="Varsel-ID" value={`#${notification.id}`} icon={<BellRing className="h-5 w-5" />} tone="info" />
+          <KpiCard
+            label="Status"
+            value={isViewed ? 'Lest' : 'Ulest'}
+            icon={<Eye className="h-5 w-5" />}
+            tone={isViewed ? 'success' : 'warning'}
+          />
           <KpiCard
             label="Opprettet"
             value={formatNotificationTimestamp(notification.createdAt)}
@@ -98,8 +102,14 @@ export default function CompanyNotificationsViewRoute({ loaderData }: Route.Comp
             layout="stacked"
             items={[
               { label: 'Opprettet', value: formatNotificationTimestamp(notification.createdAt) },
-              { label: 'Oppdatert', value: formatNotificationTimestamp(notification.updatedAt ?? notification.createdAt) },
-              { label: 'Lest', value: notification.readAt ? formatNotificationTimestamp(notification.readAt) : 'Ikke lest ennå' },
+              {
+                label: 'Oppdatert',
+                value: formatNotificationTimestamp(notification.updatedAt ?? notification.createdAt),
+              },
+              {
+                label: 'Lest',
+                value: notification.readAt ? formatNotificationTimestamp(notification.readAt) : 'Ikke lest ennå',
+              },
             ]}
           />
         </Panel>

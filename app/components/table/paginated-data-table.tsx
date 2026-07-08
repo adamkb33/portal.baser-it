@@ -99,7 +99,9 @@ export function PaginatedTable<T>({
               <span className="text-xs uppercase tracking-[0.12em] text-text-secondary">Per side</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">{pageSize}</Button>
+                  <Button variant="outline" size="sm">
+                    {pageSize}
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuRadioGroup
@@ -112,11 +114,11 @@ export function PaginatedTable<T>({
                       onPageSizeChange?.(next);
                     }}
                   >
-                  {pageSizeOptions.map((opt) => (
-                    <DropdownMenuRadioItem key={opt} value={String(opt)}>
-                      {opt}
-                    </DropdownMenuRadioItem>
-                  ))}
+                    {pageSizeOptions.map((opt) => (
+                      <DropdownMenuRadioItem key={opt} value={String(opt)}>
+                        {opt}
+                      </DropdownMenuRadioItem>
+                    ))}
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>

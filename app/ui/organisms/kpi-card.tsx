@@ -43,7 +43,17 @@ const trendBadge: Record<KpiTrend, 'success' | 'danger' | 'purple'> = {
   flat: 'purple',
 };
 
-export function KpiCard({ label, value, unit, icon, tone = 'primary', trend, compare, className, ...props }: KpiCardProps) {
+export function KpiCard({
+  label,
+  value,
+  unit,
+  icon,
+  tone = 'primary',
+  trend,
+  compare,
+  className,
+  ...props
+}: KpiCardProps) {
   return (
     <article
       className={cn(
@@ -66,7 +76,12 @@ export function KpiCard({ label, value, unit, icon, tone = 'primary', trend, com
       <div className="relative flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
           {icon ? (
-            <span className={cn('grid size-8 shrink-0 place-items-center rounded-[9px] [&_svg]:size-4', iconChipClasses[tone])}>
+            <span
+              className={cn(
+                'grid size-8 shrink-0 place-items-center rounded-[9px] [&_svg]:size-4',
+                iconChipClasses[tone],
+              )}
+            >
               {icon}
             </span>
           ) : null}
@@ -79,7 +94,7 @@ export function KpiCard({ label, value, unit, icon, tone = 'primary', trend, com
         ) : null}
       </div>
 
-      <div className="relative font-display text-[44px] font-bold leading-none tracking-[-0.035em] text-text-primary">
+      <div className="relative font-display text-lg font-bold leading-none tracking-[-0.035em] text-text-primary">
         {value}
         {unit ? <sup className="ml-0.5 align-top text-lg font-medium text-text-secondary">{unit}</sup> : null}
       </div>

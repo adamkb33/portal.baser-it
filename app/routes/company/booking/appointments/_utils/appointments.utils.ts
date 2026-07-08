@@ -1,9 +1,6 @@
 import type { AppointmentDto } from '~/api/generated/booking';
 
-export const isAppointmentCompleted = (
-  appointment: Pick<AppointmentDto, 'startTime'>,
-  now: Date = new Date(),
-) => {
+export const isAppointmentCompleted = (appointment: Pick<AppointmentDto, 'startTime'>, now: Date = new Date()) => {
   return new Date(appointment.startTime) < now;
 };
 

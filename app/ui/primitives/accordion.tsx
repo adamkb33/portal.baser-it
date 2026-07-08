@@ -2,23 +2,11 @@ import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '../lib/cn';
 
-export function Accordion({
-  className,
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return (
-    <AccordionPrimitive.Root
-      data-slot="accordion"
-      className={cn('w-full space-y-2.5', className)}
-      {...props}
-    />
-  );
+export function Accordion({ className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
+  return <AccordionPrimitive.Root data-slot="accordion" className={cn('w-full space-y-2.5', className)} {...props} />;
 }
 
-export function AccordionItem({
-  className,
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Item>) {
+export function AccordionItem({ className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Item>) {
   return (
     <AccordionPrimitive.Item
       data-slot="accordion-item"
@@ -53,11 +41,11 @@ export function AccordionTrigger({
       >
         <span className="min-w-0 flex-1">{children}</span>
         <ChevronDown
-        className={cn(
-          'mt-0.5 size-4 shrink-0 text-text-secondary transition-[color,transform] duration-150',
-          'group-hover:text-interactive group-data-[state=open]:text-interactive',
-          'group-data-[state=open]:rotate-180',
-        )}
+          className={cn(
+            'mt-0.5 size-4 shrink-0 text-text-secondary transition-[color,transform] duration-150',
+            'group-hover:text-interactive group-data-[state=open]:text-interactive',
+            'group-data-[state=open]:rotate-180',
+          )}
         />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>

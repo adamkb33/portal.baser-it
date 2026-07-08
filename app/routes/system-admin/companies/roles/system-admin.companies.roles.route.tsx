@@ -16,7 +16,10 @@ export async function action({ request }: Route.ActionArgs) {
   if (!Number.isFinite(userId) || !Number.isFinite(companyId)) {
     const message = 'Ugyldig bruker- eller selskap-ID.';
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
-    return data({ error: message, values: { userId: '', companyId: '', role } }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: message, values: { userId: '', companyId: '', role } },
+      { status: 400, headers: { 'Set-Cookie': flashCookie } },
+    );
   }
 
   try {
@@ -30,11 +33,17 @@ export async function action({ request }: Route.ActionArgs) {
     );
 
     const flashCookie = await setFlashMessage(request, { type: 'success', text: 'Rolle tildelt.' });
-    return data({ error: null, values: { userId: '', companyId: '', role: 'ADMIN' } }, { headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: null, values: { userId: '', companyId: '', role: 'ADMIN' } },
+      { headers: { 'Set-Cookie': flashCookie } },
+    );
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke tildele rolle.');
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
-    return data({ error: message, values: { userId: String(userId), companyId: String(companyId), role } }, { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: message, values: { userId: String(userId), companyId: String(companyId), role } },
+      { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } },
+    );
   }
 }
 
@@ -51,7 +60,9 @@ export default function SystemAdminCompaniesRolesPage({ actionData }: Route.Comp
         </Button>
       }
     >
-      {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke tildele rolle" message={actionData.error} /> : null}
+      {actionData?.error ? (
+        <Notice tone="emphasis" title="Kunne ikke tildele rolle" message={actionData.error} />
+      ) : null}
       <Panel title="Rolle" description="Velg bruker, selskap og rolle som skal tildeles.">
         <form method="post" className="space-y-4">
           <FormField label="Bruker-ID" name="userId" type="number" defaultValue={values.userId} required />

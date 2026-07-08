@@ -91,7 +91,8 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const keepMobileMenuOpenOnNextRouteChangeRef = React.useRef(false);
-  const isBookingPublicRoute = location.pathname === '/booking/public' || location.pathname.startsWith('/booking/public/');
+  const isBookingPublicRoute =
+    location.pathname === '/booking/public' || location.pathname.startsWith('/booking/public/');
   const bookingThemeStyle = isBookingPublicRoute ? BOOKING_THEME_TOKENS[loaderData.bookingTheme] : undefined;
 
   const userNav = loaderData.userNavigation || undefined;
@@ -102,7 +103,9 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const sidebarBranches = userNav?.[RoutePlaceMent.SIDEBAR] || [];
   const hasSystemAdminSidebar = sidebarBranches.some((branch) => branch.id === 'system-admin');
   const hasSidebar = sidebarBranches.length > 0 && (Boolean(companyContext) || hasSystemAdminSidebar);
-  const workspace = companyContext ? { name: companyContext.name ?? companyContext.orgNumber, subtitle: 'Selskap' } : null;
+  const workspace = companyContext
+    ? { name: companyContext.name ?? companyContext.orgNumber, subtitle: 'Selskap' }
+    : null;
 
   React.useEffect(() => {
     if (keepMobileMenuOpenOnNextRouteChangeRef.current) {

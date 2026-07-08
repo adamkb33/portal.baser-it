@@ -113,8 +113,7 @@ export function TimePicker({
             {hourOptions.map((hour, index) => {
               const hourMinute = Number(hour) * 60;
               const isHourUnavailable =
-                (minMinutes != null && hourMinute + 59 < minMinutes) ||
-                (maxMinutes != null && hourMinute > maxMinutes);
+                (minMinutes != null && hourMinute + 59 < minMinutes) || (maxMinutes != null && hourMinute > maxMinutes);
               return (
                 <button
                   key={hour}
@@ -157,7 +156,8 @@ export function TimePicker({
                     'w-full rounded-sm px-1.5 py-1 text-left text-xs transition-colors hover:bg-surface-primary-subtle hover:text-primary',
                     index % 2 === 0 ? 'bg-surface/60' : 'bg-transparent',
                     pendingMinute === minute && 'bg-surface-primary-subtle text-primary font-semibold',
-                    isMinuteUnavailable && 'cursor-not-allowed opacity-40 hover:bg-transparent hover:text-text-secondary',
+                    isMinuteUnavailable &&
+                      'cursor-not-allowed opacity-40 hover:bg-transparent hover:text-text-secondary',
                   )}
                   onClick={() => !isMinuteUnavailable && setPendingMinute(minute)}
                 >
@@ -169,7 +169,13 @@ export function TimePicker({
         </div>
       </div>
       <div className="flex items-center justify-end gap-1.5 border-t border-border px-2 py-2">
-        <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onOpenChange(false)}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onClick={() => onOpenChange(false)}
+        >
           Avbryt
         </Button>
         <Button

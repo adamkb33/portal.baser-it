@@ -39,9 +39,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     hasPassword: true,
   };
 
-  const userContextResponse = await withAuth(request, async () => AuthController.getUserContext(), session.accessToken).catch(
-    () => null,
-  );
+  const userContextResponse = await withAuth(
+    request,
+    async () => AuthController.getUserContext(),
+    session.accessToken,
+  ).catch(() => null);
   const user = userContextResponse?.data?.data?.user ?? fallbackUser;
 
   return data({

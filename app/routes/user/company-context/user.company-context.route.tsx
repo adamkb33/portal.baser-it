@@ -86,16 +86,26 @@ export default function CompanyContextPage({ loaderData }: Route.ComponentProps)
       label="Selskapskontekst"
       hero={
         <Panel title="Tilgjengelige selskaper" description="Alle selskaper du kan bytte inn i fra denne brukerkontoen.">
-          <KeyValueList layout="compact" items={[{ label: 'Antall tilgjengelige kontekster', value: companies.length }]} />
+          <KeyValueList
+            layout="compact"
+            items={[{ label: 'Antall tilgjengelige kontekster', value: companies.length }]}
+          />
         </Panel>
       }
     >
       {companies.length === 0 ? (
         <Panel title="Ingen selskaper funnet" description="Du har ikke tilgang til noen selskapskontekster enda.">
-          <Notice tone="default" title="Ingen tilgang" message="Kontakt administrator hvis du forventer å se et selskap her." />
+          <Notice
+            tone="default"
+            title="Ingen tilgang"
+            message="Kontakt administrator hvis du forventer å se et selskap her."
+          />
         </Panel>
       ) : (
-        <Panel title="Velg kontekst" description="Hvert valg logger deg inn i valgt selskap og bruker samme tematiske sideuttrykk som company-flatene.">
+        <Panel
+          title="Velg kontekst"
+          description="Hvert valg logger deg inn i valgt selskap og bruker samme tematiske sideuttrykk som company-flatene."
+        >
           <Grid columns={3} gap="md">
             {companies.map((company) => (
               <Form key={company.id} method="post" className="h-full">

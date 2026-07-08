@@ -66,5 +66,7 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function CompanyAdminContactsCreatePage({ loaderData, actionData }: Route.ComponentProps) {
-  return <ContactFormPage mode="create" values={loaderData.values} actionData={actionData} returnTo={loaderData.returnTo} />;
+  return (
+    <ContactFormPage mode="create" values={loaderData.values} actionData={actionData} returnTo={loaderData.returnTo} />
+  );
 }

@@ -1,7 +1,20 @@
 import type { MutableRefObject } from 'react';
 import { Button } from '~/ui';
-import { currentMinuteInTimeZone, formatMinuteClock, minuteFromPointer, minuteLabel, parseHourMinute, snapMinute } from '../_utils/schedule-time.utils';
-import type { PositionedItem, ScheduleItem, ScheduleWeekDay, SelectionDraft, WorkWindow } from '../_types/schedule.types';
+import {
+  currentMinuteInTimeZone,
+  formatMinuteClock,
+  minuteFromPointer,
+  minuteLabel,
+  parseHourMinute,
+  snapMinute,
+} from '../_utils/schedule-time.utils';
+import type {
+  PositionedItem,
+  ScheduleItem,
+  ScheduleWeekDay,
+  SelectionDraft,
+  WorkWindow,
+} from '../_types/schedule.types';
 import { itemTone } from '../_utils/schedule-layout.utils';
 
 type Props = {
@@ -19,7 +32,12 @@ type Props = {
   dailySchedules: Array<{ dayOfWeek: string; startTime: string; endTime: string }>;
   scrollContainerRef: MutableRefObject<HTMLDivElement | null>;
   dayColumnRefs: MutableRefObject<Record<string, HTMLDivElement | null>>;
-  setHoverState: (value: { dayKey: string; minute: number } | null | ((prev: { dayKey: string; minute: number } | null) => { dayKey: string; minute: number } | null)) => void;
+  setHoverState: (
+    value:
+      | { dayKey: string; minute: number }
+      | null
+      | ((prev: { dayKey: string; minute: number } | null) => { dayKey: string; minute: number } | null),
+  ) => void;
   setActivePointerId: (value: number | null) => void;
   beginSelection: (dayKey: string, dayOfWeek: SelectionDraft['dayOfWeek'], minute: number) => void;
   updateSelection: (dayKey: string, minute: number) => void;
@@ -119,8 +137,10 @@ export function ScheduleDesktopView({
               return { startMinute, endMinute };
             })
             .filter((window): window is { startMinute: number; endMinute: number } => window !== null);
-          const dayLastWorkMinute = dayWorkWindows.length > 0 ? Math.max(...dayWorkWindows.map((window) => window.endMinute)) : null;
-          const isCompletedWorkDay = day.isPast || (day.isToday && dayLastWorkMinute != null && nowMinute >= dayLastWorkMinute);
+          const dayLastWorkMinute =
+            dayWorkWindows.length > 0 ? Math.max(...dayWorkWindows.map((window) => window.endMinute)) : null;
+          const isCompletedWorkDay =
+            day.isPast || (day.isToday && dayLastWorkMinute != null && nowMinute >= dayLastWorkMinute);
           const workWindowToneClass = isCompletedWorkDay ? 'bg-surface-variant-2/55' : 'bg-surface-secondary-subtle/55';
           const minSelectableMinute = day.isPast
             ? globalWindow.endMinute
@@ -130,7 +150,8 @@ export function ScheduleDesktopView({
           const pastOverlayHeight = day.isPast
             ? 100
             : day.isToday
-              ? ((Math.max(globalWindow.startMinute, Math.min(globalWindow.endMinute, minSelectableMinute)) - globalWindow.startMinute) /
+              ? ((Math.max(globalWindow.startMinute, Math.min(globalWindow.endMinute, minSelectableMinute)) -
+                  globalWindow.startMinute) /
                   Math.max(1, globalWindow.endMinute - globalWindow.startMinute)) *
                 100
               : 0;
@@ -151,7 +172,12 @@ export function ScheduleDesktopView({
                 if (day.isPast) return;
                 if (activePointerId !== null && event.pointerId !== activePointerId) return;
                 const rect = event.currentTarget.getBoundingClientRect();
-                const rawMinute = minuteFromPointer(event.clientY, rect, globalWindow.startMinute, globalWindow.endMinute);
+                const rawMinute = minuteFromPointer(
+                  event.clientY,
+                  rect,
+                  globalWindow.startMinute,
+                  globalWindow.endMinute,
+                );
                 const minute = Math.max(minSelectableMinute, rawMinute);
                 if (minute >= globalWindow.endMinute) return;
                 setHoverState({ dayKey: day.key, minute });
@@ -163,7 +189,12 @@ export function ScheduleDesktopView({
                 setActivePointerId(event.pointerId);
                 event.currentTarget.setPointerCapture(event.pointerId);
                 const rect = event.currentTarget.getBoundingClientRect();
-                const rawMinute = minuteFromPointer(event.clientY, rect, globalWindow.startMinute, globalWindow.endMinute);
+                const rawMinute = minuteFromPointer(
+                  event.clientY,
+                  rect,
+                  globalWindow.startMinute,
+                  globalWindow.endMinute,
+                );
                 const minute = Math.max(minSelectableMinute, rawMinute);
                 if (minute >= globalWindow.endMinute) return;
                 beginSelection(day.key, day.dayOfWeek, minute);
@@ -171,7 +202,12 @@ export function ScheduleDesktopView({
               onPointerUp={(event) => {
                 if (day.isPast) return;
                 const rect = event.currentTarget.getBoundingClientRect();
-                const rawMinute = minuteFromPointer(event.clientY, rect, globalWindow.startMinute, globalWindow.endMinute);
+                const rawMinute = minuteFromPointer(
+                  event.clientY,
+                  rect,
+                  globalWindow.startMinute,
+                  globalWindow.endMinute,
+                );
                 const minute = Math.max(minSelectableMinute, rawMinute);
                 if (minute >= globalWindow.endMinute) return;
 
@@ -189,7 +225,10 @@ export function ScheduleDesktopView({
               }}
             >
               {pastOverlayHeight > 0 ? (
-                <div className="pointer-events-none absolute inset-x-0 top-0 bg-black/5" style={{ height: `${pastOverlayHeight}%` }} />
+                <div
+                  className="pointer-events-none absolute inset-x-0 top-0 bg-black/5"
+                  style={{ height: `${pastOverlayHeight}%` }}
+                />
               ) : null}
               {hourRows.map((row) => (
                 <div

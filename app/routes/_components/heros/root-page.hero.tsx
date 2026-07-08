@@ -14,8 +14,8 @@ export default function RootPageHero() {
             </Text>
 
             <Text as="p" variant="body-lg" className="max-w-xl text-text-secondary">
-              Effektiviser booking, timeplanlegging og kundeadministrasjon på ett sted. Spar tid, reduser feil, og fokuser
-              på det som virkelig betyr noe.
+              Effektiviser booking, timeplanlegging og kundeadministrasjon på ett sted. Spar tid, reduser feil, og
+              fokuser på det som virkelig betyr noe.
             </Text>
           </Stack>
 

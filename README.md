@@ -74,11 +74,11 @@ The `/embed` entry URL validates the selected theme once, stores it in a short-l
 
 Supported query parameters:
 
-| Parameter | Required | Description |
-| --- | --- | --- |
-| `companyId` | Yes | Numeric id for the booking-ready company. |
-| `theme` | No | Built-in embed theme, for example `fredrikstad-barbershop`, `pitell`, `ocean`, `sunset`, or `forest`. |
-| `reset` | No | Use `reset=1` to clear the current appointment session before starting. |
+| Parameter   | Required | Description                                                                                           |
+| ----------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| `companyId` | Yes      | Numeric id for the booking-ready company.                                                             |
+| `theme`     | No       | Built-in embed theme, for example `fredrikstad-barbershop`, `pitell`, `ocean`, `sunset`, or `forest`. |
+| `reset`     | No       | Use `reset=1` to clear the current appointment session before starting.                               |
 
 See [docs/booking-embed-integration.md](docs/booking-embed-integration.md) for the full integration contract.
 

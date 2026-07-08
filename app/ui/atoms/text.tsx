@@ -33,18 +33,9 @@ const variantClasses: Record<TextVariant, string> = {
   overline: 'text-xs font-medium leading-normal tracking-widest',
 };
 
-export function Text({
-  variant = 'body',
-  as: Component = 'span',
-  className,
-  children,
-  ...props
-}: TextProps) {
+export function Text({ variant = 'body', as: Component = 'span', className, children, ...props }: TextProps) {
   return (
-    <Component
-      className={cn('text-text-primary', variantClasses[variant], className)}
-      {...props}
-    >
+    <Component className={cn('text-text-primary', variantClasses[variant], className)} {...props}>
       {children}
     </Component>
   );

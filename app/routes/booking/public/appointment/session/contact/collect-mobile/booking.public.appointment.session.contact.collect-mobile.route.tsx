@@ -142,7 +142,14 @@ export default function BookingContactCollectMobilePage({ loaderData }: Route.Co
               </Text>
             </Stack>
 
-            <Button type="submit" size="lg" fullWidth variant="booking-primary" className="gap-3" loading={isSubmitting}>
+            <Button
+              type="submit"
+              size="lg"
+              fullWidth
+              variant="booking-primary"
+              className="gap-3"
+              loading={isSubmitting}
+            >
               <Smartphone className="size-5" />
               {isSubmitting ? 'Lagrer...' : 'Fortsett'}
             </Button>

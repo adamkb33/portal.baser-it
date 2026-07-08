@@ -44,13 +44,7 @@ function getTone(onDark: boolean) {
       };
 }
 
-function PitellSymbol({
-  className,
-  onDark = false,
-}: {
-  className?: string;
-  onDark?: boolean;
-}) {
+function PitellSymbol({ className, onDark = false }: { className?: string; onDark?: boolean }) {
   const tone = getTone(onDark);
 
   return (
@@ -66,20 +60,17 @@ function PitellSymbol({
         d="M13 29.5V10.5H22.25C26.2 10.5 28.75 12.86 28.75 16.37C28.75 19.92 26.2 22.2 22.25 22.2H17.75"
         className={cn('stroke-[2.4] stroke-linecap-round stroke-linejoin-round', tone.primary)}
       />
-      <path d="M17.75 22.2L28 29.5" className={cn('stroke-[2.2] stroke-linecap-round stroke-linejoin-round', tone.rail)} />
+      <path
+        d="M17.75 22.2L28 29.5"
+        className={cn('stroke-[2.2] stroke-linecap-round stroke-linejoin-round', tone.rail)}
+      />
       <circle cx="28.2" cy="29.6" r="2.35" className={tone.node} />
       <circle cx="22.3" cy="16.35" r="1.8" className={tone.node} />
     </svg>
   );
 }
 
-function Wordmark({
-  size,
-  onDark = false,
-}: {
-  size: LogoSize;
-  onDark?: boolean;
-}) {
+function Wordmark({ size, onDark = false }: { size: LogoSize; onDark?: boolean }) {
   const tone = getTone(onDark);
   const config = sizeMap[size];
 
@@ -114,7 +105,10 @@ export default function PTLLogo({
       <span className={cn('inline-flex items-center', className)} aria-label="Pitell" {...props}>
         <PitellSymbol
           onDark={onDark}
-          className={cn(config.icon, animated && 'transition-transform duration-300 hover:-translate-y-0.5 hover:scale-[1.03]')}
+          className={cn(
+            config.icon,
+            animated && 'transition-transform duration-300 hover:-translate-y-0.5 hover:scale-[1.03]',
+          )}
         />
       </span>
     );
@@ -131,7 +125,11 @@ export default function PTLLogo({
   if (variant === 'compact') {
     return (
       <span
-        className={cn('inline-flex items-center', animated && 'transition-all duration-300 hover:-translate-y-0.5', className)}
+        className={cn(
+          'inline-flex items-center',
+          animated && 'transition-all duration-300 hover:-translate-y-0.5',
+          className,
+        )}
         aria-label="Pitell"
         {...props}
       >
@@ -143,7 +141,11 @@ export default function PTLLogo({
   if (variant === 'stacked') {
     return (
       <span
-        className={cn('inline-flex flex-col items-start', animated && 'transition-transform duration-300 hover:-translate-y-0.5', className)}
+        className={cn(
+          'inline-flex flex-col items-start',
+          animated && 'transition-transform duration-300 hover:-translate-y-0.5',
+          className,
+        )}
         aria-label="Pitell"
         {...props}
       >
@@ -159,7 +161,11 @@ export default function PTLLogo({
 
   return (
     <span
-      className={cn('inline-flex items-center', animated && 'transition-all duration-300 hover:-translate-y-0.5', className)}
+      className={cn(
+        'inline-flex items-center',
+        animated && 'transition-all duration-300 hover:-translate-y-0.5',
+        className,
+      )}
       aria-label="Pitell"
       {...props}
     >

@@ -100,7 +100,11 @@ function isRangeEnd(date: Date, range?: CalendarDateRange) {
 function isRangeMiddle(date: Date, range?: CalendarDateRange) {
   if (!range?.from || !range?.to) return false;
   if (isSameDay(range.from, range.to)) return false;
-  return isWithinInterval(date, { start: range.from, end: range.to }) && !isRangeStart(date, range) && !isRangeEnd(date, range);
+  return (
+    isWithinInterval(date, { start: range.from, end: range.to }) &&
+    !isRangeStart(date, range) &&
+    !isRangeEnd(date, range)
+  );
 }
 
 function dayButtonClassName({
@@ -235,7 +239,9 @@ export function Calendar({
         >
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
-        <div className="text-sm font-semibold text-text-primary">{format(visibleMonth, 'LLLL yyyy', { locale: nb })}</div>
+        <div className="text-sm font-semibold text-text-primary">
+          {format(visibleMonth, 'LLLL yyyy', { locale: nb })}
+        </div>
         <button
           type="button"
           onClick={() => setMonthAndNotify(addMonths(visibleMonth, 1))}
@@ -262,41 +268,43 @@ export function Calendar({
                 </div>
               ))}
 
-              {monthDays(monthDate).flat().map((day) => {
-                const outside = !isSameMonth(day, monthDate);
-                const isHidden = isMatched(day, hidden);
-                const isDisabled = isMatched(day, disabled);
-                const start = isRangeStart(day, range);
-                const end = isRangeEnd(day, range);
-                const middle = isRangeMiddle(day, range);
-                const selectedSingle = mode === 'single' && selected instanceof Date && isSameDay(day, selected);
+              {monthDays(monthDate)
+                .flat()
+                .map((day) => {
+                  const outside = !isSameMonth(day, monthDate);
+                  const isHidden = isMatched(day, hidden);
+                  const isDisabled = isMatched(day, disabled);
+                  const start = isRangeStart(day, range);
+                  const end = isRangeEnd(day, range);
+                  const middle = isRangeMiddle(day, range);
+                  const selectedSingle = mode === 'single' && selected instanceof Date && isSameDay(day, selected);
 
-                if (isHidden || (!showOutsideDays && outside)) {
-                  return <div key={day.toISOString()} className="h-9 w-9" aria-hidden="true" />;
-                }
+                  if (isHidden || (!showOutsideDays && outside)) {
+                    return <div key={day.toISOString()} className="h-9 w-9" aria-hidden="true" />;
+                  }
 
-                return (
-                  <button
-                    key={day.toISOString()}
-                    type="button"
-                    disabled={isDisabled}
-                    onClick={() => handleSelect(day)}
-                    className={dayButtonClassName({
-                      isToday: isSameDay(day, new Date()),
-                      isDisabled,
-                      isOutside: outside,
-                      isSelectedSingle: selectedSingle,
-                      isStart: start,
-                      isEnd: end,
-                      isMiddle: middle,
-                    })}
-                    aria-pressed={selectedSingle || start || end || middle}
-                    aria-label={format(day, 'eeee d. MMMM yyyy', { locale: nb })}
-                  >
-                    {format(day, 'd')}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={day.toISOString()}
+                      type="button"
+                      disabled={isDisabled}
+                      onClick={() => handleSelect(day)}
+                      className={dayButtonClassName({
+                        isToday: isSameDay(day, new Date()),
+                        isDisabled,
+                        isOutside: outside,
+                        isSelectedSingle: selectedSingle,
+                        isStart: start,
+                        isEnd: end,
+                        isMiddle: middle,
+                      })}
+                      aria-pressed={selectedSingle || start || end || middle}
+                      aria-label={format(day, 'eeee d. MMMM yyyy', { locale: nb })}
+                    >
+                      {format(day, 'd')}
+                    </button>
+                  );
+                })}
             </div>
           </div>
         ))}

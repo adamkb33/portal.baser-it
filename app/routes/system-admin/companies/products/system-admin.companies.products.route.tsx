@@ -17,7 +17,10 @@ export async function action({ request }: Route.ActionArgs) {
   if (!Number.isFinite(companyId) || products.length === 0) {
     const message = 'Selskap-ID og minst ett produkt er påkrevd.';
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
-    return data({ error: message, values: { companyId: '', products } }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: message, values: { companyId: '', products } },
+      { status: 400, headers: { 'Set-Cookie': flashCookie } },
+    );
   }
 
   try {
@@ -35,7 +38,10 @@ export async function action({ request }: Route.ActionArgs) {
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke oppdatere produkter.');
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
-    return data({ error: message, values: { companyId: String(companyId), products } }, { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: message, values: { companyId: String(companyId), products } },
+      { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } },
+    );
   }
 }
 
@@ -57,7 +63,9 @@ export default function SystemAdminCompaniesProductsPage({ actionData }: Route.C
         </div>
       }
     >
-      {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke oppdatere produkter" message={actionData.error} /> : null}
+      {actionData?.error ? (
+        <Notice tone="emphasis" title="Kunne ikke oppdatere produkter" message={actionData.error} />
+      ) : null}
       <Panel title="Produkter" description="Velg produktene som skal aktiveres for selskapet.">
         <form method="post" className="space-y-4">
           <FormField label="Selskap-ID" name="companyId" type="number" defaultValue={values.companyId} required />

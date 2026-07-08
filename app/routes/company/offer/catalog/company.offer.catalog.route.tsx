@@ -5,7 +5,19 @@ import { Offer, type OfferCatalogItemDto } from '~/api/generated/offer';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Button, CompanyPageTemplate, Input, Notice, Panel, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/ui';
+import {
+  Button,
+  CompanyPageTemplate,
+  Input,
+  Notice,
+  Panel,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '~/ui';
 import { formatOfferCurrency } from '../_utils';
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -92,11 +104,18 @@ export default function CompanyOfferCatalogRoute({ loaderData, actionData }: Rou
         </div>
       }
     >
-      {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente varekatalog" message={loaderData.error} /> : null}
-      {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke oppdatere varekatalog" message={actionData.error} /> : null}
+      {loaderData.error ? (
+        <Notice tone="emphasis" title="Kunne ikke hente varekatalog" message={loaderData.error} />
+      ) : null}
+      {actionData?.error ? (
+        <Notice tone="emphasis" title="Kunne ikke oppdatere varekatalog" message={actionData.error} />
+      ) : null}
       {actionData?.ok ? <Notice title="Oppdatert" message="Varekatalogen er oppdatert." /> : null}
 
-      <Panel title="Nytt katalogelement" description="Opprett en standardlinje som senere kan kopieres inn i et tilbud.">
+      <Panel
+        title="Nytt katalogelement"
+        description="Opprett en standardlinje som senere kan kopieres inn i et tilbud."
+      >
         <Form method="post" className="grid gap-3 md:grid-cols-[1fr_10rem_8rem_auto] md:items-end">
           <input type="hidden" name="intent" value="create" />
           <label className="grid gap-1 text-sm text-text-primary">

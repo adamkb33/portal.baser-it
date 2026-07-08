@@ -14,6 +14,9 @@ const justifyClasses = {
 
 export function Cluster({ space = 'md', justify = 'start', className, ...props }: ClusterProps) {
   return (
-    <div className={cn('flex flex-wrap items-center', gapSpaceClasses[space], justifyClasses[justify], className)} {...props} />
+    <div
+      className={cn('flex flex-wrap items-center', gapSpaceClasses[space], justifyClasses[justify], className)}
+      {...props}
+    />
   );
 }

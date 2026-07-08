@@ -71,11 +71,21 @@ export async function redirectWithSuccess(
   return redirectWithFlash(request, url, normalizeFlashMessage('success', text), additionalHeaders);
 }
 
-export async function redirectWithError(request: Request, url: string, text: FlashTextInput, additionalHeaders?: HeadersInit) {
+export async function redirectWithError(
+  request: Request,
+  url: string,
+  text: FlashTextInput,
+  additionalHeaders?: HeadersInit,
+) {
   return redirectWithFlash(request, url, normalizeFlashMessage('error', text), additionalHeaders);
 }
 
-export async function redirectWithInfo(request: Request, url: string, text: FlashTextInput, additionalHeaders?: HeadersInit) {
+export async function redirectWithInfo(
+  request: Request,
+  url: string,
+  text: FlashTextInput,
+  additionalHeaders?: HeadersInit,
+) {
   return redirectWithFlash(request, url, normalizeFlashMessage('info', text), additionalHeaders);
 }
 

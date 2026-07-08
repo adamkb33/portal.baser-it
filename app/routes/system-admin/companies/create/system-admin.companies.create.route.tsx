@@ -14,17 +14,26 @@ export async function action({ request }: Route.ActionArgs) {
   if (!orgNumber) {
     const message = 'Organisasjonsnummer er påkrevd.';
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
-    return data({ error: message, values: { orgNumber }, company: null }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: message, values: { orgNumber }, company: null },
+      { status: 400, headers: { 'Set-Cookie': flashCookie } },
+    );
   }
 
   try {
     const response = await withAuth(request, async () => Base.createCompany({ body: { orgNumber } }));
     const flashCookie = await setFlashMessage(request, { type: 'success', text: 'Selskap opprettet.' });
-    return data({ error: null, values: { orgNumber: '' }, company: response.data?.data ?? null }, { headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: null, values: { orgNumber: '' }, company: response.data?.data ?? null },
+      { headers: { 'Set-Cookie': flashCookie } },
+    );
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke opprette selskap.');
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
-    return data({ error: message, values: { orgNumber }, company: null }, { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: message, values: { orgNumber }, company: null },
+      { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } },
+    );
   }
 }
 
@@ -41,7 +50,9 @@ export default function SystemAdminCompaniesCreatePage({ actionData }: Route.Com
         </Button>
       }
     >
-      {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke opprette selskap" message={actionData.error} /> : null}
+      {actionData?.error ? (
+        <Notice tone="emphasis" title="Kunne ikke opprette selskap" message={actionData.error} />
+      ) : null}
       <Panel title="Selskapsinformasjon" description="Oppgi organisasjonsnummer for selskapet som skal opprettes.">
         <form method="post" className="space-y-4">
           <FormField label="Organisasjonsnummer" name="orgNumber" defaultValue={values.orgNumber} required />

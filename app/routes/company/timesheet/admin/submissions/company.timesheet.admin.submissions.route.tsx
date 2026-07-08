@@ -228,8 +228,18 @@ export default function CompanyTimesheetSubmissionsPage({ loaderData, actionData
       label="Timelister"
       hero={
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <KpiCard label="Ansatte" value={summary.employees} icon={<ClipboardList className="h-5 w-5" />} tone="primary" />
-          <KpiCard label="Innsendt" value={summary.submitted} icon={<ClipboardList className="h-5 w-5" />} tone="warning" />
+          <KpiCard
+            label="Ansatte"
+            value={summary.employees}
+            icon={<ClipboardList className="h-5 w-5" />}
+            tone="primary"
+          />
+          <KpiCard
+            label="Innsendt"
+            value={summary.submitted}
+            icon={<ClipboardList className="h-5 w-5" />}
+            tone="warning"
+          />
           <KpiCard label="Godkjent" value={summary.accepted} icon={<UserCheck className="h-5 w-5" />} tone="success" />
           <KpiCard label="Avvist" value={summary.declined} icon={<UserX className="h-5 w-5" />} tone="danger" />
         </div>

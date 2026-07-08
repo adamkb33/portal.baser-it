@@ -50,7 +50,11 @@ export function TableDesktopHeader({
         </div>
 
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 md:flex-1">
-          {headerSlot ? <div className="flex w-full items-center gap-2 md:flex-1">{headerSlot}</div> : <div className="md:flex-1" />}
+          {headerSlot ? (
+            <div className="flex w-full items-center gap-2 md:flex-1">{headerSlot}</div>
+          ) : (
+            <div className="md:flex-1" />
+          )}
           {primaryAction ? <div className="flex items-center md:shrink-0">{primaryAction}</div> : null}
 
           <div className="flex items-center gap-3 md:shrink-0">
@@ -65,11 +69,11 @@ export function TableDesktopHeader({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuRadioGroup value={String(size)} onValueChange={(value) => onPageSizeChange(Number(value))}>
-                {pageSizeOptions.map((opt) => (
-                  <DropdownMenuRadioItem key={opt} value={String(opt)}>
-                    {opt} rader
-                  </DropdownMenuRadioItem>
-                ))}
+                  {pageSizeOptions.map((opt) => (
+                    <DropdownMenuRadioItem key={opt} value={String(opt)}>
+                      {opt} rader
+                    </DropdownMenuRadioItem>
+                  ))}
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>

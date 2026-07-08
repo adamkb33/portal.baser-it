@@ -8,7 +8,9 @@ export const DEFAULT_VIEW_END_MINUTE = 17 * 60;
 export const VIEWPORT_MINUTES = DEFAULT_VIEW_END_MINUTE - DEFAULT_VIEW_START_MINUTE;
 export const MIN_VIEW_HOURS = VIEWPORT_MINUTES / 60;
 
-export function toMinuteWindowFromSchedules(schedules: Array<{ startTime: string; endTime: string }>): WorkWindow | null {
+export function toMinuteWindowFromSchedules(
+  schedules: Array<{ startTime: string; endTime: string }>,
+): WorkWindow | null {
   if (schedules.length === 0) return null;
 
   let minStart = 24 * 60;

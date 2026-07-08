@@ -41,7 +41,10 @@ export function MobileSidebar({
 }: MobileSidebarProps) {
   const location = useLocation();
   const visibleRoots = React.useMemo(() => filterVisibleBranches(branches), [branches]);
-  const activeTrail = React.useMemo(() => findTrail(visibleRoots, location.pathname), [visibleRoots, location.pathname]);
+  const activeTrail = React.useMemo(
+    () => findTrail(visibleRoots, location.pathname),
+    [visibleRoots, location.pathname],
+  );
   const activeRoot = activeTrail[0]?.node ?? visibleRoots[0] ?? null;
   const primaryBranches = React.useMemo(() => {
     if (!activeRoot) {
@@ -383,7 +386,9 @@ export function MobileSidebar({
                     MOBILE_RADIUS,
                   )}
                 >
-                  <span className={cn('inline-flex h-7 w-7 items-center justify-center bg-sidebar-accent/8', MOBILE_RADIUS)}>
+                  <span
+                    className={cn('inline-flex h-7 w-7 items-center justify-center bg-sidebar-accent/8', MOBILE_RADIUS)}
+                  >
                     <Ellipsis className="h-4 w-4 shrink-0" aria-hidden="true" />
                   </span>
                   <span className="w-full truncate leading-tight">{currentPage.controlLabel}</span>

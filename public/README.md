@@ -11,4 +11,3 @@ Use this folder for assets that need stable public URLs, for example:
 - `public/downloads/menu.pdf` -> `/downloads/menu.pdf`
 
 Use imported assets inside `app/` only when the asset should be bundled, hashed, or transformed by Vite.
-

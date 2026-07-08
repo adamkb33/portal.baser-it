@@ -35,9 +35,7 @@ export function NotificationTableRow({ notification, isViewed, onOpen }: Notific
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <p className="font-medium text-foreground">{getNotificationHeadline(notification)}</p>
-            {!isViewed && (
-              <span className="inline-flex h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
-            )}
+            {!isViewed && <span className="inline-flex h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />}
           </div>
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <MessageSquareQuote className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -50,7 +48,9 @@ export function NotificationTableRow({ notification, isViewed, onOpen }: Notific
           <Badge variant={isViewed ? 'outline' : 'default'}>{isViewed ? 'Lest' : 'Ulest'}</Badge>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Clock3 className="h-3.5 w-3.5" />
-            <span>Lest: {notification.readAt ? formatNotificationTimestamp(notification.readAt) : 'Ikke lest ennå'}</span>
+            <span>
+              Lest: {notification.readAt ? formatNotificationTimestamp(notification.readAt) : 'Ikke lest ennå'}
+            </span>
           </div>
         </div>
       </TableCell>

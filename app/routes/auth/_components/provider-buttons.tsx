@@ -31,10 +31,10 @@ export function ProviderButtons({
       {/* Hidden inputs for provider authentication */}
       <input type="hidden" name="provider" defaultValue="" />
       <input type="hidden" name="idToken" defaultValue="" />
-      
+
       <div ref={containerRef} className={cn('space-y-3', className)}>
         {hasGoogle ? (
-          <GoogleSignInButton 
+          <GoogleSignInButton
             onCredential={(token) => {
               if (disabled) return;
 
@@ -48,10 +48,10 @@ export function ProviderButtons({
                 form.requestSubmit();
               }
             }}
-            disabled={disabled} 
+            disabled={disabled}
           />
         ) : null}
-        
+
         {showDivider ? (
           <div className="flex items-center gap-3 py-2">
             <span className="h-px flex-1 bg-form-border" />

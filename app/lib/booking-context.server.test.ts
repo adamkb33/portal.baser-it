@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  parseBookingContext,
-  resolveBookingTheme,
-  serializeBookingContext,
-} from './booking-context.server';
+import { parseBookingContext, resolveBookingTheme, serializeBookingContext } from './booking-context.server';
 
 describe('booking context cookie', () => {
   it('roundtrips an allowlisted theme through the scoped cookie', async () => {

@@ -3,17 +3,15 @@ import { cn } from '../lib/cn';
 export function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
     <div data-slot="table-container" className="relative w-full overflow-x-auto bg-background">
-      <table
-        data-slot="table"
-        className={cn('w-full caption-bottom border-collapse text-sm', className)}
-        {...props}
-      />
+      <table data-slot="table" className={cn('w-full caption-bottom border-collapse text-sm', className)} {...props} />
     </div>
   );
 }
 
 export function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
-  return <thead data-slot="table-header" className={cn('border-b border-border-soft bg-surface', className)} {...props} />;
+  return (
+    <thead data-slot="table-header" className={cn('border-b border-border-soft bg-surface', className)} {...props} />
+  );
 }
 
 export function TableBody({ className, ...props }: React.ComponentProps<'tbody'>) {

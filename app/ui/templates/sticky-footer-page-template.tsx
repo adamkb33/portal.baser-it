@@ -22,10 +22,7 @@ export function StickyFooterPageTemplate({
 
       {footer ? (
         <div
-          className={cn(
-            'sticky z-20 mt-6 border-t border-border bg-background',
-            footerClassName,
-          )}
+          className={cn('sticky z-20 mt-6 border-t border-border bg-background', footerClassName)}
           style={{ bottom: 'calc(var(--app-content-padding-block-current) * -1)' }}
         >
           <Container

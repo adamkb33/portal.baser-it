@@ -31,11 +31,7 @@ const MAX_ZOOM = 16;
 
 const getCompanyLocationLabel = (company: CompanySummaryDto): string => {
   const address = company.businessAddress || company.postalAddress;
-  const parts = [
-    address?.addressLines?.join(' '),
-    address?.postalCode,
-    address?.city,
-  ].filter(Boolean);
+  const parts = [address?.addressLines?.join(' '), address?.postalCode, address?.city].filter(Boolean);
   return parts.length ? parts.join(', ') : 'Ukjent adresse';
 };
 

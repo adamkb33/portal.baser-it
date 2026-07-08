@@ -143,7 +143,8 @@ const getDescription = (routeId: string): string => {
 };
 
 export const getRouteMetadata = (pathname: string) => {
-  const matchedRoute = ROUTE_META_ENTRIES.find((entry) => matchesRoutePath(entry.href, pathname)) ?? STATIC_ROUTE_META[0];
+  const matchedRoute =
+    ROUTE_META_ENTRIES.find((entry) => matchesRoutePath(entry.href, pathname)) ?? STATIC_ROUTE_META[0];
   const title = matchedRoute.title.endsWith(TITLE_SUFFIX) ? matchedRoute.title : `${matchedRoute.title}${TITLE_SUFFIX}`;
 
   return {

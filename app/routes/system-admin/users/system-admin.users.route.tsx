@@ -9,7 +9,10 @@ export async function loader() {
 
 export default function SystemAdminUsersPage(_props: Route.ComponentProps) {
   return (
-    <CompanyPageTemplate title="Systemadmin: Brukere" description="Administrer systemadmin-brukere via SDK-endepunkter.">
+    <CompanyPageTemplate
+      title="Systemadmin: Brukere"
+      description="Administrer systemadmin-brukere via SDK-endepunkter."
+    >
       <Panel title="Handlinger" description="Velg ønsket handling.">
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline">

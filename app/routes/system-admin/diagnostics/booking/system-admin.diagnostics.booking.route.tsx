@@ -4,7 +4,20 @@ import { Diagnostic } from '~/api/generated/diagnostic';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Button, Card, CardAction, CardContent, CardGrid, CardHead, CompanyPageTemplate, GridCol, Icon, Notice, Panel, Text } from '~/ui';
+import {
+  Button,
+  Card,
+  CardAction,
+  CardContent,
+  CardGrid,
+  CardHead,
+  CompanyPageTemplate,
+  GridCol,
+  Icon,
+  Notice,
+  Panel,
+  Text,
+} from '~/ui';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -43,7 +56,9 @@ export default function SystemAdminDiagnosticsBookingPage({ loaderData }: Route.
         </Button>
       }
     >
-      {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente booking-flyter" message={loaderData.error} /> : null}
+      {loaderData.error ? (
+        <Notice tone="emphasis" title="Kunne ikke hente booking-flyter" message={loaderData.error} />
+      ) : null}
 
       <Panel title="Flyter" description="Status per diagnostikkflyt.">
         {loaderData.flowsData?.flows?.length ? (

@@ -2,18 +2,11 @@
 
 import { getAuthToken } from '../core/auth.gen';
 import type { QuerySerializerOptions } from '../core/bodySerializer.gen';
-import {
-  serializeArrayParam,
-  serializeObjectParam,
-  serializePrimitiveParam,
-} from '../core/pathSerializer.gen';
+import { serializeArrayParam, serializeObjectParam, serializePrimitiveParam } from '../core/pathSerializer.gen';
 import { getUrl } from '../core/utils.gen';
 import type { Client, ClientOptions, Config, RequestOptions } from './types.gen';
 
-export const createQuerySerializer = <T = unknown>({
-  parameters = {},
-  ...args
-}: QuerySerializerOptions = {}) => {
+export const createQuerySerializer = <T = unknown>({ parameters = {}, ...args }: QuerySerializerOptions = {}) => {
   const querySerializer = (queryParams: T) => {
     const search: string[] = [];
     if (queryParams && typeof queryParams === 'object') {
@@ -73,11 +66,7 @@ const checkForExistence = (
   if (name in options.headers || options.query?.[name]) {
     return true;
   }
-  if (
-    'Cookie' in options.headers &&
-    options.headers['Cookie'] &&
-    typeof options.headers['Cookie'] === 'string'
-  ) {
+  if ('Cookie' in options.headers && options.headers['Cookie'] && typeof options.headers['Cookie'] === 'string') {
     return options.headers['Cookie'].includes(`${name}=`);
   }
   return false;
@@ -129,10 +118,7 @@ export const setAuthParams = async ({
 export const buildUrl: Client['buildUrl'] = (options) => {
   const instanceBaseUrl = options.axios?.defaults?.baseURL;
 
-  const baseUrl =
-    !!options.baseURL && typeof options.baseURL === 'string'
-      ? options.baseURL
-      : instanceBaseUrl;
+  const baseUrl = !!options.baseURL && typeof options.baseURL === 'string' ? options.baseURL : instanceBaseUrl;
 
   return getUrl({
     baseUrl: baseUrl as string,
@@ -156,19 +142,9 @@ export const mergeConfigs = (a: Config, b: Config): Config => {
 /**
  * Special Axios headers keywords allowing to set headers by request method.
  */
-export const axiosHeadersKeywords = [
-  'common',
-  'delete',
-  'get',
-  'head',
-  'patch',
-  'post',
-  'put',
-] as const;
+export const axiosHeadersKeywords = ['common', 'delete', 'get', 'head', 'patch', 'post', 'put'] as const;
 
-export const mergeHeaders = (
-  ...headers: Array<Required<Config>['headers'] | undefined>
-): Record<any, unknown> => {
+export const mergeHeaders = (...headers: Array<Required<Config>['headers'] | undefined>): Record<any, unknown> => {
   const mergedHeaders: Record<any, unknown> = {};
   for (const header of headers) {
     if (!header || typeof header !== 'object') {
@@ -178,12 +154,7 @@ export const mergeHeaders = (
     const iterator = Object.entries(header);
 
     for (const [key, value] of iterator) {
-      if (
-        axiosHeadersKeywords.includes(
-          key as (typeof axiosHeadersKeywords)[number],
-        ) &&
-        typeof value === 'object'
-      ) {
+      if (axiosHeadersKeywords.includes(key as (typeof axiosHeadersKeywords)[number]) && typeof value === 'object') {
         mergedHeaders[key] = {
           ...(mergedHeaders[key] as Record<any, unknown>),
           ...value,
@@ -198,8 +169,7 @@ export const mergeHeaders = (
       } else if (value !== undefined) {
         // assume object headers are meant to be JSON stringified, i.e. their
         // content value in OpenAPI specification is 'application/json'
-        mergedHeaders[key] =
-          typeof value === 'object' ? JSON.stringify(value) : (value as string);
+        mergedHeaders[key] = typeof value === 'object' ? JSON.stringify(value) : (value as string);
       }
     }
   }

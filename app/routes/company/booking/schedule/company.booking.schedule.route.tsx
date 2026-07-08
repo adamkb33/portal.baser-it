@@ -34,11 +34,7 @@ import { getTotalDuration, getTotalPrice, getTotalServiceCount } from '../appoin
 import type { PositionedItem, ScheduleItem, SelectionDraft, WorkWindow } from './_types/schedule.types';
 import { toSafeScheduleDate, toWeekRange, toWeekStart, WEEKDAY } from './_utils/schedule-date.utils';
 import { isWithinWorkHours, itemTone, toPositionedItems } from './_utils/schedule-layout.utils';
-import {
-  formatMinuteClock,
-  isPastInterval,
-  toLocalDateTime,
-} from './_utils/schedule-time.utils';
+import { formatMinuteClock, isPastInterval, toLocalDateTime } from './_utils/schedule-time.utils';
 import {
   computeBestViewportStartMinute,
   FULL_DAY_END_MINUTE,
@@ -612,7 +608,13 @@ export default function CompanyBookingSchedulePage({ loaderData }: Route.Compone
                     Legg til tilgjengelighet
                   </Button>
                 )}
-                <Button type="button" size="lg" variant="ghost" className="h-12 rounded-xl px-4 text-base" onClick={clearSelection}>
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="ghost"
+                  className="h-12 rounded-xl px-4 text-base"
+                  onClick={clearSelection}
+                >
                   Nullstill
                 </Button>
               </div>

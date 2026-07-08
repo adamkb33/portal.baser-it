@@ -90,7 +90,13 @@ export function GoogleSignInButton({ onCredential, disabled }: GoogleSignInButto
   }, [disabled]);
 
   React.useEffect(() => {
-    if (!scriptReady || !googleClientId || !containerRef.current || !buttonRef.current || hasRenderedButtonRef.current) {
+    if (
+      !scriptReady ||
+      !googleClientId ||
+      !containerRef.current ||
+      !buttonRef.current ||
+      hasRenderedButtonRef.current
+    ) {
       return;
     }
     if (!window.google?.accounts?.id) {

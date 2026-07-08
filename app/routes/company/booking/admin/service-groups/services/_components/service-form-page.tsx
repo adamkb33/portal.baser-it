@@ -46,9 +46,7 @@ export function ServiceFormPage({ mode, values, serviceGroups, actionData }: Ser
   const submit = useSubmit();
   const isSubmitting = navigation.state === 'submitting';
   const isEdit = mode === 'edit';
-  const currentValues = actionData?.values
-    ? { ...values, ...actionData.values, images: values.images }
-    : values;
+  const currentValues = actionData?.values ? { ...values, ...actionData.values, images: values.images } : values;
   const [serviceGroupId, setServiceGroupId] = useState(String(currentValues.serviceGroupId));
   const [images, setImages] = useState<ImageField[]>(currentValues.images);
   const [isServiceGroupPopoverOpen, setIsServiceGroupPopoverOpen] = useState(false);
@@ -61,8 +59,7 @@ export function ServiceFormPage({ mode, values, serviceGroups, actionData }: Ser
     setImages(currentValues.images);
   }, [currentValues.images]);
 
-  const selectedServiceGroup =
-    serviceGroups.find((serviceGroup) => String(serviceGroup.id) === serviceGroupId) ?? null;
+  const selectedServiceGroup = serviceGroups.find((serviceGroup) => String(serviceGroup.id) === serviceGroupId) ?? null;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

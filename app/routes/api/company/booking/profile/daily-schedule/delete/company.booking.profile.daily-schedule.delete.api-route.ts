@@ -16,11 +16,7 @@ export async function action({ request }: ActionFunctionArgs) {
       });
     });
 
-    return redirectWithSuccess(
-      request,
-      ROUTES_MAP['company.booking.profile'].href,
-      'Arbeidstid fjernet',
-    );
+    return redirectWithSuccess(request, ROUTES_MAP['company.booking.profile'].href, 'Arbeidstid fjernet');
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
 

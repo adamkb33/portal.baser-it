@@ -41,7 +41,9 @@ export function SubmissionGroupCard({ group, index }: SubmissionGroupCardProps) 
               </div>
               <div className="min-w-0 text-left">
                 <p className="truncate text-sm font-medium">{displayName}</p>
-                <p className="truncate text-xs text-muted-foreground">{group.user.email || 'Ingen e-post registrert'}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {group.user.email || 'Ingen e-post registrert'}
+                </p>
               </div>
             </div>
             <Badge variant="outline" className="shrink-0 text-[10px]">

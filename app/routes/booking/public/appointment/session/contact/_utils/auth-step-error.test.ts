@@ -30,4 +30,3 @@ describe('auth-step-error', () => {
     expect(mapAuthErrorCodeToMessage(code, 'fallback')).toBe(expected);
   });
 });
-

@@ -128,7 +128,10 @@ export function DateTimeSelector({ schedules, selectedDateTime, onSelectDateTime
               <CalendarIcon className="h-4 w-4 text-text-secondary" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto overflow-hidden border-border bg-background p-0 text-text-primary" align="start">
+          <PopoverContent
+            className="w-auto overflow-hidden border-border bg-background p-0 text-text-primary"
+            align="start"
+          >
             <Calendar
               mode="single"
               selected={selectedDate || undefined}

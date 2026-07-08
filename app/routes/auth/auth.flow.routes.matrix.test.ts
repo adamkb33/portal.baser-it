@@ -90,7 +90,10 @@ import { loader as checkEmailLoader, action as checkEmailAction } from './check-
 import { loader as verifyEmailLoader } from './verify-email/auth.verify-email.route';
 import { loader as verifyMobileLoader, action as verifyMobileAction } from './verify-mobile/auth.verify-mobile.route';
 import { loader as collectEmailLoader, action as collectEmailAction } from './collect-email/auth.collect-email.route';
-import { loader as collectMobileLoader, action as collectMobileAction } from './collect-mobile/auth.collect-mobile.route';
+import {
+  loader as collectMobileLoader,
+  action as collectMobileAction,
+} from './collect-mobile/auth.collect-mobile.route';
 
 function unwrapData<T = unknown>(result: unknown): T {
   if (result && typeof result === 'object' && 'data' in (result as Record<string, unknown>)) {
@@ -323,9 +326,7 @@ describe('auth flow routes matrix', () => {
       } as never);
 
       expect(getStatus(result)).toBe(302);
-      expect(getLocation(result)).toBe(
-        '/auth/check-email?emailDelivery=SENT&mobileDelivery=NOT_ATTEMPTED',
-      );
+      expect(getLocation(result)).toBe('/auth/check-email?emailDelivery=SENT&mobileDelivery=NOT_ATTEMPTED');
       expect(mocks.setAuthCookies).toHaveBeenCalledOnce();
     });
   });
@@ -337,9 +338,7 @@ describe('auth flow routes matrix', () => {
       });
 
       const result = await checkEmailLoader({
-        request: new Request(
-          'http://localhost/auth/check-email?emailDelivery=SENT&mobileDelivery=FAILED',
-        ),
+        request: new Request('http://localhost/auth/check-email?emailDelivery=SENT&mobileDelivery=FAILED'),
       } as never);
 
       expect(unwrapData(result)).toMatchObject({
@@ -476,31 +475,29 @@ describe('auth flow routes matrix', () => {
     it.each([
       { loader: collectEmailLoader, action: collectEmailAction, field: 'email', value: 'user@example.com' },
       { loader: collectMobileLoader, action: collectMobileAction, field: 'mobileNumber', value: '+4712345678' },
-    ])('loader redirects without valid userId and action handles provider complete profile ($field)', async ({
-      loader,
-      action,
-      field,
-      value,
-    }) => {
-      const loaderResult = await loader({
-        request: new Request('http://localhost/auth/collect?userId='),
-      } as never);
-      expect(loaderResult).toBeInstanceOf(Response);
-      expect((loaderResult as Response).headers.get('Location')).toBe(ROUTES_MAP['auth.sign-in'].href);
+    ])(
+      'loader redirects without valid userId and action handles provider complete profile ($field)',
+      async ({ loader, action, field, value }) => {
+        const loaderResult = await loader({
+          request: new Request('http://localhost/auth/collect?userId='),
+        } as never);
+        expect(loaderResult).toBeInstanceOf(Response);
+        expect((loaderResult as Response).headers.get('Location')).toBe(ROUTES_MAP['auth.sign-in'].href);
 
-      mocks.providerCompleteProfile.mockResolvedValueOnce({
-        data: { data: { userId: 1, nextStep: 'DONE' } },
-      });
+        mocks.providerCompleteProfile.mockResolvedValueOnce({
+          data: { data: { userId: 1, nextStep: 'DONE' } },
+        });
 
-      const formData = new FormData();
-      formData.set('userId', '1');
-      formData.set(field, value);
+        const formData = new FormData();
+        formData.set('userId', '1');
+        formData.set(field, value);
 
-      const actionResult = await action({
-        request: new Request('http://localhost/auth/collect', { method: 'POST', body: formData }),
-      } as never);
-      expect(getStatus(actionResult)).toBe(302);
-      expect(getLocation(actionResult)).toBe('/');
-    });
+        const actionResult = await action({
+          request: new Request('http://localhost/auth/collect', { method: 'POST', body: formData }),
+        } as never);
+        expect(getStatus(actionResult)).toBe(302);
+        expect(getLocation(actionResult)).toBe('/');
+      },
+    );
   });
 });

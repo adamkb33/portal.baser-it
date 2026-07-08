@@ -387,7 +387,7 @@ Examples for this repo:
 ```ts
 drawerStack = [company.booking];
 drawerStack = [company.booking, company.booking.admin];
-drawerStack = [company.booking, company.booking.admin, company.booking.admin.service-groups];
+drawerStack = [company.booking, company.booking.admin, company.booking.admin.service - groups];
 ```
 
 When a leaf route is selected:
@@ -495,13 +495,13 @@ The header controls should visually use the same size rhythm and surface treatme
 Primary items and drawer items must support active styling when:
 
 ```ts
-location.pathname === branch.href
+location.pathname === branch.href;
 ```
 
 or when the current URL is within that branch subtree:
 
 ```ts
-location.pathname.startsWith(`${branch.href}/`)
+location.pathname.startsWith(`${branch.href}/`);
 ```
 
 This repo also needs parent activation for hidden parameterized routes, not only visible exact matches.

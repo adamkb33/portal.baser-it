@@ -20,7 +20,14 @@ export const Icon = React.forwardRef<SVGSVGElement, IconProps>(function Icon(
 ) {
   const LucideIcon = ICONS[name];
   return (
-    <LucideIcon ref={ref} width={size} height={size} strokeWidth={strokeWidth} className={cn('shrink-0', className)} {...props} />
+    <LucideIcon
+      ref={ref}
+      width={size}
+      height={size}
+      strokeWidth={strokeWidth}
+      className={cn('shrink-0', className)}
+      {...props}
+    />
   );
 });
 

@@ -116,7 +116,9 @@ export default function CompanySettings({ loaderData, actionData }: Route.Compon
                 { label: 'Organisasjonsnummer', value: company?.orgNumber || '—' },
                 {
                   label: 'Brukernavn (admin)',
-                  value: self ? [self.givenName, self.familyName].filter(Boolean).join(' ') || self.email : 'Ikke tilgjengelig',
+                  value: self
+                    ? [self.givenName, self.familyName].filter(Boolean).join(' ') || self.email
+                    : 'Ikke tilgjengelig',
                 },
               ]}
             />

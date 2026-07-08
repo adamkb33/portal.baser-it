@@ -63,7 +63,9 @@ export default function SystemAdminCompaniesProductsDeletePage({ actionData }: R
         </div>
       }
     >
-      {actionData?.error ? <Notice tone="emphasis" title="Kunne ikke fjerne produkter" message={actionData.error} /> : null}
+      {actionData?.error ? (
+        <Notice tone="emphasis" title="Kunne ikke fjerne produkter" message={actionData.error} />
+      ) : null}
       <Panel title="Fjern produkter" description="Velg produktene som skal deaktiveres for selskapet.">
         <Form method="post" className="space-y-4">
           <FormField label="Selskap-ID" name="companyId" type="number" defaultValue={values.companyId} required />

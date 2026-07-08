@@ -30,18 +30,19 @@ export async function loader({ request }: Route.LoaderArgs) {
     from: url.searchParams.get('from') || undefined,
     to: url.searchParams.get('to') || undefined,
     sort: url.searchParams.get('sort') || undefined,
-    eventType: (url.searchParams.get('eventType') as
-      | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_BLANK'
-      | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_MALFORMED'
-      | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_SIGNATURE_INVALID'
-      | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_PAYLOAD_INVALID'
-      | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_EXPIRED'
-      | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_APPOINTMENT_NOT_FOUND'
-      | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_PROFILE_NOT_FOUND'
-      | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_PROVIDER_LOOKUP_FAILED'
-      | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_NOTIFICATION_FAILED'
-      | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_FAILED'
-      | null) ?? undefined,
+    eventType:
+      (url.searchParams.get('eventType') as
+        | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_BLANK'
+        | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_MALFORMED'
+        | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_SIGNATURE_INVALID'
+        | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_PAYLOAD_INVALID'
+        | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_EXPIRED'
+        | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_APPOINTMENT_NOT_FOUND'
+        | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_PROFILE_NOT_FOUND'
+        | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_PROVIDER_LOOKUP_FAILED'
+        | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_NOTIFICATION_FAILED'
+        | 'PUBLIC_APPOINTMENT_CANCELLATION_BY_TOKEN_FAILED'
+        | null) ?? undefined,
     tokenHash: url.searchParams.get('tokenHash') || undefined,
     companyId: parseInteger(url.searchParams.get('companyId')),
     appointmentId: parseInteger(url.searchParams.get('appointmentId')),
@@ -88,9 +89,7 @@ export default function SystemAdminDiagnosticsBookingPublicAppointmentCancellati
         </Button>
       }
     >
-      {loaderData.error ? (
-        <Notice tone="emphasis" title="Kunne ikke hente tabell" message={loaderData.error} />
-      ) : null}
+      {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente tabell" message={loaderData.error} /> : null}
 
       <Panel title="Filtre" description="Server-side filtre">
         <Form method="get" className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -123,20 +122,30 @@ export default function SystemAdminDiagnosticsBookingPublicAppointmentCancellati
               Oppdater
             </Button>
             <Button asChild variant="outline">
-              <NavLink to={ROUTES_MAP['system-admin.diagnostics.booking.public-appointment-cancellation-by-token'].href}>Nullstill</NavLink>
+              <NavLink
+                to={ROUTES_MAP['system-admin.diagnostics.booking.public-appointment-cancellation-by-token'].href}
+              >
+                Nullstill
+              </NavLink>
             </Button>
           </div>
         </Form>
       </Panel>
 
-      <Panel title={tableData?.table?.title ?? 'Diagnostikk-tabell'} description={tableData?.table?.description ?? undefined}>
+      <Panel
+        title={tableData?.table?.title ?? 'Diagnostikk-tabell'}
+        description={tableData?.table?.description ?? undefined}
+      >
         {tableData?.fields?.length ? (
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse">
               <thead>
                 <tr className="border-b border-border">
                   {tableData.fields.map((field) => (
-                    <th key={field.key} className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-text-secondary">
+                    <th
+                      key={field.key}
+                      className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-text-secondary"
+                    >
                       {field.label}
                     </th>
                   ))}

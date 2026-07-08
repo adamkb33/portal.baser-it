@@ -51,7 +51,10 @@ function getHeaders(result: unknown): Headers {
     return result.headers;
   }
 
-  const init = result && typeof result === 'object' && 'init' in result ? (result as { init?: { headers?: HeadersInit } }).init : null;
+  const init =
+    result && typeof result === 'object' && 'init' in result
+      ? (result as { init?: { headers?: HeadersInit } }).init
+      : null;
   return new Headers(init?.headers);
 }
 
@@ -159,7 +162,9 @@ describe('booking contact verify-mobile route', () => {
     { query: 'mobileDelivery=UNKNOWN', expected: null },
   ])('uses signup mobileDelivery query for display only: $query', async ({ query, expected }) => {
     const result = await loader({
-      request: new Request(`https://portal.pitell.no/booking/public/appointment/session/contact/verify-mobile?${query}`),
+      request: new Request(
+        `https://portal.pitell.no/booking/public/appointment/session/contact/verify-mobile?${query}`,
+      ),
     } as never);
     const data = unwrapData<{ mobileDelivery: string | null }>(result);
 

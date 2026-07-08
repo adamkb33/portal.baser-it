@@ -60,6 +60,21 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
+export function getAppointmentNotificationHref(
+  notification: Pick<InAppNotificationDto, 'sourceRefType' | 'sourceRefId'>,
+): string | null {
+  if (notification.sourceRefType !== 'APPOINTMENT') {
+    return null;
+  }
+
+  const sourceRefId = notification.sourceRefId?.trim();
+  if (!sourceRefId || !/^\d+$/.test(sourceRefId)) {
+    return null;
+  }
+
+  return ROUTES_MAP['company.booking.appointments.detail'].href.replace(':appointmentId', sourceRefId);
+}
+
 export default function CompanyNotificationsRoute({ loaderData }: Route.ComponentProps) {
   const { notifications, pagination, filters, error } = loaderData;
   const navigate = useNavigate();
@@ -101,6 +116,12 @@ export default function CompanyNotificationsRoute({ loaderData }: Route.Componen
   const isViewed = (notification: InAppNotificationDto) => notification.readAt != null;
 
   const openNotificationRoute = (notification: InAppNotificationDto) => {
+    const appointmentHref = getAppointmentNotificationHref(notification);
+    if (appointmentHref) {
+      navigate(appointmentHref);
+      return;
+    }
+
     const href = ROUTES_MAP['company.notifications.view'].href.replace(':id', notification.id.toString());
     const search = searchParams.toString();
 

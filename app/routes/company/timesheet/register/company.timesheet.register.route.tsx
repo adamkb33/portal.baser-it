@@ -7,7 +7,20 @@ import { StartEndTimeSelector } from '~/components/pickers/start-end-time-select
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithSuccess, setFlashMessage } from '~/lib/flash-message.server';
-import { Button, Calendar, CompanyPageTemplate, Input, Panel, Popover, PopoverContent, PopoverTrigger, Tabs, TabsList, TabsTrigger, Textarea } from '~/ui';
+import {
+  Button,
+  Calendar,
+  CompanyPageTemplate,
+  Input,
+  Panel,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+} from '~/ui';
 import { formatDateInputToZonedISOString, normalizeNote, parseBulkEntries, splitBulkEntries } from '../_utils';
 
 type EntryMode = 'hours' | 'range';

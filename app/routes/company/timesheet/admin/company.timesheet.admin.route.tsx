@@ -37,7 +37,8 @@ export default function CompanyTimesheetAdminRoute() {
             <ShieldCheck className="h-5 w-5" />
           </div>
           <Text as="p" variant="body-sm" className="text-text-secondary">
-            Alt innhold under administrasjon følger samme kompanjonmønster som booking og admin, uten egne designvarianter.
+            Alt innhold under administrasjon følger samme kompanjonmønster som booking og admin, uten egne
+            designvarianter.
           </Text>
         </div>
       </Panel>

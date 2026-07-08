@@ -31,7 +31,9 @@ export function ScrollHint({ show, onDismiss, className }: ScrollHintProps) {
     >
       <Card size="sm" className="flex flex-row items-center gap-2 bg-background shadow-lg">
         <Info className="h-4 w-4" />
-        <Text as="p" variant="body-sm">Scroll ned for å se alle.</Text>
+        <Text as="p" variant="body-sm">
+          Scroll ned for å se alle.
+        </Text>
       </Card>
     </div>
   );

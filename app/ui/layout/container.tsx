@@ -17,5 +17,7 @@ const sizeClasses: Record<ContainerSize, string> = {
 };
 
 export function Container({ size = 'xl', gutter = 'md', className, ...props }: ContainerProps) {
-  return <div className={cn('mx-auto w-full', containerGutterClasses[gutter], sizeClasses[size], className)} {...props} />;
+  return (
+    <div className={cn('mx-auto w-full', containerGutterClasses[gutter], sizeClasses[size], className)} {...props} />
+  );
 }

@@ -14,10 +14,7 @@ function buildHref(href: string, params?: URLSearchParams) {
   return search ? `${href}?${search}` : href;
 }
 
-export function resolveAuthNextStepHref(
-  nextStep: NextStep,
-  options: ResolveNextStepOptions = {},
-) {
+export function resolveAuthNextStepHref(nextStep: NextStep, options: ResolveNextStepOptions = {}) {
   const routes = getBookingRouteMap();
 
   switch (nextStep) {

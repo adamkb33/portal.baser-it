@@ -32,11 +32,7 @@ export function AppointmentsExample() {
   const componentHeight = viewportHeight - offsetFromTop;
 
   return (
-    <div
-      ref={componentRef}
-      className="flex flex-col"
-      style={{ height: `${componentHeight}px` }}
-    >
+    <div ref={componentRef} className="flex flex-col" style={{ height: `${componentHeight}px` }}>
       <header className="bg-gray-800 p-4 text-white">
         <div className="container mx-auto">
           <h1 className="text-2xl font-bold">Appointments</h1>
@@ -56,8 +52,8 @@ export function AppointmentsExample() {
               <p className="mt-2 text-gray-600">Date: January {(i % 28) + 1}, 2026</p>
               <p className="text-gray-600">Time: {9 + (i % 8)}:00 AM</p>
               <p className="mt-2 text-gray-500">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-                incididunt ut labore et dolore magna aliqua.
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
+                dolore magna aliqua.
               </p>
             </div>
           ))}

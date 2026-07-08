@@ -84,7 +84,10 @@ export interface EyebrowProps extends React.HTMLAttributes<HTMLSpanElement> {}
 export function Eyebrow({ className, ...props }: EyebrowProps) {
   return (
     <span
-      className={cn('block font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-text-disabled', className)}
+      className={cn(
+        'block font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-text-disabled',
+        className,
+      )}
       {...props}
     />
   );

@@ -14,16 +14,7 @@ import { setFlashMessage } from '~/lib/flash-message.server';
 import { formatLocalDateTimeInTimeZone } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { cn } from '~/lib/utils';
-import {
-  Button,
-  Calendar,
-  CompanyFormPageTemplate,
-  Notice,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Text,
-} from '~/ui';
+import { Button, Calendar, CompanyFormPageTemplate, Notice, Popover, PopoverContent, PopoverTrigger, Text } from '~/ui';
 
 type UnavailabilityDateRange = {
   from?: Date;
@@ -275,7 +266,8 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
         <div className="space-y-3">
           {formData.ranges.map((range, index) => {
             const rangeErrors = formErrors[range.id] || {};
-            const isSingleDay = !!range.dateRange?.from && !!range.dateRange?.to && isSameDay(range.dateRange.from, range.dateRange.to);
+            const isSingleDay =
+              !!range.dateRange?.from && !!range.dateRange?.to && isSameDay(range.dateRange.from, range.dateRange.to);
             const label = range.dateRange?.from
               ? range.dateRange.to
                 ? `${format(range.dateRange.from, 'dd.MM.yyyy')} – ${format(range.dateRange.to, 'dd.MM.yyyy')}`
@@ -294,7 +286,12 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
                     </Text>
                   </div>
                   {formData.ranges.length > 1 ? (
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setFormData((prev) => ({ ranges: prev.ranges.filter((r) => r.id !== range.id) }))}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setFormData((prev) => ({ ranges: prev.ranges.filter((r) => r.id !== range.id) }))}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   ) : null}
@@ -311,7 +308,10 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
                     <Button
                       type="button"
                       variant="outline"
-                      className={cn('h-11 w-full justify-between bg-background text-text-primary', !range.dateRange?.from && 'text-text-secondary')}
+                      className={cn(
+                        'h-11 w-full justify-between bg-background text-text-primary',
+                        !range.dateRange?.from && 'text-text-secondary',
+                      )}
                     >
                       <span className="text-sm">{label}</span>
                       <CalendarIcon className="h-4 w-4 opacity-60" />
@@ -322,7 +322,13 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
                       mode="range"
                       selected={range.dateRange}
                       onSelect={(nextRange) => {
-                        setFormData((prev) => ({ ranges: prev.ranges.map((r) => (r.id === range.id ? { ...r, dateRange: (nextRange as UnavailabilityDateRange) ?? undefined } : r)) }));
+                        setFormData((prev) => ({
+                          ranges: prev.ranges.map((r) =>
+                            r.id === range.id
+                              ? { ...r, dateRange: (nextRange as UnavailabilityDateRange) ?? undefined }
+                              : r,
+                          ),
+                        }));
                       }}
                       hidden={{ before: today }}
                       numberOfMonths={1}
@@ -330,7 +336,9 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
                     />
                   </PopoverContent>
                 </Popover>
-                {rangeErrors.dateRange ? <p className="mt-1.5 text-xs text-destructive">{rangeErrors.dateRange}</p> : null}
+                {rangeErrors.dateRange ? (
+                  <p className="mt-1.5 text-xs text-destructive">{rangeErrors.dateRange}</p>
+                ) : null}
 
                 {isSingleDay ? (
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -344,17 +352,29 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
                         endPlaceholder="Velg sluttid"
                         zIndex={60}
                         onStartChange={(nextValue) => {
-                          setFormData((prev) => ({ ranges: prev.ranges.map((r) => (r.id === range.id ? { ...r, startTime: nextValue } : r)) }));
-                          setFormErrors((prev) => ({ ...prev, [range.id]: { ...(prev[range.id] || {}), startTime: undefined } }));
+                          setFormData((prev) => ({
+                            ranges: prev.ranges.map((r) => (r.id === range.id ? { ...r, startTime: nextValue } : r)),
+                          }));
+                          setFormErrors((prev) => ({
+                            ...prev,
+                            [range.id]: { ...(prev[range.id] || {}), startTime: undefined },
+                          }));
                           setFormError(null);
                         }}
                         onEndChange={(nextValue) => {
-                          setFormData((prev) => ({ ranges: prev.ranges.map((r) => (r.id === range.id ? { ...r, endTime: nextValue } : r)) }));
-                          setFormErrors((prev) => ({ ...prev, [range.id]: { ...(prev[range.id] || {}), endTime: undefined } }));
+                          setFormData((prev) => ({
+                            ranges: prev.ranges.map((r) => (r.id === range.id ? { ...r, endTime: nextValue } : r)),
+                          }));
+                          setFormErrors((prev) => ({
+                            ...prev,
+                            [range.id]: { ...(prev[range.id] || {}), endTime: undefined },
+                          }));
                           setFormError(null);
                         }}
                       />
-                      {rangeErrors.startTime ? <p className="text-xs text-destructive">{rangeErrors.startTime}</p> : null}
+                      {rangeErrors.startTime ? (
+                        <p className="text-xs text-destructive">{rangeErrors.startTime}</p>
+                      ) : null}
                       {rangeErrors.endTime ? <p className="text-xs text-destructive">{rangeErrors.endTime}</p> : null}
                     </div>
                   </div>

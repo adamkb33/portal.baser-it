@@ -125,7 +125,9 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
         }
         primaryAction={
           <Button asChild size="sm">
-            <NavLink to={ROUTES_MAP['company.booking.admin.service-groups.create'].href}>Legg til ny tjenestegruppe</NavLink>
+            <NavLink to={ROUTES_MAP['company.booking.admin.service-groups.create'].href}>
+              Legg til ny tjenestegruppe
+            </NavLink>
           </Button>
         }
         mobilePrimaryAction={
@@ -140,7 +142,9 @@ export default function BookingServiceGroups({ loaderData }: Route.ComponentProp
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
-                  <NavLink to={`${ROUTES_MAP['company.booking.admin.service-groups.edit'].href}?id=${serviceGroup.id}`}>Rediger</NavLink>
+                  <NavLink to={`${ROUTES_MAP['company.booking.admin.service-groups.edit'].href}?id=${serviceGroup.id}`}>
+                    Rediger
+                  </NavLink>
                 </Button>
                 <Button
                   variant="ghost"

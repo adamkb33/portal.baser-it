@@ -47,6 +47,7 @@ Use 4 explicit surface levels and do not skip levels inside nested UI:
   - `bg-surface-variant-2` or `bg-background` depending on emphasis
 
 Rule:
+
 - A child container must be at least one surface level apart from its parent.
 - Avoid parent/child using identical background unless child is intentionally borderless.
 - Avoid more than 3 visible nested container levels in one viewport section (depth budget).
@@ -131,6 +132,7 @@ Overview must have clearly separated blocks:
 3. Services summary (`S1`) with progressive reveal behavior
 
 Each block must maintain the same internal pattern:
+
 - header row
 - optional “Endre” action
 - content area with differentiated nested surfaces
@@ -150,6 +152,7 @@ For selected services in overview:
 - Preserve keyboard focus context when expanding/collapsing (focus should remain on toggle control).
 
 Display behavior:
+
 - Default (collapsed): first 3 services
 - Expanded: all services
 - Summary label should indicate hidden count when collapsed:
@@ -214,6 +217,7 @@ These rules align with:
 - WCAG expectations for target size and state communication.
 
 Reference links:
+
 - Nielsen Norman Group, Progressive Disclosure:
   [https://www.nngroup.com/articles/progressive-disclosure/](https://www.nngroup.com/articles/progressive-disclosure/)
 - Nielsen Norman Group, Visual Hierarchy:
@@ -228,6 +232,7 @@ Reference links:
   [https://www.w3.org/WAI/WCAG21/Understanding/target-size](https://www.w3.org/WAI/WCAG21/Understanding/target-size)
 
 Implementation note:
+
 - Use these as rationale; local token system remains source of truth.
 
 ## Acceptance Criteria

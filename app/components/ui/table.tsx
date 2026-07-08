@@ -12,9 +12,7 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
 }
 
 function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
-  return (
-    <thead data-slot="table-header" className={cn('border-b border-border bg-surface', className)} {...props} />
-  );
+  return <thead data-slot="table-header" className={cn('border-b border-border bg-surface', className)} {...props} />;
 }
 
 function TableBody({ className, ...props }: React.ComponentProps<'tbody'>) {
@@ -69,9 +67,7 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
 }
 
 function TableCaption({ className, ...props }: React.ComponentProps<'caption'>) {
-  return (
-    <caption data-slot="table-caption" className={cn('mt-3 text-xs text-text-secondary', className)} {...props} />
-  );
+  return <caption data-slot="table-caption" className={cn('mt-3 text-xs text-text-secondary', className)} {...props} />;
 }
 
 export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption };

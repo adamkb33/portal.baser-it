@@ -1,12 +1,6 @@
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-const SENSITIVE_HEADER_KEYS = new Set([
-  'authorization',
-  'cookie',
-  'set-cookie',
-  'x-api-key',
-  'proxy-authorization',
-]);
+const SENSITIVE_HEADER_KEYS = new Set(['authorization', 'cookie', 'set-cookie', 'x-api-key', 'proxy-authorization']);
 
 const MAX_STRING_LENGTH = 500;
 

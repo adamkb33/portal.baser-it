@@ -39,11 +39,7 @@ export async function action({ request }: Route.ActionArgs) {
       });
     });
 
-    return redirectWithSuccess(
-      request,
-      ROUTES_MAP['company.booking.profile'].href,
-      'Standard arbeidstider lagret',
-    );
+    return redirectWithSuccess(request, ROUTES_MAP['company.booking.profile'].href, 'Standard arbeidstider lagret');
   } catch (error: any) {
     console.error(JSON.stringify(error, null, 2));
 

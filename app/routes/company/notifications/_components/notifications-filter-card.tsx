@@ -58,7 +58,10 @@ export function NotificationsFilterCard({
                 <CalendarIcon className="h-4 w-4 text-text-secondary" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto overflow-hidden border-border bg-overlay-surface p-0 text-text-primary" align="start">
+            <PopoverContent
+              className="w-auto overflow-hidden border-border bg-overlay-surface p-0 text-text-primary"
+              align="start"
+            >
               <Calendar
                 mode="range"
                 selected={dateRange}

@@ -8,14 +8,7 @@ import {
   AppointmentPaginationQuickFilter,
   AppointmentPaginationService,
 } from '../_services/appointment.pagination-service';
-import {
-  Button,
-  Input,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Text,
-} from '~/ui';
+import { Button, Input, Popover, PopoverContent, PopoverTrigger, Text } from '~/ui';
 
 export function AppointmentTableHeaderSlot() {
   const navigate = useNavigate();
@@ -133,19 +126,19 @@ export function AppointmentTableHeaderSlot() {
         </div>
 
         <div className="flex items-center gap-2">
-            <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={hasDateFilter ? 'secondary' : 'outline'}
-                  size="sm"
-                  className={`h-9 gap-1.5 ${hasDateFilter ? activeFilledFilterButtonClass : filledFilterButtonClass}`}
-                >
-                  <Filter className="h-3.5 w-3.5" />
-                  Filtrer
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 max-w-sm border-border bg-surface-variant-1 p-0" align="end">
-                <div className="space-y-4 p-4">
+          <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant={hasDateFilter ? 'secondary' : 'outline'}
+                size="sm"
+                className={`h-9 gap-1.5 ${hasDateFilter ? activeFilledFilterButtonClass : filledFilterButtonClass}`}
+              >
+                <Filter className="h-3.5 w-3.5" />
+                Filtrer
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 max-w-sm border-border bg-surface-variant-1 p-0" align="end">
+              <div className="space-y-4 p-4">
                 <div className="flex items-center justify-between">
                   <Text as="p" variant="label">
                     Hurtigfiltre
@@ -165,7 +158,9 @@ export function AppointmentTableHeaderSlot() {
                 <div className="flex flex-wrap gap-2">
                   <Button
                     size="sm"
-                    variant={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_7_DAYS ? 'secondary' : 'outline'}
+                    variant={
+                      activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_7_DAYS ? 'secondary' : 'outline'
+                    }
                     onClick={() => handleQuickFilterClick(AppointmentPaginationQuickFilter.NEXT_7_DAYS)}
                     className={`h-8 ${
                       activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_7_DAYS
@@ -177,7 +172,9 @@ export function AppointmentTableHeaderSlot() {
                   </Button>
                   <Button
                     size="sm"
-                    variant={activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_30_DAYS ? 'secondary' : 'outline'}
+                    variant={
+                      activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_30_DAYS ? 'secondary' : 'outline'
+                    }
                     onClick={() => handleQuickFilterClick(AppointmentPaginationQuickFilter.NEXT_30_DAYS)}
                     className={`h-8 ${
                       activeQuickFilter === AppointmentPaginationQuickFilter.NEXT_30_DAYS

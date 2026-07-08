@@ -14,7 +14,10 @@ export async function action({ request }: Route.ActionArgs) {
   if (!Number.isFinite(userId) || userId <= 0) {
     const message = 'Ugyldig bruker-ID.';
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
-    return data({ error: message, values: { userId: '' }, user: null }, { status: 400, headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: message, values: { userId: '' }, user: null },
+      { status: 400, headers: { 'Set-Cookie': flashCookie } },
+    );
   }
 
   try {
@@ -23,7 +26,10 @@ export async function action({ request }: Route.ActionArgs) {
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente bruker.');
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
-    return data({ error: message, values: { userId: String(userId) }, user: null }, { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } });
+    return data(
+      { error: message, values: { userId: String(userId) }, user: null },
+      { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } },
+    );
   }
 }
 

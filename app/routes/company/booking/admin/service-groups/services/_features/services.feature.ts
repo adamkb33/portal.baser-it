@@ -34,11 +34,7 @@ export async function servicesActions({ request }: Route.ActionArgs) {
         }
       });
 
-      return redirectWithSuccess(
-        request,
-        ROUTES_MAP['company.booking.admin.services'].href,
-        'Tjeneste opprettet',
-      );
+      return redirectWithSuccess(request, ROUTES_MAP['company.booking.admin.services'].href, 'Tjeneste opprettet');
     }
 
     if (intent === 'update') {
@@ -64,11 +60,7 @@ export async function servicesActions({ request }: Route.ActionArgs) {
         });
       });
 
-      return redirectWithSuccess(
-        request,
-        ROUTES_MAP['company.booking.admin.services'].href,
-        'Tjeneste oppdatert',
-      );
+      return redirectWithSuccess(request, ROUTES_MAP['company.booking.admin.services'].href, 'Tjeneste oppdatert');
     }
 
     if (intent === 'delete') {
@@ -78,18 +70,10 @@ export async function servicesActions({ request }: Route.ActionArgs) {
         await ServiceController.deleteService({ path: { id } });
       });
 
-      return redirectWithSuccess(
-        request,
-        ROUTES_MAP['company.booking.admin.services'].href,
-        'Tjeneste slettet',
-      );
+      return redirectWithSuccess(request, ROUTES_MAP['company.booking.admin.services'].href, 'Tjeneste slettet');
     }
 
-    return redirectWithError(
-      request,
-      ROUTES_MAP['company.booking.admin.services'].href,
-      'Ugyldig handling',
-    );
+    return redirectWithError(request, ROUTES_MAP['company.booking.admin.services'].href, 'Ugyldig handling');
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke utføre handling');
 

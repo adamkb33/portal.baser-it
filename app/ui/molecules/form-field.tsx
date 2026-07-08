@@ -18,15 +18,7 @@ export interface FormFieldProps extends Omit<InputProps, 'id'> {
  * FormField: A labeled input with optional error and helper text.
  * Single function: validate and display a text input with contextual information.
  */
-export function FormField({
-  label,
-  error,
-  helperText,
-  labelProps,
-  id,
-  className,
-  ...inputProps
-}: FormFieldProps) {
+export function FormField({ label, error, helperText, labelProps, id, className, ...inputProps }: FormFieldProps) {
   const generatedId = React.useId();
   const fieldId = id ?? generatedId;
   const descriptionId = error ? `${fieldId}-error` : helperText ? `${fieldId}-hint` : undefined;

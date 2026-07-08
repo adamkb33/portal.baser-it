@@ -15,7 +15,8 @@ const variantConfig = {
   },
   warning: {
     icon: AlertTriangle,
-    className: 'border-flash-warning-border bg-flash-warning-bg text-flash-warning-text [&>svg]:text-flash-warning-icon-bg',
+    className:
+      'border-flash-warning-border bg-flash-warning-bg text-flash-warning-text [&>svg]:text-flash-warning-icon-bg',
   },
   info: {
     icon: Info,
@@ -23,7 +24,8 @@ const variantConfig = {
   },
   success: {
     icon: CheckCircle2,
-    className: 'border-flash-success-border bg-flash-success-bg text-flash-success-text [&>svg]:text-flash-success-icon-bg',
+    className:
+      'border-flash-success-border bg-flash-success-bg text-flash-success-text [&>svg]:text-flash-success-icon-bg',
   },
 };
 

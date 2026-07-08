@@ -66,7 +66,9 @@ describe('mobile sidebar helpers', () => {
         branch({
           id: 'company.booking.admin.service-groups.services',
           href: '/company/booking/admin/service-groups/services',
-          children: [branch({ id: 'company.booking.admin.service-groups.services.create', href: '/create', hidden: true })],
+          children: [
+            branch({ id: 'company.booking.admin.service-groups.services.create', href: '/create', hidden: true }),
+          ],
         }),
       ],
     });

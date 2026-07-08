@@ -6,7 +6,15 @@ import { type InAppNotificationDto } from '~/api/generated/notification';
 import { API_ROUTES_MAP, ROUTES_MAP } from '~/lib/routing/route-tree';
 import { formatNotificationTimestamp } from '~/routes/company/notifications/_utils/format';
 import { getNotificationHeadline } from '~/routes/company/notifications/_utils/query';
-import { Badge, Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '~/ui';
+import {
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '~/ui';
 
 const NAVBAR_NOTIFICATION_POLL_MS = 15_000;
 const NAVBAR_NOTIFICATION_API_URL = API_ROUTES_MAP['auth.navbar-notifications'].url;
@@ -125,7 +133,9 @@ export function NavbarNotificationBell() {
                         </p>
                         {isUnread && <Circle className="mt-1 h-2.5 w-2.5 shrink-0 fill-current text-primary" />}
                       </div>
-                      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{notification.content}</p>
+                      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+                        {notification.content}
+                      </p>
                       <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                         {formatNotificationTimestamp(notification.createdAt)}
                       </p>

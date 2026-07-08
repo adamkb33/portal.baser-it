@@ -179,8 +179,8 @@ export function ServicePicker({
                   Bilder for denne tjenesten.
                 </DialogDescription>
               </DialogHeader>
-
-              {dialogService.images && renderServiceImagesCarousel(dialogService.images, dialogService.name)}            </>
+              {dialogService.images && renderServiceImagesCarousel(dialogService.images, dialogService.name)}{' '}
+            </>
           )}
         </DialogContent>
       </Dialog>
