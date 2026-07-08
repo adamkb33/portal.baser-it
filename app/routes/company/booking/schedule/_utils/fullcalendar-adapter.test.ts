@@ -53,6 +53,7 @@ describe('fullcalendar adapter', () => {
           },
         ],
       }),
+      new Date('2026-07-08T10:45:00+02:00'),
     );
 
     expect(events[0]).toMatchObject({
@@ -60,7 +61,7 @@ describe('fullcalendar adapter', () => {
       title: 'Avtale',
       start: '2026-07-08T10:00:00+02:00',
       end: '2026-07-08T10:30:00+02:00',
-      classNames: ['schedule-event', 'schedule-event-appointment'],
+      classNames: ['schedule-event', 'schedule-event-appointment', 'schedule-event-past'],
       extendedProps: {
         kind: 'appointment',
         appointmentId: 1,
@@ -73,6 +74,7 @@ describe('fullcalendar adapter', () => {
       classNames: [
         'schedule-event',
         'schedule-event-appointment',
+        'schedule-event-upcoming',
         'schedule-event-cancelled',
         'schedule-event-no-show',
       ],

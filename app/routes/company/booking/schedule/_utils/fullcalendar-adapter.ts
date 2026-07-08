@@ -43,9 +43,9 @@ const WEEKDAY_TO_FULLCALENDAR_DAY: Record<DailyScheduleDto['dayOfWeek'], number>
   SATURDAY: 6,
 };
 
-export function toCalendarEvents(overview: CompanyUserScheduleOverviewDto): EventInput[] {
+export function toCalendarEvents(overview: CompanyUserScheduleOverviewDto, now = new Date()): EventInput[] {
   return [
-    ...overview.appointments.map(toAppointmentEvent),
+    ...overview.appointments.map((appointment) => toAppointmentEvent(appointment, now)),
     ...overview.availabilities.map(toAvailabilityEvent),
     ...overview.unavailabilities.map(toUnavailabilityEvent),
   ];
@@ -123,10 +123,13 @@ export function minuteToDurationString(minute: number): string {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
 }
 
-function toAppointmentEvent(appointment: ScheduleAppointmentDto): EventInput {
+function toAppointmentEvent(appointment: ScheduleAppointmentDto, now: Date): EventInput {
+  const appointmentEnd = new Date(appointment.endTime);
+  const isPastAppointment = Number.isFinite(appointmentEnd.getTime()) && appointmentEnd < now;
   const classNames = [
     'schedule-event',
     'schedule-event-appointment',
+    isPastAppointment ? 'schedule-event-past' : 'schedule-event-upcoming',
     appointment.cancelledAt ? 'schedule-event-cancelled' : null,
     appointment.noShow ? 'schedule-event-no-show' : null,
   ].filter((className): className is string => Boolean(className));

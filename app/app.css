@@ -95,11 +95,13 @@
   }
 
   .schedule-calendar .fc-event {
-    @apply cursor-pointer overflow-hidden rounded-lg border-0 px-1.5 py-0 shadow-sm;
+    @apply cursor-pointer overflow-hidden rounded-lg border px-1.5 py-0 shadow-sm;
   }
 
   .schedule-calendar .fc-event-main {
     @apply flex h-full min-w-0 items-center overflow-hidden;
+    color: inherit;
+    container-type: inline-size;
   }
 
   .schedule-calendar .schedule-event-content {
@@ -115,19 +117,43 @@
   }
 
   .schedule-calendar .schedule-event-appointment {
-    @apply bg-interactive text-text-inverse;
+    background-color: var(--color-blue-600) !important;
+    border-color: color-mix(in oklab, var(--color-blue-700) 82%, transparent) !important;
+    color: var(--color-text-inverse) !important;
+  }
+
+  .schedule-calendar .schedule-event-upcoming.schedule-event-appointment {
+    box-shadow:
+      inset 3px 0 0 color-mix(in oklab, var(--color-blue-700) 88%, white),
+      0 1px 2px color-mix(in oklab, var(--color-blue-700) 18%, transparent);
+  }
+
+  .schedule-calendar .schedule-event-past.schedule-event-appointment {
+    background-color: color-mix(in oklab, var(--color-slate-500) 82%, var(--color-background)) !important;
+    border-color: color-mix(in oklab, var(--color-slate-500) 82%, transparent) !important;
+    color: var(--color-text-inverse) !important;
+    box-shadow: inset 3px 0 0 var(--color-slate-700);
   }
 
   .schedule-calendar .schedule-event-availability {
-    @apply bg-success text-text-inverse;
+    background-color: var(--color-success) !important;
+    border-color: color-mix(in oklab, var(--color-success) 72%, black) !important;
+    color: var(--color-text-inverse) !important;
+    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--color-success) 70%, black);
   }
 
   .schedule-calendar .schedule-event-unavailability {
-    @apply bg-warning text-text-primary;
+    background-color: var(--color-warning) !important;
+    border-color: color-mix(in oklab, var(--color-warning) 72%, black) !important;
+    color: var(--color-text-primary) !important;
+    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--color-warning) 64%, black);
   }
 
   .schedule-calendar .schedule-event-cancelled {
-    @apply opacity-60;
+    background-color: var(--color-slate-400) !important;
+    border-color: var(--color-slate-500) !important;
+    color: var(--color-text-inverse) !important;
+    opacity: 0.76;
   }
 
   .schedule-calendar .schedule-event-cancelled .schedule-event-title {
@@ -135,6 +161,15 @@
   }
 
   .schedule-calendar .schedule-event-no-show {
-    @apply bg-danger text-text-inverse;
+    background-color: var(--color-danger) !important;
+    border-color: color-mix(in oklab, var(--color-danger) 74%, black) !important;
+    color: var(--color-text-inverse) !important;
+    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--color-danger) 70%, black);
+  }
+
+  @container (max-width: 9rem) {
+    .schedule-calendar .schedule-event-title {
+      display: none;
+    }
   }
 }
