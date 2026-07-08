@@ -100,7 +100,10 @@ export async function action({ request }: Route.ActionArgs) {
       headers.append('Set-Cookie', verificationCookieHeader);
     }
 
-    const nextStepHref = resolveAuthNextStepHref(response.nextStep);
+    const nextStepHref = resolveAuthNextStepHref(response.nextStep, {
+      emailDelivery: response.emailDelivery,
+      mobileDelivery: response.mobileDelivery,
+    });
     if (nextStepHref) {
       return redirect(nextStepHref, { headers });
     }

@@ -1,21 +1,47 @@
 import { redirect } from 'react-router';
-import type { SignInResponseDto, SignUpResponseDto, UserAuthStatusDto } from '~/api/generated/base';
+import type { DeliveryStatusDto, SignInResponseDto, SignUpResponseDto, UserAuthStatusDto } from '~/api/generated/base';
 import { getBookingRouteMap } from '../../../../_utils/booking.route-map';
 
+type NextStep = SignInResponseDto['nextStep'] | SignUpResponseDto['nextStep'] | null | undefined;
+
+type ResolveNextStepOptions = {
+  emailDelivery?: DeliveryStatusDto | null;
+  mobileDelivery?: DeliveryStatusDto | null;
+};
+
+function buildHref(href: string, params?: URLSearchParams) {
+  const search = params?.toString();
+  return search ? `${href}?${search}` : href;
+}
+
 export function resolveAuthNextStepHref(
-  nextStep: SignInResponseDto['nextStep'] | SignUpResponseDto['nextStep'] | null | undefined,
+  nextStep: NextStep,
+  options: ResolveNextStepOptions = {},
 ) {
   const routes = getBookingRouteMap();
 
   switch (nextStep) {
     case 'COLLECT_EMAIL':
-      return routes.employee;
+      return routes.contactCollectEmail;
     case 'COLLECT_MOBILE':
       return routes.contactCollectMobile;
-    case 'VERIFY_EMAIL':
-      return routes.employee;
-    case 'VERIFY_MOBILE':
-      return routes.contactVerifyMobile;
+    case 'VERIFY_EMAIL': {
+      const params = new URLSearchParams();
+      if (options.emailDelivery?.status) {
+        params.set('emailDelivery', options.emailDelivery.status);
+      }
+      if (options.mobileDelivery?.status) {
+        params.set('mobileDelivery', options.mobileDelivery.status);
+      }
+      return buildHref(routes.contactVerifyEmail, params);
+    }
+    case 'VERIFY_MOBILE': {
+      const params = new URLSearchParams();
+      if (options.mobileDelivery?.status) {
+        params.set('mobileDelivery', options.mobileDelivery.status);
+      }
+      return buildHref(routes.contactVerifyMobile, params);
+    }
     case 'DONE':
       return routes.employee;
     default:

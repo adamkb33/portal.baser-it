@@ -179,7 +179,7 @@ describe('booking contact auth routes matrix', () => {
 
       expect(mocks.redirectWithError).toHaveBeenCalledWith(
         expect.any(Request),
-        '/booking/sign-in?email=user%40example.com',
+        '/booking/sign-in',
         'Invalid credentials',
       );
       expect(getStatus(result)).toBe(302);
@@ -227,6 +227,8 @@ describe('booking contact auth routes matrix', () => {
       mocks.signUp.mockResolvedValueOnce({
         userId: 10,
         nextStep: 'VERIFY_MOBILE',
+        emailDelivery: { status: 'NOT_ATTEMPTED' },
+        mobileDelivery: { status: 'SENT' },
         authTokens: {
           accessToken: 'a',
           refreshToken: 'r',
@@ -255,7 +257,9 @@ describe('booking contact auth routes matrix', () => {
 
       expect(mocks.setPendingSessionUser).toHaveBeenCalledWith('s1', 10);
       expect(getStatus(result)).toBe(302);
-      expect(getLocation(result)).toBe(ROUTES_MAP['booking.public.appointment.session.contact.verify-mobile'].href);
+      expect(getLocation(result)).toBe(
+        `${ROUTES_MAP['booking.public.appointment.session.contact.verify-mobile'].href}?mobileDelivery=SENT`,
+      );
     });
   });
 

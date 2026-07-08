@@ -1,6 +1,7 @@
 import React from 'react';
 import { data, Link, redirect, useFetcher, useLoaderData, useNavigate } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
+import { AuthController, type DeliveryStatusDto } from '~/api/generated/base';
 import { API_ROUTES_MAP } from '~/lib/routing/route-tree';
 import type { action as resendVerificationMobileAction } from '~/routes/api/auth/resend-verification/mobile/auth.resend-verification.mobile.api-route';
 import type { action as verifyMobileAction } from '~/routes/api/auth/verify-mobile/auth.verify-mobile.api-route';
@@ -13,10 +14,13 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { resolveAuthNextStepHref } from '../_utils/auth.utils';
 import { BOOKING_CONTACT_PAGE_HEADER_CLASS } from '../_utils/booking-contact-theme';
-import { MobileVerificationAutoSendService } from './_services/mobile-verification-auto-send.server';
+
+type MobileDeliveryStatus = DeliveryStatusDto['status'];
 
 export async function loader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
+  const url = new URL(request.url);
+  const mobileDelivery = parseMobileDeliveryStatus(url.searchParams.get('mobileDelivery'));
 
   try {
     const session = await AppointmentSessionService.get(request);
@@ -37,17 +41,29 @@ export async function loader({ request }: Route.LoaderArgs) {
       return redirect(routes.contact);
     }
 
-    const autoSendResult = await MobileVerificationAutoSendService.ensureSentOnce(request, verificationSessionToken);
+    const statusResponse = await AuthController.verificationStatus({
+      query: { verificationSessionToken },
+    });
+    const verificationStatus = statusResponse.data?.data;
+    if (!verificationStatus) {
+      return redirectWithError(request, routes.contact, 'Kunne ikke hente verifiseringsstatus. Prøv igjen.');
+    }
+
+    if (verificationStatus.nextStep !== 'VERIFY_MOBILE') {
+      const nextStepHref = resolveAuthNextStepHref(verificationStatus.nextStep);
+      if (nextStepHref) {
+        return redirect(nextStepHref);
+      }
+    }
 
     return data({
       session,
-      verificationSessionToken: autoSendResult.verificationSessionToken,
+      verificationSessionToken,
+      mobileDelivery,
       navigation: {
         currentStep: routes.contactVerifyMobile,
         previousStep: routes.contactCollectMobile,
       },
-    }, {
-      headers: autoSendResult.headers,
     });
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke hente brukerdata');
@@ -57,6 +73,28 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 const CODE_LENGTH = 6;
+const MOBILE_DELIVERY_STATUSES = ['SENT', 'SKIPPED_ALREADY_ACTIVE', 'NOT_ATTEMPTED', 'FAILED'] as const;
+
+function parseMobileDeliveryStatus(status: string | null): MobileDeliveryStatus | null {
+  if (!status) return null;
+  return MOBILE_DELIVERY_STATUSES.includes(status as MobileDeliveryStatus) ? (status as MobileDeliveryStatus) : null;
+}
+
+function getMobileDeliveryMessage(status: MobileDeliveryStatus | null | undefined, source: 'signup' | 'resend') {
+  switch (status) {
+    case 'SENT':
+      return source === 'resend' ? 'Ny SMS-kode er sendt.' : 'Vi har sendt deg en SMS-kode.';
+    case 'SKIPPED_ALREADY_ACTIVE':
+      return source === 'resend'
+        ? 'Du har allerede en aktiv kode.'
+        : 'Du har allerede en aktiv kode. Bruk den siste koden du mottok.';
+    case 'FAILED':
+      return source === 'resend' ? 'Kunne ikke sende SMS-kode.' : 'Vi klarte ikke å sende SMS-koden. Prøv igjen.';
+    case 'NOT_ATTEMPTED':
+    default:
+      return null;
+  }
+}
 
 export default function BookingContactVerifyMobilePage({ loaderData }: Route.ComponentProps) {
   const fetcher = useFetcher<typeof verifyMobileAction>();
@@ -67,10 +105,22 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
   const verificationSessionToken = loaderData.verificationSessionToken;
   const errorMessage =
     typeof fetcher.data === 'object' && fetcher.data && 'error' in fetcher.data ? fetcher.data.error : null;
-  const resendMessage =
-    typeof resendFetcher.data === 'object' && resendFetcher.data && 'message' in resendFetcher.data
-      ? String(resendFetcher.data.message)
+  const resendDeliveryStatus =
+    typeof resendFetcher.data === 'object' &&
+    resendFetcher.data &&
+    'data' in resendFetcher.data &&
+    resendFetcher.data.data &&
+    typeof resendFetcher.data.data === 'object' &&
+    'mobileDelivery' in resendFetcher.data.data &&
+    resendFetcher.data.data.mobileDelivery &&
+    typeof resendFetcher.data.data.mobileDelivery === 'object' &&
+    'status' in resendFetcher.data.data.mobileDelivery
+      ? parseMobileDeliveryStatus(String(resendFetcher.data.data.mobileDelivery.status))
       : null;
+  const initialMobileDeliveryMessage = getMobileDeliveryMessage(loaderData.mobileDelivery, 'signup');
+  const initialMobileDeliveryTone = loaderData.mobileDelivery === 'FAILED' ? 'emphasis' : 'muted';
+  const resendMessage = getMobileDeliveryMessage(resendDeliveryStatus, 'resend');
+  const resendMessageTone = resendDeliveryStatus === 'FAILED' ? 'emphasis' : 'muted';
   const resendError =
     typeof resendFetcher.data === 'object' && resendFetcher.data && 'error' in resendFetcher.data
       ? String(resendFetcher.data.error)
@@ -114,8 +164,13 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
         {resendError ? (
           <Notice variant="booking" tone="emphasis" title="Kunne ikke sende ny SMS" message={String(resendError)} />
         ) : null}
+        {!resendMessage && initialMobileDeliveryMessage ? (
+          <Notice variant="booking" tone={initialMobileDeliveryTone} title="SMS-kode" message={initialMobileDeliveryMessage} />
+        ) : null}
         {isSendingCode ? <Notice variant="booking" title="Sender SMS" message="Vi sender en ny kode til mobilnummeret ditt." /> : null}
-        {resendMessage ? <Notice variant="booking" title="Ny kode sendt" message={resendMessage} /> : null}
+        {resendMessage ? (
+          <Notice variant="booking" tone={resendMessageTone} title="SMS-kode" message={resendMessage} />
+        ) : null}
         <fetcher.Form method="post" action={API_ROUTES_MAP['auth.verify-mobile'].url}>
           <Stack space="md">
             <Stack space="xs">

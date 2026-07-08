@@ -6,9 +6,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   getSession: vi.fn(),
   readVerificationToken: vi.fn(),
-  buildVerificationCookieHeader: vi.fn(),
-  resendVerification: vi.fn(),
+  verificationStatus: vi.fn(),
   resolveErrorPayload: vi.fn(),
+}));
+
+vi.mock('~/api/generated/base', () => ({
+  AuthController: {
+    verificationStatus: mocks.verificationStatus,
+  },
 }));
 
 vi.mock('~/routes/booking/public/_services/booking.appointment-session.service.server', () => ({
@@ -20,13 +25,6 @@ vi.mock('~/routes/booking/public/_services/booking.appointment-session.service.s
 vi.mock('~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server', () => ({
   VerificationTokenService: {
     readVerificationToken: mocks.readVerificationToken,
-    buildVerificationCookieHeader: mocks.buildVerificationCookieHeader,
-  },
-}));
-
-vi.mock('~/routes/booking/public/appointment/session/contact/_services/contact-auth.service.server', () => ({
-  ContactAuthService: {
-    resendVerification: mocks.resendVerification,
   },
 }));
 
@@ -57,19 +55,6 @@ function getHeaders(result: unknown): Headers {
   return new Headers(init?.headers);
 }
 
-function getSetCookie(result: unknown): string {
-  return getHeaders(result).get('Set-Cookie') ?? '';
-}
-
-function getCookiePair(result: unknown, name: string): string {
-  const setCookie = getSetCookie(result);
-  const match = setCookie.match(new RegExp(`${name}=([^;]+)`));
-  if (!match) {
-    throw new Error(`Missing cookie ${name}`);
-  }
-  return `${name}=${match[1]}`;
-}
-
 function getLocation(result: unknown): string | null {
   return getHeaders(result).get('Location');
 }
@@ -85,94 +70,31 @@ describe('booking contact verify-mobile route', () => {
     vi.clearAllMocks();
     mocks.getSession.mockResolvedValue({ sessionId: 'session-1', companyId: 1, userId: 10 });
     mocks.readVerificationToken.mockResolvedValue('vt-1');
-    mocks.buildVerificationCookieHeader.mockResolvedValue('verification_session_token=vt-2; Path=/; HttpOnly; SameSite=Lax');
-    mocks.resendVerification.mockResolvedValue({
-      nextToken: 'vt-1',
-      nextTokenExpiresAt: null,
-      successMessage: 'Ny kode sendt.',
-      data: null,
+    mocks.verificationStatus.mockResolvedValue({
+      data: {
+        data: {
+          emailVerified: false,
+          mobileRequired: true,
+          mobileVerified: false,
+          nextStep: 'VERIFY_MOBILE',
+        },
+      },
     });
     mocks.resolveErrorPayload.mockReturnValue({ message: 'Kunne ikke hente brukerdata', status: 400 });
   });
 
-  it('auto-sends one SMS from the loader on first page load', async () => {
-    const result = await loader({ request: createRequest() } as never);
-    const data = unwrapData<{ verificationSessionToken: string }>(result);
+  it('checks verification status and stays on SMS input without sending SMS on page load', async () => {
+    const result = await loader({
+      request: createRequest('verification_session_token=vt-1'),
+    } as never);
+    const data = unwrapData<{ verificationSessionToken: string; mobileDelivery: string | null }>(result);
 
-    expect(mocks.resendVerification).toHaveBeenCalledOnce();
-    expect(mocks.resendVerification).toHaveBeenCalledWith({
-      verificationSessionToken: 'vt-1',
-      sendEmail: false,
-      sendMobile: true,
+    expect(mocks.verificationStatus).toHaveBeenCalledOnce();
+    expect(mocks.verificationStatus).toHaveBeenCalledWith({
+      query: { verificationSessionToken: 'vt-1' },
     });
     expect(data.verificationSessionToken).toBe('vt-1');
-    expect(getSetCookie(result)).toContain('booking_mobile_code_sent=');
-  });
-
-  it('does not auto-send again when the guard cookie matches the verification token', async () => {
-    const firstResult = await loader({ request: createRequest() } as never);
-    const guardCookie = getCookiePair(firstResult, 'booking_mobile_code_sent');
-    mocks.resendVerification.mockClear();
-
-    const result = await loader({ request: createRequest(guardCookie) } as never);
-    const data = unwrapData<{ verificationSessionToken: string }>(result);
-
-    expect(mocks.resendVerification).not.toHaveBeenCalled();
-    expect(data.verificationSessionToken).toBe('vt-1');
-    expect(getSetCookie(result)).toBe('');
-  });
-
-  it('auto-sends again when a new verification token is issued', async () => {
-    const firstResult = await loader({ request: createRequest() } as never);
-    const guardCookie = getCookiePair(firstResult, 'booking_mobile_code_sent');
-    mocks.resendVerification.mockClear();
-    mocks.readVerificationToken.mockResolvedValueOnce('vt-2');
-    mocks.resendVerification.mockResolvedValueOnce({
-      nextToken: 'vt-2',
-      nextTokenExpiresAt: null,
-      successMessage: 'Ny kode sendt.',
-      data: null,
-    });
-
-    const result = await loader({ request: createRequest(guardCookie) } as never);
-    const data = unwrapData<{ verificationSessionToken: string }>(result);
-
-    expect(mocks.resendVerification).toHaveBeenCalledOnce();
-    expect(mocks.resendVerification).toHaveBeenCalledWith({
-      verificationSessionToken: 'vt-2',
-      sendEmail: false,
-      sendMobile: true,
-    });
-    expect(data.verificationSessionToken).toBe('vt-2');
-    expect(getSetCookie(result)).toContain('booking_mobile_code_sent=');
-  });
-
-  it('uses a rotated backend verification token for the page and cookies', async () => {
-    mocks.resendVerification.mockResolvedValueOnce({
-      nextToken: 'vt-2',
-      nextTokenExpiresAt: '2030-01-01T00:00:00.000Z',
-      successMessage: 'Ny kode sendt.',
-      data: null,
-    });
-
-    const result = await loader({ request: createRequest() } as never);
-    const data = unwrapData<{ verificationSessionToken: string }>(result);
-    const setCookie = getSetCookie(result);
-
-    expect(data.verificationSessionToken).toBe('vt-2');
-    expect(mocks.buildVerificationCookieHeader).toHaveBeenCalledWith('vt-2', '2030-01-01T00:00:00.000Z');
-    expect(setCookie).toContain('verification_session_token=vt-2');
-    expect(setCookie).toContain('booking_mobile_code_sent=');
-  });
-
-  it('does not fail the page if the backend rejects the automatic send', async () => {
-    mocks.resendVerification.mockRejectedValueOnce(new Error('SMS cooldown'));
-
-    const result = await loader({ request: createRequest() } as never);
-    const data = unwrapData<{ verificationSessionToken: string }>(result);
-
-    expect(data.verificationSessionToken).toBe('vt-1');
-    expect(getSetCookie(result)).toContain('booking_mobile_code_sent=');
+    expect(data.mobileDelivery).toBe(null);
   });
 
   it('redirects without sending SMS when the appointment session is missing', async () => {
@@ -182,7 +104,7 @@ describe('booking contact verify-mobile route', () => {
 
     expect(result).toBeInstanceOf(Response);
     expect(getLocation(result)).toBe('/booking/public/appointment/session');
-    expect(mocks.resendVerification).not.toHaveBeenCalled();
+    expect(mocks.verificationStatus).not.toHaveBeenCalled();
   });
 
   it('redirects without sending SMS when the appointment session has no user', async () => {
@@ -192,7 +114,7 @@ describe('booking contact verify-mobile route', () => {
 
     expect(result).toBeInstanceOf(Response);
     expect(getLocation(result)).toBe('/booking/public/appointment/session');
-    expect(mocks.resendVerification).not.toHaveBeenCalled();
+    expect(mocks.verificationStatus).not.toHaveBeenCalled();
   });
 
   it('redirects without sending SMS when the verification token cookie is missing', async () => {
@@ -202,13 +124,55 @@ describe('booking contact verify-mobile route', () => {
 
     expect(result).toBeInstanceOf(Response);
     expect(getLocation(result)).toBe('/booking/public/appointment/session/contact');
-    expect(mocks.resendVerification).not.toHaveBeenCalled();
+    expect(mocks.verificationStatus).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { nextStep: 'VERIFY_EMAIL', expectedLocation: '/booking/public/appointment/session/contact/verify-email' },
+    { nextStep: 'DONE', expectedLocation: '/booking/public/appointment/session/employee' },
+    { nextStep: 'COLLECT_MOBILE', expectedLocation: '/booking/public/appointment/session/contact/collect-mobile' },
+    { nextStep: 'COLLECT_EMAIL', expectedLocation: '/booking/public/appointment/session/contact/collect-email' },
+  ])('routes by verification status $nextStep without sending SMS', async ({ nextStep, expectedLocation }) => {
+    mocks.verificationStatus.mockResolvedValueOnce({
+      data: {
+        data: {
+          emailVerified: false,
+          mobileRequired: true,
+          mobileVerified: false,
+          nextStep,
+        },
+      },
+    });
+
+    const result = await loader({ request: createRequest() } as never);
+
+    expect(result).toBeInstanceOf(Response);
+    expect(getLocation(result)).toBe(expectedLocation);
+    expect(mocks.verificationStatus).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    { query: 'mobileDelivery=SENT', expected: 'SENT' },
+    { query: 'mobileDelivery=SKIPPED_ALREADY_ACTIVE', expected: 'SKIPPED_ALREADY_ACTIVE' },
+    { query: 'mobileDelivery=FAILED', expected: 'FAILED' },
+    { query: 'mobileDelivery=NOT_ATTEMPTED', expected: 'NOT_ATTEMPTED' },
+    { query: 'mobileDelivery=UNKNOWN', expected: null },
+  ])('uses signup mobileDelivery query for display only: $query', async ({ query, expected }) => {
+    const result = await loader({
+      request: new Request(`https://portal.pitell.no/booking/public/appointment/session/contact/verify-mobile?${query}`),
+    } as never);
+    const data = unwrapData<{ mobileDelivery: string | null }>(result);
+
+    expect(data.mobileDelivery).toBe(expected);
+    expect(mocks.verificationStatus).toHaveBeenCalledOnce();
   });
 
   it('keeps SMS resend as an explicit user action without client auto-resend', () => {
     expect(routeSource).not.toContain('resendFetcher.submit');
     expect(routeSource).not.toContain('sessionStorage');
     expect(routeSource).not.toContain('AUTO_RESEND');
+    expect(routeSource).not.toContain('ensureSentOnce');
+    expect(routeSource).not.toContain('ContactAuthService.resendVerification');
     expect(routeSource).toContain('<resendFetcher.Form');
     expect(routeSource).toContain("action={API_ROUTES_MAP['auth.resend-verification.mobile'].url}");
     expect(routeSource).toContain('Send SMS på nytt');

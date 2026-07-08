@@ -9,12 +9,15 @@ import {
 
 describe('booking contact auth step matrix', () => {
   it.each([
-    { nextStep: 'COLLECT_EMAIL', expected: ROUTES_MAP['booking.public.appointment.session.employee'].href },
+    {
+      nextStep: 'COLLECT_EMAIL',
+      expected: ROUTES_MAP['booking.public.appointment.session.contact.collect-email'].href,
+    },
     {
       nextStep: 'COLLECT_MOBILE',
       expected: ROUTES_MAP['booking.public.appointment.session.contact.collect-mobile'].href,
     },
-    { nextStep: 'VERIFY_EMAIL', expected: ROUTES_MAP['booking.public.appointment.session.employee'].href },
+    { nextStep: 'VERIFY_EMAIL', expected: ROUTES_MAP['booking.public.appointment.session.contact.verify-email'].href },
     {
       nextStep: 'VERIFY_MOBILE',
       expected: ROUTES_MAP['booking.public.appointment.session.contact.verify-mobile'].href,
@@ -24,6 +27,23 @@ describe('booking contact auth step matrix', () => {
     { nextStep: undefined, expected: null },
   ])('maps $nextStep', ({ nextStep, expected }) => {
     expect(resolveAuthNextStepHref(nextStep as never)).toBe(expected);
+  });
+
+  it('adds delivery status query params only for verification screens', () => {
+    expect(
+      resolveAuthNextStepHref('VERIFY_MOBILE', {
+        mobileDelivery: { status: 'SENT' },
+      }),
+    ).toBe(`${ROUTES_MAP['booking.public.appointment.session.contact.verify-mobile'].href}?mobileDelivery=SENT`);
+
+    expect(
+      resolveAuthNextStepHref('VERIFY_EMAIL', {
+        emailDelivery: { status: 'SENT' },
+        mobileDelivery: { status: 'NOT_ATTEMPTED' },
+      }),
+    ).toBe(
+      `${ROUTES_MAP['booking.public.appointment.session.contact.verify-email'].href}?emailDelivery=SENT&mobileDelivery=NOT_ATTEMPTED`,
+    );
   });
 
   it('maps status helper through auth status shape', () => {
