@@ -78,6 +78,7 @@ export function ScheduleCalendar({
         selectable
         selectMirror
         editable={false}
+        slotEventOverlap={false}
         slotDuration="00:30"
         snapDuration="00:05"
         slotMinTime={slotMinTime}
