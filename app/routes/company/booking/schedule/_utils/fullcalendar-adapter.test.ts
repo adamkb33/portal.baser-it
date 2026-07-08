@@ -87,7 +87,7 @@ describe('fullcalendar adapter', () => {
     });
   });
 
-  it('maps availability and unavailability events', () => {
+  it('uses availability for business hours instead of rendering it as its own event', () => {
     const events = toCalendarEvents(
       createOverview({
         availabilities: [
@@ -108,17 +108,8 @@ describe('fullcalendar adapter', () => {
       }),
     );
 
-    expect(events).toHaveLength(2);
+    expect(events).toHaveLength(1);
     expect(events[0]).toMatchObject({
-      id: 'availability-3',
-      title: 'Bookbar tid',
-      classNames: ['schedule-event', 'schedule-event-availability'],
-      extendedProps: {
-        kind: 'availability',
-        availabilityId: 3,
-      },
-    });
-    expect(events[1]).toMatchObject({
       id: 'unavailability-10-2026-07-08T12:00:00+02:00-2026-07-08T13:00:00+02:00',
       title: 'Fravær/pause',
       classNames: ['schedule-event', 'schedule-event-unavailability'],
@@ -130,15 +121,26 @@ describe('fullcalendar adapter', () => {
 
   it('maps daily schedules to FullCalendar business hours', () => {
     expect(
-      toBusinessHours([
-        createDailySchedule({ id: 1, dayOfWeek: 'SUNDAY', startTime: '10:00', endTime: '14:00' }),
-        createDailySchedule({ id: 2, dayOfWeek: 'MONDAY', startTime: '08:00', endTime: '16:00' }),
-        createDailySchedule({ id: 3, dayOfWeek: 'SATURDAY', startTime: '09:00', endTime: '13:00' }),
-      ]),
+      toBusinessHours(
+        [
+          createDailySchedule({ id: 1, dayOfWeek: 'SUNDAY', startTime: '10:00', endTime: '14:00' }),
+          createDailySchedule({ id: 2, dayOfWeek: 'MONDAY', startTime: '08:00', endTime: '16:00' }),
+          createDailySchedule({ id: 3, dayOfWeek: 'SATURDAY', startTime: '09:00', endTime: '13:00' }),
+        ],
+        [
+          {
+            id: 4,
+            profileId: 10,
+            startTime: '2026-07-08T17:00:00+02:00',
+            endTime: '2026-07-08T19:00:00+02:00',
+          },
+        ],
+      ),
     ).toEqual([
       { daysOfWeek: [0], startTime: '10:00', endTime: '14:00' },
       { daysOfWeek: [1], startTime: '08:00', endTime: '16:00' },
       { daysOfWeek: [6], startTime: '09:00', endTime: '13:00' },
+      { daysOfWeek: [3], startTime: '17:00', endTime: '19:00' },
     ]);
   });
 

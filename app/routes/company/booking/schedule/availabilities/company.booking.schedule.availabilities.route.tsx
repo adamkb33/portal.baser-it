@@ -207,7 +207,7 @@ export default function CompanyBookingScheduleAvailabilitiesPage({ loaderData }:
         <Notice tone="emphasis" title="Kunne ikke hente bookbar tid" message={loaderData.error} />
       ) : null}
 
-      <Card variant="default" size="sm" className="overflow-hidden">
+      <Card variant="default" size="sm" className="overflow-visible">
         <CardHead
           eyebrow="Ny bookbar tid"
           heading="Legg til tid"
@@ -226,7 +226,7 @@ export default function CompanyBookingScheduleAvailabilitiesPage({ loaderData }:
           <Form method="post" className="space-y-4">
             <input name="intent" type="hidden" value="create" />
             <input name="redirectTo" type="hidden" value={redirectTo} />
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(13rem,1fr)_minmax(18rem,1.4fr)_auto] lg:items-end">
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(13rem,0.8fr)_minmax(22rem,1.2fr)] xl:items-end">
               <div className="space-y-1.5">
                 <Label>Dato</Label>
                 <input name="date" type="hidden" value={dateValue} />
@@ -268,22 +268,24 @@ export default function CompanyBookingScheduleAvailabilitiesPage({ loaderData }:
                     onEndChange={setEndTime}
                     startPlaceholder="Fra"
                     endPlaceholder="Til"
-                    zIndex={60}
+                    zIndex={80}
+                    endPanelAlign="end"
                   />
                 </div>
               </div>
+            </div>
 
-              <Button type="submit" size="md" className="h-11 rounded-lg lg:min-w-36">
+            <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface-variant-1 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-2 text-sm text-text-secondary">
+                <Clock className="h-4 w-4 shrink-0 text-success" />
+                <span className="truncate">
+                  {format(new Date(`${dateValue}T00:00:00`), 'dd.MM.yyyy')} kl. {startTime} - {endTime}
+                </span>
+              </div>
+              <Button type="submit" size="md" className="h-11 rounded-lg sm:min-w-36">
                 <Plus className="h-4 w-4" />
                 Legg til
               </Button>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-surface-variant-1 px-3 py-2 text-sm text-text-secondary">
-              <Clock className="h-4 w-4 text-success" />
-              <span>
-                {format(new Date(`${dateValue}T00:00:00`), 'dd.MM.yyyy')} kl. {startTime} - {endTime}
-              </span>
             </div>
           </Form>
         </CardContent>

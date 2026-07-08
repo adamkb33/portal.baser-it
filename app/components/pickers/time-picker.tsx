@@ -14,6 +14,8 @@ type TimePickerProps = {
   zIndex?: number;
   disabled?: boolean;
   className?: string;
+  panelAlign?: 'start' | 'end';
+  panelMode?: 'overlay' | 'inline';
   minValue?: string;
   maxValue?: string;
 };
@@ -50,6 +52,8 @@ export function TimePicker({
   zIndex = 60,
   disabled = false,
   className,
+  panelAlign = 'start',
+  panelMode = 'overlay',
   minValue,
   maxValue,
 }: TimePickerProps) {
@@ -93,8 +97,12 @@ export function TimePicker({
   const panel = isOpen ? (
     <div
       data-time-picker-panel
-      className="absolute left-0 top-full z-[60] mt-1.5 w-[214px] rounded-md border border-border bg-overlay-surface p-0 shadow-lg"
-      style={{ zIndex }}
+      className={cn(
+        'mt-1.5 rounded-md border border-border bg-overlay-surface p-0 shadow-lg',
+        panelMode === 'inline' ? 'relative z-0 w-full' : 'absolute top-full z-[60] w-[214px] max-w-[calc(100vw-2rem)]',
+        panelMode === 'overlay' && (panelAlign === 'end' ? 'right-0' : 'left-0'),
+      )}
+      style={panelMode === 'overlay' ? { zIndex } : undefined}
     >
       <div className="border-b border-border px-3 py-2">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-text-secondary">Velg tid</p>
@@ -203,7 +211,7 @@ export function TimePicker({
         ref={triggerRef}
         disabled={disabled}
         className={cn(
-          'h-9 w-full justify-between gap-2 rounded-sm border border-border bg-background px-2 text-text-primary shadow-none',
+          'h-11 w-full justify-between gap-2 rounded-lg border border-border bg-background px-3 text-text-primary shadow-none',
           'focus-visible:border-ring focus-visible:ring-ring/40 focus-visible:ring-[3px]',
           isOpen && 'border-ring ring-2 ring-ring/40',
           !value && 'text-text-secondary',
@@ -211,8 +219,8 @@ export function TimePicker({
           className,
         )}
       >
-        <span className="text-xs">{normalized || placeholder}</span>
-        <Clock3 className="size-3.5 text-text-secondary" />
+        <span className="text-sm font-medium">{normalized || placeholder}</span>
+        <Clock3 className="size-4 text-text-secondary" />
       </Button>
       {panel}
     </div>

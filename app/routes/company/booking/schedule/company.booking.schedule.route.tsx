@@ -198,7 +198,10 @@ export default function CompanyBookingSchedulePage({ loaderData }: Route.Compone
   }, [loaderData.date]);
 
   const calendarEvents = useMemo(() => toCalendarEvents(overview), [overview]);
-  const businessHours = useMemo(() => toBusinessHours(overview.dailySchedules), [overview.dailySchedules]);
+  const businessHours = useMemo(
+    () => toBusinessHours(overview.dailySchedules, overview.availabilities),
+    [overview.dailySchedules, overview.availabilities],
+  );
   const calendarWindow = useMemo(() => getScheduleCalendarWindow(overview), [overview]);
 
   const handleVisibleDateChange = useCallback(

@@ -6,6 +6,7 @@ import type {
   ScheduleAvailabilityDto,
   ScheduleUnavailabilityDto,
 } from '~/api/generated/booking';
+import { formatInTimeZone } from 'date-fns-tz';
 import { DEFAULT_QUERY_TIMEZONE } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { minutesInTimeZone, parseHourMinute } from './schedule-time.utils';
@@ -46,21 +47,32 @@ const WEEKDAY_TO_FULLCALENDAR_DAY: Record<DailyScheduleDto['dayOfWeek'], number>
 export function toCalendarEvents(overview: CompanyUserScheduleOverviewDto, now = new Date()): EventInput[] {
   return [
     ...overview.appointments.map((appointment) => toAppointmentEvent(appointment, now)),
-    ...overview.availabilities.map(toAvailabilityEvent),
     ...overview.unavailabilities.map(toUnavailabilityEvent),
   ];
 }
 
-export function toBusinessHours(dailySchedules: DailyScheduleDto[]): BusinessHoursInput {
-  if (dailySchedules.length === 0) {
+export function toBusinessHours(
+  dailySchedules: DailyScheduleDto[],
+  availabilities: ScheduleAvailabilityDto[] = [],
+  timezone = DEFAULT_QUERY_TIMEZONE,
+): BusinessHoursInput {
+  if (dailySchedules.length === 0 && availabilities.length === 0) {
     return false;
   }
 
-  return dailySchedules.map((schedule) => ({
+  const recurringBusinessHours = dailySchedules.map((schedule) => ({
     daysOfWeek: [WEEKDAY_TO_FULLCALENDAR_DAY[schedule.dayOfWeek]],
     startTime: schedule.startTime,
     endTime: schedule.endTime,
   }));
+
+  const availabilityBusinessHours = availabilities
+    .map((availability) => toAvailabilityBusinessHour(availability, timezone))
+    .filter((businessHour): businessHour is { daysOfWeek: number[]; startTime: string; endTime: string } =>
+      Boolean(businessHour),
+    );
+
+  return [...recurringBusinessHours, ...availabilityBusinessHours];
 }
 
 export function getScheduleCalendarWindow(
@@ -149,20 +161,6 @@ function toAppointmentEvent(appointment: ScheduleAppointmentDto, now: Date): Eve
   };
 }
 
-function toAvailabilityEvent(availability: ScheduleAvailabilityDto): EventInput {
-  return {
-    id: `availability-${availability.id}`,
-    title: 'Bookbar tid',
-    start: availability.startTime,
-    end: availability.endTime,
-    classNames: ['schedule-event', 'schedule-event-availability'],
-    extendedProps: {
-      kind: 'availability',
-      availabilityId: availability.id,
-    } satisfies ScheduleCalendarEventProps,
-  };
-}
-
 function toUnavailabilityEvent(unavailability: ScheduleUnavailabilityDto): EventInput {
   return {
     id: `unavailability-${unavailability.profileId}-${unavailability.startTime}-${unavailability.endTime}`,
@@ -192,6 +190,28 @@ function toDateTimeWindow(
   return {
     startMinute: minutesInTimeZone(value.startTime, timezone),
     endMinute: minutesInTimeZone(value.endTime, timezone),
+  };
+}
+
+function toAvailabilityBusinessHour(
+  availability: ScheduleAvailabilityDto,
+  timezone: string,
+): { daysOfWeek: number[]; startTime: string; endTime: string } | null {
+  const startMinute = minutesInTimeZone(availability.startTime, timezone);
+  const endMinute = minutesInTimeZone(availability.endTime, timezone);
+  if (startMinute == null || endMinute == null || endMinute <= startMinute) {
+    return null;
+  }
+
+  const isoDayOfWeek = Number(formatInTimeZone(availability.startTime, timezone, 'i'));
+  if (!Number.isFinite(isoDayOfWeek)) {
+    return null;
+  }
+
+  return {
+    daysOfWeek: [isoDayOfWeek % 7],
+    startTime: formatInTimeZone(availability.startTime, timezone, 'HH:mm'),
+    endTime: formatInTimeZone(availability.endTime, timezone, 'HH:mm'),
   };
 }
 

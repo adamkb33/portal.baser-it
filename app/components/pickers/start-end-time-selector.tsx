@@ -11,6 +11,8 @@ type StartEndTimeSelectorProps = {
   startPlaceholder?: string;
   endPlaceholder?: string;
   zIndex?: number;
+  endPanelAlign?: 'start' | 'end';
+  panelMode?: 'overlay' | 'inline';
 };
 
 function toMinutes(value: string): number | null {
@@ -32,6 +34,8 @@ export function StartEndTimeSelector({
   startPlaceholder = 'Starttid',
   endPlaceholder = 'Sluttid',
   zIndex = 60,
+  endPanelAlign = 'end',
+  panelMode = 'overlay',
 }: StartEndTimeSelectorProps) {
   const [isStartOpen, setIsStartOpen] = useState(false);
   const [isEndOpen, setIsEndOpen] = useState(false);
@@ -59,6 +63,7 @@ export function StartEndTimeSelector({
           }}
           onChange={onStartChange}
           zIndex={zIndex}
+          panelMode={panelMode}
         />
       </div>
 
@@ -77,6 +82,8 @@ export function StartEndTimeSelector({
           minValue={startValue || undefined}
           zIndex={zIndex}
           disabled={!startValue}
+          panelAlign={endPanelAlign}
+          panelMode={panelMode}
         />
       </div>
     </>
