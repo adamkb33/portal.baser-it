@@ -247,8 +247,8 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
 
   return (
     <CompanyFormPageTemplate
-      title="Legg til fravær"
-      description="Planlegg fravær som en egen ruteside i stedet for et overlegg. Hold oversikten ryddig og konsistent med resten av bookingområdet."
+      title="Legg til pause eller fravær"
+      description="Velg dato og klokkeslett for tiden som skal blokkeres i bookingkalenderen."
       backLink={{ to: loaderData.redirectTo, label: backLabel }}
       notices={formError ? <Notice tone="emphasis" title="Kunne ikke lagre fravær" message={formError} /> : null}
       footer={
@@ -257,7 +257,7 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
             Avbryt
           </Button>
           <Button type="submit" form="schedule-unavailability-form" loading={isSubmitting}>
-            Lagre fravær
+            Lagre pause/fravær
           </Button>
         </>
       }
@@ -282,7 +282,7 @@ export default function CompanyBookingScheduleUnavailabilityCreatePage({ loaderD
                       Periode {index + 1}
                     </Text>
                     <Text as="p" variant="body-sm" className="text-text-secondary">
-                      Velg datoer og eventuelle klokkeslett for fraværet.
+                      Velg datoer og klokkeslett for perioden som skal blokkeres.
                     </Text>
                   </div>
                   {formData.ranges.length > 1 ? (

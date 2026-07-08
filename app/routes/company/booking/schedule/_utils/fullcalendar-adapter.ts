@@ -152,7 +152,7 @@ function toAppointmentEvent(appointment: ScheduleAppointmentDto, now: Date): Eve
 function toAvailabilityEvent(availability: ScheduleAvailabilityDto): EventInput {
   return {
     id: `availability-${availability.id}`,
-    title: 'Tilgjengelig',
+    title: 'Bookbar tid',
     start: availability.startTime,
     end: availability.endTime,
     classNames: ['schedule-event', 'schedule-event-availability'],
@@ -166,7 +166,7 @@ function toAvailabilityEvent(availability: ScheduleAvailabilityDto): EventInput 
 function toUnavailabilityEvent(unavailability: ScheduleUnavailabilityDto): EventInput {
   return {
     id: `unavailability-${unavailability.profileId}-${unavailability.startTime}-${unavailability.endTime}`,
-    title: 'Utilgjengelig',
+    title: 'Fravær/pause',
     start: unavailability.startTime,
     end: unavailability.endTime,
     classNames: ['schedule-event', 'schedule-event-unavailability'],

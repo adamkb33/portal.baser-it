@@ -25,7 +25,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const id = Number(url.searchParams.get('id'));
 
   if (!Number.isFinite(id) || id <= 0) {
-    const flashCookie = await setFlashMessage(request, { type: 'error', text: 'Ugyldig tilgjengelighet-id' });
+    const flashCookie = await setFlashMessage(request, { type: 'error', text: 'Ugyldig tidsrom-id' });
     return redirect(ROUTES_MAP['company.booking.schedule.availabilities'].href, {
       headers: { 'Set-Cookie': flashCookie },
     });
@@ -36,19 +36,19 @@ export async function loader({ request }: Route.LoaderArgs) {
     const availability = response.data?.data;
 
     if (!availability) {
-      throw new Error('Fant ikke tilgjengelighet');
+      throw new Error('Fant ikke tidsrommet');
     }
     if (isPastInterval(availability.endTime)) {
       const flashCookie = await setFlashMessage(request, {
         type: 'error',
-        text: 'Tidligere tilgjengeligheter kan ikke redigeres',
+        text: 'Tidligere bookbar tid kan ikke redigeres',
       });
       return redirect(ROUTES_MAP['company.booking.schedule'].href, { headers: { 'Set-Cookie': flashCookie } });
     }
 
     return data({ availability, error: null as string | null });
   } catch (error) {
-    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente tilgjengelighet');
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente bookbar tid');
     return data({ availability: null, error: message }, { status: status ?? 400 });
   }
 }
@@ -75,13 +75,13 @@ export async function action({ request }: Route.ActionArgs) {
     const availabilityResponse = await withAuth(request, async () => Booking.getAvailability({ path: { id } }));
     const availability = availabilityResponse.data?.data;
     if (!availability) {
-      const flashCookie = await setFlashMessage(request, { type: 'error', text: 'Fant ikke tilgjengelighet' });
+      const flashCookie = await setFlashMessage(request, { type: 'error', text: 'Fant ikke tidsrommet' });
       return redirect(ROUTES_MAP['company.booking.schedule'].href, { headers: { 'Set-Cookie': flashCookie } });
     }
     if (isPastInterval(availability.endTime)) {
       const flashCookie = await setFlashMessage(request, {
         type: 'error',
-        text: 'Tidligere tilgjengeligheter kan ikke redigeres',
+        text: 'Tidligere bookbar tid kan ikke redigeres',
       });
       return redirect(ROUTES_MAP['company.booking.schedule'].href, { headers: { 'Set-Cookie': flashCookie } });
     }
@@ -96,10 +96,10 @@ export async function action({ request }: Route.ActionArgs) {
       }),
     );
 
-    const flashCookie = await setFlashMessage(request, { type: 'success', text: 'Tilgjengelighet oppdatert' });
+    const flashCookie = await setFlashMessage(request, { type: 'success', text: 'Bookbar tid oppdatert' });
     return redirect(ROUTES_MAP['company.booking.schedule'].href, { headers: { 'Set-Cookie': flashCookie } });
   } catch (error) {
-    const { message } = resolveErrorPayload(error, 'Kunne ikke oppdatere tilgjengelighet');
+    const { message } = resolveErrorPayload(error, 'Kunne ikke oppdatere bookbar tid');
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
     return redirect(request.url, { headers: { 'Set-Cookie': flashCookie } });
   }
@@ -118,7 +118,7 @@ export default function CompanyBookingScheduleAvailabilitiesEditPage({ loaderDat
 
   return (
     <CompanyPageTemplate
-      title="Rediger tilgjengelighet"
+      title="Rediger bookbar tid"
       routeLinks={
         <Button asChild variant="outline" size="sm">
           <NavLink to={ROUTES_MAP['company.booking.schedule'].href}>Tilbake til ukeplan</NavLink>
@@ -126,7 +126,7 @@ export default function CompanyBookingScheduleAvailabilitiesEditPage({ loaderDat
       }
     >
       {loaderData.error ? (
-        <Notice tone="emphasis" title="Kunne ikke hente tilgjengelighet" message={loaderData.error} />
+        <Notice tone="emphasis" title="Kunne ikke hente bookbar tid" message={loaderData.error} />
       ) : null}
 
       {availability ? (

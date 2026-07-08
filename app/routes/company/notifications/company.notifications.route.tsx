@@ -8,7 +8,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { serializeQueryParams } from '~/lib/query';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { ServerPaginatedTable } from '~/components/table/server-side-table';
-import { CompanyPageTemplate, KpiCard, Notice } from '~/ui';
+import { Badge, CompanyPageTemplate, Notice } from '~/ui';
 import { NotificationsFilterCard } from './_components/notifications-filter-card';
 import { NotificationCardRow } from './_components/notification-card-row';
 import { NotificationTableRow } from './_components/notification-table-row';
@@ -171,13 +171,22 @@ export default function CompanyNotificationsRoute({ loaderData }: Route.Componen
   return (
     <CompanyPageTemplate
       title="In-app varsler"
-      description="Varsler, lesestatus og filtre presentert i samme kompakte mønster som resten av company-flatene."
       label="Varsler"
-      hero={
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <KpiCard label="Totalt i listen" value={summary.total} icon={<Inbox className="h-5 w-5" />} tone="primary" />
-          <KpiCard label="Uleste" value={summary.unread} icon={<BellRing className="h-5 w-5" />} tone="warning" />
-          <KpiCard label="Leste" value={summary.read} icon={<Eye className="h-5 w-5" />} tone="success" />
+      description="Varsler og lenker fra systemet."
+      actions={
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="primary" size="md">
+            <Inbox className="h-3.5 w-3.5" />
+            {summary.total} totalt
+          </Badge>
+          <Badge variant="warning" size="md">
+            <BellRing className="h-3.5 w-3.5" />
+            {summary.unread} uleste
+          </Badge>
+          <Badge variant="success" size="md">
+            <Eye className="h-3.5 w-3.5" />
+            {summary.read} leste
+          </Badge>
         </div>
       }
     >
@@ -208,6 +217,7 @@ export default function CompanyNotificationsRoute({ loaderData }: Route.Componen
             <NotificationCardRow
               notification={notification}
               isViewed={isViewed(notification)}
+              appointmentHref={getAppointmentNotificationHref(notification)}
               onOpen={openNotificationRoute}
             />
           )}
@@ -215,6 +225,7 @@ export default function CompanyNotificationsRoute({ loaderData }: Route.Componen
             <NotificationTableRow
               notification={notification}
               isViewed={isViewed(notification)}
+              appointmentHref={getAppointmentNotificationHref(notification)}
               onOpen={openNotificationRoute}
             />
           )}

@@ -111,7 +111,7 @@ describe('fullcalendar adapter', () => {
     expect(events).toHaveLength(2);
     expect(events[0]).toMatchObject({
       id: 'availability-3',
-      title: 'Tilgjengelig',
+      title: 'Bookbar tid',
       classNames: ['schedule-event', 'schedule-event-availability'],
       extendedProps: {
         kind: 'availability',
@@ -120,7 +120,7 @@ describe('fullcalendar adapter', () => {
     });
     expect(events[1]).toMatchObject({
       id: 'unavailability-10-2026-07-08T12:00:00+02:00-2026-07-08T13:00:00+02:00',
-      title: 'Utilgjengelig',
+      title: 'Fravær/pause',
       classNames: ['schedule-event', 'schedule-event-unavailability'],
       extendedProps: {
         kind: 'unavailability',

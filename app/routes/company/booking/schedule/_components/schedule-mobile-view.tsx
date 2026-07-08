@@ -25,25 +25,8 @@ export function ScheduleMobileView({ weekDays, initialDayKey, onDayChange, onNav
     onDayChange(mobileDayKey);
   }, [mobileDayKey, onDayChange]);
 
-  const selectedDay = weekDays.find((day) => day.key === mobileDayKey) ?? weekDays[0];
-
   return (
-    <section
-      className="rounded-2xl border border-border bg-surface p-3 shadow-sm md:hidden"
-      aria-label="Mobil kalendernavigasjon"
-    >
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Velg dag</div>
-          <div className="text-lg font-semibold text-text-primary">{selectedDay?.label ?? 'Denne uken'}</div>
-        </div>
-        {selectedDay?.isToday ? (
-          <span className="rounded-full bg-surface-primary-strong px-3 py-1 text-xs font-semibold text-primary shadow-sm">
-            I dag
-          </span>
-        ) : null}
-      </div>
-
+    <section className="p-3 shadow-sm md:hidden" aria-label="Mobil kalendernavigasjon">
       <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2" aria-label="Dager i valgt uke">
         {weekDays.map((day) => {
           const isSelected = mobileDayKey === day.key;
@@ -83,7 +66,7 @@ export function ScheduleMobileView({ weekDays, initialDayKey, onDayChange, onNav
           onClick={() => onNavigate(ROUTES_MAP['company.booking.schedule.availabilities'].href)}
         >
           <CalendarPlus2 className="h-4 w-4" />
-          Tilgjengelig
+          Bookbar tid
         </Button>
         <Button
           type="button"
@@ -93,7 +76,7 @@ export function ScheduleMobileView({ weekDays, initialDayKey, onDayChange, onNav
           onClick={() => onNavigate(ROUTES_MAP['company.booking.schedule-unavailability.create'].href)}
         >
           <CalendarX2 className="h-4 w-4" />
-          Utilgjengelig
+          Fravær/pause
         </Button>
       </div>
     </section>

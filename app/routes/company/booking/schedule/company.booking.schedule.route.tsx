@@ -130,7 +130,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   const availabilityId = Number(formData.get('availabilityId'));
   if (!Number.isFinite(availabilityId) || availabilityId <= 0) {
-    return redirectWithError(request, request.url, 'Ugyldig tilgjengelighet-id');
+    return redirectWithError(request, request.url, 'Ugyldig tidsrom-id');
   }
 
   try {
@@ -139,16 +139,16 @@ export async function action({ request }: Route.ActionArgs) {
     );
     const availability = availabilityResponse.data?.data;
     if (!availability) {
-      return redirectWithError(request, request.url, 'Fant ikke tilgjengelighet');
+      return redirectWithError(request, request.url, 'Fant ikke tidsrommet');
     }
     if (isPastInterval(availability.endTime)) {
-      return redirectWithError(request, request.url, 'Tidligere tilgjengeligheter kan ikke slettes');
+      return redirectWithError(request, request.url, 'Tidligere bookbar tid kan ikke slettes');
     }
 
     await withAuth(request, async () => Booking.deleteAvailability({ path: { id: availabilityId } }));
-    return redirectWithSuccess(request, request.url, 'Tilgjengelighet slettet');
+    return redirectWithSuccess(request, request.url, 'Bookbar tid slettet');
   } catch (error) {
-    const { message } = resolveErrorPayload(error, 'Kunne ikke slette tilgjengelighet');
+    const { message } = resolveErrorPayload(error, 'Kunne ikke slette bookbar tid');
     return redirectWithError(request, request.url, message);
   }
 }
@@ -274,7 +274,7 @@ export default function CompanyBookingSchedulePage({ loaderData }: Route.Compone
     <CompanyPageTemplate
       className="app-route-shape-background"
       title="Kalenderoversikt"
-      description="Ukevisning for avtaler, tilgjengelighet og fravær."
+      description="Ukevisning for avtaler, bookbar tid og fravær."
       routeLinks={
         <ScheduleToolbar
           selectedWeekStart={selectedWeekStart}
@@ -330,7 +330,7 @@ export default function CompanyBookingSchedulePage({ loaderData }: Route.Compone
           {selectedEvent ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Badge>{selectedEvent.kind === 'availability' ? 'Tilgjengelighet' : 'Utilgjengelighet'}</Badge>
+                <Badge>{selectedEvent.kind === 'availability' ? 'Bookbar tid' : 'Fravær/pause'}</Badge>
                 {selectedEventIsPast ? <Badge variant="outline">Tidligere</Badge> : null}
               </div>
               <Text as="p" variant="body-sm" className="text-text-secondary">
@@ -346,7 +346,7 @@ export default function CompanyBookingSchedulePage({ loaderData }: Route.Compone
                     size="sm"
                     variant="outline"
                     disabled={selectedEventIsPast}
-                    title={selectedEventIsPast ? 'Tidligere tilgjengeligheter kan ikke redigeres' : undefined}
+                    title={selectedEventIsPast ? 'Tidligere bookbar tid kan ikke redigeres' : undefined}
                     onClick={() => goToAvailabilityEdit(selectedEvent.availabilityId!)}
                   >
                     Rediger
@@ -360,7 +360,7 @@ export default function CompanyBookingSchedulePage({ loaderData }: Route.Compone
                       variant="outline"
                       className="text-destructive"
                       disabled={selectedEventIsPast}
-                      title={selectedEventIsPast ? 'Tidligere tilgjengeligheter kan ikke slettes' : undefined}
+                      title={selectedEventIsPast ? 'Tidligere bookbar tid kan ikke slettes' : undefined}
                       onClick={() => setSelectedEvent(null)}
                     >
                       Slett

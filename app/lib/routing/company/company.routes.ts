@@ -318,7 +318,7 @@ export const COMPANY_ROUTES: RouteBranch[] = [
               {
                 id: 'company.booking.schedule.availabilities',
                 href: '/company/booking/schedule/availabilities',
-                label: 'Tilgjengeligheter',
+                label: 'Bookbar tid',
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
                 companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],
@@ -327,7 +327,7 @@ export const COMPANY_ROUTES: RouteBranch[] = [
               {
                 id: 'company.booking.schedule.availabilities.edit',
                 href: '/company/booking/schedule/availabilities/edit',
-                label: 'Rediger tilgjengelighet',
+                label: 'Rediger bookbar tid',
                 category: BrachCategory.COMPANY,
                 accessType: Access.PRODUCT,
                 companyRoles: [CompanyRole.ADMIN, CompanyRole.EMPLOYEE],

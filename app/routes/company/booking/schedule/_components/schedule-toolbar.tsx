@@ -116,13 +116,13 @@ export function ScheduleToolbar({
         <Button asChild variant="primary" size="md" className="h-10 rounded-lg">
           <RouterLink to={ROUTES_MAP['company.booking.schedule.availabilities'].href}>
             <CalendarPlus2 className="h-4 w-4" />
-            Tilgjengelig
+            Bookbar tid
           </RouterLink>
         </Button>
         <Button asChild variant="outline" size="md" className="h-10 rounded-lg bg-background">
           <RouterLink to={ROUTES_MAP['company.booking.schedule-unavailability.create'].href}>
             <CalendarX2 className="h-4 w-4" />
-            Utilgjengelig
+            Fravær/pause
           </RouterLink>
         </Button>
       </div>
