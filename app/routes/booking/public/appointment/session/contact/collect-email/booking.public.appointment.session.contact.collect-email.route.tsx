@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Form, Link, data, redirect, useNavigation } from 'react-router';
 import { ChevronLeft, Mail } from 'lucide-react';
 import { resolveErrorPayload } from '~/lib/api-error';
@@ -92,6 +93,8 @@ function buildCollectEmailRetryHref(request: Request, email: string): string {
 export default function BookingContactCollectEmailPage({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
+  const [email, setEmail] = React.useState(loaderData.email);
+  const buttonLabel = email.trim() ? 'Lagre og fortsett' : 'Fortsett uten å lagre';
 
   return (
     <Stack space="xl">
@@ -123,6 +126,7 @@ export default function BookingContactCollectEmailPage({ loaderData }: Route.Com
                 autoComplete="email"
                 placeholder="E-post (valgfritt)"
                 defaultValue={loaderData.email || undefined}
+                onChange={(event) => setEmail(event.target.value)}
                 disabled={isSubmitting}
                 variant="booking"
               />
@@ -137,7 +141,7 @@ export default function BookingContactCollectEmailPage({ loaderData }: Route.Com
               loading={isSubmitting}
             >
               <Mail className="size-5" />
-              {isSubmitting ? 'Lagrer...' : 'Lagre og fortsett'}
+              {isSubmitting ? 'Lagrer...' : buttonLabel}
             </Button>
           </Stack>
         </Form>
