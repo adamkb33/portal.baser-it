@@ -7,7 +7,8 @@ import { setFlashMessage } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, Checkbox, CompanyPageTemplate, Notice, Panel, Text } from '~/ui';
 import { SystemAdminCompanySelect } from '../../_components/system-admin-company-select';
-import { loadSystemAdminCompanyOptions, parsePositiveInteger } from '../../_utils/system-admin-companies';
+import { parsePositiveInteger } from '../../_utils/system-admin-company-display';
+import { loadSystemAdminCompanyOptions } from '../../_utils/system-admin-companies.server';
 
 const PRODUCT_VALUES = ['BOOKING', 'EVENT', 'OFFER', 'TIMESHEET'] as const;
 

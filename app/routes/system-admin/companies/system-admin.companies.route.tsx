@@ -20,10 +20,10 @@ import {
   DEFAULT_COMPANY_PAGE_SIZE,
   DEFAULT_COMPANY_SORT,
   formatCompanyOptionLabel,
-  loadSystemAdminCompanies,
   parseNonNegativeInteger,
   parsePositiveInteger,
-} from './_utils/system-admin-companies';
+} from './_utils/system-admin-company-display';
+import { loadSystemAdminCompanies } from './_utils/system-admin-companies.server';
 
 function buildCompaniesHref(query: { page?: number; size?: number; sort?: string }) {
   const params = new URLSearchParams();

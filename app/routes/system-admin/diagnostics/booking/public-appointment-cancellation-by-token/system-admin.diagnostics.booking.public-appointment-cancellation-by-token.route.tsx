@@ -7,7 +7,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, CompanyPageTemplate, Input, Label, Notice, Panel, Text } from '~/ui';
 import { SystemAdminCompanySelect } from '~/routes/system-admin/companies/_components/system-admin-company-select';
-import { loadSystemAdminCompanyOptions } from '~/routes/system-admin/companies/_utils/system-admin-companies';
+import { loadSystemAdminCompanyOptions } from '~/routes/system-admin/companies/_utils/system-admin-companies.server';
 
 function parseInteger(value: string | null): number | undefined {
   if (!value) return undefined;

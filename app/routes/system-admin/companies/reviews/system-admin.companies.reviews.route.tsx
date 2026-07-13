@@ -27,7 +27,7 @@ import {
   Text,
 } from '~/ui';
 import { SystemAdminCompanySelect } from '../_components/system-admin-company-select';
-import { loadSystemAdminCompanyOptions } from '../_utils/system-admin-companies';
+import { loadSystemAdminCompanyOptions } from '../_utils/system-admin-companies.server';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_SORT = 'lastSeenAt,desc';

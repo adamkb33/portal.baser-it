@@ -1,6 +1,6 @@
 import type { SystemAdminCompanyDto } from '~/api/generated/base';
 import { Label, Text } from '~/ui';
-import { formatCompanyOptionLabel } from '../_utils/system-admin-companies';
+import { formatCompanyOptionLabel } from '../_utils/system-admin-company-display';
 
 type SystemAdminCompanySelectProps = {
   companies: SystemAdminCompanyDto[];
