@@ -100,12 +100,16 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
   const setUserNav: RootOutletContext['setUserNav'] = (_value) => undefined;
   const setCompanyContext: RootOutletContext['setCompanyContext'] = (_value) => undefined;
 
-  const sidebarBranches = userNav?.[RoutePlaceMent.SIDEBAR] || [];
-  const hasSystemAdminSidebar = sidebarBranches.some((branch) => branch.id === 'system-admin');
+  const allSidebarBranches = userNav?.[RoutePlaceMent.SIDEBAR] || [];
+  const systemAdminSidebarBranches = allSidebarBranches.filter((branch) => branch.id === 'system-admin');
+  const hasSystemAdminSidebar = systemAdminSidebarBranches.length > 0;
+  const sidebarBranches = hasSystemAdminSidebar ? systemAdminSidebarBranches : allSidebarBranches;
   const hasSidebar = sidebarBranches.length > 0 && (Boolean(companyContext) || hasSystemAdminSidebar);
-  const workspace = companyContext
-    ? { name: companyContext.name ?? companyContext.orgNumber, subtitle: 'Selskap' }
-    : null;
+  const workspace = hasSystemAdminSidebar
+    ? { name: 'Systemadministrasjon', subtitle: 'Systemadmin' }
+    : companyContext
+      ? { name: companyContext.name ?? companyContext.orgNumber, subtitle: 'Selskap' }
+      : null;
 
   React.useEffect(() => {
     if (keepMobileMenuOpenOnNextRouteChangeRef.current) {

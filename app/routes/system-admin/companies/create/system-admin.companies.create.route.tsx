@@ -10,35 +10,36 @@ import { Button, CompanyPageTemplate, FormField, Notice, Panel, Text } from '~/u
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const orgNumber = String(formData.get('orgNumber') ?? '').trim();
+  const googlePlaceId = String(formData.get('googlePlaceId') ?? '').trim();
 
-  if (!orgNumber) {
-    const message = 'Organisasjonsnummer er påkrevd.';
+  if (!orgNumber || !googlePlaceId) {
+    const message = 'Organisasjonsnummer og Google Place ID er påkrevd.';
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
     return data(
-      { error: message, values: { orgNumber }, company: null },
+      { error: message, values: { orgNumber, googlePlaceId }, company: null },
       { status: 400, headers: { 'Set-Cookie': flashCookie } },
     );
   }
 
   try {
-    const response = await withAuth(request, async () => Base.createCompany({ body: { orgNumber } }));
+    const response = await withAuth(request, async () => Base.createCompany({ body: { orgNumber, googlePlaceId } }));
     const flashCookie = await setFlashMessage(request, { type: 'success', text: 'Selskap opprettet.' });
     return data(
-      { error: null, values: { orgNumber: '' }, company: response.data?.data ?? null },
+      { error: null, values: { orgNumber: '', googlePlaceId: '' }, company: response.data?.data ?? null },
       { headers: { 'Set-Cookie': flashCookie } },
     );
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke opprette selskap.');
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
     return data(
-      { error: message, values: { orgNumber }, company: null },
+      { error: message, values: { orgNumber, googlePlaceId }, company: null },
       { status: status ?? 400, headers: { 'Set-Cookie': flashCookie } },
     );
   }
 }
 
 export default function SystemAdminCompaniesCreatePage({ actionData }: Route.ComponentProps) {
-  const values = actionData?.values ?? { orgNumber: '' };
+  const values = actionData?.values ?? { orgNumber: '', googlePlaceId: '' };
 
   return (
     <CompanyPageTemplate
@@ -53,9 +54,19 @@ export default function SystemAdminCompaniesCreatePage({ actionData }: Route.Com
       {actionData?.error ? (
         <Notice tone="emphasis" title="Kunne ikke opprette selskap" message={actionData.error} />
       ) : null}
-      <Panel title="Selskapsinformasjon" description="Oppgi organisasjonsnummer for selskapet som skal opprettes.">
+      <Panel
+        title="Selskapsinformasjon"
+        description="Oppgi organisasjonsnummer og Google Place ID for selskapet som skal opprettes."
+      >
         <form method="post" className="space-y-4">
           <FormField label="Organisasjonsnummer" name="orgNumber" defaultValue={values.orgNumber} required />
+          <FormField
+            label="Google Place ID"
+            name="googlePlaceId"
+            defaultValue={values.googlePlaceId}
+            required
+            helperText="Påkrevd for Google reviews og synkronisering."
+          />
           <Button type="submit">Opprett selskap</Button>
         </form>
       </Panel>

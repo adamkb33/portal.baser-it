@@ -5,16 +5,41 @@ import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import { Button, Checkbox, CompanyPageTemplate, FormField, Notice, Panel } from '~/ui';
+import { Button, Checkbox, CompanyPageTemplate, Notice, Panel } from '~/ui';
+import { SystemAdminCompanySelect } from '../_components/system-admin-company-select';
+import { loadSystemAdminCompanyOptions, parsePositiveInteger } from '../_utils/system-admin-companies';
 
 const PRODUCT_VALUES = ['BOOKING', 'EVENT', 'OFFER', 'TIMESHEET'] as const;
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const selectedCompanyId = parsePositiveInteger(url.searchParams.get('companyId')) ?? '';
+
+  try {
+    return data({
+      companies: await loadSystemAdminCompanyOptions(request),
+      selectedCompanyId,
+      loadError: null as string | null,
+    });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente selskaper.');
+    return data(
+      {
+        companies: [],
+        selectedCompanyId,
+        loadError: message,
+      },
+      { status: status ?? 400 },
+    );
+  }
+}
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const companyId = Number(formData.get('companyId'));
   const products = PRODUCT_VALUES.filter((product) => formData.get(product) === 'on');
 
-  if (!Number.isFinite(companyId) || products.length === 0) {
+  if (!Number.isInteger(companyId) || companyId < 1 || products.length === 0) {
     const message = 'Selskap-ID og minst ett produkt er påkrevd.';
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
     return data(
@@ -45,8 +70,8 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function SystemAdminCompaniesProductsPage({ actionData }: Route.ComponentProps) {
-  const values = actionData?.values ?? { companyId: '', products: [] as string[] };
+export default function SystemAdminCompaniesProductsPage({ loaderData, actionData }: Route.ComponentProps) {
+  const values = actionData?.values ?? { companyId: loaderData.selectedCompanyId, products: [] as string[] };
 
   return (
     <CompanyPageTemplate
@@ -66,9 +91,12 @@ export default function SystemAdminCompaniesProductsPage({ actionData }: Route.C
       {actionData?.error ? (
         <Notice tone="emphasis" title="Kunne ikke oppdatere produkter" message={actionData.error} />
       ) : null}
+      {loaderData.loadError ? (
+        <Notice tone="emphasis" title="Kunne ikke hente selskaper" message={loaderData.loadError} />
+      ) : null}
       <Panel title="Produkter" description="Velg produktene som skal aktiveres for selskapet.">
         <form method="post" className="space-y-4">
-          <FormField label="Selskap-ID" name="companyId" type="number" defaultValue={values.companyId} required />
+          <SystemAdminCompanySelect companies={loaderData.companies} defaultValue={values.companyId} />
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium text-text-primary">Produkter</legend>
             {PRODUCT_VALUES.map((product) => (

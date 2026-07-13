@@ -5,6 +5,7 @@ import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { withAuth } from '~/api/utils/with-auth';
 import { AuthController } from '~/api/generated/base';
+import { UserRole } from '~/lib/routing/route-types';
 
 export async function loader({ request }: Route.LoaderArgs) {
   let session: Awaited<ReturnType<typeof authService.getUserSession>>;
@@ -18,7 +19,10 @@ export async function loader({ request }: Route.LoaderArgs) {
   let hasSystemAdminRole = false;
   try {
     const permissionsResponse = await withAuth(request, () => AuthController.getPermissions(), session.accessToken);
-    hasSystemAdminRole = Boolean(permissionsResponse.data?.data?.flags?.canAccessSystemAdmin);
+    const permissions = permissionsResponse.data?.data;
+    hasSystemAdminRole =
+      Boolean(permissions?.flags?.canAccessSystemAdmin) &&
+      Boolean(permissions?.systemRoles?.includes(UserRole.SYSTEM_ADMIN));
   } catch {
     hasSystemAdminRole = false;
   }

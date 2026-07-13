@@ -6,6 +6,31 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { setFlashMessage } from '~/lib/flash-message.server';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, CompanyPageTemplate, FormField, Label, Notice, Panel } from '~/ui';
+import { SystemAdminCompanySelect } from '../_components/system-admin-company-select';
+import { loadSystemAdminCompanyOptions, parsePositiveInteger } from '../_utils/system-admin-companies';
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const selectedCompanyId = parsePositiveInteger(url.searchParams.get('companyId')) ?? '';
+
+  try {
+    return data({
+      companies: await loadSystemAdminCompanyOptions(request),
+      selectedCompanyId,
+      loadError: null as string | null,
+    });
+  } catch (error) {
+    const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente selskaper.');
+    return data(
+      {
+        companies: [],
+        selectedCompanyId,
+        loadError: message,
+      },
+      { status: status ?? 400 },
+    );
+  }
+}
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
@@ -13,7 +38,7 @@ export async function action({ request }: Route.ActionArgs) {
   const companyId = Number(formData.get('companyId'));
   const role = String(formData.get('role') ?? 'ADMIN');
 
-  if (!Number.isFinite(userId) || !Number.isFinite(companyId)) {
+  if (!Number.isInteger(userId) || userId < 1 || !Number.isInteger(companyId) || companyId < 1) {
     const message = 'Ugyldig bruker- eller selskap-ID.';
     const flashCookie = await setFlashMessage(request, { type: 'error', text: message });
     return data(
@@ -47,8 +72,8 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function SystemAdminCompaniesRolesPage({ actionData }: Route.ComponentProps) {
-  const values = actionData?.values ?? { userId: '', companyId: '', role: 'ADMIN' };
+export default function SystemAdminCompaniesRolesPage({ loaderData, actionData }: Route.ComponentProps) {
+  const values = actionData?.values ?? { userId: '', companyId: loaderData.selectedCompanyId, role: 'ADMIN' };
 
   return (
     <CompanyPageTemplate
@@ -63,10 +88,13 @@ export default function SystemAdminCompaniesRolesPage({ actionData }: Route.Comp
       {actionData?.error ? (
         <Notice tone="emphasis" title="Kunne ikke tildele rolle" message={actionData.error} />
       ) : null}
+      {loaderData.loadError ? (
+        <Notice tone="emphasis" title="Kunne ikke hente selskaper" message={loaderData.loadError} />
+      ) : null}
       <Panel title="Rolle" description="Velg bruker, selskap og rolle som skal tildeles.">
         <form method="post" className="space-y-4">
           <FormField label="Bruker-ID" name="userId" type="number" defaultValue={values.userId} required />
-          <FormField label="Selskap-ID" name="companyId" type="number" defaultValue={values.companyId} required />
+          <SystemAdminCompanySelect companies={loaderData.companies} defaultValue={values.companyId} />
           <div className="flex flex-col gap-2">
             <Label htmlFor="role">Rolle</Label>
             <select

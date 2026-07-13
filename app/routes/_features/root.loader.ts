@@ -91,6 +91,18 @@ export const buildResponseData = async (request: Request, accessToken: string, f
           userContext = undefined;
           systemRoles = [];
         }
+
+        if (systemRoles.length === 0) {
+          try {
+            const permissionsResponse = await AuthController.getPermissions();
+            systemRoles = permissionsResponse.data?.data?.systemRoles ?? [];
+          } catch (err) {
+            logger.info('Failed to fetch auth permissions', {
+              userId: authPayload.id,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          }
+        }
       },
       accessToken,
     );

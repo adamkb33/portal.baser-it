@@ -18,6 +18,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
         category: BrachCategory.USER,
         accessType: Access.AUTHENTICATED,
         userRoles: [UserRole.SYSTEM_ADMIN],
+        iconName: 'Users',
         children: [
           {
             id: 'system-admin.users.invite',
@@ -26,6 +27,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
             category: BrachCategory.USER,
             accessType: Access.AUTHENTICATED,
             userRoles: [UserRole.SYSTEM_ADMIN],
+            iconName: 'UserPlus',
           },
           {
             id: 'system-admin.users.details',
@@ -34,6 +36,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
             category: BrachCategory.USER,
             accessType: Access.AUTHENTICATED,
             userRoles: [UserRole.SYSTEM_ADMIN],
+            iconName: 'UserCircle',
           },
         ],
       },
@@ -44,6 +47,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
         category: BrachCategory.USER,
         accessType: Access.AUTHENTICATED,
         userRoles: [UserRole.SYSTEM_ADMIN],
+        iconName: 'Building2',
         children: [
           {
             id: 'system-admin.companies.create',
@@ -52,6 +56,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
             category: BrachCategory.USER,
             accessType: Access.AUTHENTICATED,
             userRoles: [UserRole.SYSTEM_ADMIN],
+            iconName: 'Building2',
           },
           {
             id: 'system-admin.companies.roles',
@@ -60,6 +65,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
             category: BrachCategory.USER,
             accessType: Access.AUTHENTICATED,
             userRoles: [UserRole.SYSTEM_ADMIN],
+            iconName: 'Users',
           },
           {
             id: 'system-admin.companies.products',
@@ -68,6 +74,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
             category: BrachCategory.USER,
             accessType: Access.AUTHENTICATED,
             userRoles: [UserRole.SYSTEM_ADMIN],
+            iconName: 'Briefcase',
             children: [
               {
                 id: 'system-admin.companies.products.delete',
@@ -76,8 +83,18 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
                 category: BrachCategory.USER,
                 accessType: Access.AUTHENTICATED,
                 userRoles: [UserRole.SYSTEM_ADMIN],
+                iconName: 'Briefcase',
               },
             ],
+          },
+          {
+            id: 'system-admin.companies.reviews',
+            href: '/system-admin/companies/reviews',
+            label: 'Google reviews',
+            category: BrachCategory.USER,
+            accessType: Access.AUTHENTICATED,
+            userRoles: [UserRole.SYSTEM_ADMIN],
+            iconName: 'FileText',
           },
         ],
       },
@@ -88,6 +105,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
         category: BrachCategory.USER,
         accessType: Access.AUTHENTICATED,
         userRoles: [UserRole.SYSTEM_ADMIN],
+        iconName: 'ClipboardList',
         children: [
           {
             id: 'system-admin.diagnostics.booking',
@@ -96,6 +114,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
             category: BrachCategory.USER,
             accessType: Access.AUTHENTICATED,
             userRoles: [UserRole.SYSTEM_ADMIN],
+            iconName: 'Calendar',
           },
           {
             id: 'system-admin.diagnostics.booking.public-appointment-cancellation-by-token',
@@ -115,6 +134,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
         category: BrachCategory.USER,
         accessType: Access.AUTHENTICATED,
         userRoles: [UserRole.SYSTEM_ADMIN],
+        iconName: 'Key',
         children: [
           {
             id: 'system-admin.smtp.diagnostics',
@@ -123,6 +143,7 @@ export const SYSTEM_ADMIN_ROUTES: RouteBranch[] = [
             category: BrachCategory.USER,
             accessType: Access.AUTHENTICATED,
             userRoles: [UserRole.SYSTEM_ADMIN],
+            iconName: 'ClipboardList',
           },
         ],
       },

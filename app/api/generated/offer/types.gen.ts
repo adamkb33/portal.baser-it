@@ -404,6 +404,30 @@ export type ServiceGroupDto = {
   name: string;
 };
 
+export type UpdateCompanyGooglePlaceIdDto = {
+  googlePlaceId?: string;
+};
+
+export type ApiResponseSystemAdminCompanyDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: SystemAdminCompanyDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type SystemAdminCompanyDto = {
+  id: number;
+  orgNum: string;
+  name?: string;
+  googlePlaceId?: string;
+  lastSyncedAt?: string;
+  syncEnabled: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type UpdateContactDto = {
   givenName: string;
   familyName: string;
@@ -976,6 +1000,8 @@ export type CompanyInvitedUserTokenDto = {
 
 export type CreateCompanyDto = {
   orgNumber: string;
+  name?: string;
+  googlePlaceId?: string;
 };
 
 export type AddressDto = {
@@ -2271,6 +2297,77 @@ export type SmtpDiagnosticsResponse = {
   connectError?: string;
 };
 
+export type ApiResponsePaginatedResponseSystemAdminCompanyDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: PaginatedResponseSystemAdminCompanyDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type PaginatedResponseSystemAdminCompanyDto = {
+  content: Array<SystemAdminCompanyDto>;
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+};
+
+export type ApiResponsePaginatedResponseSystemAdminReviewDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: PaginatedResponseSystemAdminReviewDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type PaginatedResponseSystemAdminReviewDto = {
+  content: Array<SystemAdminReviewDto>;
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+};
+
+export type SystemAdminReviewDto = {
+  id: number;
+  companyId: number;
+  companyName?: string;
+  companyOrgNum?: string;
+  googleReviewId: string;
+  authorName: string;
+  rating: number;
+  text?: string;
+  relativeTime: string;
+  ownerResponse?: string;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  stale: boolean;
+};
+
+export type ApiResponseListPublicCompanyReviewDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: Array<PublicCompanyReviewDto>;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type PublicCompanyReviewDto = {
+  authorName: string;
+  rating: number;
+  text?: string;
+  relativeTime: string;
+  ownerResponse?: string;
+};
+
 export type ApiResponseListCompanyRole = {
   success: boolean;
   message: ApiMessage;
@@ -2340,6 +2437,44 @@ export type CompanyDto = {
   id: number;
   orgNum: string;
   products: Array<'BOOKING' | 'EVENT' | 'OFFER' | 'TIMESHEET'>;
+};
+
+export type ApiResponseCompanyReviewsPageDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: CompanyReviewsPageDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type CompanyReviewDto = {
+  id: number;
+  googleReviewId: string;
+  authorName: string;
+  rating: number;
+  text?: string;
+  relativeTime: string;
+  ownerResponse?: string;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  stale: boolean;
+};
+
+export type CompanyReviewsPageDto = {
+  companyId: number;
+  lastSyncedAt?: string;
+  reviews: PaginatedResponseCompanyReviewDto;
+};
+
+export type PaginatedResponseCompanyReviewDto = {
+  content: Array<CompanyReviewDto>;
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
 };
 
 export type ApiResponseVerifyEmailResponseDto = {

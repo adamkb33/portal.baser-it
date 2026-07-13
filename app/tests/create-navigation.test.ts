@@ -86,4 +86,28 @@ describe('createNavigation', () => {
     const booking = company?.children?.find((c) => c.id === 'company.booking');
     expect(booking).toBeUndefined();
   });
+
+  it('includes system-admin sidebar routes for system admins', () => {
+    const nav = createNavigation(createUserContext(['ADMIN']), ['SYSTEM_ADMIN']);
+    const systemAdmin = nav[RoutePlaceMent.SIDEBAR].find((r) => r.id === 'system-admin');
+    const companies = systemAdmin?.children?.find((c) => c.id === 'system-admin.companies');
+    const reviews = companies?.children?.find((c) => c.id === 'system-admin.companies.reviews');
+
+    expect(systemAdmin).toBeDefined();
+    expect(systemAdmin?.children?.map((child) => child.id)).toEqual(
+      expect.arrayContaining([
+        'system-admin.users',
+        'system-admin.companies',
+        'system-admin.diagnostics',
+        'system-admin.smtp',
+      ]),
+    );
+    expect(reviews).toBeDefined();
+  });
+
+  it('hides system-admin sidebar routes for non-system admins', () => {
+    const nav = createNavigation(createUserContext(['ADMIN']));
+    const systemAdmin = nav[RoutePlaceMent.SIDEBAR].find((r) => r.id === 'system-admin');
+    expect(systemAdmin).toBeUndefined();
+  });
 });

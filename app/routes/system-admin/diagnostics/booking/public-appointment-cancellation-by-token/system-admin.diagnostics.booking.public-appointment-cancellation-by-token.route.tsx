@@ -1,10 +1,13 @@
 import { data, Form, NavLink } from 'react-router';
 import type { Route } from './+types/system-admin.diagnostics.booking.public-appointment-cancellation-by-token.route';
 import { Diagnostic } from '~/api/generated/diagnostic';
+import type { SystemAdminCompanyDto } from '~/api/generated/base';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { Button, CompanyPageTemplate, Input, Label, Notice, Panel, Text } from '~/ui';
+import { SystemAdminCompanySelect } from '~/routes/system-admin/companies/_components/system-admin-company-select';
+import { loadSystemAdminCompanyOptions } from '~/routes/system-admin/companies/_utils/system-admin-companies';
 
 function parseInteger(value: string | null): number | undefined {
   if (!value) return undefined;
@@ -49,6 +52,15 @@ export async function loader({ request }: Route.LoaderArgs) {
     page: parseInteger(url.searchParams.get('page')),
     size: parseInteger(url.searchParams.get('size')),
   };
+  let companies: SystemAdminCompanyDto[] = [];
+  let loadError: string | null = null;
+
+  try {
+    companies = await loadSystemAdminCompanyOptions(request);
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente selskaper.');
+    loadError = message;
+  }
 
   try {
     const response = await withAuth(request, () =>
@@ -57,17 +69,21 @@ export async function loader({ request }: Route.LoaderArgs) {
       }),
     );
     return data({
+      companies,
       tableData: response.data?.data ?? null,
       query,
       error: null as string | null,
+      loadError,
     });
   } catch (error) {
     const { message, status } = resolveErrorPayload(error, 'Kunne ikke hente diagnostikk-tabell.');
     return data(
       {
+        companies,
         tableData: null,
         query,
         error: message,
+        loadError,
       },
       { status: status ?? 400 },
     );
@@ -90,6 +106,9 @@ export default function SystemAdminDiagnosticsBookingPublicAppointmentCancellati
       }
     >
       {loaderData.error ? <Notice tone="emphasis" title="Kunne ikke hente tabell" message={loaderData.error} /> : null}
+      {loaderData.loadError ? (
+        <Notice tone="emphasis" title="Kunne ikke hente selskaper" message={loaderData.loadError} />
+      ) : null}
 
       <Panel title="Filtre" description="Server-side filtre">
         <Form method="get" className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -105,10 +124,12 @@ export default function SystemAdminDiagnosticsBookingPublicAppointmentCancellati
             <Label htmlFor="eventType">Event type</Label>
             <Input id="eventType" name="eventType" defaultValue={loaderData.query.eventType ?? ''} />
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="companyId">Company ID</Label>
-            <Input id="companyId" name="companyId" defaultValue={loaderData.query.companyId ?? ''} />
-          </div>
+          <SystemAdminCompanySelect
+            companies={loaderData.companies}
+            defaultValue={loaderData.query.companyId ?? ''}
+            required={false}
+            helperText="La stå tom for alle selskaper."
+          />
           <div className="flex flex-col gap-2">
             <Label htmlFor="appointmentId">Appointment ID</Label>
             <Input id="appointmentId" name="appointmentId" defaultValue={loaderData.query.appointmentId ?? ''} />

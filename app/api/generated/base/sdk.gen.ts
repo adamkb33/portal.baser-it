@@ -53,6 +53,8 @@ import type {
   GetCompanyProductsData,
   GetCompanyProductsResponses,
   GetCompanyResponses,
+  GetCompanyReviewsData,
+  GetCompanyReviewsResponses,
   GetCompanyRoleData,
   GetCompanyRoleResponses,
   GetCompanySummaryByIdsData,
@@ -79,6 +81,8 @@ import type {
   GetMeResponses,
   GetPermissionsData,
   GetPermissionsResponses,
+  GetReviewsData,
+  GetReviewsResponses,
   GetUser1Data,
   GetUser1Responses,
   GetUserByEmailData,
@@ -95,6 +99,10 @@ import type {
   InviteUserResponses,
   JwtClaimsData,
   JwtClaimsResponses,
+  ListCompaniesData,
+  ListCompaniesResponses,
+  ListReviewsData,
+  ListReviewsResponses,
   ProviderCompleteProfileData,
   ProviderCompleteProfileResponses,
   PublicGetCompanyByIdData,
@@ -131,8 +139,12 @@ import type {
   SignOutResponses,
   SignUpData,
   SignUpResponses,
+  SyncCompanyReviewsData,
+  SyncCompanyReviewsResponses,
   UpdateCompanyDisplayNameData,
   UpdateCompanyDisplayNameResponses,
+  UpdateCompanyGooglePlaceIdData,
+  UpdateCompanyGooglePlaceIdResponses,
   UpdateContact1Data,
   UpdateContact1Responses,
   UpdateMobileData,
@@ -179,6 +191,20 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 };
 
 export class Base {
+  public static updateCompanyGooglePlaceId<ThrowOnError extends boolean = false>(
+    options: Options<UpdateCompanyGooglePlaceIdData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).put<UpdateCompanyGooglePlaceIdResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/system-admin/companies/{companyId}/google-place-id',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  }
+
   public static deleteContact1<ThrowOnError extends boolean = false>(
     options: Options<DeleteContact1Data, ThrowOnError>,
   ) {
@@ -243,6 +269,16 @@ export class Base {
     });
   }
 
+  public static listCompanies<ThrowOnError extends boolean = false>(
+    options?: Options<ListCompaniesData, ThrowOnError>,
+  ) {
+    return (options?.client ?? client).get<ListCompaniesResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/system-admin/companies',
+      ...options,
+    });
+  }
+
   public static createCompany<ThrowOnError extends boolean = false>(options: Options<CreateCompanyData, ThrowOnError>) {
     return (options.client ?? client).post<CreateCompanyResponses, unknown, ThrowOnError>({
       security: [{ scheme: 'bearer', type: 'http' }],
@@ -252,6 +288,16 @@ export class Base {
         'Content-Type': 'application/json',
         ...options.headers,
       },
+    });
+  }
+
+  public static syncCompanyReviews<ThrowOnError extends boolean = false>(
+    options: Options<SyncCompanyReviewsData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).post<SyncCompanyReviewsResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/system-admin/companies/{companyId}/sync',
+      ...options,
     });
   }
 
@@ -772,6 +818,14 @@ export class Base {
     });
   }
 
+  public static listReviews<ThrowOnError extends boolean = false>(options?: Options<ListReviewsData, ThrowOnError>) {
+    return (options?.client ?? client).get<ListReviewsResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/system-admin/companies/reviews',
+      ...options,
+    });
+  }
+
   public static getUserByEmail<ThrowOnError extends boolean = false>(
     options: Options<GetUserByEmailData, ThrowOnError>,
   ) {
@@ -784,6 +838,15 @@ export class Base {
   public static getUserById<ThrowOnError extends boolean = false>(options: Options<GetUserByIdData, ThrowOnError>) {
     return (options.client ?? client).get<GetUserByIdResponses, unknown, ThrowOnError>({
       url: '/base-service/public/user/{userId}',
+      ...options,
+    });
+  }
+
+  public static getCompanyReviews<ThrowOnError extends boolean = false>(
+    options: Options<GetCompanyReviewsData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).get<GetCompanyReviewsResponses, unknown, ThrowOnError>({
+      url: '/base-service/public/company/{companyId}/reviews',
       ...options,
     });
   }
@@ -903,6 +966,14 @@ export class Base {
     return (options?.client ?? client).get<GetCompanySummaryResponses, unknown, ThrowOnError>({
       security: [{ scheme: 'bearer', type: 'http' }],
       url: '/base-service/company-user/company-summary',
+      ...options,
+    });
+  }
+
+  public static getReviews<ThrowOnError extends boolean = false>(options: Options<GetReviewsData, ThrowOnError>) {
+    return (options.client ?? client).get<GetReviewsResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/companies/{companyId}/reviews',
       ...options,
     });
   }
