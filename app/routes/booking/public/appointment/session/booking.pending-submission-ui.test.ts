@@ -126,33 +126,41 @@ describe('booking pending submission UI', () => {
     expect(selectServicesSource).toContain('loading: isSubmitting');
     expect(selectServicesSource).toContain('disabled: !hasSelections || isSubmitting');
     expect(selectServicesSource).toContain('disabled: isSubmitting');
-    expect(selectTimeSource).toContain('loading: isSubmitting');
-    expect(selectTimeSource).toContain('const continueDisabled = !selectedStartTimeForSubmit || isSubmitting');
+    expect(selectTimeSource).toContain('disabled={isSubmitting}');
+    expect(selectTimeSource).toContain('const continueDisabled = !selectedStartTime || isSubmitting');
     expect(selectTimeSource).toContain('disabled: continueDisabled');
     expect(selectTimeSource).toContain('disabled: isSubmitting');
     expect(overviewSource).toContain('loading: isSubmitting');
     expect(overviewSource).toContain('disabled: isSubmitting');
   });
 
-  it('uses the same hidden form submit pattern as select-services for time selection', () => {
+  it('saves time selection through per-slot forms before continuing', () => {
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
 
-    expect(selectTimeSource).toContain("const submitFormId = 'booking-select-time-form'");
-    expect(selectTimeSource).toContain('<Form id={submitFormId} method="post" className="hidden">');
+    expect(selectTimeSource).toContain('<Form method="post">');
     expect(selectTimeSource).toContain('name="selectedStartTime"');
-    expect(selectTimeSource).toContain('value={selectedStartTimeForSubmit}');
-    expect(selectTimeSource).toContain('form: submitFormId');
+    expect(selectTimeSource).toContain('value={time}');
+    expect(selectTimeSource).toContain('type="submit"');
+    expect(selectTimeSource).toContain('return redirect(routes.selectTime)');
+    expect(selectTimeSource).toContain("const intent = formData.get('intent') as string | null");
+    expect(selectTimeSource).toContain("if (intent === 'continue')");
+    expect(selectTimeSource).toContain('return redirect(routes.contact)');
+    expect(selectTimeSource).toContain("const continueFormId = 'booking-select-time-continue-form'");
+    expect(selectTimeSource).toContain('form: continueFormId');
     expect(selectTimeSource).toContain("buttonType: 'submit'");
     expect(selectTimeSource).not.toContain('useSubmit');
     expect(selectTimeSource).not.toContain('submitInFlightRef');
+    expect(selectTimeSource).not.toContain('submitFormId');
   });
 
-  it('posts the displayed selected time before continuing from select-time', () => {
+  it('uses backend session selectedStartTime as the selected time state', () => {
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
 
-    expect(selectTimeSource).toContain('setSelectedTime(session.selectedStartTime ?? null)');
-    expect(selectTimeSource).toContain('if (!selectedTime)');
-    expect(selectTimeSource).toContain('return normalizeToOsloIso(rawDateTime)');
+    expect(selectTimeSource).toContain("const selectedStartTime = session.selectedStartTime ?? ''");
+    expect(selectTimeSource).toContain('const displayTime = selectedStartTime || null');
+    expect(selectTimeSource).not.toContain('setSelectedTime');
+    expect(selectTimeSource).not.toContain('const [selectedTime');
+    expect(selectTimeSource).not.toContain('normalizeToOsloIso');
     expect(selectTimeSource).not.toContain('action: loaderData.navigation.contact');
   });
 });

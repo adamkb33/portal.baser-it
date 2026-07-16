@@ -15,7 +15,7 @@ export type BottomActionBarAction = {
   type?: 'link' | 'button';
   buttonType?: 'button' | 'submit';
   form?: string;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onClick?: React.MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
 };
 
 type BookingBottomActionBarProps = {
@@ -107,6 +107,7 @@ export function BookingBottomActionBar({
                   to={action.to ?? '#'}
                   aria-disabled={action.disabled}
                   onClick={(event) => {
+                    action.onClick?.(event);
                     if (action.disabled || action.loading) {
                       event.preventDefault();
                     }

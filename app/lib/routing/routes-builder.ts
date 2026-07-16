@@ -9,11 +9,10 @@ export const buildRoutesNested = (routeTree: RouteBranch[], parentPath = ''): Ro
     const folderPath = segments.join('/');
     const fileName = branch.id;
 
-    const path = branch.href;
+    const path = branch.href.replace(parentPath, '').replace(/^\//, '') || branch.href.replace(/^\//, '');
     const hasChildren = !!branch.children && branch.children.length > 0;
-    const absolutePath = parentPath ? `${parentPath}/${branch.href}`.replace(/\/+/g, '/') : branch.href;
 
-    const childRoutes = hasChildren ? buildRoutesNested(branch.children as RouteBranch[], absolutePath) : [];
+    const childRoutes = hasChildren ? buildRoutesNested(branch.children as RouteBranch[], branch.href) : [];
 
     if (branch.excludeLayout) {
       routes.push({

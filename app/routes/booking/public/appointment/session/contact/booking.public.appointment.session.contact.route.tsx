@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Form, data, redirect, useNavigation } from 'react-router';
 import { ArrowLeft, Mail, Phone, UserRound } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
@@ -27,14 +28,33 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 async function contactLoader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
+  const url = new URL(request.url);
+
+  logger.info('[booking:contact:loader-entry] Contact loader reached', {
+    method: request.method,
+    url: request.url,
+    path: url.pathname,
+    search: url.search,
+  });
 
   try {
     const guardResult = await requireBookingSession(request);
     if (guardResult instanceof Response) {
+      logger.warn('[booking:contact:loader-guard-redirect] Guard returned response before contact could render', {
+        method: request.method,
+        url: request.url,
+        responseStatus: guardResult.status,
+        redirectTo: guardResult.headers.get('Location'),
+      });
       return guardResult;
     }
 
     const { session } = guardResult;
+    logger.info('[booking:contact:loader-session] Session resolved for contact', {
+      ...getBookingSessionLogContext(session),
+      selectedStartTime: session.selectedStartTime ?? null,
+    });
+
     const requirementsResponse = await withBookingBackendCall(
       { request, routeId: ROUTE_ID, step: 'contact', call: 'get-requirements', session },
       () =>
@@ -86,6 +106,11 @@ async function contactLoader({ request }: Route.LoaderArgs) {
     });
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke hente kontaktsteget');
+    logger.error('[booking:contact:loader-error] Rendering contact with requirements error', {
+      method: request.method,
+      url: request.url,
+      message,
+    });
     return data({
       session: null,
       requirements: null,
@@ -105,14 +130,36 @@ export async function action({ request }: Route.ActionArgs) {
 
 async function contactAction({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
+  const url = new URL(request.url);
+
+  logger.info('[booking:contact:action-entry] Contact action reached', {
+    method: request.method,
+    url: request.url,
+    path: url.pathname,
+    search: url.search,
+  });
 
   try {
     const guardResult = await requireBookingSession(request);
     if (guardResult instanceof Response) {
+      logger.warn(
+        '[booking:contact:action-guard-redirect] Guard returned response before contact submit could continue',
+        {
+          method: request.method,
+          url: request.url,
+          responseStatus: guardResult.status,
+          redirectTo: guardResult.headers.get('Location'),
+        },
+      );
       return guardResult;
     }
 
     const { session } = guardResult;
+    logger.info('[booking:contact:action-session] Session resolved for contact submit', {
+      ...getBookingSessionLogContext(session),
+      selectedStartTime: session.selectedStartTime ?? null,
+    });
+
     const formData = await request.formData();
     const parsed = submitContactFormSchema.safeParse({
       companyId: session.companyId,
@@ -124,6 +171,11 @@ async function contactAction({ request }: Route.ActionArgs) {
 
     if (!parsed.success) {
       const firstError = parsed.error.issues[0]?.message || 'Kontroller kontaktinformasjonen og prøv igjen.';
+      logger.warn('[booking:contact:action-validation] Contact form validation failed', {
+        ...getBookingSessionLogContext(session),
+        selectedStartTime: session.selectedStartTime ?? null,
+        firstError,
+      });
       return data({ error: firstError }, { status: 400 });
     }
 
@@ -150,12 +202,29 @@ async function contactAction({ request }: Route.ActionArgs) {
 
     const nextStep = response.data?.data?.nextStep;
     if (nextStep === 'DONE') {
+      logger.info('[booking:contact:action-redirect] Contact submit complete', {
+        ...getBookingSessionLogContext(session),
+        selectedStartTime: session.selectedStartTime ?? null,
+        nextStep,
+        redirectTo: routes.overview,
+      });
       return redirect(routes.overview);
     }
 
+    logger.info('[booking:contact:action-redirect] Contact submit requires mobile verification', {
+      ...getBookingSessionLogContext(session),
+      selectedStartTime: session.selectedStartTime ?? null,
+      nextStep: nextStep ?? null,
+      redirectTo: routes.contactVerifyMobile,
+    });
     return redirect(routes.contactVerifyMobile);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke lagre kontaktinformasjon');
+    logger.error('[booking:contact:action-error] Contact submit failed', {
+      method: request.method,
+      url: request.url,
+      message,
+    });
     return data({ error: message }, { status: 400 });
   }
 }
@@ -166,6 +235,19 @@ export default function BookingSessionContactPage({ loaderData, actionData }: Ro
   const errorMessage =
     actionData && typeof actionData === 'object' && 'error' in actionData ? String(actionData.error) : null;
   const contactFormId = 'booking-contact-form';
+
+  useEffect(() => {
+    console.info('[booking:client:contact:render]', {
+      path: window.location.pathname,
+      search: window.location.search,
+      hasSession: Boolean(loaderData.session),
+      sessionId: loaderData.session?.sessionId ?? null,
+      selectedStartTime: loaderData.session?.selectedStartTime ?? null,
+      requirementsNextStep: loaderData.requirements?.nextStep ?? null,
+      requirementsError: loaderData.requirementsError ?? null,
+      navigationState: navigation.state,
+    });
+  }, [loaderData.requirements?.nextStep, loaderData.requirementsError, loaderData.session, navigation.state]);
 
   return (
     <Stack space="xl">

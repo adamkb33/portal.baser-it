@@ -6,7 +6,12 @@ import { redirectWithError } from '~/lib/flash-message.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
-import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
+import {
+  getBookingSessionLogContext,
+  withBookingBackendCall,
+  withBookingFlowLog,
+} from '~/routes/booking/public/_utils/booking-flow-log.server';
+import { logger } from '~/lib/logger';
 import { redirect } from 'react-router';
 import { useNavigation, useRevalidator } from 'react-router';
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -95,17 +100,56 @@ async function selectTimeAction({ request }: Route.ActionArgs) {
   const { session } = guardResult;
 
   const formData = await request.formData();
+  const intent = formData.get('intent') as string | null;
   const selectedStartTime = formData.get('selectedStartTime') as string;
-  if (!selectedStartTime) {
+
+  logger.info('[booking:select-time:action-form]', {
+    ...getBookingSessionLogContext(session),
+    intent,
+    postedSelectedStartTime: selectedStartTime || null,
+    sessionSelectedStartTime: session.selectedStartTime ?? null,
+    contactRoute: routes.contact,
+    selectTimeRoute: routes.selectTime,
+  });
+
+  if (intent === 'continue') {
     if (session.selectedStartTime) {
+      logger.info('[booking:select-time:action-redirect]', {
+        ...getBookingSessionLogContext(session),
+        reason: 'continue-with-session-start-time',
+        redirectTo: routes.contact,
+      });
       return redirect(routes.contact);
     }
 
+    logger.warn('[booking:select-time:action-redirect]', {
+      ...getBookingSessionLogContext(session),
+      reason: 'continue-without-session-start-time',
+      redirectTo: routes.selectTime,
+    });
+    return redirectWithError(request, routes.selectTime, 'Velg et tidspunkt for å fortsette');
+  }
+
+  if (!selectedStartTime) {
+    if (session.selectedStartTime) {
+      logger.info('[booking:select-time:action-redirect]', {
+        ...getBookingSessionLogContext(session),
+        reason: 'empty-posted-time-with-session-start-time',
+        redirectTo: routes.contact,
+      });
+      return redirect(routes.contact);
+    }
+
+    logger.warn('[booking:select-time:action-redirect]', {
+      ...getBookingSessionLogContext(session),
+      reason: 'empty-posted-time-without-session-start-time',
+      redirectTo: routes.selectTime,
+    });
     return redirectWithError(request, routes.selectTime, 'Velg et tidspunkt for å fortsette');
   }
 
   try {
-    await withBookingBackendCall(
+    const saveResponse = await withBookingBackendCall(
       {
         request,
         routeId: ROUTE_ID,
@@ -123,9 +167,32 @@ async function selectTimeAction({ request }: Route.ActionArgs) {
         }),
     );
 
-    return redirect(routes.contact);
+    if (!saveResponse.data?.data?.selectedStartTime) {
+      logger.warn('[booking:select-time:action-redirect]', {
+        ...getBookingSessionLogContext(session),
+        reason: 'backend-response-missing-selected-start-time',
+        postedSelectedStartTime: selectedStartTime,
+        redirectTo: routes.selectTime,
+      });
+      return redirectWithError(request, routes.selectTime, 'Kunne ikke lagre valgt tidspunkt');
+    }
+
+    logger.info('[booking:select-time:action-redirect]', {
+      ...getBookingSessionLogContext(session),
+      reason: 'saved-start-time',
+      postedSelectedStartTime: selectedStartTime,
+      savedSelectedStartTime: saveResponse.data.data.selectedStartTime,
+      redirectTo: routes.selectTime,
+    });
+    return redirect(routes.selectTime);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke lagre tidspunkt');
+    logger.error('[booking:select-time:action-error]', {
+      ...getBookingSessionLogContext(session),
+      postedSelectedStartTime: selectedStartTime,
+      message,
+      redirectTo: routes.selectTime,
+    });
     return redirectWithError(request, routes.selectTime, message);
   }
 }
@@ -329,38 +396,43 @@ function DateButton({ schedule, isSelected, hasSelectedTime, onClick, variant = 
 interface TimeSlotButtonProps {
   time: string;
   isSelected: boolean;
-  onClick: () => void;
+  disabled?: boolean;
   variant?: 'default' | 'compact';
 }
 
-function TimeSlotButton({ time, isSelected, onClick, variant = 'default' }: TimeSlotButtonProps) {
+function TimeSlotButton({ time, isSelected, disabled = false, variant = 'default' }: TimeSlotButtonProps) {
   const isCompact = variant === 'compact';
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        // Touch-friendly: 48px height on mobile
-        'flex items-center justify-center rounded-[var(--radius-booking-control)] border-[length:var(--border-booking-selected)] font-bold transition-all',
-        isCompact ? 'min-h-10 px-3 py-2 text-xs' : 'min-h-12 px-4 py-3 text-sm md:min-h-11 md:text-base',
+    <Form method="post">
+      <input type="hidden" name="selectedStartTime" value={time} readOnly />
+      <button
+        type="submit"
+        disabled={disabled}
+        className={cn(
+          // Touch-friendly: 48px height on mobile
+          'flex w-full items-center justify-center rounded-[var(--radius-booking-control)] border-[length:var(--border-booking-selected)] font-bold transition-all',
+          isCompact ? 'min-h-10 px-3 py-2 text-xs' : 'min-h-12 px-4 py-3 text-sm md:min-h-11 md:text-base',
 
-        // Selected state
-        isSelected && [
-          'border-booking-action bg-booking-action text-booking-action-contrast',
-          'shadow-[var(--shadow-booking-card)] ring-[length:var(--border-booking-focus-ring)] ring-booking-action/20 ring-offset-2',
-        ],
+          // Selected state
+          isSelected && [
+            'border-booking-action bg-booking-action text-booking-action-contrast',
+            'shadow-[var(--shadow-booking-card)] ring-[length:var(--border-booking-focus-ring)] ring-booking-action/20 ring-offset-2',
+          ],
 
-        // Default state
-        !isSelected && [
-          'border-booking-border bg-booking-surface text-booking-text',
-          'hover:border-booking-action/50 hover:bg-booking-surface-muted',
-          'active:scale-95',
-        ],
-      )}
-    >
-      <span>{formatTime(time)}</span>
-    </button>
+          // Default state
+          !isSelected && [
+            'border-booking-border bg-booking-surface text-booking-text',
+            'hover:border-booking-action/50 hover:bg-booking-surface-muted',
+            'active:scale-95',
+          ],
+
+          disabled && 'cursor-not-allowed opacity-50',
+        )}
+      >
+        <span>{formatTime(time)}</span>
+      </button>
+    </Form>
   );
 }
 
@@ -387,7 +459,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const navigationStateRef = useRef(navigation.state);
   const revalidatorStateRef = useRef(revalidator.state);
   const isSubmitting = navigation.state === 'submitting';
-  const submitFormId = 'booking-select-time-form';
+  const continueFormId = 'booking-select-time-continue-form';
 
   if (!session) {
     return (
@@ -402,13 +474,13 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
 
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isDateListCollapsed, setIsDateListCollapsed] = useState(false);
   const mobileTimeSlotsScrollRef = useRef<HTMLDivElement>(null);
   const weekTabsRef = useRef<HTMLDivElement>(null);
   const [showMoreTimeHint, setShowMoreTimeHint] = useState(true);
 
-  const displayTime = selectedTime;
+  const selectedStartTime = session.selectedStartTime ?? '';
+  const displayTime = selectedStartTime || null;
 
   const currentWeek = weekGroups[selectedWeekIndex];
   const currentWeekSchedules = currentWeek?.schedules || [];
@@ -417,10 +489,6 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
     isDateListCollapsed && selectedDate
       ? currentWeekSchedules.filter((schedule) => schedule.date === selectedDate)
       : currentWeekSchedules;
-
-  useEffect(() => {
-    setSelectedTime(session.selectedStartTime ?? null);
-  }, [session.selectedStartTime]);
 
   useEffect(() => {
     if (displayTime && weekGroups.length > 0) {
@@ -437,107 +505,18 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
     }
   }, [displayTime, schedules, weekGroups]);
 
+  const continueDisabled = !selectedStartTime || isSubmitting;
+
   useEffect(() => {
-    if (!selectedTime || findScheduleWithTime(schedules, selectedTime)) {
-      return;
-    }
-
-    setSelectedTime(null);
-  }, [schedules, selectedTime]);
-
-  const handleTimeSelect = (startTime: string) => {
-    setSelectedTime(startTime);
-  };
-
-  const handleQuickBook = () => {
-    if (earliestSlot) {
-      setSelectedTime(earliestSlot.time);
-      const scheduleDate = findScheduleWithTime(schedules, earliestSlot.time);
-      if (scheduleDate) {
-        const weekIndex = weekGroups.findIndex((wg) => wg.schedules.some((s) => s.date === scheduleDate));
-        if (weekIndex !== -1) {
-          setSelectedWeekIndex(weekIndex);
-          setSelectedDate(scheduleDate);
-          setIsDateListCollapsed(true);
-        }
-      }
-    }
-  };
-
-  const getOsloDateParts = (date: Date) => {
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Europe/Oslo',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
+    console.info('[booking:client:select-time:continue-state]', {
+      path: window.location.pathname,
+      selectedStartTime,
+      continueDisabled,
+      navigationState: navigation.state,
+      revalidatorState: revalidator.state,
+      contactHref: loaderData.navigation.contact,
     });
-
-    const parts = formatter.formatToParts(date);
-    const map = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-    return {
-      year: Number(map.year),
-      month: Number(map.month),
-      day: Number(map.day),
-      hour: Number(map.hour),
-      minute: Number(map.minute),
-      second: Number(map.second),
-    };
-  };
-
-  const getOsloOffsetMinutes = (date: Date) => {
-    const osloParts = getOsloDateParts(date);
-    const osloAsUtc = Date.UTC(
-      osloParts.year,
-      osloParts.month - 1,
-      osloParts.day,
-      osloParts.hour,
-      osloParts.minute,
-      osloParts.second,
-    );
-    return (osloAsUtc - date.getTime()) / 60000;
-  };
-
-  const formatOffset = (minutes: number) => {
-    const sign = minutes >= 0 ? '+' : '-';
-    const abs = Math.abs(minutes);
-    const hours = String(Math.floor(abs / 60)).padStart(2, '0');
-    const mins = String(abs % 60).padStart(2, '0');
-    return `${sign}${hours}:${mins}`;
-  };
-
-  const normalizeToOsloIso = (value: string): string => {
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return value;
-
-    const osloParts = getOsloDateParts(parsed);
-    const offset = formatOffset(getOsloOffsetMinutes(parsed));
-    return `${osloParts.year}-${String(osloParts.month).padStart(2, '0')}-${String(osloParts.day).padStart(
-      2,
-      '0',
-    )}T${String(osloParts.hour).padStart(2, '0')}:${String(osloParts.minute).padStart(2, '0')}:${String(
-      osloParts.second,
-    ).padStart(2, '0')}${offset}`;
-  };
-
-  const getSelectedStartTimeForSubmit = () => {
-    if (!selectedTime) {
-      return '';
-    }
-
-    const scheduleDate = selectedDate ?? findScheduleWithTime(schedules, selectedTime);
-    const rawDateTime = selectedTime.includes('T')
-      ? selectedTime
-      : scheduleDate
-        ? `${scheduleDate}T${selectedTime}`
-        : selectedTime;
-    return normalizeToOsloIso(rawDateTime);
-  };
-  const selectedStartTimeForSubmit = getSelectedStartTimeForSubmit();
-  const continueDisabled = !selectedStartTimeForSubmit || isSubmitting;
+  }, [continueDisabled, loaderData.navigation.contact, navigation.state, revalidator.state, selectedStartTime]);
 
   useEffect(() => {
     navigationStateRef.current = navigation.state;
@@ -623,24 +602,27 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
               ======================================== */}
         {earliestSlot && !displayTime && (
           <BookingSection>
-            <button
-              type="button"
-              onClick={handleQuickBook}
-              className="flex w-full items-center justify-between gap-3 rounded-lg border-2 border-dashed border-booking-action/50 bg-booking-surface-muted p-4 transition-colors hover:border-booking-action hover:bg-booking-surface-muted"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-full bg-booking-action">
-                  <Zap className="size-5 text-booking-action-contrast" />
+            <Form method="post">
+              <input type="hidden" name="selectedStartTime" value={earliestSlot.time} readOnly />
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex w-full items-center justify-between gap-3 rounded-lg border-2 border-dashed border-booking-action/50 bg-booking-surface-muted p-4 transition-colors hover:border-booking-action hover:bg-booking-surface-muted disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-full bg-booking-action">
+                    <Zap className="size-5 text-booking-action-contrast" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-bold text-booking-text md:text-base">Raskeste tiden</p>
+                    <p className="text-xs text-booking-text-muted md:text-sm">
+                      {formatFullDate(earliestSlot.date)} kl. {formatTime(earliestSlot.time)}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <p className="text-sm font-bold text-booking-text md:text-base">Raskeste tiden</p>
-                  <p className="text-xs text-booking-text-muted md:text-sm">
-                    {formatFullDate(earliestSlot.date)} kl. {formatTime(earliestSlot.time)}
-                  </p>
-                </div>
-              </div>
-              <span className="text-xs font-medium text-booking-action">Velg →</span>
-            </button>
+                <span className="text-xs font-medium text-booking-action">Velg →</span>
+              </button>
+            </Form>
           </BookingSection>
         )}
 
@@ -795,7 +777,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
                                 key={slot.startTime}
                                 time={slot.startTime}
                                 isSelected={displayTime ? isSameSlotTime(displayTime, slot.startTime) : false}
-                                onClick={() => handleTimeSelect(slot.startTime)}
+                                disabled={isSubmitting}
                                 variant="compact"
                               />
                             ))}
@@ -890,7 +872,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
                               key={slot.startTime}
                               time={slot.startTime}
                               isSelected={displayTime ? isSameSlotTime(displayTime, slot.startTime) : false}
-                              onClick={() => handleTimeSelect(slot.startTime)}
+                              disabled={isSubmitting}
                               variant="compact"
                             />
                           ))}
@@ -904,8 +886,8 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
           </BookingSection>
         </div>
       </Stack>
-      <Form id={submitFormId} method="post" className="hidden">
-        <input type="hidden" name="selectedStartTime" value={selectedStartTimeForSubmit} readOnly />
+      <Form id={continueFormId} method="post" className="hidden">
+        <input type="hidden" name="intent" value="continue" readOnly />
       </Form>
       <BookingBottomActionBar
         visible
@@ -921,13 +903,24 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
           {
             id: 'continue',
             type: 'button',
-            form: submitFormId,
             buttonType: 'submit',
+            form: continueFormId,
             label: 'Fortsett',
             icon: <Check className="size-4" />,
             variant: 'primary',
             loading: isSubmitting,
             disabled: continueDisabled,
+            onClick: (event) => {
+              console.info('[booking:client:select-time:continue-click]', {
+                path: window.location.pathname,
+                targetHref: loaderData.navigation.contact,
+                defaultPreventedBeforeBottomNavGuard: event.defaultPrevented,
+                selectedStartTime,
+                continueDisabled,
+                navigationState: navigation.state,
+                revalidatorState: revalidator.state,
+              });
+            },
           },
         ]}
         compact
