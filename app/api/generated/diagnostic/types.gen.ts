@@ -766,7 +766,7 @@ export type PublicVerifyMobileResponseDto = {
   displayName?: string;
   maskedMobile?: string;
   completionToken?: string;
-  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'VERIFY_MOBILE' | 'DONE';
 };
 
 export type ApiResponsePublicPendingUserResponseDto = {
@@ -781,7 +781,7 @@ export type ApiResponsePublicPendingUserResponseDto = {
 export type PublicPendingUserResponseDto = {
   sessionId: string;
   userDto?: UserDto;
-  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'VERIFY_MOBILE' | 'DONE';
 };
 
 export type UserDto = {
@@ -812,7 +812,7 @@ export type PublicMobileChallengeResponseDto = {
   expiresAt: string;
   resendAvailableAt?: string;
   remainingAttempts?: number;
-  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'VERIFY_MOBILE' | 'DONE';
 };
 
 export type PublicIdentifyDto = {
@@ -836,7 +836,7 @@ export type PublicIdentifyResponseDto = {
   maskedMobile: string;
   expiresAt: string;
   resendAvailableAt?: string;
-  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'VERIFY_MOBILE' | 'DONE';
 };
 
 export type ApiResponsePublicSubmitAppointmentSessionResponseDto = {
@@ -2096,7 +2096,7 @@ export type PublicSessionUserStatusDto = {
   sessionId: string;
   userId?: number;
   attached: boolean;
-  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'VERIFY_MOBILE' | 'DONE';
   provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
 };
 
@@ -2113,9 +2113,8 @@ export type PublicSessionRequirementsDto = {
   sessionId?: string;
   userId?: number;
   needsUser: boolean;
-  needsEmail: boolean;
   needsMobile: boolean;
-  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'VERIFY_MOBILE' | 'DONE';
   displayName?: string;
   maskedMobile?: string;
   challengeId?: string;
@@ -2988,7 +2987,7 @@ export type ApiResponsePublicPendingUserClearedResponseDto = {
 export type PublicPendingUserClearedResponseDto = {
   sessionId: string;
   pendingUserId?: number;
-  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'VERIFY_MOBILE' | 'DONE';
 };
 
 export type DeleteScheduleUnavailabilityRangesDto = {
