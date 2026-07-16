@@ -45,6 +45,7 @@ async function contactLoader({ request }: Route.LoaderArgs) {
     const requirements = requirementsResponse.data?.data;
     logger.info('[booking:contact:requirements] Resolved', {
       ...getBookingSessionLogContext(session),
+      selectedStartTime: session.selectedStartTime ?? null,
       nextStep: requirements?.nextStep ?? null,
       hasRequirements: Boolean(requirements),
     });
@@ -52,6 +53,7 @@ async function contactLoader({ request }: Route.LoaderArgs) {
     if (requirements?.nextStep === 'VERIFY_MOBILE') {
       logger.info('[booking:contact:requirements] Redirecting', {
         ...getBookingSessionLogContext(session),
+        selectedStartTime: session.selectedStartTime ?? null,
         nextStep: requirements.nextStep,
         redirectTo: routes.contactVerifyMobile,
       });
@@ -61,6 +63,7 @@ async function contactLoader({ request }: Route.LoaderArgs) {
     if (requirements?.nextStep === 'DONE') {
       logger.info('[booking:contact:requirements] Redirecting', {
         ...getBookingSessionLogContext(session),
+        selectedStartTime: session.selectedStartTime ?? null,
         nextStep: requirements.nextStep,
         redirectTo: routes.overview,
       });
@@ -69,6 +72,7 @@ async function contactLoader({ request }: Route.LoaderArgs) {
 
     logger.info('[booking:contact:requirements] Rendering contact form', {
       ...getBookingSessionLogContext(session),
+      selectedStartTime: session.selectedStartTime ?? null,
       nextStep: requirements?.nextStep ?? null,
     });
 

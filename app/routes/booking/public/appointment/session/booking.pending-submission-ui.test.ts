@@ -127,7 +127,8 @@ describe('booking pending submission UI', () => {
     expect(selectServicesSource).toContain('disabled: !hasSelections || isSubmitting');
     expect(selectServicesSource).toContain('disabled: isSubmitting');
     expect(selectTimeSource).toContain('loading: isSubmitting');
-    expect(selectTimeSource).toContain('disabled: !selectedStartTimeForSubmit || isSubmitting');
+    expect(selectTimeSource).toContain('const continueDisabled = !selectedStartTimeForSubmit || isSubmitting');
+    expect(selectTimeSource).toContain('disabled: continueDisabled');
     expect(selectTimeSource).toContain('disabled: isSubmitting');
     expect(selectTimeSource).toContain('const persistedTime = session.selectedStartTime ?? null');
     expect(overviewSource).toContain('loading: isSubmitting');
@@ -141,8 +142,9 @@ describe('booking pending submission UI', () => {
     expect(selectTimeSource).toContain('method="post"');
     expect(selectTimeSource).toContain('name="selectedStartTime"');
     expect(selectTimeSource).toContain('value={selectedStartTimeForSubmit}');
+    expect(selectTimeSource).toContain("const submitFormId = 'booking-select-time-form'");
+    expect(selectTimeSource).toContain('form: submitFormId');
     expect(selectTimeSource).toContain("buttonType: 'submit'");
-    expect(selectTimeSource).not.toContain('form: timeFormId');
   });
 
   it('posts the displayed selected time before continuing from select-time', () => {
