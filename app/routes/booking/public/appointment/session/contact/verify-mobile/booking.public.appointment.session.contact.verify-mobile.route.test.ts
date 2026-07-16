@@ -131,7 +131,7 @@ describe('booking contact verify-mobile route', () => {
   });
 
   it.each([
-    { nextStep: 'VERIFY_EMAIL', expectedLocation: '/booking/public/appointment/session/contact/verify-email' },
+    { nextStep: 'VERIFY_EMAIL', expectedLocation: '/booking/public/appointment/session/employee' },
     { nextStep: 'DONE', expectedLocation: '/booking/public/appointment/session/employee' },
     { nextStep: 'COLLECT_MOBILE', expectedLocation: '/booking/public/appointment/session/contact/collect-mobile' },
     { nextStep: 'COLLECT_EMAIL', expectedLocation: '/booking/public/appointment/session/contact/collect-email' },

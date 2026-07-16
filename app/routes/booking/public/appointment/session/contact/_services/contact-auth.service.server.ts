@@ -7,7 +7,7 @@ import {
 } from '~/api/generated/base';
 import { AppointmentSessionService } from '~/routes/booking/public/_services/booking.appointment-session.service.server';
 import { authService } from '~/lib/auth-service';
-import { resolveAuthNextStepHref } from '../_utils/auth.utils';
+import { resolveAuthNextStepHref, shouldStoreVerificationToken } from '../_utils/auth.utils';
 import { VerificationTokenService } from './verification-token.service.server';
 import { withAuth } from '~/api/utils/with-auth';
 
@@ -221,9 +221,11 @@ export class ContactAuthService {
     }
 
     const nextStepHref = resolveAuthNextStepHref(payload.nextStep);
-    const verificationCookieHeader = await VerificationTokenService.buildVerificationCookieHeaderFromDto(
-      'verificationToken' in payload ? (payload.verificationToken ?? null) : null,
-    );
+    const verificationCookieHeader = shouldStoreVerificationToken(payload.nextStep)
+      ? await VerificationTokenService.buildVerificationCookieHeaderFromDto(
+          'verificationToken' in payload ? (payload.verificationToken ?? null) : null,
+        )
+      : null;
 
     return {
       nextStepHref,

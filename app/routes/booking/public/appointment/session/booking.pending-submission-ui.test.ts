@@ -108,7 +108,7 @@ describe('booking pending submission UI', () => {
     expect(collectMobileSource).toContain('loading={isSubmitting}');
     expect(collectMobileSource).toContain("isSubmitting ? 'Lagrer...' : 'Fortsett'");
     expect(collectEmailSource).toContain('loading={isSubmitting}');
-    expect(collectEmailSource).toContain("isSubmitting ? 'Lagrer...' : 'Lagre og fortsett'");
+    expect(collectEmailSource).toContain("isSubmitting ? 'Lagrer...' : buttonLabel");
     expect(submitContactFormSource).toContain('disabled={isSubmitting || inputOptions.disabled}');
     expect(submitContactFormSource).toContain('loading={isSubmitting}');
     expect(clearSessionSource).toContain("const isSubmitting = fetcher.state !== 'idle'");
@@ -120,9 +120,6 @@ describe('booking pending submission UI', () => {
     const verifyMobileSource = readSessionRoute(
       'contact/verify-mobile/booking.public.appointment.session.contact.verify-mobile.route.tsx',
     );
-    const verifyEmailSource = readSessionRoute(
-      'contact/verify-email/booking.public.appointment.session.contact.verify-email.route.tsx',
-    );
 
     expect(verifyMobileSource).toContain("const isVerifyingCode = fetcher.state !== 'idle'");
     expect(verifyMobileSource).toContain('disabled={isVerifyingCode}');
@@ -132,8 +129,16 @@ describe('booking pending submission UI', () => {
     expect(verifyMobileSource).toContain('loading={isSendingCode}');
     expect(verifyMobileSource).toContain('aria-busy={isSendingCode}');
     expect(verifyMobileSource).toContain('disabled={!verificationSessionToken || isSendingCode}');
-    expect(verifyEmailSource).toContain("loading={resendFetcher.state !== 'idle'}");
-    expect(verifyEmailSource).toContain('disabled={!email}');
+  });
+
+  it('does not expose an email verification blocking UI in booking', () => {
+    const verifyEmailSource = readSessionRoute(
+      'contact/verify-email/booking.public.appointment.session.contact.verify-email.route.tsx',
+    );
+
+    expect(verifyEmailSource).toContain('return redirectAuthStatusNextStepHref(authStatus)');
+    expect(verifyEmailSource).toContain('return null');
+    expect(verifyEmailSource).not.toContain('resendVerificationAction');
   });
 
   it('disables later booking step navigation while route submissions are pending', () => {

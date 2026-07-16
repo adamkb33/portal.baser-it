@@ -22,16 +22,8 @@ export function resolveAuthNextStepHref(nextStep: NextStep, options: ResolveNext
       return routes.contactCollectEmail;
     case 'COLLECT_MOBILE':
       return routes.contactCollectMobile;
-    case 'VERIFY_EMAIL': {
-      const params = new URLSearchParams();
-      if (options.emailDelivery?.status) {
-        params.set('emailDelivery', options.emailDelivery.status);
-      }
-      if (options.mobileDelivery?.status) {
-        params.set('mobileDelivery', options.mobileDelivery.status);
-      }
-      return buildHref(routes.contactVerifyEmail, params);
-    }
+    case 'VERIFY_EMAIL':
+      return routes.employee;
     case 'VERIFY_MOBILE': {
       const params = new URLSearchParams();
       if (options.mobileDelivery?.status) {
