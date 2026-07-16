@@ -1,7 +1,7 @@
 import { data } from 'react-router';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { requireAuthenticatedBookingFlow } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
+import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
@@ -27,11 +27,19 @@ const SCHEDULE_REFRESH_INTERVAL_MS = 30_000;
 
 export async function loader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
-  const guardResult = await requireAuthenticatedBookingFlow(request);
+  const guardResult = await requireBookingSession(request);
   if (guardResult instanceof Response) {
     return guardResult;
   }
   const { session } = guardResult;
+
+  if (!session.selectedProfileId) {
+    return redirect(routes.employee);
+  }
+
+  if (!session.selectedServices?.length) {
+    return redirect(routes.selectServices);
+  }
 
   try {
     const [schedulesResponse, companySummary] = await Promise.all([
@@ -48,7 +56,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       schedules: schedulesResponse.data?.data || [],
       companySummary,
       navigation: {
-        overview: routes.overview,
+        contact: routes.contact,
         selectServices: routes.selectServices,
       },
     });
@@ -60,7 +68,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export async function action({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
-  const guardResult = await requireAuthenticatedBookingFlow(request);
+  const guardResult = await requireBookingSession(request);
   if (guardResult instanceof Response) {
     return guardResult;
   }
@@ -77,7 +85,7 @@ export async function action({ request }: Route.ActionArgs) {
       },
     });
 
-    return redirect(routes.overview);
+    return redirect(routes.contact);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke lagre tidspunkt');
     return redirectWithError(request, routes.selectTime, message);
@@ -524,7 +532,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
     } else {
       submit(null, {
         method: 'get',
-        action: loaderData.navigation.overview,
+        action: loaderData.navigation.contact,
       });
     }
   };
@@ -882,7 +890,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
             type: 'button',
             buttonType: 'button',
             onClick: handleSubmit,
-            label: 'Oversikt',
+            label: 'Fortsett',
             icon: <Check className="size-4" />,
             variant: 'primary',
             loading: isSubmitting,

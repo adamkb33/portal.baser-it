@@ -207,7 +207,6 @@ export class ContactAuthService {
   static async setPendingSessionUser(sessionId: string, userId: number) {
     const response = await PublicAppointmentSessionController.setPendingAppointmentSessionUser({
       path: { sessionId },
-      query: { userId },
     });
     return response.data?.data ?? null;
   }

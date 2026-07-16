@@ -37,6 +37,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     emailVerified: false,
     mobileVerified: false,
     hasPassword: true,
+    accountStatus: 'FULL',
   };
 
   const userContextResponse = await withAuth(

@@ -11,7 +11,6 @@ export async function action({ request }: Route.ActionArgs) {
   try {
     const response = await PublicAppointmentSessionController.setPendingAppointmentSessionUser({
       path: { sessionId },
-      query: { userId },
     });
 
     return data(response.data);

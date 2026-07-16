@@ -1,228 +1,235 @@
-import React from 'react';
-import { data, Link, redirect, useFetcher, useLoaderData, useNavigate } from 'react-router';
-import { ArrowLeft } from 'lucide-react';
-import { AuthController, type DeliveryStatusDto } from '~/api/generated/base';
-import { API_ROUTES_MAP } from '~/lib/routing/route-tree';
-import type { action as resendVerificationMobileAction } from '~/routes/api/auth/resend-verification/mobile/auth.resend-verification.mobile.api-route';
-import type { action as verifyMobileAction } from '~/routes/api/auth/verify-mobile/auth.verify-mobile.api-route';
-import { Button, Notice, PageHeader, Stack, VerificationCodeInput } from '~/ui';
-import type { Route } from './+types/booking.public.appointment.session.contact.verify-mobile.route';
-import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
-import { AppointmentSessionService } from '~/routes/booking/public/_services/booking.appointment-session.service.server';
-import { VerificationTokenService } from '../_services/verification-token.service.server';
+import * as React from 'react';
+import { Form, data, redirect, useActionData, useNavigation } from 'react-router';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { authService } from '~/lib/auth-service';
 import { redirectWithError } from '~/lib/flash-message.server';
-import { resolveAuthNextStepHref } from '../_utils/auth.utils';
+import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
+import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
+import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
+import { Button, Notice, Stack, Text, VerificationCodeInput } from '~/ui';
 import { BOOKING_CONTACT_PAGE_HEADER_CLASS } from '../_utils/booking-contact-theme';
+import type { Route } from './+types/booking.public.appointment.session.contact.verify-mobile.route';
 
-type MobileDeliveryStatus = DeliveryStatusDto['status'];
+type VerifyMobileActionData =
+  | {
+      ok: false;
+      error: string;
+    }
+  | {
+      ok: true;
+      message: string;
+    };
+
+const CODE_LENGTH = 6;
 
 export async function loader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
-  const url = new URL(request.url);
-  const mobileDelivery = parseMobileDeliveryStatus(url.searchParams.get('mobileDelivery'));
 
   try {
-    const session = await AppointmentSessionService.get(request);
-
-    if (!session || !session.userId) {
-      console.info('[verify-mobile] redirect: missing session or userId', {
-        hasSession: Boolean(session),
-        userId: session?.userId ?? null,
-      });
-      return redirect(routes.session);
+    const guardResult = await requireBookingSession(request);
+    if (guardResult instanceof Response) {
+      return guardResult;
     }
 
-    const verificationSessionToken = await VerificationTokenService.readVerificationToken(request);
-    if (!verificationSessionToken) {
-      console.info('[verify-mobile] redirect: missing verification token cookie', {
-        userId: session.userId,
-      });
+    const { session } = guardResult;
+    const requirementsResponse = await PublicAppointmentSessionController.getAppointmentSessionRequirements({
+      path: { sessionId: session.sessionId },
+    });
+    const requirements = requirementsResponse.data?.data;
+
+    if (!requirements || requirements.nextStep === 'CONTACT_FORM') {
       return redirect(routes.contact);
     }
 
-    const statusResponse = await AuthController.verificationStatus({
-      query: { verificationSessionToken },
-    });
-    const verificationStatus = statusResponse.data?.data;
-    if (!verificationStatus) {
-      return redirectWithError(request, routes.contact, 'Kunne ikke hente verifiseringsstatus. Prøv igjen.');
+    if (requirements.nextStep === 'DONE') {
+      return redirect(routes.overview);
     }
 
-    if (verificationStatus.nextStep !== 'VERIFY_MOBILE') {
-      const nextStepHref = resolveAuthNextStepHref(verificationStatus.nextStep);
-      if (nextStepHref) {
-        return redirect(nextStepHref);
-      }
+    if (!requirements.challengeId) {
+      return redirectWithError(request, routes.contact, 'Skriv inn mobilnummeret ditt på nytt.');
     }
 
     return data({
       session,
-      verificationSessionToken,
-      mobileDelivery,
+      requirements,
       navigation: {
-        currentStep: routes.contactVerifyMobile,
-        previousStep: routes.contactCollectMobile,
+        contact: routes.contact,
+        overview: routes.overview,
       },
     });
   } catch (error) {
-    const { message } = resolveErrorPayload(error, 'Kunne ikke hente brukerdata');
-    console.error('[verify-mobile] redirect: loader error', { message });
-    return redirectWithError(request, routes.session, message);
+    const { message } = resolveErrorPayload(error, 'Kunne ikke hente SMS-verifisering');
+    return redirectWithError(request, routes.contact, message);
   }
 }
 
-const CODE_LENGTH = 6;
-const MOBILE_DELIVERY_STATUSES = ['SENT', 'SKIPPED_ALREADY_ACTIVE', 'NOT_ATTEMPTED', 'FAILED'] as const;
+export async function action({ request }: Route.ActionArgs) {
+  const routes = getBookingRouteMap();
 
-function parseMobileDeliveryStatus(status: string | null): MobileDeliveryStatus | null {
-  if (!status) return null;
-  return MOBILE_DELIVERY_STATUSES.includes(status as MobileDeliveryStatus) ? (status as MobileDeliveryStatus) : null;
-}
+  try {
+    const guardResult = await requireBookingSession(request);
+    if (guardResult instanceof Response) {
+      return guardResult;
+    }
 
-function getMobileDeliveryMessage(status: MobileDeliveryStatus | null | undefined, source: 'signup' | 'resend') {
-  switch (status) {
-    case 'SENT':
-      return source === 'resend' ? 'Ny SMS-kode er sendt.' : 'Vi har sendt deg en SMS-kode.';
-    case 'SKIPPED_ALREADY_ACTIVE':
-      return source === 'resend'
-        ? 'Du har allerede en aktiv kode.'
-        : 'Du har allerede en aktiv kode. Bruk den siste koden du mottok.';
-    case 'FAILED':
-      return source === 'resend' ? 'Kunne ikke sende SMS-kode.' : 'Vi klarte ikke å sende SMS-koden. Prøv igjen.';
-    case 'NOT_ATTEMPTED':
-    default:
-      return null;
+    const { session } = guardResult;
+    const formData = await request.formData();
+    const intent = String(formData.get('intent') || 'verify');
+
+    if (intent === 'change-mobile') {
+      await PublicAppointmentSessionController.clearAppointmentSessionUser({
+        path: { sessionId: session.sessionId },
+      });
+      return redirect(routes.contact);
+    }
+
+    if (intent === 'resend') {
+      await PublicAppointmentSessionController.resendAppointmentSessionMobileChallenge({
+        path: { sessionId: session.sessionId },
+      });
+      return data<VerifyMobileActionData>({ ok: true, message: 'Ny SMS-kode er sendt.' });
+    }
+
+    const challengeId = String(formData.get('challengeId') || '');
+    const code = String(formData.get('code') || '').replace(/\D/g, '');
+
+    if (!challengeId || code.length !== CODE_LENGTH) {
+      return data<VerifyMobileActionData>({ ok: false, error: 'Skriv inn SMS-koden på 6 siffer.' }, { status: 400 });
+    }
+
+    const response = await PublicAppointmentSessionController.verifyAppointmentSessionUserMobile({
+      path: { sessionId: session.sessionId },
+      body: {
+        challengeId,
+        code,
+      },
+    });
+    const payload = response.data?.data;
+
+    if (!payload || payload.nextStep !== 'DONE') {
+      return data<VerifyMobileActionData>(
+        { ok: false, error: 'Mobilnummeret ble ikke bekreftet. Prøv igjen.' },
+        { status: 400 },
+      );
+    }
+
+    const headers = await authService.setAuthCookies(
+      payload.authTokens.accessToken,
+      payload.authTokens.refreshToken,
+      payload.authTokens.accessTokenExpiresAt,
+      payload.authTokens.refreshTokenExpiresAt,
+    );
+
+    return redirect(routes.overview, { headers });
+  } catch (error) {
+    const { message } = resolveErrorPayload(error, 'Kunne ikke bekrefte SMS-koden');
+    return data<VerifyMobileActionData>({ ok: false, error: message }, { status: 400 });
   }
 }
 
 export default function BookingContactVerifyMobilePage({ loaderData }: Route.ComponentProps) {
-  const fetcher = useFetcher<typeof verifyMobileAction>();
-  const resendFetcher = useFetcher<typeof resendVerificationMobileAction>();
+  const actionData = useActionData<typeof action>() as VerifyMobileActionData | undefined;
+  const navigation = useNavigation();
   const [code, setCode] = React.useState('');
-  const navigate = useNavigate();
-  const didNavigateRef = React.useRef(false);
-  const verificationSessionToken = loaderData.verificationSessionToken;
-  const errorMessage =
-    typeof fetcher.data === 'object' && fetcher.data && 'error' in fetcher.data ? fetcher.data.error : null;
-  const resendDeliveryStatus =
-    typeof resendFetcher.data === 'object' &&
-    resendFetcher.data &&
-    'data' in resendFetcher.data &&
-    resendFetcher.data.data &&
-    typeof resendFetcher.data.data === 'object' &&
-    'mobileDelivery' in resendFetcher.data.data &&
-    resendFetcher.data.data.mobileDelivery &&
-    typeof resendFetcher.data.data.mobileDelivery === 'object' &&
-    'status' in resendFetcher.data.data.mobileDelivery
-      ? parseMobileDeliveryStatus(String(resendFetcher.data.data.mobileDelivery.status))
-      : null;
-  const initialMobileDeliveryMessage = getMobileDeliveryMessage(loaderData.mobileDelivery, 'signup');
-  const initialMobileDeliveryTone = loaderData.mobileDelivery === 'FAILED' ? 'emphasis' : 'muted';
-  const resendMessage = getMobileDeliveryMessage(resendDeliveryStatus, 'resend');
-  const resendMessageTone = resendDeliveryStatus === 'FAILED' ? 'emphasis' : 'muted';
-  const resendError =
-    typeof resendFetcher.data === 'object' && resendFetcher.data && 'error' in resendFetcher.data
-      ? String(resendFetcher.data.error)
-      : null;
-  const isVerifyingCode = fetcher.state !== 'idle';
-  const isSendingCode = resendFetcher.state !== 'idle';
-
-  React.useEffect(() => {
-    if (didNavigateRef.current) return;
-    if (fetcher.state !== 'idle') return;
-    if (!fetcher.data || typeof fetcher.data !== 'object') return;
-    if (!('success' in fetcher.data) || fetcher.data.success !== true) return;
-    if (!('nextStep' in fetcher.data) || !fetcher.data.nextStep) return;
-
-    const nextStepHref = resolveAuthNextStepHref(fetcher.data.nextStep);
-    if (!nextStepHref) return;
-    if (nextStepHref === loaderData.navigation.currentStep) return;
-
-    didNavigateRef.current = true;
-    navigate(nextStepHref, { replace: true });
-  }, [fetcher.state, fetcher.data, loaderData.navigation.currentStep, navigate]);
+  const isSubmitting = navigation.state === 'submitting';
+  const submittingIntent = navigation.formData?.get('intent');
+  const isVerifyingCode = isSubmitting && submittingIntent !== 'resend' && submittingIntent !== 'change-mobile';
+  const isSendingCode = isSubmitting && submittingIntent === 'resend';
+  const verifyFormId = 'booking-mobile-verify-form';
+  const changeMobileFormId = 'booking-change-mobile-form';
+  const resendFormId = 'booking-mobile-resend-form';
+  const maskedMobile = loaderData.requirements.maskedMobile || 'mobilnummeret ditt';
 
   return (
     <Stack space="xl">
-      <PageHeader
-        label="Kontakt"
-        title="Bekreft mobil"
-        description="Skriv inn koden vi har sendt på SMS for å bekrefte mobilnummeret."
-        className={BOOKING_CONTACT_PAGE_HEADER_CLASS}
-      />
-      <Stack space="md">
-        <Link
-          to={loaderData.navigation.previousStep}
-          className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-[var(--radius-booking-control)] px-4 text-base font-medium text-booking-action transition-colors hover:bg-booking-action-muted focus-visible:outline-none focus-visible:ring-[length:var(--border-booking-focus-ring)] focus-visible:ring-booking-action"
-        >
-          <ArrowLeft className="size-4" />
-          Endre mobilnummer
-        </Link>
-        {errorMessage ? (
-          <Notice variant="booking" tone="emphasis" title="Kunne ikke bekrefte kode" message={String(errorMessage)} />
-        ) : null}
-        {resendError ? (
-          <Notice variant="booking" tone="emphasis" title="Kunne ikke sende ny SMS" message={String(resendError)} />
-        ) : null}
-        {!resendMessage && initialMobileDeliveryMessage ? (
-          <Notice
-            variant="booking"
-            tone={initialMobileDeliveryTone}
-            title="SMS-kode"
-            message={initialMobileDeliveryMessage}
-          />
-        ) : null}
-        {isSendingCode ? (
-          <Notice variant="booking" title="Sender SMS" message="Vi sender en ny kode til mobilnummeret ditt." />
-        ) : null}
-        {resendMessage ? (
-          <Notice variant="booking" tone={resendMessageTone} title="SMS-kode" message={resendMessage} />
-        ) : null}
-        <fetcher.Form method="post" action={API_ROUTES_MAP['auth.verify-mobile'].url} aria-busy={isVerifyingCode}>
+      <div className={BOOKING_CONTACT_PAGE_HEADER_CLASS}>
+        <Text as="p" variant="overline" className="text-booking-action">
+          SMS
+        </Text>
+        <Text as="h1" variant="heading-lg" className="text-booking-text">
+          Skriv inn SMS-koden
+        </Text>
+        <Text as="p" variant="body" className="max-w-2xl text-booking-text-muted">
+          Vi har sendt en kode til {maskedMobile}. Skriv inn koden for å bekrefte mobilnummeret og fortsette.
+        </Text>
+      </div>
+
+      {actionData?.ok === false ? (
+        <Notice variant="booking" tone="emphasis" title="Kunne ikke bekrefte kode" message={actionData.error} />
+      ) : null}
+      {actionData?.ok === true ? <Notice variant="booking" title="SMS-kode" message={actionData.message} /> : null}
+
+      <div className="space-y-5 rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-4 shadow-[var(--shadow-booking-card)] md:p-5">
+        <Form id={verifyFormId} method="post" aria-busy={isVerifyingCode}>
           <Stack space="md">
-            <Stack space="xs">
-              <input type="hidden" name="verificationSessionToken" value={verificationSessionToken} />
-              <VerificationCodeInput
-                name="code"
-                value={code}
-                onChange={setCode}
-                length={CODE_LENGTH}
-                aria-invalid={Boolean(errorMessage)}
-                disabled={isVerifyingCode}
-                boxClassName="border-booking-border bg-booking-surface-strong text-booking-text data-[active=true]:border-booking-action data-[active=true]:ring-booking-action/25 data-[filled=true]:border-booking-action hover:border-booking-action"
-              />
-            </Stack>
-            <Button
-              type="submit"
-              variant="booking-primary"
-              className="w-full"
-              loading={isVerifyingCode}
-              disabled={code.length !== CODE_LENGTH}
-            >
-              {isVerifyingCode ? 'Bekrefter...' : 'Bekreft kode'}
-            </Button>
+            <input type="hidden" name="intent" value="verify" />
+            <input type="hidden" name="challengeId" value={loaderData.requirements.challengeId} />
+            <VerificationCodeInput
+              name="code"
+              value={code}
+              onChange={setCode}
+              length={CODE_LENGTH}
+              aria-invalid={actionData?.ok === false}
+              disabled={isSubmitting}
+              boxClassName="border-booking-border bg-booking-surface-strong text-booking-text data-[active=true]:border-booking-action data-[active=true]:ring-booking-action/25 data-[filled=true]:border-booking-action hover:border-booking-action"
+            />
+            <div className="hidden md:block">
+              <Button
+                type="submit"
+                variant="booking-primary"
+                loading={isVerifyingCode}
+                disabled={code.length !== CODE_LENGTH || isSubmitting}
+              >
+                {isVerifyingCode ? 'Bekrefter...' : 'Bekreft kode'}
+              </Button>
+            </div>
           </Stack>
-        </fetcher.Form>
-        <resendFetcher.Form
-          method="post"
-          action={API_ROUTES_MAP['auth.resend-verification.mobile'].url}
-          aria-busy={isSendingCode}
-        >
-          <Stack space="sm">
-            <input type="hidden" name="verificationSessionToken" value={verificationSessionToken} />
-            <Button
-              type="submit"
-              fullWidth
-              variant="booking-secondary"
-              loading={isSendingCode}
-              disabled={!verificationSessionToken || isSendingCode}
-            >
+        </Form>
+
+        <div className="grid gap-2 md:grid-cols-2">
+          <Form id={resendFormId} method="post">
+            <input type="hidden" name="intent" value="resend" />
+            <Button type="submit" variant="booking-secondary" fullWidth loading={isSendingCode} disabled={isSubmitting}>
+              <RotateCcw className="size-4" />
               {isSendingCode ? 'Sender SMS...' : 'Send SMS på nytt'}
             </Button>
-          </Stack>
-        </resendFetcher.Form>
-      </Stack>
+          </Form>
+
+          <Form id={changeMobileFormId} method="post">
+            <input type="hidden" name="intent" value="change-mobile" />
+            <Button type="submit" variant="booking-ghost" fullWidth disabled={isSubmitting}>
+              Endre mobilnummer
+            </Button>
+          </Form>
+        </div>
+      </div>
+
+      <BookingBottomActionBar
+        actions={[
+          {
+            id: 'change-mobile',
+            label: 'Endre mobil',
+            type: 'button',
+            buttonType: 'submit',
+            form: changeMobileFormId,
+            icon: <ArrowLeft className="size-4" />,
+            variant: 'secondary',
+            disabled: isSubmitting,
+          },
+          {
+            id: 'verify',
+            label: isVerifyingCode ? 'Bekrefter...' : 'Bekreft',
+            type: 'button',
+            buttonType: 'submit',
+            form: verifyFormId,
+            variant: 'primary',
+            loading: isVerifyingCode,
+            disabled: code.length !== CODE_LENGTH || isSubmitting,
+          },
+        ]}
+      />
     </Stack>
   );
 }

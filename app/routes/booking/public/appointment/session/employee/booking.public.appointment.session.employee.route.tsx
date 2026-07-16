@@ -4,7 +4,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
-import { requireAuthenticatedBookingFlow } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
+import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
 import {
@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
   Text,
+  Notice,
   cn,
 } from '~/ui';
 import type { Route } from './+types/booking.public.appointment.session.employee.route';
@@ -26,20 +27,18 @@ export async function loader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
 
   try {
-    const guardResult = await requireAuthenticatedBookingFlow(request);
+    const guardResult = await requireBookingSession(request);
     if (guardResult instanceof Response) {
       return guardResult;
     }
 
     const { session } = guardResult;
-    const [profilesResponse, companySummary] = await Promise.all([
-      PublicAppointmentSessionController.getAppointmentSessionProfiles({
-        query: {
-          sessionId: session.sessionId,
-        },
-      }),
-      getBookingCompanySummary(session.companyId),
-    ]);
+    const companySummary = await getBookingCompanySummary(session.companyId);
+    const profilesResponse = await PublicAppointmentSessionController.getAppointmentSessionProfiles({
+      query: {
+        sessionId: session.sessionId,
+      },
+    });
 
     const profiles = profilesResponse.data?.data || [];
 
@@ -63,6 +62,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       profiles,
       selectedProfileId: session.selectedProfileId,
       companySummary,
+      error: null as string | null,
       navigation: {
         contact: routes.contact,
         selectServices: routes.selectServices,
@@ -70,7 +70,17 @@ export async function loader({ request }: Route.LoaderArgs) {
     });
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke hente frisører');
-    return redirectWithError(request, routes.contact, message);
+    return data({
+      session: null,
+      profiles: [],
+      selectedProfileId: null,
+      companySummary: null,
+      error: message,
+      navigation: {
+        contact: routes.contact,
+        selectServices: routes.selectServices,
+      },
+    });
   }
 }
 
@@ -78,7 +88,7 @@ export async function action({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
 
   try {
-    const guardResult = await requireAuthenticatedBookingFlow(request);
+    const guardResult = await requireBookingSession(request);
     if (guardResult instanceof Response) {
       return guardResult;
     }
@@ -119,6 +129,9 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
       }
       headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
+      {loaderData.error ? (
+        <Notice variant="booking" tone="emphasis" title="Kunne ikke hente behandlere" message={loaderData.error} />
+      ) : null}
       <Grid columns={2}>
         {profiles.map((profile) => {
           const isSelected = selectedProfileId === profile.id;

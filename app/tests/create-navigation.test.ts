@@ -14,6 +14,7 @@ const createUserContext = (
     emailVerified: true,
     mobileVerified: false,
     hasPassword: true,
+    accountStatus: 'FULL',
   },
   companies: [
     {

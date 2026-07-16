@@ -1,80 +1,95 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const getSessionMock = vi.fn();
-const getSessionResultMock = vi.fn();
-const deleteSessionMock = vi.fn();
-const getUserStatusMock = vi.fn();
+const mocks = vi.hoisted(() => ({
+  getSession: vi.fn(),
+  getSessionResult: vi.fn(),
+  deleteSession: vi.fn(),
+  getAppointmentSessionRequirements: vi.fn(),
+}));
 
 vi.mock('~/routes/booking/public/_services/booking.appointment-session.service.server', () => ({
   AppointmentSessionService: {
-    getResult: getSessionResultMock,
-    delete: deleteSessionMock,
+    getResult: mocks.getSessionResult,
+    delete: mocks.deleteSession,
   },
 }));
 
-vi.mock('~/routes/booking/public/appointment/session/contact/_services/contact-auth.service.server', () => ({
-  ContactAuthService: {
-    getUserStatus: getUserStatusMock,
+vi.mock('~/api/generated/booking', () => ({
+  PublicAppointmentSessionController: {
+    getAppointmentSessionRequirements: mocks.getAppointmentSessionRequirements,
   },
 }));
 
-describe('requireAuthenticatedBookingFlow', () => {
+import {
+  requireAuthenticatedBookingFlow,
+  requireBookingReady,
+  requireBookingSession,
+} from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
+
+describe('booking session guards', () => {
   beforeEach(() => {
-    getSessionMock.mockReset();
-    getSessionResultMock.mockReset();
-    deleteSessionMock.mockReset();
-    getUserStatusMock.mockReset();
-    getSessionResultMock.mockImplementation(async () => {
-      const session = await getSessionMock();
+    vi.clearAllMocks();
+    mocks.getSessionResult.mockImplementation(async () => {
+      const session = await mocks.getSession();
       return session ? { status: 'found', session } : { status: 'missing-cookie' };
     });
-    deleteSessionMock.mockResolvedValue('appointment_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax');
+    mocks.deleteSession.mockResolvedValue('appointment_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax');
+    mocks.getAppointmentSessionRequirements.mockResolvedValue({
+      data: {
+        data: {
+          nextStep: 'DONE',
+          needsUser: false,
+          needsMobile: false,
+          canAttachAuthenticatedUser: false,
+        },
+      },
+    });
   });
 
-  it('redirects to contact when session user exists but auth status is missing', async () => {
-    getSessionMock.mockResolvedValue({ sessionId: 's1', userId: 10 });
-    getUserStatusMock.mockResolvedValue(null);
+  it('requires only an appointment session for pre-contact booking steps', async () => {
+    const session = { sessionId: 's1', companyId: 1 };
+    mocks.getSession.mockResolvedValue(session);
 
-    const { requireAuthenticatedBookingFlow } = await import(
-      '~/routes/booking/public/_utils/booking.require-authenticated-flow.server'
-    );
+    const result = await requireBookingSession(new Request('http://localhost/x'));
 
-    const result = await requireAuthenticatedBookingFlow(new Request('http://localhost/x'));
+    expect(result).toEqual({ session });
+    expect(mocks.getAppointmentSessionRequirements).not.toHaveBeenCalled();
+  });
+
+  it('redirects to contact when booking requirements are not done', async () => {
+    mocks.getSession.mockResolvedValue({ sessionId: 's1', companyId: 1 });
+    mocks.getAppointmentSessionRequirements.mockResolvedValueOnce({
+      data: {
+        data: {
+          nextStep: 'VERIFY_MOBILE',
+          needsUser: false,
+          needsMobile: true,
+          canAttachAuthenticatedUser: false,
+        },
+      },
+    });
+
+    const result = await requireBookingReady(new Request('http://localhost/x'));
 
     expect(result).toBeInstanceOf(Response);
     expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment/session/contact');
   });
 
-  it('redirects to required auth next step when nextStep is not DONE', async () => {
-    getSessionMock.mockResolvedValue({ sessionId: 's1', userId: 10 });
-    getUserStatusMock.mockResolvedValue({
-      nextStep: 'VERIFY_MOBILE',
-      user: {
-        mobileNumber: '+4740104131',
-        mobileVerified: false,
-      },
+  it('returns session when booking requirements are done', async () => {
+    const session = { sessionId: 's1', companyId: 1, userId: 10 };
+    mocks.getSession.mockResolvedValue(session);
+
+    const result = await requireBookingReady(new Request('http://localhost/x'));
+
+    expect(mocks.getAppointmentSessionRequirements).toHaveBeenCalledWith({
+      path: { sessionId: 's1' },
     });
-
-    const { requireAuthenticatedBookingFlow } = await import(
-      '~/routes/booking/public/_utils/booking.require-authenticated-flow.server'
-    );
-
-    const result = await requireAuthenticatedBookingFlow(new Request('http://localhost/x'));
-
-    expect(result).toBeInstanceOf(Response);
-    expect((result as Response).headers.get('Location')).toBe(
-      '/booking/public/appointment/session/contact/verify-mobile',
-    );
+    expect(result).toEqual({ session });
   });
 
-  it('returns session when auth flow is done', async () => {
-    const session = { sessionId: 's1', userId: 10 };
-    getSessionMock.mockResolvedValue(session);
-    getUserStatusMock.mockResolvedValue({ nextStep: 'DONE' });
-
-    const { requireAuthenticatedBookingFlow } = await import(
-      '~/routes/booking/public/_utils/booking.require-authenticated-flow.server'
-    );
+  it('keeps the compatibility export mapped to the booking-ready guard', async () => {
+    const session = { sessionId: 's1', companyId: 1, userId: 10 };
+    mocks.getSession.mockResolvedValue(session);
 
     const result = await requireAuthenticatedBookingFlow(new Request('http://localhost/x'));
 
@@ -82,13 +97,9 @@ describe('requireAuthenticatedBookingFlow', () => {
   });
 
   it('clears stale appointment session cookie and redirects to booking start', async () => {
-    getSessionResultMock.mockResolvedValue({ status: 'stale-cookie' });
+    mocks.getSessionResult.mockResolvedValue({ status: 'stale-cookie' });
 
-    const { requireAuthenticatedBookingFlow } = await import(
-      '~/routes/booking/public/_utils/booking.require-authenticated-flow.server'
-    );
-
-    const result = await requireAuthenticatedBookingFlow(new Request('http://localhost/x'));
+    const result = await requireBookingReady(new Request('http://localhost/x'));
 
     expect(result).toBeInstanceOf(Response);
     expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment');

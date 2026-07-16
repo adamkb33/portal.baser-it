@@ -3,7 +3,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
-import { requireAuthenticatedBookingFlow } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
+import { requireBookingReady } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { redirect } from 'react-router';
 import { useState } from 'react';
@@ -17,7 +17,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
 
   try {
-    const guardResult = await requireAuthenticatedBookingFlow(request);
+    const guardResult = await requireBookingReady(request);
     if (guardResult instanceof Response) {
       return guardResult;
     }
@@ -57,7 +57,7 @@ export async function action({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
 
   try {
-    const guardResult = await requireAuthenticatedBookingFlow(request);
+    const guardResult = await requireBookingReady(request);
     if (guardResult instanceof Response) {
       return guardResult;
     }
@@ -69,7 +69,7 @@ export async function action({ request }: Route.ActionArgs) {
       },
     });
 
-    const appointmentId = submitResponse.data?.data?.id;
+    const appointmentId = submitResponse.data?.data?.appointmentId;
     if (!appointmentId) {
       return redirectWithError(request, routes.overview, 'Kunne ikke bekrefte timebestilling');
     }

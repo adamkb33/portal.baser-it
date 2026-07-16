@@ -1,6 +1,6 @@
 import { data, redirect, Link } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.success.route';
-import { Check, MapPin, Calendar, Mail, Bell, Clock, ExternalLink, Sparkles, PartyPopper } from 'lucide-react';
+import { Check, MapPin, Calendar, Mail, Bell, Clock, ExternalLink, Sparkles, PartyPopper, Phone } from 'lucide-react';
 import { PublicCompanyController } from '~/api/generated/base';
 import { AppointmentsController, PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
@@ -172,6 +172,7 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
   };
 
   const calendarPayload = buildCalendarPayload();
+  const hasEmail = Boolean(loaderData.appointment?.user?.email);
 
   return (
     <StickyFooterPageTemplate
@@ -226,7 +227,9 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
               <div className="flex justify-center">
                 <div className="inline-flex items-center gap-2 rounded-full border border-booking-border bg-booking-surface-muted px-4 py-2 text-booking-text">
                   <PartyPopper className="size-4 text-booking-action" />
-                  <span className="text-sm font-semibold">Bekreftelse sendt til e-post</span>
+                  <span className="text-sm font-semibold">
+                    {hasEmail ? 'Bekreftelse sendt på SMS og e-post' : 'Bekreftelse sendt på SMS'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -243,22 +246,12 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
               <h2 className="text-lg font-bold text-card-text md:text-xl">Din time hos {companySummary.name}</h2>
             </div>
 
-            {/* TODO: Add actual booking details if available in response */}
-            {/* This would come from session data or query params */}
             <div className="space-y-3 rounded-lg bg-muted/50 p-4">
-              <p className="text-sm font-medium text-muted-foreground">Du vil motta alle detaljer på e-post</p>
-              {/* If we had booking details:
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Calendar className="size-4 text-muted-foreground" />
-              <p className="text-base font-semibold">[Date]</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="size-4 text-muted-foreground" />
-              <p className="text-base font-semibold">[Time]</p>
-            </div>
-          </div>
-          */}
+              <p className="text-sm font-medium text-muted-foreground">
+                {hasEmail
+                  ? 'Du mottar bekreftelse på SMS og e-post.'
+                  : 'Du mottar bekreftelse og viktig informasjon på SMS.'}
+              </p>
             </div>
 
             {/* Add to calendar CTA */}
@@ -381,14 +374,20 @@ export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData
               <li className="flex gap-4">
                 <div className="flex flex-col items-center">
                   <div className="flex size-10 items-center justify-center rounded-full bg-secondary">
-                    <Mail className="size-5 text-secondary-foreground" />
+                    {hasEmail ? (
+                      <Mail className="size-5 text-secondary-foreground" />
+                    ) : (
+                      <Phone className="size-5 text-secondary-foreground" />
+                    )}
                   </div>
                   <div className="mt-2 h-full w-0.5 bg-card-border" />
                 </div>
                 <div className="flex-1 pb-4">
                   <h3 className="text-base font-bold text-card-text">Du mottar en bekreftelse</h3>
                   <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                    Vi sender deg en e-post med alle detaljer om timen din innen få minutter
+                    {hasEmail
+                      ? 'Vi sender deg bekreftelse med detaljer om timen din på SMS og e-post.'
+                      : 'Vi sender deg bekreftelse med detaljer om timen din på SMS.'}
                   </p>
                 </div>
               </li>

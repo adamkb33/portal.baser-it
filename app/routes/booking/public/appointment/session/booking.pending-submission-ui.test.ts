@@ -58,40 +58,32 @@ describe('booking pending submission UI', () => {
 
   it('disables contact landing submissions while React Router navigation is submitting', () => {
     const source = readSessionRoute('contact/booking.public.appointment.session.contact.route.tsx');
-    const continueCardSource = readSessionRoute('contact/_components/continue-card.tsx');
 
     expect(source).toContain('useNavigation');
-    expect(source).toContain("routeNavigation.state === 'submitting'");
-    expect(source).toContain('loading={submittingIntent === ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER}');
+    expect(source).toContain("navigation.state === 'submitting'");
+    expect(source).toContain('loading={isSubmitting}');
     expect(source).toContain('disabled={isSubmitting}');
-    expect(source).toContain('ProviderButtons disabled={isSubmitting}');
-    expect(source).toContain('isSubmitting={submittingIntent === ACTION_INTENT.CONTINUE_WITH_SESSION_USER}');
-    expect(source).toContain('disabled={isSubmitting}');
-    expect(continueCardSource).toContain('disabled={isSubmitting}');
-    expect(continueCardSource).toContain('aria-busy={isSubmitting}');
-    expect(continueCardSource).toContain("isSubmitting ? 'Fortsetter...' : cta");
+    expect(source).toContain("isSubmitting ? 'Sender SMS...' : 'Fortsett'");
+    expect(source).not.toContain('ProviderButtons');
   });
 
-  it('provider auth cannot submit while the provider button group is disabled', () => {
-    const providerButtonsSource = readWorkspaceFile('app/routes/auth/_components/provider-buttons.tsx');
-    const contactSource = readSessionRoute('contact/booking.public.appointment.session.contact.route.tsx');
-    const signInSource = readSessionRoute(
-      'contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx',
-    );
-
-    expect(providerButtonsSource).toContain('if (disabled) return;');
-    expect(providerButtonsSource).toContain('disabled={disabled}');
-    expect(contactSource).toContain('ProviderButtons disabled={isSubmitting}');
-    expect(signInSource).toContain('ProviderButtons showDivider={!isGoogleProvider} disabled={isSubmitting}');
-  });
-
-  it('shows loading-disabled submit buttons across contact substeps', () => {
+  it('obsolete booking auth subroutes redirect back to the contact resolver', () => {
     const signInSource = readSessionRoute(
       'contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx',
     );
     const signUpSource = readSessionRoute(
       'contact/sign-up/booking.public.appointment.session.contact.sign-up.route.tsx',
     );
+    const verifyEmailSource = readSessionRoute(
+      'contact/verify-email/booking.public.appointment.session.contact.verify-email.route.tsx',
+    );
+
+    expect(signInSource).toContain('return redirect(getBookingRouteMap().contact)');
+    expect(signUpSource).toContain('return redirect(getBookingRouteMap().contact)');
+    expect(verifyEmailSource).toContain('return redirect(getBookingRouteMap().contact)');
+  });
+
+  it('keeps removed collect routes as contact redirects', () => {
     const collectMobileSource = readSessionRoute(
       'contact/collect-mobile/booking.public.appointment.session.contact.collect-mobile.route.tsx',
     );
@@ -99,46 +91,25 @@ describe('booking pending submission UI', () => {
       'contact/collect-email/booking.public.appointment.session.contact.collect-email.route.tsx',
     );
     const submitContactFormSource = readSessionRoute('contact/_forms/submit-contact.form.tsx');
-    const clearSessionSource = readSessionRoute('contact/_components/clear-session-action.tsx');
 
-    expect(signInSource).toContain('ProviderButtons showDivider={!isGoogleProvider} disabled={isSubmitting}');
-    expect(signInSource).toContain('loading={isSubmitting}');
-    expect(signUpSource).toContain('loading={isSubmitting}');
-    expect(signUpSource).toContain("isSubmitting ? 'Oppretter konto...' : 'Opprett konto'");
-    expect(collectMobileSource).toContain('loading={isSubmitting}');
-    expect(collectMobileSource).toContain("isSubmitting ? 'Lagrer...' : 'Fortsett'");
-    expect(collectEmailSource).toContain('loading={isSubmitting}');
-    expect(collectEmailSource).toContain("isSubmitting ? 'Lagrer...' : buttonLabel");
+    expect(collectMobileSource).toContain('return redirect(getBookingRouteMap().contact)');
+    expect(collectEmailSource).toContain('return redirect(getBookingRouteMap().contact)');
     expect(submitContactFormSource).toContain('disabled={isSubmitting || inputOptions.disabled}');
     expect(submitContactFormSource).toContain('loading={isSubmitting}');
-    expect(clearSessionSource).toContain("const isSubmitting = fetcher.state !== 'idle'");
-    expect(clearSessionSource).toContain('disabled={isSubmitting}');
-    expect(clearSessionSource).toContain('loading={isSubmitting}');
   });
 
-  it('disables fetcher-based verification submissions while requests are pending', () => {
+  it('disables SMS verification submissions while requests are pending', () => {
     const verifyMobileSource = readSessionRoute(
       'contact/verify-mobile/booking.public.appointment.session.contact.verify-mobile.route.tsx',
     );
 
-    expect(verifyMobileSource).toContain("const isVerifyingCode = fetcher.state !== 'idle'");
-    expect(verifyMobileSource).toContain('disabled={isVerifyingCode}');
+    expect(verifyMobileSource).toContain("const isSubmitting = navigation.state === 'submitting'");
+    expect(verifyMobileSource).toContain("const isSendingCode = isSubmitting && submittingIntent === 'resend'");
+    expect(verifyMobileSource).toContain('disabled={code.length !== CODE_LENGTH || isSubmitting}');
     expect(verifyMobileSource).toContain('loading={isVerifyingCode}');
     expect(verifyMobileSource).toContain("isVerifyingCode ? 'Bekrefter...' : 'Bekreft kode'");
-    expect(verifyMobileSource).toContain("const isSendingCode = resendFetcher.state !== 'idle'");
     expect(verifyMobileSource).toContain('loading={isSendingCode}');
-    expect(verifyMobileSource).toContain('aria-busy={isSendingCode}');
-    expect(verifyMobileSource).toContain('disabled={!verificationSessionToken || isSendingCode}');
-  });
-
-  it('does not expose an email verification blocking UI in booking', () => {
-    const verifyEmailSource = readSessionRoute(
-      'contact/verify-email/booking.public.appointment.session.contact.verify-email.route.tsx',
-    );
-
-    expect(verifyEmailSource).toContain('return redirectAuthStatusNextStepHref(authStatus)');
-    expect(verifyEmailSource).toContain('return null');
-    expect(verifyEmailSource).not.toContain('resendVerificationAction');
+    expect(verifyMobileSource).toContain('disabled={isSubmitting}');
   });
 
   it('disables later booking step navigation while route submissions are pending', () => {

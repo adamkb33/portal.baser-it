@@ -84,7 +84,7 @@ export async function loader(args: Route.LoaderArgs) {
       headers.append('Set-Cookie', created.setCookieHeader);
       headers.append('Set-Cookie', await createBookingContextCookie(nextContext, companyIdNumber));
 
-      return redirect(routes.contact, { headers });
+      return redirect(routes.employee, { headers });
     }
 
     const session = sessionResult.status === 'found' ? sessionResult.session : null;
@@ -98,7 +98,7 @@ export async function loader(args: Route.LoaderArgs) {
         }
 
         if (session.companyId === companyIdNumber) {
-          return redirect(routes.contact, {
+          return redirect(routes.employee, {
             headers: {
               'Set-Cookie': await createBookingContextCookie(nextContext, session.companyId),
             },
@@ -113,11 +113,11 @@ export async function loader(args: Route.LoaderArgs) {
           appendSetCookie(headers, created.setCookieHeader);
           appendSetCookie(headers, await createBookingContextCookie(nextContext, companyIdNumber));
 
-          return redirect(routes.contact, { headers });
+          return redirect(routes.employee, { headers });
         }
       }
 
-      return redirect(routes.contact, {
+      return redirect(routes.employee, {
         headers: {
           'Set-Cookie': await createBookingContextCookie(nextContext, session.companyId),
         },
@@ -142,7 +142,7 @@ export async function loader(args: Route.LoaderArgs) {
     appendSetCookie(headers, created.setCookieHeader);
     appendSetCookie(headers, await createBookingContextCookie(nextContext, companyIdNumber));
 
-    return redirect(routes.contact, { headers });
+    return redirect(routes.employee, { headers });
   } catch (error: unknown) {
     if (error instanceof Response) {
       throw error;

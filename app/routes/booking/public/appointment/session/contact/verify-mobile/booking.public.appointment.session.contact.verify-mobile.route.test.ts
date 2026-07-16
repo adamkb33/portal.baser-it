@@ -1,30 +1,32 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-  getSession: vi.fn(),
-  readVerificationToken: vi.fn(),
-  verificationStatus: vi.fn(),
+  requireBookingSession: vi.fn(),
+  getAppointmentSessionRequirements: vi.fn(),
+  verifyAppointmentSessionUserMobile: vi.fn(),
+  resendAppointmentSessionMobileChallenge: vi.fn(),
+  clearAppointmentSessionUser: vi.fn(),
+  setAuthCookies: vi.fn(),
   resolveErrorPayload: vi.fn(),
+  redirectWithError: vi.fn(),
 }));
 
-vi.mock('~/api/generated/base', () => ({
-  AuthController: {
-    verificationStatus: mocks.verificationStatus,
+vi.mock('~/routes/booking/public/_utils/booking.require-authenticated-flow.server', () => ({
+  requireBookingSession: mocks.requireBookingSession,
+}));
+
+vi.mock('~/api/generated/booking', () => ({
+  PublicAppointmentSessionController: {
+    getAppointmentSessionRequirements: mocks.getAppointmentSessionRequirements,
+    verifyAppointmentSessionUserMobile: mocks.verifyAppointmentSessionUserMobile,
+    resendAppointmentSessionMobileChallenge: mocks.resendAppointmentSessionMobileChallenge,
+    clearAppointmentSessionUser: mocks.clearAppointmentSessionUser,
   },
 }));
 
-vi.mock('~/routes/booking/public/_services/booking.appointment-session.service.server', () => ({
-  AppointmentSessionService: {
-    get: mocks.getSession,
-  },
-}));
-
-vi.mock('~/routes/booking/public/appointment/session/contact/_services/verification-token.service.server', () => ({
-  VerificationTokenService: {
-    readVerificationToken: mocks.readVerificationToken,
+vi.mock('~/lib/auth-service', () => ({
+  authService: {
+    setAuthCookies: mocks.setAuthCookies,
   },
 }));
 
@@ -32,12 +34,11 @@ vi.mock('~/lib/api-error', () => ({
   resolveErrorPayload: mocks.resolveErrorPayload,
 }));
 
-import { loader } from './booking.public.appointment.session.contact.verify-mobile.route';
+vi.mock('~/lib/flash-message.server', () => ({
+  redirectWithError: mocks.redirectWithError,
+}));
 
-const routeSource = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), 'booking.public.appointment.session.contact.verify-mobile.route.tsx'),
-  'utf8',
-);
+import { action, loader } from './booking.public.appointment.session.contact.verify-mobile.route';
 
 function unwrapData<T = unknown>(result: unknown): T {
   if (result && typeof result === 'object' && 'data' in (result as Record<string, unknown>)) {
@@ -46,103 +47,67 @@ function unwrapData<T = unknown>(result: unknown): T {
   return result as T;
 }
 
-function getHeaders(result: unknown): Headers {
-  if (result instanceof Response) {
-    return result.headers;
-  }
-
-  const init =
-    result && typeof result === 'object' && 'init' in result
-      ? (result as { init?: { headers?: HeadersInit } }).init
-      : null;
-  return new Headers(init?.headers);
-}
-
 function getLocation(result: unknown): string | null {
-  return getHeaders(result).get('Location');
+  return result instanceof Response ? result.headers.get('Location') : null;
 }
 
-function createRequest(cookie?: string) {
+function createRequest(body?: FormData) {
   return new Request('https://portal.pitell.no/booking/public/appointment/session/contact/verify-mobile', {
-    headers: cookie ? { Cookie: cookie } : undefined,
+    method: body ? 'POST' : 'GET',
+    body,
   });
 }
 
 describe('booking contact verify-mobile route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.getSession.mockResolvedValue({ sessionId: 'session-1', companyId: 1, userId: 10 });
-    mocks.readVerificationToken.mockResolvedValue('vt-1');
-    mocks.verificationStatus.mockResolvedValue({
+    mocks.requireBookingSession.mockResolvedValue({
+      session: {
+        sessionId: 'session-1',
+        companyId: 1,
+      },
+    });
+    mocks.getAppointmentSessionRequirements.mockResolvedValue({
       data: {
         data: {
-          emailVerified: false,
-          mobileRequired: true,
-          mobileVerified: false,
+          sessionId: 'session-1',
           nextStep: 'VERIFY_MOBILE',
+          needsUser: false,
+          needsMobile: true,
+          challengeId: 'challenge-1',
+          maskedMobile: '******81',
+          canAttachAuthenticatedUser: false,
         },
       },
     });
-    mocks.resolveErrorPayload.mockReturnValue({ message: 'Kunne ikke hente brukerdata', status: 400 });
+    mocks.setAuthCookies.mockResolvedValue(new Headers({ 'Set-Cookie': 'access=1' }));
+    mocks.resolveErrorPayload.mockReturnValue({ message: 'fallback', status: 400 });
+    mocks.redirectWithError.mockImplementation((_request: Request, href: string) => Response.redirect(href, 302));
   });
 
-  it('checks verification status and stays on SMS input without sending SMS on page load', async () => {
-    const result = await loader({
-      request: createRequest('verification_session_token=vt-1'),
-    } as never);
-    const data = unwrapData<{ verificationSessionToken: string; mobileDelivery: string | null }>(result);
+  it('loads the active SMS challenge from booking session requirements', async () => {
+    const result = await loader({ request: createRequest() } as never);
+    const payload = unwrapData<{ requirements: { challengeId: string; maskedMobile: string } }>(result);
 
-    expect(mocks.verificationStatus).toHaveBeenCalledOnce();
-    expect(mocks.verificationStatus).toHaveBeenCalledWith({
-      query: { verificationSessionToken: 'vt-1' },
+    expect(mocks.getAppointmentSessionRequirements).toHaveBeenCalledWith({
+      path: { sessionId: 'session-1' },
     });
-    expect(data.verificationSessionToken).toBe('vt-1');
-    expect(data.mobileDelivery).toBe(null);
-  });
-
-  it('redirects without sending SMS when the appointment session is missing', async () => {
-    mocks.getSession.mockResolvedValueOnce(null);
-
-    const result = await loader({ request: createRequest() } as never);
-
-    expect(result).toBeInstanceOf(Response);
-    expect(getLocation(result)).toBe('/booking/public/appointment/session');
-    expect(mocks.verificationStatus).not.toHaveBeenCalled();
-  });
-
-  it('redirects without sending SMS when the appointment session has no user', async () => {
-    mocks.getSession.mockResolvedValueOnce({ sessionId: 'session-1', companyId: 1 });
-
-    const result = await loader({ request: createRequest() } as never);
-
-    expect(result).toBeInstanceOf(Response);
-    expect(getLocation(result)).toBe('/booking/public/appointment/session');
-    expect(mocks.verificationStatus).not.toHaveBeenCalled();
-  });
-
-  it('redirects without sending SMS when the verification token cookie is missing', async () => {
-    mocks.readVerificationToken.mockResolvedValueOnce(null);
-
-    const result = await loader({ request: createRequest() } as never);
-
-    expect(result).toBeInstanceOf(Response);
-    expect(getLocation(result)).toBe('/booking/public/appointment/session/contact');
-    expect(mocks.verificationStatus).not.toHaveBeenCalled();
+    expect(mocks.resendAppointmentSessionMobileChallenge).not.toHaveBeenCalled();
+    expect(payload.requirements.challengeId).toBe('challenge-1');
+    expect(payload.requirements.maskedMobile).toBe('******81');
   });
 
   it.each([
-    { nextStep: 'VERIFY_EMAIL', expectedLocation: '/booking/public/appointment/session/employee' },
-    { nextStep: 'DONE', expectedLocation: '/booking/public/appointment/session/employee' },
-    { nextStep: 'COLLECT_MOBILE', expectedLocation: '/booking/public/appointment/session/contact/collect-mobile' },
-    { nextStep: 'COLLECT_EMAIL', expectedLocation: '/booking/public/appointment/session/contact/collect-email' },
-  ])('routes by verification status $nextStep without sending SMS', async ({ nextStep, expectedLocation }) => {
-    mocks.verificationStatus.mockResolvedValueOnce({
+    { nextStep: 'CONTACT_FORM', expectedLocation: '/booking/public/appointment/session/contact' },
+    { nextStep: 'DONE', expectedLocation: '/booking/public/appointment/session/overview' },
+  ])('redirects by backend nextStep $nextStep', async ({ nextStep, expectedLocation }) => {
+    mocks.getAppointmentSessionRequirements.mockResolvedValueOnce({
       data: {
         data: {
-          emailVerified: false,
-          mobileRequired: true,
-          mobileVerified: false,
           nextStep,
+          needsUser: nextStep === 'CONTACT_FORM',
+          needsMobile: false,
+          canAttachAuthenticatedUser: false,
         },
       },
     });
@@ -151,35 +116,66 @@ describe('booking contact verify-mobile route', () => {
 
     expect(result).toBeInstanceOf(Response);
     expect(getLocation(result)).toBe(expectedLocation);
-    expect(mocks.verificationStatus).toHaveBeenCalledOnce();
   });
 
-  it.each([
-    { query: 'mobileDelivery=SENT', expected: 'SENT' },
-    { query: 'mobileDelivery=SKIPPED_ALREADY_ACTIVE', expected: 'SKIPPED_ALREADY_ACTIVE' },
-    { query: 'mobileDelivery=FAILED', expected: 'FAILED' },
-    { query: 'mobileDelivery=NOT_ATTEMPTED', expected: 'NOT_ATTEMPTED' },
-    { query: 'mobileDelivery=UNKNOWN', expected: null },
-  ])('uses signup mobileDelivery query for display only: $query', async ({ query, expected }) => {
-    const result = await loader({
-      request: new Request(
-        `https://portal.pitell.no/booking/public/appointment/session/contact/verify-mobile?${query}`,
-      ),
-    } as never);
-    const data = unwrapData<{ mobileDelivery: string | null }>(result);
+  it('resends SMS only from an explicit resend action', async () => {
+    const formData = new FormData();
+    formData.set('intent', 'resend');
 
-    expect(data.mobileDelivery).toBe(expected);
-    expect(mocks.verificationStatus).toHaveBeenCalledOnce();
+    const result = await action({ request: createRequest(formData) } as never);
+    const payload = unwrapData<{ ok: boolean; message: string }>(result);
+
+    expect(mocks.resendAppointmentSessionMobileChallenge).toHaveBeenCalledWith({
+      path: { sessionId: 'session-1' },
+    });
+    expect(payload).toEqual({ ok: true, message: 'Ny SMS-kode er sendt.' });
   });
 
-  it('keeps SMS resend as an explicit user action without client auto-resend', () => {
-    expect(routeSource).not.toContain('resendFetcher.submit');
-    expect(routeSource).not.toContain('sessionStorage');
-    expect(routeSource).not.toContain('AUTO_RESEND');
-    expect(routeSource).not.toContain('ensureSentOnce');
-    expect(routeSource).not.toContain('ContactAuthService.resendVerification');
-    expect(routeSource).toContain('<resendFetcher.Form');
-    expect(routeSource).toContain("action={API_ROUTES_MAP['auth.resend-verification.mobile'].url}");
-    expect(routeSource).toContain('Send SMS på nytt');
+  it('clears the pending user when changing mobile number', async () => {
+    const formData = new FormData();
+    formData.set('intent', 'change-mobile');
+
+    const result = await action({ request: createRequest(formData) } as never);
+
+    expect(mocks.clearAppointmentSessionUser).toHaveBeenCalledWith({
+      path: { sessionId: 'session-1' },
+    });
+    expect(getLocation(result)).toBe('/booking/public/appointment/session/contact');
+  });
+
+  it('verifies the SMS code, sets auth cookies, and continues to overview', async () => {
+    const formData = new FormData();
+    formData.set('intent', 'verify');
+    formData.set('challengeId', 'challenge-1');
+    formData.set('code', '123456');
+    mocks.verifyAppointmentSessionUserMobile.mockResolvedValueOnce({
+      data: {
+        data: {
+          sessionId: 'session-1',
+          userId: 10,
+          accountStatus: 'GUEST',
+          authTokens: {
+            accessToken: 'access-token',
+            refreshToken: 'refresh-token',
+            accessTokenExpiresAt: 1,
+            refreshTokenExpiresAt: 2,
+          },
+          isReturning: false,
+          nextStep: 'DONE',
+        },
+      },
+    });
+
+    const result = await action({ request: createRequest(formData) } as never);
+
+    expect(mocks.verifyAppointmentSessionUserMobile).toHaveBeenCalledWith({
+      path: { sessionId: 'session-1' },
+      body: {
+        challengeId: 'challenge-1',
+        code: '123456',
+      },
+    });
+    expect(mocks.setAuthCookies).toHaveBeenCalledWith('access-token', 'refresh-token', 1, 2);
+    expect(getLocation(result)).toBe('/booking/public/appointment/session/overview');
   });
 });

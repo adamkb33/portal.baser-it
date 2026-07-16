@@ -139,7 +139,6 @@ export class AppointmentSessionService {
 
     await PublicAppointmentSessionController.setPendingAppointmentSessionUser({
       path: { sessionId },
-      query: { userId },
     });
   }
 

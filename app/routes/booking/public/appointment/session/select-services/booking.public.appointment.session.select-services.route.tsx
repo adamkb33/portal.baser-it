@@ -7,7 +7,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
-import { requireAuthenticatedBookingFlow } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
+import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
 import { ServiceQuantityControl } from '~/routes/booking/public/_components/booking.service-quantity-control';
@@ -42,20 +42,15 @@ export async function loader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
 
   try {
-    const guardResult = await requireAuthenticatedBookingFlow(request);
+    const guardResult = await requireBookingSession(request);
     if (guardResult instanceof Response) {
       return guardResult;
     }
 
     const { session } = guardResult;
 
-    const [serviceGroupsResponse, profilesResponse, companySummary] = await Promise.all([
+    const [serviceGroupsResponse, companySummary] = await Promise.all([
       PublicAppointmentSessionController.getAppointmentSessionProfileServices({
-        query: {
-          sessionId: session.sessionId,
-        },
-      }),
-      PublicAppointmentSessionController.getAppointmentSessionProfiles({
         query: {
           sessionId: session.sessionId,
         },
@@ -63,15 +58,12 @@ export async function loader({ request }: Route.LoaderArgs) {
       getBookingCompanySummary(session.companyId),
     ]);
 
-    const profiles = profilesResponse.data?.data || [];
-    const backHref = profiles.length === 1 ? routes.contact : routes.employee;
-
     return data({
       session,
       serviceGroups: serviceGroupsResponse.data?.data || [],
       companySummary,
       navigation: {
-        employee: backHref,
+        employee: routes.employee,
       },
     });
   } catch (error) {
@@ -84,7 +76,7 @@ export async function action({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
 
   try {
-    const guardResult = await requireAuthenticatedBookingFlow(request);
+    const guardResult = await requireBookingSession(request);
     if (guardResult instanceof Response) {
       return guardResult;
     }
