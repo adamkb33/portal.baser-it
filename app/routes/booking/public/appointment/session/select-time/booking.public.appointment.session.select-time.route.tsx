@@ -114,6 +114,14 @@ async function selectTimeLoader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  const url = new URL(request.url);
+  logger.info('[booking:select-time:action-entry] Exported route action hit', {
+    method: request.method,
+    url: request.url,
+    path: url.pathname,
+    search: url.search,
+  });
+
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'select-time' }, async () => {
     return selectTimeAction({ request } as Route.ActionArgs);
   });
@@ -121,11 +129,26 @@ export async function action({ request }: Route.ActionArgs) {
 
 async function selectTimeAction({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
+  logger.info('[booking:select-time:action] Before requireBookingSession', {
+    method: request.method,
+    url: request.url,
+  });
+
   const guardResult = await requireBookingSession(request);
   if (guardResult instanceof Response) {
+    logger.warn('[booking:select-time:action] requireBookingSession returned redirect/response', {
+      method: request.method,
+      url: request.url,
+      responseStatus: guardResult.status,
+      redirectTo: guardResult.headers.get('Location'),
+    });
     return guardResult;
   }
   const { session } = guardResult;
+  logger.info('[booking:select-time:action] Session resolved', {
+    ...getBookingSessionLogContext(session),
+    existingSessionSelectedStartTime: session.selectedStartTime ?? null,
+  });
 
   const formData = await request.formData();
   const selectedStartTime = formData.get('selectedStartTime') as string;
