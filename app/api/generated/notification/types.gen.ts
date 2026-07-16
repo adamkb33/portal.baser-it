@@ -59,6 +59,16 @@ export type ApiMessage = {
     | 'SESSION_ALREADY_ATTACHED'
     | 'SESSION_USER_ATTACHED'
     | 'SESSION_REQUIREMENTS'
+    | 'SESSION_EXPIRED'
+    | 'REQUIREMENTS_UNAVAILABLE'
+    | 'CONTACT_VALIDATION_FAILED'
+    | 'INVALID_CODE'
+    | 'CHALLENGE_NOT_FOUND'
+    | 'CHALLENGE_EXPIRED'
+    | 'CHALLENGE_EXHAUSTED'
+    | 'CHALLENGE_RATE_LIMITED'
+    | 'UNAUTHORIZED_ATTACH'
+    | 'MOBILE_CHALLENGE_SENT'
     | 'INVALID_PROVIDER_TOKEN'
     | 'EMAIL_REQUIRED'
     | 'MOBILE_REQUIRED'
@@ -726,6 +736,39 @@ export type InAppNotificationDto = {
   readAt?: string;
 };
 
+export type PublicVerifyMobileDto = {
+  challengeId: string;
+  code: string;
+};
+
+export type ApiResponsePublicVerifyMobileResponseDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: PublicVerifyMobileResponseDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type AuthenticationTokenDto = {
+  accessToken: string;
+  accessTokenExpiresAt: number;
+  refreshToken: string;
+  refreshTokenExpiresAt: number;
+};
+
+export type PublicVerifyMobileResponseDto = {
+  sessionId: string;
+  userId: number;
+  authTokens: AuthenticationTokenDto;
+  isReturning: boolean;
+  accountStatus: 'GUEST' | 'FULL';
+  displayName?: string;
+  maskedMobile?: string;
+  completionToken?: string;
+  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+};
+
 export type ApiResponsePublicPendingUserResponseDto = {
   success: boolean;
   message: ApiMessage;
@@ -738,7 +781,7 @@ export type ApiResponsePublicPendingUserResponseDto = {
 export type PublicPendingUserResponseDto = {
   sessionId: string;
   userDto?: UserDto;
-  nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
 };
 
 export type UserDto = {
@@ -751,12 +794,55 @@ export type UserDto = {
   mobileVerified: boolean;
   provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
   hasPassword: boolean;
+  accountStatus: 'GUEST' | 'FULL';
 };
 
-export type ApiResponseAppointmentDto = {
+export type ApiResponsePublicMobileChallengeResponseDto = {
   success: boolean;
   message: ApiMessage;
-  data?: AppointmentDto;
+  data?: PublicMobileChallengeResponseDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type PublicMobileChallengeResponseDto = {
+  challengeId: string;
+  maskedMobile: string;
+  expiresAt: string;
+  resendAvailableAt?: string;
+  remainingAttempts?: number;
+  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+};
+
+export type PublicIdentifyDto = {
+  givenName: string;
+  familyName: string;
+  mobileNumber: string;
+  email?: string;
+};
+
+export type ApiResponsePublicIdentifyResponseDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: PublicIdentifyResponseDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type PublicIdentifyResponseDto = {
+  challengeId: string;
+  maskedMobile: string;
+  expiresAt: string;
+  resendAvailableAt?: string;
+  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+};
+
+export type ApiResponsePublicSubmitAppointmentSessionResponseDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: PublicSubmitAppointmentSessionResponseDto;
   errors?: Array<ApiError>;
   meta?: ApiMeta;
   timestamp: string;
@@ -786,6 +872,13 @@ export type GroupedServiceGroupDto = {
   companyId: number;
   name: string;
   services: Array<GroupedServiceDto>;
+};
+
+export type PublicSubmitAppointmentSessionResponseDto = {
+  appointment: AppointmentDto;
+  appointmentId: number;
+  accountStatus: 'GUEST' | 'FULL';
+  completionToken?: string;
 };
 
 export type ApiResponseAppointmentSessionDto = {
@@ -965,6 +1058,15 @@ export type CompanyUserCreateAppointmentDto = {
   startTime: string;
 };
 
+export type ApiResponseAppointmentDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: AppointmentDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
 export type CompanyUserUploadAppointmentImageDto = {
   image: ImageUpload;
 };
@@ -1101,6 +1203,27 @@ export type GetCreateOrUpdateContactDto = {
   mobileNumber?: string;
 };
 
+export type AccountCompleteDto = {
+  completionToken?: string;
+  email?: string;
+  password?: string;
+  password2?: string;
+};
+
+export type AccountCompleteResponseDto = {
+  userId: number;
+  accountStatus: 'GUEST' | 'FULL';
+};
+
+export type ApiResponseAccountCompleteResponseDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: AccountCompleteResponseDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
 export type UserSearchRequestDto = {
   search?: string;
   limit?: number;
@@ -1162,6 +1285,104 @@ export type ApiResponseListUserDto = {
   errors?: Array<ApiError>;
   meta?: ApiMeta;
   timestamp: string;
+};
+
+export type InternalVerifyGuestMobileDto = {
+  sessionId: string;
+  challengeId: string;
+  code: string;
+};
+
+export type ApiResponseInternalVerifyGuestMobileResponseDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: InternalVerifyGuestMobileResponseDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type InternalVerifyGuestMobileResponseDto = {
+  userId: number;
+  authTokens: AuthenticationTokenDto;
+  isReturning: boolean;
+  accountStatus: 'GUEST' | 'FULL';
+  displayName?: string;
+  maskedMobile?: string;
+  completionToken?: string;
+};
+
+export type InternalBookingChallengeResendDto = {
+  sessionId: string;
+  requesterIp?: string;
+};
+
+export type ApiResponseInternalBookingChallengeStatusDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: InternalBookingChallengeStatusDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type InternalBookingChallengeStatusDto = {
+  challengeId: string;
+  maskedMobile: string;
+  expiresAt: string;
+  resendAvailableAt?: string;
+  remainingAttempts?: number;
+  expired: boolean;
+  exhausted: boolean;
+};
+
+export type InternalIdentifyGuestDto = {
+  sessionId: string;
+  companyId: number;
+  givenName: string;
+  familyName: string;
+  mobileNumber: string;
+  email?: string;
+  requesterIp?: string;
+};
+
+export type ApiResponseInternalIdentifyGuestResponseDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: InternalIdentifyGuestResponseDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type InternalIdentifyGuestResponseDto = {
+  challengeId: string;
+  maskedMobile: string;
+  expiresAt: string;
+  resendAvailableAt?: string;
+};
+
+export type InternalBookingChallengeStatusRequestDto = {
+  sessionId: string;
+};
+
+export type InternalAccountCompletionStatusRequestDto = {
+  userId: number;
+};
+
+export type ApiResponseInternalAccountCompletionStatusDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: InternalAccountCompletionStatusDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type InternalAccountCompletionStatusDto = {
+  userId: number;
+  accountStatus: 'GUEST' | 'FULL';
+  completionToken?: string;
 };
 
 export type ContactSearchRequestDto = {
@@ -1248,13 +1469,6 @@ export type ApiResponseVerifyMobileResponseDto = {
   timestamp: string;
 };
 
-export type AuthenticationTokenDto = {
-  accessToken: string;
-  accessTokenExpiresAt: number;
-  refreshToken: string;
-  refreshTokenExpiresAt: number;
-};
-
 export type VerifyMobileResponseDto = {
   nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'DONE';
   authTokens?: AuthenticationTokenDto;
@@ -1335,6 +1549,7 @@ export type SignInResponseDto = {
   email?: string;
   mobileNumber?: string;
   nextStep: 'COLLECT_EMAIL' | 'COLLECT_MOBILE' | 'VERIFY_EMAIL' | 'VERIFY_MOBILE' | 'DONE';
+  accountStatus: 'GUEST' | 'FULL';
   verificationToken?: VerificationTokenDto;
   emailDelivery?: DeliveryStatusDto;
   mobileDelivery?: DeliveryStatusDto;
@@ -1881,7 +2096,7 @@ export type PublicSessionUserStatusDto = {
   sessionId: string;
   userId?: number;
   attached: boolean;
-  nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
   provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
 };
 
@@ -1895,10 +2110,20 @@ export type ApiResponsePublicSessionRequirementsDto = {
 };
 
 export type PublicSessionRequirementsDto = {
+  sessionId?: string;
+  userId?: number;
   needsUser: boolean;
   needsEmail: boolean;
   needsMobile: boolean;
-  nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
+  displayName?: string;
+  maskedMobile?: string;
+  challengeId?: string;
+  expiresAt?: string;
+  resendAvailableAt?: string;
+  remainingAttempts?: number;
+  canAttachAuthenticatedUser: boolean;
+  authenticatedUserDisplayName?: string;
 };
 
 export type ApiResponseListBookingProfileDto = {
@@ -2763,7 +2988,7 @@ export type ApiResponsePublicPendingUserClearedResponseDto = {
 export type PublicPendingUserClearedResponseDto = {
   sessionId: string;
   pendingUserId?: number;
-  nextStep: 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'COLLECT_EMAIL' | 'VERIFY_EMAIL' | 'DONE';
+  nextStep: 'CONTACT_FORM' | 'COLLECT_MOBILE' | 'VERIFY_MOBILE' | 'DONE';
 };
 
 export type DeleteScheduleUnavailabilityRangesDto = {
