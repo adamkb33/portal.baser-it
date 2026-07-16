@@ -3,7 +3,12 @@ import { ArrowLeft, Mail, Phone, UserRound } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
-import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
+import { logger } from '~/lib/logger';
+import {
+  getBookingSessionLogContext,
+  withBookingBackendCall,
+  withBookingFlowLog,
+} from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
@@ -38,14 +43,34 @@ async function contactLoader({ request }: Route.LoaderArgs) {
         }),
     );
     const requirements = requirementsResponse.data?.data;
+    logger.info('[booking:contact:requirements] Resolved', {
+      ...getBookingSessionLogContext(session),
+      nextStep: requirements?.nextStep ?? null,
+      hasRequirements: Boolean(requirements),
+    });
 
     if (requirements?.nextStep === 'VERIFY_MOBILE') {
+      logger.info('[booking:contact:requirements] Redirecting', {
+        ...getBookingSessionLogContext(session),
+        nextStep: requirements.nextStep,
+        redirectTo: routes.contactVerifyMobile,
+      });
       return redirect(routes.contactVerifyMobile);
     }
 
     if (requirements?.nextStep === 'DONE') {
+      logger.info('[booking:contact:requirements] Redirecting', {
+        ...getBookingSessionLogContext(session),
+        nextStep: requirements.nextStep,
+        redirectTo: routes.overview,
+      });
       return redirect(routes.overview);
     }
+
+    logger.info('[booking:contact:requirements] Rendering contact form', {
+      ...getBookingSessionLogContext(session),
+      nextStep: requirements?.nextStep ?? null,
+    });
 
     return data({
       session,

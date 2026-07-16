@@ -1,4 +1,4 @@
-import { data } from 'react-router';
+import { Form, data } from 'react-router';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
@@ -8,7 +8,7 @@ import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { redirect } from 'react-router';
-import { useNavigation, useRevalidator, useSearchParams, useSubmit } from 'react-router';
+import { useNavigation, useRevalidator } from 'react-router';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock, Zap, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,18 @@ import type { Route } from './+types/booking.public.appointment.session.select-t
 
 const SCHEDULE_REFRESH_INTERVAL_MS = 30_000;
 const ROUTE_ID = 'booking.public.appointment.session.select-time';
+
+function logSelectTimeClient(event: string, context: Record<string, unknown>) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  console.info(`[booking:client:select-time:${event}]`, {
+    path: window.location.pathname,
+    search: window.location.search,
+    ...context,
+  });
+}
 
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'select-time' }, async () => {
@@ -95,6 +107,13 @@ async function selectTimeAction({ request }: Route.ActionArgs) {
 
   const formData = await request.formData();
   const selectedStartTime = formData.get('selectedStartTime') as string;
+  if (!selectedStartTime) {
+    if (session.selectedStartTime) {
+      return redirect(routes.contact);
+    }
+
+    return redirectWithError(request, routes.selectTime, 'Velg et tidspunkt for å fortsette');
+  }
 
   try {
     await withBookingBackendCall(
@@ -374,12 +393,10 @@ function groupTimeSlotsByHour(timeSlots: ScheduleDto['timeSlots']) {
 export default function BookingSelectTimePage({ loaderData }: Route.ComponentProps) {
   const schedules = loaderData?.schedules ?? [];
   const session = loaderData?.session ?? null;
-  const [searchParams, setSearchParams] = useSearchParams();
-  const submit = useSubmit();
   const navigation = useNavigation();
   const revalidator = useRevalidator();
+  const navigationStateRef = useRef(navigation.state);
   const revalidatorStateRef = useRef(revalidator.state);
-  const submitInFlightRef = useRef(false);
   const isSubmitting = navigation.state === 'submitting';
 
   if (!session) {
@@ -401,20 +418,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const weekTabsRef = useRef<HTMLDivElement>(null);
   const [showMoreTimeHint, setShowMoreTimeHint] = useState(true);
 
-  const urlSelectedTime = searchParams.get('time');
-  const searchParamString = searchParams.toString();
-  const validUrlSelectedTime = useMemo(
-    () => (urlSelectedTime && findScheduleWithTime(schedules, urlSelectedTime) ? urlSelectedTime : null),
-    [schedules, urlSelectedTime],
-  );
-  const validSessionSelectedTime = useMemo(
-    () =>
-      session.selectedStartTime && findScheduleWithTime(schedules, session.selectedStartTime)
-        ? session.selectedStartTime
-        : null,
-    [schedules, session.selectedStartTime],
-  );
-  const persistedTime = validUrlSelectedTime || validSessionSelectedTime;
+  const persistedTime = session.selectedStartTime ?? null;
   const displayTime = selectedTime || persistedTime;
 
   const currentWeek = weekGroups[selectedWeekIndex];
@@ -425,43 +429,8 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
       ? currentWeekSchedules.filter((schedule) => schedule.date === selectedDate)
       : currentWeekSchedules;
 
-  useEffect(() => {
-    revalidatorStateRef.current = revalidator.state;
-  }, [revalidator.state]);
-
-  useEffect(() => {
-    if (navigation.state === 'idle') {
-      submitInFlightRef.current = false;
-    }
-  }, [navigation.state]);
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      if (document.visibilityState === 'hidden' || revalidatorStateRef.current !== 'idle') {
-        return;
-      }
-
-      revalidator.revalidate();
-    }, SCHEDULE_REFRESH_INTERVAL_MS);
-
-    return () => window.clearInterval(intervalId);
-  }, [revalidator]);
-
   // Initialize: find week with selected time or default to first week
   useEffect(() => {
-    if (urlSelectedTime && !validUrlSelectedTime) {
-      const nextSearchParams = new URLSearchParams(searchParamString);
-      nextSearchParams.delete('time');
-      setSearchParams(nextSearchParams, { replace: true });
-      return;
-    }
-
-    if (validSessionSelectedTime && !validUrlSelectedTime) {
-      const nextSearchParams = new URLSearchParams(searchParamString);
-      nextSearchParams.set('time', validSessionSelectedTime);
-      setSearchParams(nextSearchParams, { replace: true });
-    }
-
     if (persistedTime && weekGroups.length > 0) {
       const scheduleDate = findScheduleWithTime(schedules, persistedTime);
       if (scheduleDate) {
@@ -473,16 +442,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
         }
       }
     }
-  }, [
-    urlSelectedTime,
-    validUrlSelectedTime,
-    validSessionSelectedTime,
-    persistedTime,
-    schedules,
-    weekGroups,
-    setSearchParams,
-    searchParamString,
-  ]);
+  }, [persistedTime, schedules, weekGroups]);
 
   useEffect(() => {
     if (!selectedTime || findScheduleWithTime(schedules, selectedTime)) {
@@ -493,18 +453,23 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   }, [schedules, selectedTime]);
 
   const handleTimeSelect = (startTime: string) => {
+    logSelectTimeClient('select-slot', {
+      startTime,
+      selectedDate,
+      previousSelectedTime: selectedTime,
+      hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
+    });
     setSelectedTime(startTime);
-    const nextSearchParams = new URLSearchParams(searchParamString);
-    nextSearchParams.set('time', startTime);
-    setSearchParams(nextSearchParams, { replace: true });
   };
 
   const handleQuickBook = () => {
     if (earliestSlot) {
+      logSelectTimeClient('quick-book-select', {
+        startTime: earliestSlot.time,
+        date: earliestSlot.date,
+        hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
+      });
       setSelectedTime(earliestSlot.time);
-      const nextSearchParams = new URLSearchParams(searchParamString);
-      nextSearchParams.set('time', earliestSlot.time);
-      setSearchParams(nextSearchParams, { replace: true });
       const scheduleDate = findScheduleWithTime(schedules, earliestSlot.time);
       if (scheduleDate) {
         const weekIndex = weekGroups.findIndex((wg) => wg.schedules.some((s) => s.date === scheduleDate));
@@ -576,17 +541,10 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
     ).padStart(2, '0')}${offset}`;
   };
 
-  const handleSubmit = () => {
-    if (isSubmitting || submitInFlightRef.current) {
-      return;
-    }
-
-    submitInFlightRef.current = true;
-
+  const getSelectedStartTimeForSubmit = () => {
     const timeToSubmit = selectedTime || displayTime;
     if (!timeToSubmit) {
-      submitInFlightRef.current = false;
-      return;
+      return '';
     }
 
     const scheduleDate = selectedDate ?? findScheduleWithTime(schedules, timeToSubmit);
@@ -595,11 +553,66 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
       : scheduleDate
         ? `${scheduleDate}T${timeToSubmit}`
         : timeToSubmit;
-    const selectedStartTimeOslo = normalizeToOsloIso(rawDateTime);
-    const formData = new FormData();
-    formData.set('selectedStartTime', selectedStartTimeOslo);
-    submit(formData, { method: 'post' });
+    return normalizeToOsloIso(rawDateTime);
   };
+  const selectedStartTimeForSubmit = getSelectedStartTimeForSubmit();
+
+  useEffect(() => {
+    navigationStateRef.current = navigation.state;
+    logSelectTimeClient('navigation-state', {
+      navigationState: navigation.state,
+      revalidatorState: revalidator.state,
+      selectedStartTimeForSubmit,
+      selectedTime,
+      displayTime,
+      hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
+    });
+  }, [
+    displayTime,
+    navigation.state,
+    revalidator.state,
+    selectedStartTimeForSubmit,
+    selectedTime,
+    session.selectedStartTime,
+  ]);
+
+  useEffect(() => {
+    revalidatorStateRef.current = revalidator.state;
+  }, [revalidator.state]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      const context = {
+        navigationState: navigationStateRef.current,
+        revalidatorState: revalidatorStateRef.current,
+        visibilityState: document.visibilityState,
+        selectedStartTimeForSubmit,
+        selectedTime,
+        displayTime,
+        hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
+      };
+
+      if (document.visibilityState === 'hidden') {
+        logSelectTimeClient('schedule-refresh-skip', { ...context, reason: 'document-hidden' });
+        return;
+      }
+
+      if (navigationStateRef.current !== 'idle') {
+        logSelectTimeClient('schedule-refresh-skip', { ...context, reason: 'navigation-not-idle' });
+        return;
+      }
+
+      if (revalidatorStateRef.current !== 'idle') {
+        logSelectTimeClient('schedule-refresh-skip', { ...context, reason: 'revalidator-not-idle' });
+        return;
+      }
+
+      logSelectTimeClient('schedule-refresh-start', context);
+      revalidator.revalidate();
+    }, SCHEDULE_REFRESH_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [displayTime, revalidator, selectedStartTimeForSubmit, selectedTime, session.selectedStartTime]);
 
   const handlePrevWeek = () => {
     if (selectedWeekIndex > 0) {
@@ -938,31 +951,46 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
           </BookingSection>
         </div>
       </Stack>
-      <BookingBottomActionBar
-        visible
-        actions={[
-          {
-            id: 'back',
-            type: 'link',
-            to: loaderData.navigation.selectServices,
-            label: 'Tilbake',
-            variant: 'secondary',
-            disabled: isSubmitting,
-          },
-          {
-            id: 'continue',
-            type: 'button',
-            buttonType: 'button',
-            onClick: handleSubmit,
-            label: 'Fortsett',
-            icon: <Check className="size-4" />,
-            variant: 'primary',
-            loading: isSubmitting,
-            disabled: !displayTime || isSubmitting,
-          },
-        ]}
-        compact
-      />
+      <Form
+        method="post"
+        onSubmit={() =>
+          logSelectTimeClient('submit', {
+            selectedStartTimeForSubmit,
+            selectedTime,
+            displayTime,
+            selectedDate,
+            navigationState: navigation.state,
+            revalidatorState: revalidator.state,
+            hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
+          })
+        }
+      >
+        <input type="hidden" name="selectedStartTime" value={selectedStartTimeForSubmit} readOnly />
+        <BookingBottomActionBar
+          visible
+          actions={[
+            {
+              id: 'back',
+              type: 'link',
+              to: loaderData.navigation.selectServices,
+              label: 'Tilbake',
+              variant: 'secondary',
+              disabled: isSubmitting,
+            },
+            {
+              id: 'continue',
+              type: 'button',
+              buttonType: 'submit',
+              label: 'Fortsett',
+              icon: <Check className="size-4" />,
+              variant: 'primary',
+              loading: isSubmitting,
+              disabled: !selectedStartTimeForSubmit || isSubmitting,
+            },
+          ]}
+          compact
+        />
+      </Form>
     </BookingStepTemplate>
   );
 }

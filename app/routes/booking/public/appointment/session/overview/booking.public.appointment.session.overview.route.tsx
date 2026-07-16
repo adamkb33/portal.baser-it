@@ -175,7 +175,6 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
   const additionalServices = sessionOverview.selectedServices.slice(3);
 
   const dateTime = formatNorwegianDateTime(sessionOverview.selectedStartTime);
-  const changeTimeFormId = 'booking-overview-change-time-form';
   const confirmFormId = 'booking-overview-confirm-form';
 
   return (
@@ -185,7 +184,6 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
       headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
       <Stack space="lg">
-        <Form id={changeTimeFormId} method="get" action={loaderData.navigation.selectTime} className="hidden" />
         <Form id={confirmFormId} method="post" className="hidden" />
         <section className="space-y-4 rounded-[var(--radius-booking-panel)] bg-booking-surface-muted p-3 shadow-[var(--shadow-booking-panel)] md:p-5">
           <header className="space-y-1">
@@ -397,9 +395,8 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
         actions={[
           {
             id: 'change-time',
-            type: 'button',
-            buttonType: 'submit',
-            form: changeTimeFormId,
+            type: 'link',
+            to: loaderData.navigation.selectTime,
             label: 'Endre tid',
             variant: 'secondary',
             disabled: isSubmitting,

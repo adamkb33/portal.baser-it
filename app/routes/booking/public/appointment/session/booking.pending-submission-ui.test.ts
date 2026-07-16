@@ -127,26 +127,29 @@ describe('booking pending submission UI', () => {
     expect(selectServicesSource).toContain('disabled: !hasSelections || isSubmitting');
     expect(selectServicesSource).toContain('disabled: isSubmitting');
     expect(selectTimeSource).toContain('loading: isSubmitting');
-    expect(selectTimeSource).toContain('disabled: !displayTime || isSubmitting');
+    expect(selectTimeSource).toContain('disabled: !selectedStartTimeForSubmit || isSubmitting');
     expect(selectTimeSource).toContain('disabled: isSubmitting');
+    expect(selectTimeSource).toContain('const persistedTime = session.selectedStartTime ?? null');
     expect(overviewSource).toContain('loading: isSubmitting');
     expect(overviewSource).toContain('disabled: isSubmitting');
   });
 
-  it('guards useSubmit-based time selection against rapid double submit', () => {
+  it('uses a real form submit for time selection so continue always posts first', () => {
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
 
-    expect(selectTimeSource).toContain('const submitInFlightRef = useRef(false)');
-    expect(selectTimeSource).toContain('if (isSubmitting || submitInFlightRef.current)');
-    expect(selectTimeSource).toContain('submitInFlightRef.current = true');
-    expect(selectTimeSource).toContain("if (navigation.state === 'idle')");
+    expect(selectTimeSource).toContain('<Form');
+    expect(selectTimeSource).toContain('method="post"');
+    expect(selectTimeSource).toContain('name="selectedStartTime"');
+    expect(selectTimeSource).toContain('value={selectedStartTimeForSubmit}');
+    expect(selectTimeSource).toContain("buttonType: 'submit'");
+    expect(selectTimeSource).not.toContain('form: timeFormId');
   });
 
   it('posts the displayed selected time before continuing from select-time', () => {
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
 
     expect(selectTimeSource).toContain('const timeToSubmit = selectedTime || displayTime');
-    expect(selectTimeSource).toContain("submit(formData, { method: 'post' })");
+    expect(selectTimeSource).toContain('return normalizeToOsloIso(rawDateTime)');
     expect(selectTimeSource).not.toContain('action: loaderData.navigation.contact');
   });
 });
