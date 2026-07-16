@@ -886,7 +886,23 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
           </BookingSection>
         </div>
       </Stack>
-      <Form id={continueFormId} method="post" className="hidden">
+      <Form
+        id={continueFormId}
+        method="post"
+        className="hidden"
+        onSubmit={(event) => {
+          console.info('[booking:client:select-time:continue-form-submit]', {
+            path: window.location.pathname,
+            formId: event.currentTarget.id,
+            defaultPrevented: event.defaultPrevented,
+            formData: Object.fromEntries(new FormData(event.currentTarget).entries()),
+            selectedStartTime,
+            continueDisabled,
+            navigationState: navigation.state,
+            revalidatorState: revalidator.state,
+          });
+        }}
+      >
         <input type="hidden" name="intent" value="continue" readOnly />
       </Form>
       <BookingBottomActionBar
