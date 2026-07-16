@@ -1,4 +1,4 @@
-import { Form, data } from 'react-router';
+import { data } from 'react-router';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
@@ -11,8 +11,8 @@ import { BookingLink } from '~/routes/booking/public/_components/booking-link';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { redirect } from 'react-router';
-import { useNavigation, useRevalidator } from 'react-router';
-import { useState, useEffect, useMemo } from 'react';
+import { useFetcher, useNavigation, useRevalidator } from 'react-router';
+import { useEffect, useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
 import { BookingStepTemplate, Panel as BookingSection, Stack } from '~/ui';
 import { DateSelectorSection } from './_components/date-selector-section';
@@ -27,102 +27,96 @@ const ROUTE_ID = 'booking.public.appointment.session.select-time';
 
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'select-time' }, async () => {
-    return selectTimeLoader({ request } as Route.LoaderArgs);
+    const routes = getBookingRouteMap();
+    const guardResult = await requireBookingSession(request);
+    if (guardResult instanceof Response) {
+      return guardResult;
+    }
+    const { session } = guardResult;
+
+    if (!session.selectedProfileId) {
+      return redirect(routes.employee);
+    }
+
+    if (!session.selectedServices?.length) {
+      return redirect(routes.selectServices);
+    }
+
+    try {
+      const [schedulesResponse, companySummary] = await Promise.all([
+        withBookingBackendCall(
+          { request, routeId: ROUTE_ID, step: 'select-time', call: 'get-schedules', session },
+          () =>
+            PublicAppointmentSessionController.getAppointmentSessionSchedules({
+              query: {
+                sessionId: session.sessionId,
+              },
+            }),
+        ),
+        withBookingBackendCall(
+          { request, routeId: ROUTE_ID, step: 'select-time', call: 'get-company-summary', session },
+          () => getBookingCompanySummary(session.companyId),
+        ),
+      ]);
+      const schedules = schedulesResponse.data?.data || [];
+
+      return data({
+        session,
+        schedules,
+        companySummary,
+      });
+    } catch (error) {
+      const { message } = resolveErrorPayload(error, 'Kunne ikke hente tilgjengelige tider');
+      return redirectWithError(request, routes.selectServices, message);
+    }
   });
-}
-
-async function selectTimeLoader({ request }: Route.LoaderArgs) {
-  const routes = getBookingRouteMap();
-  const guardResult = await requireBookingSession(request);
-  if (guardResult instanceof Response) {
-    return guardResult;
-  }
-  const { session } = guardResult;
-
-  if (!session.selectedProfileId) {
-    return redirect(routes.employee);
-  }
-
-  if (!session.selectedServices?.length) {
-    return redirect(routes.selectServices);
-  }
-
-  try {
-    const [schedulesResponse, companySummary] = await Promise.all([
-      withBookingBackendCall({ request, routeId: ROUTE_ID, step: 'select-time', call: 'get-schedules', session }, () =>
-        PublicAppointmentSessionController.getAppointmentSessionSchedules({
-          query: {
-            sessionId: session.sessionId,
-          },
-        }),
-      ),
-      withBookingBackendCall(
-        { request, routeId: ROUTE_ID, step: 'select-time', call: 'get-company-summary', session },
-        () => getBookingCompanySummary(session.companyId),
-      ),
-    ]);
-    const schedules = schedulesResponse.data?.data || [];
-
-    return data({
-      session,
-      schedules,
-      companySummary,
-    });
-  } catch (error) {
-    const { message } = resolveErrorPayload(error, 'Kunne ikke hente tilgjengelige tider');
-    return redirectWithError(request, routes.selectServices, message);
-  }
 }
 
 export async function action({ request }: Route.ActionArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'select-time' }, async () => {
-    return selectTimeAction({ request } as Route.ActionArgs);
-  });
-}
+    const routes = getBookingRouteMap();
+    const guardResult = await requireBookingSession(request);
+    if (guardResult instanceof Response) {
+      return guardResult;
+    }
+    const { session } = guardResult;
 
-async function selectTimeAction({ request }: Route.ActionArgs) {
-  const routes = getBookingRouteMap();
-  const guardResult = await requireBookingSession(request);
-  if (guardResult instanceof Response) {
-    return guardResult;
-  }
-  const { session } = guardResult;
+    const formData = await request.formData();
+    const startTime = formData.get('startTime') as string;
 
-  const formData = await request.formData();
-  const startTime = formData.get('startTime') as string;
-
-  if (!startTime) {
-    return redirectWithError(request, routes.selectTime, 'Velg et tidspunkt for å fortsette');
-  }
-
-  try {
-    const saveResponse = await withBookingBackendCall(
-      {
-        request,
-        routeId: ROUTE_ID,
-        step: 'select-time',
-        call: 'submit-start-time',
-        session,
-        context: { startTime },
-      },
-      () =>
-        PublicAppointmentSessionController.submitAppointmentSessionStartTime({
-          query: {
-            sessionId: session.sessionId,
-            selectedStartTime: startTime,
-          },
-        }),
-    );
-
-    if (!saveResponse.data?.data?.selectedStartTime) {
-      return redirectWithError(request, routes.selectTime, 'Kunne ikke lagre valgt tidspunkt');
+    if (!startTime) {
+      return redirectWithError(request, routes.selectTime, 'Velg et tidspunkt for å fortsette');
     }
 
-    return redirect(routes.selectTime);
-  } catch (error) {
-    const { message } = resolveErrorPayload(error, 'Kunne ikke lagre tidspunkt');
-    return redirectWithError(request, routes.selectTime, message);
-  }
+    try {
+      const saveResponse = await withBookingBackendCall(
+        {
+          request,
+          routeId: ROUTE_ID,
+          step: 'select-time',
+          call: 'submit-start-time',
+          session,
+          context: { startTime },
+        },
+        () =>
+          PublicAppointmentSessionController.submitAppointmentSessionStartTime({
+            query: {
+              sessionId: session.sessionId,
+              selectedStartTime: startTime,
+            },
+          }),
+      );
+
+      if (!saveResponse.data?.data?.selectedStartTime) {
+        return redirectWithError(request, routes.selectTime, 'Kunne ikke lagre valgt tidspunkt');
+      }
+
+      return redirect(routes.selectTime);
+    } catch (error) {
+      const { message } = resolveErrorPayload(error, 'Kunne ikke lagre tidspunkt');
+      return redirectWithError(request, routes.selectTime, message);
+    }
+  });
 }
 
 export default function BookingSelectTimePage({ loaderData }: Route.ComponentProps) {
@@ -131,8 +125,13 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const routes = getBookingRouteMap();
   const navigation = useNavigation();
   const revalidator = useRevalidator();
-  const isSubmitting = navigation.state === 'submitting';
+  const startTimeFetcher = useFetcher();
+  const isSelectingTime = startTimeFetcher.state !== 'idle';
+  const isSubmitting = navigation.state === 'submitting' || isSelectingTime;
 
+  const selectedStartTime = session.selectedStartTime ?? '';
+  const pendingStartTime = startTimeFetcher.formData?.get('startTime') as string | null;
+  const displayTime = pendingStartTime || selectedStartTime || null;
   const weekGroups = useMemo(() => groupSchedulesByWeek(schedules), [schedules]);
   const earliestSlot = useMemo(() => getEarliestSlot(schedules), [schedules]);
 
@@ -140,18 +139,16 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isDateListCollapsed, setIsDateListCollapsed] = useState(false);
 
-  const selectedStartTime = session.selectedStartTime ?? '';
-  const displayTime = selectedStartTime || null;
-
   const currentWeek = weekGroups[selectedWeekIndex];
   const currentWeekSchedules = currentWeek?.schedules || [];
-  const selectedSchedule = currentWeekSchedules.find((s) => s.date === selectedDate);
+  const selectedSchedule = currentWeekSchedules.find((schedule) => schedule.date === selectedDate);
+  const timeSlots = selectedSchedule?.timeSlots ?? [];
 
   useEffect(() => {
     if (displayTime && weekGroups.length > 0) {
       const scheduleDate = findScheduleWithTime(schedules, displayTime);
       const weekIndex = scheduleDate
-        ? weekGroups.findIndex((wg) => wg.schedules.some((schedule) => schedule.date === scheduleDate))
+        ? weekGroups.findIndex((week) => week.schedules.some((schedule) => schedule.date === scheduleDate))
         : -1;
 
       if (scheduleDate && weekIndex !== -1) {
@@ -209,8 +206,6 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
     setIsDateListCollapsed(true);
   };
 
-  const timeSlots = selectedSchedule?.timeSlots ?? [];
-
   return (
     <BookingStepTemplate
       label="Velg tidspunkt"
@@ -218,7 +213,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
       description={displayTime ? 'Valgt tidspunkt kan endres' : 'Velg dato og klokkeslett for avtalen'}
       headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
-      <Form method="post">
+      <startTimeFetcher.Form method="post" preventScrollReset>
         <Stack space="xl">
           {earliestSlot && !displayTime && (
             <BookingSection>
@@ -270,13 +265,13 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
             />
           </div>
         </Stack>
-      </Form>
+      </startTimeFetcher.Form>
       <BookingFooterNav>
         <BookingLink to={routes.selectServices} variant="secondary" disabled={isSubmitting}>
           Tilbake
         </BookingLink>
         {selectedStartTime ? (
-          <BookingLink to={routes.contact} variant="primary" disabled={isSubmitting}>
+          <BookingLink to={routes.contact} variant="primary" disabled={isSubmitting} reloadDocument>
             <Check className="size-4" />
             Fortsett
           </BookingLink>

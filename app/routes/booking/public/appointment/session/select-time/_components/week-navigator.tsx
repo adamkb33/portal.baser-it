@@ -66,7 +66,7 @@ export function WeekNavigator({
               type="button"
               onClick={() => onSelectWeek(index)}
               className={cn(
-                'min-h-11 shrink-0 rounded px-3 py-2 text-xs font-semibold transition-all md:text-sm md:flex-1',
+                'min-h-11 shrink-0 rounded px-3 py-2 text-xs font-semibold transition-all md:min-w-0 md:flex-1 md:basis-0 md:shrink md:text-sm',
                 'min-w-[140px] md:min-w-0',
                 isActive && 'bg-booking-action text-booking-action-contrast shadow-sm',
                 !isActive && 'bg-booking-surface-muted text-booking-text-muted hover:bg-booking-surface',

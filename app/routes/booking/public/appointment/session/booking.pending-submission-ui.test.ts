@@ -131,7 +131,9 @@ describe('booking pending submission UI', () => {
     expect(selectServicesSource).toContain('disabled: !hasSelections || isSubmitting');
     expect(selectServicesSource).toContain('disabled: isSubmitting');
     expect(selectTimeSource).toContain('disabled={isSubmitting}');
-    expect(selectTimeSource).toContain('<BookingLink to={routes.contact} variant="primary" disabled={isSubmitting}>');
+    expect(selectTimeSource).toContain(
+      '<BookingLink to={routes.contact} variant="primary" disabled={isSubmitting} reloadDocument>',
+    );
     expect(bookingLinkSource).toContain('aria-disabled={disabled}');
     expect(bookingLinkSource).toContain("disabled && 'pointer-events-none cursor-not-allowed opacity-50'");
     expect(bookingActionStylesSource).toContain('export const bookingActionBaseClass');
@@ -144,7 +146,11 @@ describe('booking pending submission UI', () => {
     const timeSlotButtonSource = readSessionRoute('select-time/_components/time-slot-button.tsx');
     const quickBookButtonSource = readSessionRoute('select-time/_components/quick-book-button.tsx');
 
-    expect(selectTimeSource).toContain('<Form method="post">');
+    expect(selectTimeSource).toContain('<startTimeFetcher.Form method="post" preventScrollReset>');
+    expect(selectTimeSource).toContain(
+      "const pendingStartTime = startTimeFetcher.formData?.get('startTime') as string | null",
+    );
+    expect(selectTimeSource).toContain('const displayTime = pendingStartTime || selectedStartTime || null');
     expect(timeSlotButtonSource).toContain('name="startTime"');
     expect(timeSlotButtonSource).toContain('value={time}');
     expect(timeSlotButtonSource).toContain('type="submit"');
@@ -169,7 +175,10 @@ describe('booking pending submission UI', () => {
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
 
     expect(selectTimeSource).toContain("const selectedStartTime = session.selectedStartTime ?? ''");
-    expect(selectTimeSource).toContain('const displayTime = selectedStartTime || null');
+    expect(selectTimeSource).toContain(
+      "const pendingStartTime = startTimeFetcher.formData?.get('startTime') as string | null",
+    );
+    expect(selectTimeSource).toContain('const displayTime = pendingStartTime || selectedStartTime || null');
     expect(selectTimeSource).not.toContain('setSelectedTime');
     expect(selectTimeSource).not.toContain('const [selectedTime');
     expect(selectTimeSource).not.toContain('normalizeToOsloIso');
