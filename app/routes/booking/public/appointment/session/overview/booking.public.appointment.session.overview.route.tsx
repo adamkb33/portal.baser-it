@@ -1,7 +1,10 @@
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
+import { BookingActionButton } from '~/routes/booking/public/_components/booking-action-button';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
+import { BookingFooterNav } from '~/routes/booking/public/_components/booking-footer-nav';
+import { BookingLink } from '~/routes/booking/public/_components/booking-link';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingReady } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
@@ -11,148 +14,90 @@ import { useState } from 'react';
 import { Form, Link, useNavigation } from 'react-router';
 import { Calendar, User, Mail, DollarSign, CheckCircle2 } from 'lucide-react';
 import { BookingStepTemplate, Container, KeyValueList, PageHeader, Stack, Text } from '~/ui';
-import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
+import { formatNorwegianDateTime } from './_utils/format-norwegian-date-time';
 import type { Route } from './+types/booking.public.appointment.session.overview.route';
 
 const ROUTE_ID = 'booking.public.appointment.session.overview';
 
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'overview' }, async () => {
-    return overviewLoader({ request } as Route.LoaderArgs);
+    const routes = getBookingRouteMap();
+
+    try {
+      const guardResult = await requireBookingReady(request);
+      if (guardResult instanceof Response) {
+        return guardResult;
+      }
+
+      const { session } = guardResult;
+      const [response, companySummary] = await Promise.all([
+        withBookingBackendCall({ request, routeId: ROUTE_ID, step: 'overview', call: 'get-overview', session }, () =>
+          PublicAppointmentSessionController.getAppointmentSessionOverview({
+            query: {
+              sessionId: session.sessionId,
+            },
+          }),
+        ),
+        withBookingBackendCall(
+          { request, routeId: ROUTE_ID, step: 'overview', call: 'get-company-summary', session },
+          () => getBookingCompanySummary(session.companyId),
+        ),
+      ]);
+
+      if (!response.data?.data) {
+        const message = response.data?.message || 'Kunne ikke hente oversikt';
+        return redirectWithError(request, routes.selectTime, message);
+      }
+
+      return {
+        sessionOverview: response.data.data,
+        companySummary,
+      };
+    } catch (error) {
+      const { message } = resolveErrorPayload(error, 'Kunne ikke hente oversikt');
+      return redirectWithError(request, routes.appointment, message);
+    }
   });
-}
-
-async function overviewLoader({ request }: Route.LoaderArgs) {
-  const routes = getBookingRouteMap();
-
-  try {
-    const guardResult = await requireBookingReady(request);
-    if (guardResult instanceof Response) {
-      return guardResult;
-    }
-
-    const { session } = guardResult;
-    const [response, companySummary] = await Promise.all([
-      withBookingBackendCall({ request, routeId: ROUTE_ID, step: 'overview', call: 'get-overview', session }, () =>
-        PublicAppointmentSessionController.getAppointmentSessionOverview({
-          query: {
-            sessionId: session.sessionId,
-          },
-        }),
-      ),
-      withBookingBackendCall(
-        { request, routeId: ROUTE_ID, step: 'overview', call: 'get-company-summary', session },
-        () => getBookingCompanySummary(session.companyId),
-      ),
-    ]);
-
-    if (!response.data?.data) {
-      const message = response.data?.message || 'Kunne ikke hente oversikt';
-      return redirectWithError(request, routes.selectTime, message);
-    }
-
-    return {
-      sessionOverview: response.data.data,
-      companySummary,
-      navigation: {
-        contact: routes.contact,
-        employee: routes.employee,
-        selectServices: routes.selectServices,
-        selectTime: routes.selectTime,
-      },
-    };
-  } catch (error) {
-    const { message } = resolveErrorPayload(error, 'Kunne ikke hente oversikt');
-    return redirectWithError(request, routes.appointment, message);
-  }
 }
 
 export async function action({ request }: Route.ActionArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'overview' }, async () => {
-    return overviewAction({ request } as Route.ActionArgs);
+    const routes = getBookingRouteMap();
+
+    try {
+      const guardResult = await requireBookingReady(request);
+      if (guardResult instanceof Response) {
+        return guardResult;
+      }
+
+      const { session } = guardResult;
+      const submitResponse = await withBookingBackendCall(
+        { request, routeId: ROUTE_ID, step: 'overview', call: 'submit-appointment', session },
+        () =>
+          PublicAppointmentSessionController.submitAppointmentSession({
+            query: {
+              sessionId: session.sessionId,
+            },
+          }),
+      );
+
+      const appointmentId = submitResponse.data?.data?.appointmentId;
+      if (!appointmentId) {
+        return redirectWithError(request, routes.overview, 'Kunne ikke bekrefte timebestilling');
+      }
+
+      return redirect(`${routes.success}?companyId=${session.companyId}&appointmentId=${appointmentId}`);
+    } catch (error) {
+      const { message } = resolveErrorPayload(error, 'Kunne ikke bekrefte timebestilling');
+      return redirectWithError(request, routes.appointment, message);
+    }
   });
 }
-
-async function overviewAction({ request }: Route.ActionArgs) {
-  const routes = getBookingRouteMap();
-
-  try {
-    const guardResult = await requireBookingReady(request);
-    if (guardResult instanceof Response) {
-      return guardResult;
-    }
-
-    const { session } = guardResult;
-    const submitResponse = await withBookingBackendCall(
-      { request, routeId: ROUTE_ID, step: 'overview', call: 'submit-appointment', session },
-      () =>
-        PublicAppointmentSessionController.submitAppointmentSession({
-          query: {
-            sessionId: session.sessionId,
-          },
-        }),
-    );
-
-    const appointmentId = submitResponse.data?.data?.appointmentId;
-    if (!appointmentId) {
-      return redirectWithError(request, routes.overview, 'Kunne ikke bekrefte timebestilling');
-    }
-
-    return redirect(`${routes.success}?companyId=${session.companyId}&appointmentId=${appointmentId}`);
-  } catch (error) {
-    const { message } = resolveErrorPayload(error, 'Kunne ikke bekrefte timebestilling');
-    return redirectWithError(request, routes.appointment, message);
-  }
-}
-
-/* ========================================
-   DATE FORMATTING
-   ======================================== */
-
-const DAYS_NO = ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag'];
-const MONTHS_NO = [
-  'januar',
-  'februar',
-  'mars',
-  'april',
-  'mai',
-  'juni',
-  'juli',
-  'august',
-  'september',
-  'oktober',
-  'november',
-  'desember',
-];
-
-function formatNorwegianDateTime(dateTimeString: string): {
-  dayName: string;
-  date: string;
-  time: string;
-  full: string;
-} {
-  const dateObj = new Date(dateTimeString);
-  const dayName = DAYS_NO[dateObj.getDay()];
-  const day = dateObj.getDate();
-  const month = MONTHS_NO[dateObj.getMonth()];
-  const year = dateObj.getFullYear();
-  const time = dateTimeString.split('T')[1]?.substring(0, 5) || '';
-
-  return {
-    dayName,
-    date: `${day}. ${month} ${year}`,
-    time: `kl. ${time}`,
-    full: `${dayName} ${day}. ${month} ${year} kl. ${time}`,
-  };
-}
-
-/* ========================================
-   MAIN COMPONENT
-   ======================================== */
 
 export default function BookingOverviewPage({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
+  const routes = getBookingRouteMap();
   const [showAllServices, setShowAllServices] = useState(false);
 
   if (!loaderData.sessionOverview) {
@@ -228,7 +173,7 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
                 <Text as="p" variant="label">
                   Tidspunkt
                 </Text>
-                <Link to={loaderData.navigation.selectTime} className="text-xs text-booking-text-muted">
+                <Link to={routes.selectTime} className="text-xs text-booking-text-muted">
                   Endre
                 </Link>
               </div>
@@ -249,7 +194,7 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
                   <Text as="p" variant="label">
                     Kontakt
                   </Text>
-                  <Link to={loaderData.navigation.contact} className="text-xs text-booking-text-muted">
+                  <Link to={routes.contact} className="text-xs text-booking-text-muted">
                     Endre
                   </Link>
                 </div>
@@ -275,7 +220,7 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
                   <Text as="p" variant="label">
                     Behandler
                   </Text>
-                  <Link to={loaderData.navigation.employee} className="text-xs text-booking-text-muted">
+                  <Link to={routes.employee} className="text-xs text-booking-text-muted">
                     Endre
                   </Link>
                 </div>
@@ -303,7 +248,7 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
                 <Text as="p" variant="label">
                   Tjenester
                 </Text>
-                <Link to={loaderData.navigation.selectServices} className="text-xs text-booking-text-muted">
+                <Link to={routes.selectServices} className="text-xs text-booking-text-muted">
                   Endre
                 </Link>
               </div>
@@ -391,30 +336,21 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
           </div>
         </section>
       </Stack>
-      <BookingBottomActionBar
-        actions={[
-          {
-            id: 'change-time',
-            type: 'link',
-            to: loaderData.navigation.selectTime,
-            label: 'Endre tid',
-            variant: 'secondary',
-            disabled: isSubmitting,
-          },
-          {
-            id: 'confirm',
-            type: 'button',
-            buttonType: 'submit',
-            form: confirmFormId,
-            label: 'Bekreft',
-            icon: <CheckCircle2 className="size-4" strokeWidth={2.5} />,
-            variant: 'primary',
-            loading: isSubmitting,
-            disabled: isSubmitting,
-          },
-        ]}
-        compact
-      />
+      <BookingFooterNav>
+        <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
+          Endre tid
+        </BookingLink>
+        <BookingActionButton
+          type="submit"
+          form={confirmFormId}
+          variant="primary"
+          loading={isSubmitting}
+          disabled={isSubmitting}
+        >
+          <CheckCircle2 className="size-4" strokeWidth={2.5} />
+          Bekreft
+        </BookingActionButton>
+      </BookingFooterNav>
     </BookingStepTemplate>
   );
 }

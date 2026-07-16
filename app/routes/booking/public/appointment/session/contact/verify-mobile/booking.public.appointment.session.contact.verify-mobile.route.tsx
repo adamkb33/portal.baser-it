@@ -1,14 +1,15 @@
 import * as React from 'react';
 import { Form, data, redirect, useActionData, useNavigation } from 'react-router';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { authService } from '~/lib/auth-service';
 import { redirectWithError } from '~/lib/flash-message.server';
+import { BookingActionButton } from '~/routes/booking/public/_components/booking-action-button';
+import { BookingFooterNav } from '~/routes/booking/public/_components/booking-footer-nav';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
-import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
 import { Button, Notice, Stack, Text, VerificationCodeInput } from '~/ui';
 import { BOOKING_CONTACT_PAGE_HEADER_CLASS } from '../_utils/booking-contact-theme';
 import type { Route } from './+types/booking.public.appointment.session.contact.verify-mobile.route';
@@ -28,142 +29,130 @@ const ROUTE_ID = 'booking.public.appointment.session.contact.verify-mobile';
 
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'verify-mobile' }, async () => {
-    return verifyMobileLoader({ request } as Route.LoaderArgs);
+    const routes = getBookingRouteMap();
+
+    try {
+      const guardResult = await requireBookingSession(request);
+      if (guardResult instanceof Response) {
+        return guardResult;
+      }
+
+      const { session } = guardResult;
+      const requirementsResponse = await withBookingBackendCall(
+        { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'get-requirements', session },
+        () =>
+          PublicAppointmentSessionController.getAppointmentSessionRequirements({
+            path: { sessionId: session.sessionId },
+          }),
+      );
+      const requirements = requirementsResponse.data?.data;
+
+      if (!requirements || requirements.nextStep === 'CONTACT_FORM') {
+        return redirect(routes.contact);
+      }
+
+      if (requirements.nextStep === 'DONE') {
+        return redirect(routes.overview);
+      }
+
+      if (!requirements.challengeId) {
+        return redirectWithError(request, routes.contact, 'Skriv inn mobilnummeret ditt på nytt.');
+      }
+
+      return data({
+        session,
+        requirements,
+      });
+    } catch (error) {
+      const { message } = resolveErrorPayload(error, 'Kunne ikke hente SMS-verifisering');
+      return redirectWithError(request, routes.contact, message);
+    }
   });
-}
-
-async function verifyMobileLoader({ request }: Route.LoaderArgs) {
-  const routes = getBookingRouteMap();
-
-  try {
-    const guardResult = await requireBookingSession(request);
-    if (guardResult instanceof Response) {
-      return guardResult;
-    }
-
-    const { session } = guardResult;
-    const requirementsResponse = await withBookingBackendCall(
-      { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'get-requirements', session },
-      () =>
-        PublicAppointmentSessionController.getAppointmentSessionRequirements({
-          path: { sessionId: session.sessionId },
-        }),
-    );
-    const requirements = requirementsResponse.data?.data;
-
-    if (!requirements || requirements.nextStep === 'CONTACT_FORM') {
-      return redirect(routes.contact);
-    }
-
-    if (requirements.nextStep === 'DONE') {
-      return redirect(routes.overview);
-    }
-
-    if (!requirements.challengeId) {
-      return redirectWithError(request, routes.contact, 'Skriv inn mobilnummeret ditt på nytt.');
-    }
-
-    return data({
-      session,
-      requirements,
-      navigation: {
-        contact: routes.contact,
-        overview: routes.overview,
-      },
-    });
-  } catch (error) {
-    const { message } = resolveErrorPayload(error, 'Kunne ikke hente SMS-verifisering');
-    return redirectWithError(request, routes.contact, message);
-  }
 }
 
 export async function action({ request }: Route.ActionArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'verify-mobile' }, async () => {
-    return verifyMobileAction({ request } as Route.ActionArgs);
+    const routes = getBookingRouteMap();
+
+    try {
+      const guardResult = await requireBookingSession(request);
+      if (guardResult instanceof Response) {
+        return guardResult;
+      }
+
+      const { session } = guardResult;
+      const formData = await request.formData();
+      const intent = String(formData.get('intent') || 'verify');
+
+      if (intent === 'change-mobile') {
+        await withBookingBackendCall(
+          { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'clear-user', session },
+          () =>
+            PublicAppointmentSessionController.clearAppointmentSessionUser({
+              path: { sessionId: session.sessionId },
+            }),
+        );
+        return redirect(routes.contact);
+      }
+
+      if (intent === 'resend') {
+        await withBookingBackendCall(
+          { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'resend-mobile-challenge', session },
+          () =>
+            PublicAppointmentSessionController.resendAppointmentSessionMobileChallenge({
+              path: { sessionId: session.sessionId },
+            }),
+        );
+        return data<VerifyMobileActionData>({ ok: true, message: 'Ny SMS-kode er sendt.' });
+      }
+
+      const challengeId = String(formData.get('challengeId') || '');
+      const code = String(formData.get('code') || '').replace(/\D/g, '');
+
+      if (!challengeId || code.length !== CODE_LENGTH) {
+        return data<VerifyMobileActionData>({ ok: false, error: 'Skriv inn SMS-koden på 6 siffer.' }, { status: 400 });
+      }
+
+      const response = await withBookingBackendCall(
+        {
+          request,
+          routeId: ROUTE_ID,
+          step: 'verify-mobile',
+          call: 'verify-mobile',
+          session,
+          context: { hasChallengeId: Boolean(challengeId) },
+        },
+        () =>
+          PublicAppointmentSessionController.verifyAppointmentSessionUserMobile({
+            path: { sessionId: session.sessionId },
+            body: {
+              challengeId,
+              code,
+            },
+          }),
+      );
+      const payload = response.data?.data;
+
+      if (!payload || payload.nextStep !== 'DONE') {
+        return data<VerifyMobileActionData>(
+          { ok: false, error: 'Mobilnummeret ble ikke bekreftet. Prøv igjen.' },
+          { status: 400 },
+        );
+      }
+
+      const headers = await authService.setAuthCookies(
+        payload.authTokens.accessToken,
+        payload.authTokens.refreshToken,
+        payload.authTokens.accessTokenExpiresAt,
+        payload.authTokens.refreshTokenExpiresAt,
+      );
+
+      return redirect(routes.overview, { headers });
+    } catch (error) {
+      const { message } = resolveErrorPayload(error, 'Kunne ikke bekrefte SMS-koden');
+      return data<VerifyMobileActionData>({ ok: false, error: message }, { status: 400 });
+    }
   });
-}
-
-async function verifyMobileAction({ request }: Route.ActionArgs) {
-  const routes = getBookingRouteMap();
-
-  try {
-    const guardResult = await requireBookingSession(request);
-    if (guardResult instanceof Response) {
-      return guardResult;
-    }
-
-    const { session } = guardResult;
-    const formData = await request.formData();
-    const intent = String(formData.get('intent') || 'verify');
-
-    if (intent === 'change-mobile') {
-      await withBookingBackendCall(
-        { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'clear-user', session },
-        () =>
-          PublicAppointmentSessionController.clearAppointmentSessionUser({
-            path: { sessionId: session.sessionId },
-          }),
-      );
-      return redirect(routes.contact);
-    }
-
-    if (intent === 'resend') {
-      await withBookingBackendCall(
-        { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'resend-mobile-challenge', session },
-        () =>
-          PublicAppointmentSessionController.resendAppointmentSessionMobileChallenge({
-            path: { sessionId: session.sessionId },
-          }),
-      );
-      return data<VerifyMobileActionData>({ ok: true, message: 'Ny SMS-kode er sendt.' });
-    }
-
-    const challengeId = String(formData.get('challengeId') || '');
-    const code = String(formData.get('code') || '').replace(/\D/g, '');
-
-    if (!challengeId || code.length !== CODE_LENGTH) {
-      return data<VerifyMobileActionData>({ ok: false, error: 'Skriv inn SMS-koden på 6 siffer.' }, { status: 400 });
-    }
-
-    const response = await withBookingBackendCall(
-      {
-        request,
-        routeId: ROUTE_ID,
-        step: 'verify-mobile',
-        call: 'verify-mobile',
-        session,
-        context: { hasChallengeId: Boolean(challengeId) },
-      },
-      () =>
-        PublicAppointmentSessionController.verifyAppointmentSessionUserMobile({
-          path: { sessionId: session.sessionId },
-          body: {
-            challengeId,
-            code,
-          },
-        }),
-    );
-    const payload = response.data?.data;
-
-    if (!payload || payload.nextStep !== 'DONE') {
-      return data<VerifyMobileActionData>(
-        { ok: false, error: 'Mobilnummeret ble ikke bekreftet. Prøv igjen.' },
-        { status: 400 },
-      );
-    }
-
-    const headers = await authService.setAuthCookies(
-      payload.authTokens.accessToken,
-      payload.authTokens.refreshToken,
-      payload.authTokens.accessTokenExpiresAt,
-      payload.authTokens.refreshTokenExpiresAt,
-    );
-
-    return redirect(routes.overview, { headers });
-  } catch (error) {
-    const { message } = resolveErrorPayload(error, 'Kunne ikke bekrefte SMS-koden');
-    return data<VerifyMobileActionData>({ ok: false, error: message }, { status: 400 });
-  }
 }
 
 export default function BookingContactVerifyMobilePage({ loaderData }: Route.ComponentProps) {
@@ -243,30 +232,20 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
         </div>
       </div>
 
-      <BookingBottomActionBar
-        actions={[
-          {
-            id: 'change-mobile',
-            label: 'Endre mobil',
-            type: 'button',
-            buttonType: 'submit',
-            form: changeMobileFormId,
-            icon: <ArrowLeft className="size-4" />,
-            variant: 'secondary',
-            disabled: isSubmitting,
-          },
-          {
-            id: 'verify',
-            label: isVerifyingCode ? 'Bekrefter...' : 'Bekreft',
-            type: 'button',
-            buttonType: 'submit',
-            form: verifyFormId,
-            variant: 'primary',
-            loading: isVerifyingCode,
-            disabled: code.length !== CODE_LENGTH || isSubmitting,
-          },
-        ]}
-      />
+      <BookingFooterNav>
+        <BookingActionButton type="submit" form={changeMobileFormId} variant="secondary" disabled={isSubmitting}>
+          Endre mobil
+        </BookingActionButton>
+        <BookingActionButton
+          type="submit"
+          form={verifyFormId}
+          variant="primary"
+          loading={isVerifyingCode}
+          disabled={code.length !== CODE_LENGTH || isSubmitting}
+        >
+          {isVerifyingCode ? 'Bekrefter...' : 'Bekreft'}
+        </BookingActionButton>
+      </BookingFooterNav>
     </Stack>
   );
 }

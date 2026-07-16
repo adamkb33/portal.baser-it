@@ -114,6 +114,7 @@ describe('booking pending submission UI', () => {
 
   it('disables later booking step navigation while route submissions are pending', () => {
     const employeeSource = readSessionRoute('employee/booking.public.appointment.session.employee.route.tsx');
+    const profileCardSource = readSessionRoute('employee/_components/profile-card.tsx');
     const selectServicesSource = readSessionRoute(
       'select-services/booking.public.appointment.session.select-services.route.tsx',
     );
@@ -124,12 +125,17 @@ describe('booking pending submission UI', () => {
     );
     const overviewSource = readSessionRoute('overview/booking.public.appointment.session.overview.route.tsx');
 
-    expect(employeeSource).toContain('loading={isSubmittingProfile}');
-    expect(employeeSource).toContain('disabled={isSubmitting}');
-    expect(employeeSource).toContain('disabled: !selectedProfileId || isSubmitting');
-    expect(selectServicesSource).toContain('loading: isSubmitting');
-    expect(selectServicesSource).toContain('disabled: !hasSelections || isSubmitting');
-    expect(selectServicesSource).toContain('disabled: isSubmitting');
+    expect(profileCardSource).toContain('loading={isSubmittingProfile}');
+    expect(profileCardSource).toContain('disabled={isSubmitting}');
+    expect(employeeSource).toContain(
+      '<BookingLink to={routes.selectServices} variant="primary" disabled={isSubmitting}>',
+    );
+    expect(employeeSource).toContain('<BookingActionButton type="button" variant="primary" disabled>');
+    expect(selectServicesSource).toContain('loading={isSubmitting}');
+    expect(selectServicesSource).toContain('disabled={!hasSelections || isSubmitting}');
+    expect(selectServicesSource).toContain(
+      '<BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting}>',
+    );
     expect(selectTimeSource).toContain('disabled={isSubmitting}');
     expect(selectTimeSource).toContain(
       '<BookingLink to={routes.contact} variant="primary" disabled={isSubmitting} reloadDocument>',
@@ -137,8 +143,8 @@ describe('booking pending submission UI', () => {
     expect(bookingLinkSource).toContain('aria-disabled={disabled}');
     expect(bookingLinkSource).toContain("disabled && 'pointer-events-none cursor-not-allowed opacity-50'");
     expect(bookingActionStylesSource).toContain('export const bookingActionBaseClass');
-    expect(overviewSource).toContain('loading: isSubmitting');
-    expect(overviewSource).toContain('disabled: isSubmitting');
+    expect(overviewSource).toContain('loading={isSubmitting}');
+    expect(overviewSource).toContain('disabled={isSubmitting}');
   });
 
   it('saves time selection through one visible route-owned form and continues with a link', () => {

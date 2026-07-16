@@ -12,23 +12,27 @@ export interface BookingActionButtonProps extends React.ButtonHTMLAttributes<HTM
   variant?: BookingActionVariant;
   size?: BookingActionSize;
   fullWidth?: boolean;
+  loading?: boolean;
 }
 
 export const BookingActionButton = React.forwardRef<HTMLButtonElement, BookingActionButtonProps>(
   function BookingActionButton(
-    { variant = 'primary', size = 'md', fullWidth = false, className, disabled, children, ...props },
+    { variant = 'primary', size = 'md', fullWidth = false, className, disabled, loading = false, children, ...props },
     ref,
   ) {
+    const isDisabled = disabled || loading;
+
     return (
       <button
         ref={ref}
-        disabled={disabled}
+        disabled={isDisabled}
+        aria-busy={loading || undefined}
         className={cn(
           bookingActionBaseClass,
           bookingActionVariantClass[variant],
           bookingActionSizeClass[size],
           fullWidth && 'w-full',
-          disabled && 'cursor-not-allowed opacity-50',
+          isDisabled && 'cursor-not-allowed opacity-50',
           className,
         )}
         {...props}
