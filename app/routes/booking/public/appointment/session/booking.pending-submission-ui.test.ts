@@ -118,6 +118,10 @@ describe('booking pending submission UI', () => {
       'select-services/booking.public.appointment.session.select-services.route.tsx',
     );
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
+    const bookingLinkSource = readWorkspaceFile('app/routes/booking/public/_components/booking-link.tsx');
+    const bookingActionStylesSource = readWorkspaceFile(
+      'app/routes/booking/public/_components/booking-action-styles.ts',
+    );
     const overviewSource = readSessionRoute('overview/booking.public.appointment.session.overview.route.tsx');
 
     expect(employeeSource).toContain('loading={isSubmittingProfile}');
@@ -127,27 +131,35 @@ describe('booking pending submission UI', () => {
     expect(selectServicesSource).toContain('disabled: !hasSelections || isSubmitting');
     expect(selectServicesSource).toContain('disabled: isSubmitting');
     expect(selectTimeSource).toContain('disabled={isSubmitting}');
-    expect(selectTimeSource).toContain('const continueDisabled = !selectedStartTime || isSubmitting');
-    expect(selectTimeSource).toContain('disabled: continueDisabled');
-    expect(selectTimeSource).toContain('disabled: isSubmitting');
+    expect(selectTimeSource).toContain('<BookingLink to={routes.contact} variant="primary" disabled={isSubmitting}>');
+    expect(bookingLinkSource).toContain('aria-disabled={disabled}');
+    expect(bookingLinkSource).toContain("disabled && 'pointer-events-none cursor-not-allowed opacity-50'");
+    expect(bookingActionStylesSource).toContain('export const bookingActionBaseClass');
     expect(overviewSource).toContain('loading: isSubmitting');
     expect(overviewSource).toContain('disabled: isSubmitting');
   });
 
-  it('saves time selection through per-slot forms before continuing', () => {
+  it('saves time selection through one visible route-owned form and continues with a link', () => {
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
+    const timeSlotButtonSource = readSessionRoute('select-time/_components/time-slot-button.tsx');
+    const quickBookButtonSource = readSessionRoute('select-time/_components/quick-book-button.tsx');
 
     expect(selectTimeSource).toContain('<Form method="post">');
-    expect(selectTimeSource).toContain('name="selectedStartTime"');
-    expect(selectTimeSource).toContain('value={time}');
-    expect(selectTimeSource).toContain('type="submit"');
+    expect(timeSlotButtonSource).toContain('name="startTime"');
+    expect(timeSlotButtonSource).toContain('value={time}');
+    expect(timeSlotButtonSource).toContain('type="submit"');
+    expect(quickBookButtonSource).toContain('name="startTime"');
+    expect(quickBookButtonSource).toContain('value={slot.time}');
     expect(selectTimeSource).toContain('return redirect(routes.selectTime)');
-    expect(selectTimeSource).toContain("const intent = formData.get('intent') as string | null");
-    expect(selectTimeSource).toContain("if (intent === 'continue')");
-    expect(selectTimeSource).toContain('return redirect(routes.contact)');
-    expect(selectTimeSource).toContain("const continueFormId = 'booking-select-time-continue-form'");
-    expect(selectTimeSource).toContain('form: continueFormId');
-    expect(selectTimeSource).toContain("buttonType: 'submit'");
+    expect(selectTimeSource).toContain('to={routes.contact}');
+    expect(selectTimeSource).not.toContain('loaderData.navigation');
+    expect(selectTimeSource).not.toContain("const intent = formData.get('intent') as string | null");
+    expect(selectTimeSource).not.toContain("if (intent === 'continue')");
+    expect(selectTimeSource).not.toContain('return redirect(routes.contact)');
+    expect(selectTimeSource).not.toContain("const continueFormId = 'booking-select-time-continue-form'");
+    expect(selectTimeSource).not.toContain('form: continueFormId');
+    expect(selectTimeSource).not.toContain("buttonType: 'submit'");
+    expect(selectTimeSource).not.toContain('BookingBottomActionBar');
     expect(selectTimeSource).not.toContain('useSubmit');
     expect(selectTimeSource).not.toContain('submitInFlightRef');
     expect(selectTimeSource).not.toContain('submitFormId');
