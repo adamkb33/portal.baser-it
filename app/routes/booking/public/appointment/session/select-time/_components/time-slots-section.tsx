@@ -1,32 +1,57 @@
-import type * as React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRight, Clock } from 'lucide-react';
 import type { ScheduleDto } from '~/api/generated/booking';
 import { formatFullDate } from '~/lib/date.utils';
 import { cn, Panel as BookingSection } from '~/ui';
-import { isSameSlotTime } from '../_utils/select-time-schedule';
+import { groupTimeSlotsByHour, isSameSlotTime } from '../_utils/select-time-schedule';
 import { TimeSlotButton } from './time-slot-button';
 
 type TimeSlotsSectionProps = {
   selectedDate: string | null;
-  groupedHours: string[];
-  groupedTimeSlots: Record<string, ScheduleDto['timeSlots']>;
+  timeSlots: ScheduleDto['timeSlots'];
   displayTime: string | null;
   isSubmitting: boolean;
   variant?: 'mobile' | 'desktop';
-  showMoreTimeHint?: boolean;
-  scrollRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 export function TimeSlotsSection({
   selectedDate,
-  groupedHours,
-  groupedTimeSlots,
+  timeSlots,
   displayTime,
   isSubmitting,
   variant = 'mobile',
-  showMoreTimeHint = false,
-  scrollRef,
 }: TimeSlotsSectionProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showMoreTimeHint, setShowMoreTimeHint] = useState(true);
+  const groupedTimeSlots = useMemo(() => groupTimeSlotsByHour(timeSlots), [timeSlots]);
+  const groupedHours = useMemo(
+    () => Object.keys(groupedTimeSlots).sort((a, b) => Number(a.split(':')[0]) - Number(b.split(':')[0])),
+    [groupedTimeSlots],
+  );
+
+  useEffect(() => {
+    if (variant !== 'mobile') {
+      return;
+    }
+
+    const target = scrollRef.current;
+    if (!target) return;
+
+    const updateHintVisibility = () => {
+      const atEnd = target.scrollLeft + target.clientWidth >= target.scrollWidth - 4;
+      setShowMoreTimeHint(!atEnd);
+    };
+
+    updateHintVisibility();
+    target.addEventListener('scroll', updateHintVisibility, { passive: true });
+    window.addEventListener('resize', updateHintVisibility);
+
+    return () => {
+      target.removeEventListener('scroll', updateHintVisibility);
+      window.removeEventListener('resize', updateHintVisibility);
+    };
+  }, [groupedHours, variant]);
+
   if (variant === 'desktop') {
     return (
       <BookingSection className="lg:col-span-3">
@@ -68,7 +93,7 @@ export function TimeSlotsSection({
     );
   }
 
-  if (!selectedDate) {
+  if (!selectedDate || timeSlots.length === 0) {
     return null;
   }
 

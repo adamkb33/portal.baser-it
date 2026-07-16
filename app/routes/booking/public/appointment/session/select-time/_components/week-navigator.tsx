@@ -7,7 +7,6 @@ import { getWeekLabel } from '../_utils/select-time-schedule';
 type WeekNavigatorProps = {
   weekGroups: SelectTimeWeekGroup[];
   selectedWeekIndex: number;
-  totalSlots: number;
   onPreviousWeek: () => void;
   onNextWeek: () => void;
   onSelectWeek: (index: number) => void;
@@ -16,7 +15,6 @@ type WeekNavigatorProps = {
 export function WeekNavigator({
   weekGroups,
   selectedWeekIndex,
-  totalSlots,
   onPreviousWeek,
   onNextWeek,
   onSelectWeek,
@@ -26,6 +24,7 @@ export function WeekNavigator({
   }
 
   const currentWeek = weekGroups[selectedWeekIndex];
+  const totalSlots = currentWeek.schedules.reduce((sum, schedule) => sum + schedule.timeSlots.length, 0);
 
   return (
     <BookingSection className="p-0">

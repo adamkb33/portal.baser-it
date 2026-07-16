@@ -12,19 +12,14 @@ import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { redirect } from 'react-router';
 import { useNavigation, useRevalidator } from 'react-router';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Check } from 'lucide-react';
 import { BookingStepTemplate, Panel as BookingSection, Stack } from '~/ui';
 import { DateSelectorSection } from './_components/date-selector-section';
 import { QuickBookButton } from './_components/quick-book-button';
 import { TimeSlotsSection } from './_components/time-slots-section';
 import { WeekNavigator } from './_components/week-navigator';
-import {
-  findScheduleWithTime,
-  getEarliestSlot,
-  groupSchedulesByWeek,
-  groupTimeSlotsByHour,
-} from './_utils/select-time-schedule';
+import { findScheduleWithTime, getEarliestSlot, groupSchedulesByWeek } from './_utils/select-time-schedule';
 import type { Route } from './+types/booking.public.appointment.session.select-time.route';
 
 const SCHEDULE_REFRESH_INTERVAL_MS = 30_000;
@@ -144,8 +139,6 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isDateListCollapsed, setIsDateListCollapsed] = useState(false);
-  const mobileTimeSlotsScrollRef = useRef<HTMLDivElement>(null);
-  const [showMoreTimeHint, setShowMoreTimeHint] = useState(true);
 
   const selectedStartTime = session.selectedStartTime ?? '';
   const displayTime = selectedStartTime || null;
@@ -153,10 +146,6 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const currentWeek = weekGroups[selectedWeekIndex];
   const currentWeekSchedules = currentWeek?.schedules || [];
   const selectedSchedule = currentWeekSchedules.find((s) => s.date === selectedDate);
-  const visibleSchedules =
-    isDateListCollapsed && selectedDate
-      ? currentWeekSchedules.filter((schedule) => schedule.date === selectedDate)
-      : currentWeekSchedules;
 
   useEffect(() => {
     if (displayTime && weekGroups.length > 0) {
@@ -220,32 +209,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
     setIsDateListCollapsed(true);
   };
 
-  const totalSlots = currentWeekSchedules.reduce((sum, s) => sum + s.timeSlots.length, 0);
   const timeSlots = selectedSchedule?.timeSlots ?? [];
-  const groupedTimeSlots = useMemo(() => groupTimeSlotsByHour(timeSlots), [timeSlots]);
-  const groupedHours = useMemo(
-    () => Object.keys(groupedTimeSlots).sort((a, b) => Number(a.split(':')[0]) - Number(b.split(':')[0])),
-    [groupedTimeSlots],
-  );
-
-  useEffect(() => {
-    const target = mobileTimeSlotsScrollRef.current;
-    if (!target) return;
-
-    const updateHintVisibility = () => {
-      const atEnd = target.scrollLeft + target.clientWidth >= target.scrollWidth - 4;
-      setShowMoreTimeHint(!atEnd);
-    };
-
-    updateHintVisibility();
-    target.addEventListener('scroll', updateHintVisibility, { passive: true });
-    window.addEventListener('resize', updateHintVisibility);
-
-    return () => {
-      target.removeEventListener('scroll', updateHintVisibility);
-      window.removeEventListener('resize', updateHintVisibility);
-    };
-  }, [groupedHours]);
 
   return (
     <BookingStepTemplate
@@ -265,7 +229,6 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
           <WeekNavigator
             weekGroups={weekGroups}
             selectedWeekIndex={selectedWeekIndex}
-            totalSlots={totalSlots}
             onPreviousWeek={handlePrevWeek}
             onNextWeek={handleNextWeek}
             onSelectWeek={handleSelectWeek}
@@ -274,7 +237,6 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
           <div className="space-y-6 md:hidden">
             <DateSelectorSection
               schedules={currentWeekSchedules}
-              visibleSchedules={visibleSchedules}
               selectedDate={selectedDate}
               isCollapsed={isDateListCollapsed}
               displayTime={displayTime}
@@ -282,20 +244,16 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
               onShowAllDates={() => setIsDateListCollapsed(false)}
             />
             <TimeSlotsSection
-              selectedDate={selectedSchedule ? selectedDate : null}
-              groupedHours={groupedHours}
-              groupedTimeSlots={groupedTimeSlots}
+              selectedDate={selectedDate}
+              timeSlots={timeSlots}
               displayTime={displayTime}
               isSubmitting={isSubmitting}
-              showMoreTimeHint={showMoreTimeHint}
-              scrollRef={mobileTimeSlotsScrollRef}
             />
           </div>
 
           <div className="hidden md:grid md:grid-cols-2 md:gap-6 lg:grid-cols-5">
             <DateSelectorSection
               schedules={currentWeekSchedules}
-              visibleSchedules={visibleSchedules}
               selectedDate={selectedDate}
               isCollapsed={isDateListCollapsed}
               displayTime={displayTime}
@@ -305,8 +263,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
             />
             <TimeSlotsSection
               selectedDate={selectedDate}
-              groupedHours={groupedHours}
-              groupedTimeSlots={groupedTimeSlots}
+              timeSlots={timeSlots}
               displayTime={displayTime}
               isSubmitting={isSubmitting}
               variant="desktop"

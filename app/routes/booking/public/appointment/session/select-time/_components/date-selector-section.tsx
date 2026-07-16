@@ -6,7 +6,6 @@ import { isSameSlotTime } from '../_utils/select-time-schedule';
 
 type DateSelectorSectionProps = {
   schedules: ScheduleDto[];
-  visibleSchedules: ScheduleDto[];
   selectedDate: string | null;
   isCollapsed: boolean;
   displayTime: string | null;
@@ -17,7 +16,6 @@ type DateSelectorSectionProps = {
 
 export function DateSelectorSection({
   schedules,
-  visibleSchedules,
   selectedDate,
   isCollapsed,
   displayTime,
@@ -26,6 +24,8 @@ export function DateSelectorSection({
   variant = 'mobile',
 }: DateSelectorSectionProps) {
   const isDesktop = variant === 'desktop';
+  const visibleSchedules =
+    isCollapsed && selectedDate ? schedules.filter((schedule) => schedule.date === selectedDate) : schedules;
 
   return (
     <BookingSection className={isDesktop ? 'lg:col-span-2' : undefined}>
