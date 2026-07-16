@@ -1,17 +1,12 @@
 import { Form, data } from 'react-router';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
-import { logger } from '~/lib/logger';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
-import {
-  getBookingSessionLogContext,
-  withBookingBackendCall,
-  withBookingFlowLog,
-} from '~/routes/booking/public/_utils/booking-flow-log.server';
+import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { redirect } from 'react-router';
 import { useNavigation, useRevalidator } from 'react-router';
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -32,18 +27,6 @@ import type { Route } from './+types/booking.public.appointment.session.select-t
 const SCHEDULE_REFRESH_INTERVAL_MS = 30_000;
 const ROUTE_ID = 'booking.public.appointment.session.select-time';
 
-function logSelectTimeClient(event: string, context: Record<string, unknown>) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  console.info(`[booking:client:select-time:${event}]`, {
-    path: window.location.pathname,
-    search: window.location.search,
-    ...context,
-  });
-}
-
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'select-time' }, async () => {
     return selectTimeLoader({ request } as Route.LoaderArgs);
@@ -59,18 +42,10 @@ async function selectTimeLoader({ request }: Route.LoaderArgs) {
   const { session } = guardResult;
 
   if (!session.selectedProfileId) {
-    logger.info('[booking:select-time:loader] Redirecting to employee because profile is missing', {
-      ...getBookingSessionLogContext(session),
-      redirectTo: routes.employee,
-    });
     return redirect(routes.employee);
   }
 
   if (!session.selectedServices?.length) {
-    logger.info('[booking:select-time:loader] Redirecting to services because services are missing', {
-      ...getBookingSessionLogContext(session),
-      redirectTo: routes.selectServices,
-    });
     return redirect(routes.selectServices);
   }
 
@@ -90,14 +65,6 @@ async function selectTimeLoader({ request }: Route.LoaderArgs) {
     ]);
     const schedules = schedulesResponse.data?.data || [];
 
-    logger.info('[booking:select-time:loader] Rendering select-time page', {
-      ...getBookingSessionLogContext(session),
-      schedulesCount: schedules.length,
-      totalTimeSlots: schedules.reduce((sum, schedule) => sum + schedule.timeSlots.length, 0),
-      selectedStartTime: session.selectedStartTime ?? null,
-      contactRoute: routes.contact,
-    });
-
     return data({
       session,
       schedules,
@@ -114,14 +81,6 @@ async function selectTimeLoader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  const url = new URL(request.url);
-  logger.info('[booking:select-time:action-entry] Exported route action hit', {
-    method: request.method,
-    url: request.url,
-    path: url.pathname,
-    search: url.search,
-  });
-
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'select-time' }, async () => {
     return selectTimeAction({ request } as Route.ActionArgs);
   });
@@ -129,51 +88,19 @@ export async function action({ request }: Route.ActionArgs) {
 
 async function selectTimeAction({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
-  logger.info('[booking:select-time:action] Before requireBookingSession', {
-    method: request.method,
-    url: request.url,
-  });
-
   const guardResult = await requireBookingSession(request);
   if (guardResult instanceof Response) {
-    logger.warn('[booking:select-time:action] requireBookingSession returned redirect/response', {
-      method: request.method,
-      url: request.url,
-      responseStatus: guardResult.status,
-      redirectTo: guardResult.headers.get('Location'),
-    });
     return guardResult;
   }
   const { session } = guardResult;
-  logger.info('[booking:select-time:action] Session resolved', {
-    ...getBookingSessionLogContext(session),
-    existingSessionSelectedStartTime: session.selectedStartTime ?? null,
-  });
 
   const formData = await request.formData();
   const selectedStartTime = formData.get('selectedStartTime') as string;
-  logger.info('[booking:select-time:action] Received submit', {
-    ...getBookingSessionLogContext(session),
-    formKeys: Array.from(formData.keys()),
-    selectedStartTime: selectedStartTime || null,
-    existingSessionSelectedStartTime: session.selectedStartTime ?? null,
-    contactRoute: routes.contact,
-  });
-
   if (!selectedStartTime) {
     if (session.selectedStartTime) {
-      logger.info('[booking:select-time:action] Empty submit but session already has time; redirecting contact', {
-        ...getBookingSessionLogContext(session),
-        existingSessionSelectedStartTime: session.selectedStartTime,
-        redirectTo: routes.contact,
-      });
       return redirect(routes.contact);
     }
 
-    logger.warn('[booking:select-time:action] Blocking submit because selectedStartTime is missing', {
-      ...getBookingSessionLogContext(session),
-      redirectTo: routes.selectTime,
-    });
     return redirectWithError(request, routes.selectTime, 'Velg et tidspunkt for å fortsette');
   }
 
@@ -196,20 +123,9 @@ async function selectTimeAction({ request }: Route.ActionArgs) {
         }),
     );
 
-    logger.info('[booking:select-time:action] Saved start time; redirecting contact', {
-      ...getBookingSessionLogContext(session),
-      selectedStartTime,
-      redirectTo: routes.contact,
-    });
     return redirect(routes.contact);
   } catch (error) {
     const { message } = resolveErrorPayload(error, 'Kunne ikke lagre tidspunkt');
-    logger.error('[booking:select-time:action] Failed to save start time; redirecting select-time', {
-      ...getBookingSessionLogContext(session),
-      selectedStartTime,
-      message,
-      redirectTo: routes.selectTime,
-    });
     return redirectWithError(request, routes.selectTime, message);
   }
 }
@@ -492,8 +408,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const weekTabsRef = useRef<HTMLDivElement>(null);
   const [showMoreTimeHint, setShowMoreTimeHint] = useState(true);
 
-  const persistedTime = session.selectedStartTime ?? null;
-  const displayTime = selectedTime || persistedTime;
+  const displayTime = selectedTime;
 
   const currentWeek = weekGroups[selectedWeekIndex];
   const currentWeekSchedules = currentWeek?.schedules || [];
@@ -503,20 +418,24 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
       ? currentWeekSchedules.filter((schedule) => schedule.date === selectedDate)
       : currentWeekSchedules;
 
-  // Initialize: find week with selected time or default to first week
   useEffect(() => {
-    if (persistedTime && weekGroups.length > 0) {
-      const scheduleDate = findScheduleWithTime(schedules, persistedTime);
-      if (scheduleDate) {
-        const weekIndex = weekGroups.findIndex((wg) => wg.schedules.some((s) => s.date === scheduleDate));
-        if (weekIndex !== -1) {
-          setSelectedWeekIndex(weekIndex);
-          setSelectedDate(scheduleDate);
-          setIsDateListCollapsed(true);
-        }
+    setSelectedTime(session.selectedStartTime ?? null);
+  }, [session.selectedStartTime]);
+
+  useEffect(() => {
+    if (displayTime && weekGroups.length > 0) {
+      const scheduleDate = findScheduleWithTime(schedules, displayTime);
+      const weekIndex = scheduleDate
+        ? weekGroups.findIndex((wg) => wg.schedules.some((schedule) => schedule.date === scheduleDate))
+        : -1;
+
+      if (scheduleDate && weekIndex !== -1) {
+        setSelectedWeekIndex(weekIndex);
+        setSelectedDate(scheduleDate);
+        setIsDateListCollapsed(true);
       }
     }
-  }, [persistedTime, schedules, weekGroups]);
+  }, [displayTime, schedules, weekGroups]);
 
   useEffect(() => {
     if (!selectedTime || findScheduleWithTime(schedules, selectedTime)) {
@@ -527,22 +446,11 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   }, [schedules, selectedTime]);
 
   const handleTimeSelect = (startTime: string) => {
-    logSelectTimeClient('select-slot', {
-      startTime,
-      selectedDate,
-      previousSelectedTime: selectedTime,
-      hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
-    });
     setSelectedTime(startTime);
   };
 
   const handleQuickBook = () => {
     if (earliestSlot) {
-      logSelectTimeClient('quick-book-select', {
-        startTime: earliestSlot.time,
-        date: earliestSlot.date,
-        hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
-      });
       setSelectedTime(earliestSlot.time);
       const scheduleDate = findScheduleWithTime(schedules, earliestSlot.time);
       if (scheduleDate) {
@@ -616,17 +524,16 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   };
 
   const getSelectedStartTimeForSubmit = () => {
-    const timeToSubmit = selectedTime || displayTime;
-    if (!timeToSubmit) {
+    if (!selectedTime) {
       return '';
     }
 
-    const scheduleDate = selectedDate ?? findScheduleWithTime(schedules, timeToSubmit);
-    const rawDateTime = timeToSubmit.includes('T')
-      ? timeToSubmit
+    const scheduleDate = selectedDate ?? findScheduleWithTime(schedules, selectedTime);
+    const rawDateTime = selectedTime.includes('T')
+      ? selectedTime
       : scheduleDate
-        ? `${scheduleDate}T${timeToSubmit}`
-        : timeToSubmit;
+        ? `${scheduleDate}T${selectedTime}`
+        : selectedTime;
     return normalizeToOsloIso(rawDateTime);
   };
   const selectedStartTimeForSubmit = getSelectedStartTimeForSubmit();
@@ -634,49 +541,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
 
   useEffect(() => {
     navigationStateRef.current = navigation.state;
-    logSelectTimeClient('navigation-state', {
-      navigationState: navigation.state,
-      revalidatorState: revalidator.state,
-      selectedStartTimeForSubmit,
-      selectedTime,
-      displayTime,
-      hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
-    });
-  }, [
-    displayTime,
-    navigation.state,
-    revalidator.state,
-    selectedStartTimeForSubmit,
-    selectedTime,
-    session.selectedStartTime,
-  ]);
-
-  useEffect(() => {
-    logSelectTimeClient('render-state', {
-      selectedStartTimeForSubmit,
-      selectedTime,
-      displayTime,
-      selectedDate,
-      isSubmitting,
-      continueDisabled,
-      navigationState: navigation.state,
-      revalidatorState: revalidator.state,
-      hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
-      sessionSelectedStartTime: session.selectedStartTime ?? null,
-      schedulesCount: schedules.length,
-    });
-  }, [
-    continueDisabled,
-    displayTime,
-    isSubmitting,
-    navigation.state,
-    revalidator.state,
-    schedules.length,
-    selectedDate,
-    selectedStartTimeForSubmit,
-    selectedTime,
-    session.selectedStartTime,
-  ]);
+  }, [navigation.state]);
 
   useEffect(() => {
     revalidatorStateRef.current = revalidator.state;
@@ -684,37 +549,23 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
-      const context = {
-        navigationState: navigationStateRef.current,
-        revalidatorState: revalidatorStateRef.current,
-        visibilityState: document.visibilityState,
-        selectedStartTimeForSubmit,
-        selectedTime,
-        displayTime,
-        hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
-      };
-
       if (document.visibilityState === 'hidden') {
-        logSelectTimeClient('schedule-refresh-skip', { ...context, reason: 'document-hidden' });
         return;
       }
 
       if (navigationStateRef.current !== 'idle') {
-        logSelectTimeClient('schedule-refresh-skip', { ...context, reason: 'navigation-not-idle' });
         return;
       }
 
       if (revalidatorStateRef.current !== 'idle') {
-        logSelectTimeClient('schedule-refresh-skip', { ...context, reason: 'revalidator-not-idle' });
         return;
       }
 
-      logSelectTimeClient('schedule-refresh-start', context);
       revalidator.revalidate();
     }, SCHEDULE_REFRESH_INTERVAL_MS);
 
     return () => window.clearInterval(intervalId);
-  }, [displayTime, revalidator, selectedStartTimeForSubmit, selectedTime, session.selectedStartTime]);
+  }, [revalidator]);
 
   const handlePrevWeek = () => {
     if (selectedWeekIndex > 0) {
@@ -1053,23 +904,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
           </BookingSection>
         </div>
       </Stack>
-      <Form
-        id={submitFormId}
-        method="post"
-        className="hidden"
-        onSubmit={(event) =>
-          logSelectTimeClient('submit', {
-            defaultPrevented: event.defaultPrevented,
-            selectedStartTimeForSubmit,
-            selectedTime,
-            displayTime,
-            selectedDate,
-            navigationState: navigation.state,
-            revalidatorState: revalidator.state,
-            hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
-          })
-        }
-      >
+      <Form id={submitFormId} method="post" className="hidden">
         <input type="hidden" name="selectedStartTime" value={selectedStartTimeForSubmit} readOnly />
       </Form>
       <BookingBottomActionBar
@@ -1093,18 +928,6 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
             variant: 'primary',
             loading: isSubmitting,
             disabled: continueDisabled,
-            onClick: () =>
-              logSelectTimeClient('continue-click', {
-                selectedStartTimeForSubmit,
-                selectedTime,
-                displayTime,
-                selectedDate,
-                isSubmitting,
-                continueDisabled,
-                navigationState: navigation.state,
-                revalidatorState: revalidator.state,
-                hasSessionSelectedStartTime: Boolean(session.selectedStartTime),
-              }),
           },
         ]}
         compact

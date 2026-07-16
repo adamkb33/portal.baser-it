@@ -130,27 +130,28 @@ describe('booking pending submission UI', () => {
     expect(selectTimeSource).toContain('const continueDisabled = !selectedStartTimeForSubmit || isSubmitting');
     expect(selectTimeSource).toContain('disabled: continueDisabled');
     expect(selectTimeSource).toContain('disabled: isSubmitting');
-    expect(selectTimeSource).toContain('const persistedTime = session.selectedStartTime ?? null');
     expect(overviewSource).toContain('loading: isSubmitting');
     expect(overviewSource).toContain('disabled: isSubmitting');
   });
 
-  it('uses a real form submit for time selection so continue always posts first', () => {
+  it('uses the same hidden form submit pattern as select-services for time selection', () => {
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
 
-    expect(selectTimeSource).toContain('<Form');
-    expect(selectTimeSource).toContain('method="post"');
+    expect(selectTimeSource).toContain("const submitFormId = 'booking-select-time-form'");
+    expect(selectTimeSource).toContain('<Form id={submitFormId} method="post" className="hidden">');
     expect(selectTimeSource).toContain('name="selectedStartTime"');
     expect(selectTimeSource).toContain('value={selectedStartTimeForSubmit}');
-    expect(selectTimeSource).toContain("const submitFormId = 'booking-select-time-form'");
     expect(selectTimeSource).toContain('form: submitFormId');
     expect(selectTimeSource).toContain("buttonType: 'submit'");
+    expect(selectTimeSource).not.toContain('useSubmit');
+    expect(selectTimeSource).not.toContain('submitInFlightRef');
   });
 
   it('posts the displayed selected time before continuing from select-time', () => {
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
 
-    expect(selectTimeSource).toContain('const timeToSubmit = selectedTime || displayTime');
+    expect(selectTimeSource).toContain('setSelectedTime(session.selectedStartTime ?? null)');
+    expect(selectTimeSource).toContain('if (!selectedTime)');
     expect(selectTimeSource).toContain('return normalizeToOsloIso(rawDateTime)');
     expect(selectTimeSource).not.toContain('action: loaderData.navigation.contact');
   });
