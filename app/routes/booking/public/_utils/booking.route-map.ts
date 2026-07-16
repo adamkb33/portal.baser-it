@@ -6,11 +6,7 @@ export type BookingRouteKey =
   | 'entry'
   | 'contact'
   | 'contactSignIn'
-  | 'contactSignUp'
-  | 'contactVerifyEmail'
   | 'contactVerifyMobile'
-  | 'contactCollectEmail'
-  | 'contactCollectMobile'
   | 'employee'
   | 'selectServices'
   | 'selectTime'
@@ -29,11 +25,7 @@ const BOOKING_ROUTE_IDS: BookingRouteIdMap = {
   entry: 'booking.public.appointment.session',
   contact: 'booking.public.appointment.session.contact',
   contactSignIn: 'booking.public.appointment.session.contact.sign-in',
-  contactSignUp: 'booking.public.appointment.session.contact.sign-up',
-  contactVerifyEmail: 'booking.public.appointment.session.contact.verify-email',
   contactVerifyMobile: 'booking.public.appointment.session.contact.verify-mobile',
-  contactCollectEmail: 'booking.public.appointment.session.contact.collect-email',
-  contactCollectMobile: 'booking.public.appointment.session.contact.collect-mobile',
   employee: 'booking.public.appointment.session.employee',
   selectServices: 'booking.public.appointment.session.select-services',
   selectTime: 'booking.public.appointment.session.select-time',
