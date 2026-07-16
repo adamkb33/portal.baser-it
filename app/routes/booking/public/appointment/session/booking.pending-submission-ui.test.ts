@@ -141,4 +141,12 @@ describe('booking pending submission UI', () => {
     expect(selectTimeSource).toContain('submitInFlightRef.current = true');
     expect(selectTimeSource).toContain("if (navigation.state === 'idle')");
   });
+
+  it('posts the displayed selected time before continuing from select-time', () => {
+    const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
+
+    expect(selectTimeSource).toContain('const timeToSubmit = selectedTime || displayTime');
+    expect(selectTimeSource).toContain("submit(formData, { method: 'post' })");
+    expect(selectTimeSource).not.toContain('action: loaderData.navigation.contact');
+  });
 });

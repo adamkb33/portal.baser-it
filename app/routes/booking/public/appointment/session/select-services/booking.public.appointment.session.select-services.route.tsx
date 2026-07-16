@@ -7,6 +7,7 @@ import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
+import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
@@ -38,7 +39,15 @@ import {
 import { cn } from '@/lib/utils';
 import type { Route } from './+types/booking.public.appointment.session.select-services.route';
 
+const ROUTE_ID = 'booking.public.appointment.session.select-services';
+
 export async function loader({ request }: Route.LoaderArgs) {
+  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'select-services' }, async () => {
+    return selectServicesLoader({ request } as Route.LoaderArgs);
+  });
+}
+
+async function selectServicesLoader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
 
   try {
@@ -50,12 +59,19 @@ export async function loader({ request }: Route.LoaderArgs) {
     const { session } = guardResult;
 
     const [serviceGroupsResponse, companySummary] = await Promise.all([
-      PublicAppointmentSessionController.getAppointmentSessionProfileServices({
-        query: {
-          sessionId: session.sessionId,
-        },
-      }),
-      getBookingCompanySummary(session.companyId),
+      withBookingBackendCall(
+        { request, routeId: ROUTE_ID, step: 'select-services', call: 'get-profile-services', session },
+        () =>
+          PublicAppointmentSessionController.getAppointmentSessionProfileServices({
+            query: {
+              sessionId: session.sessionId,
+            },
+          }),
+      ),
+      withBookingBackendCall(
+        { request, routeId: ROUTE_ID, step: 'select-services', call: 'get-company-summary', session },
+        () => getBookingCompanySummary(session.companyId),
+      ),
     ]);
 
     return data({
@@ -73,6 +89,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'select-services' }, async () => {
+    return selectServicesAction({ request } as Route.ActionArgs);
+  });
+}
+
+async function selectServicesAction({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
 
   try {
@@ -98,14 +120,25 @@ export async function action({ request }: Route.ActionArgs) {
           item.quantity > 0,
       );
 
-    await PublicAppointmentSessionController.selectAppointmentSessionProfileServices({
-      body: {
-        selectedServices,
+    await withBookingBackendCall(
+      {
+        request,
+        routeId: ROUTE_ID,
+        step: 'select-services',
+        call: 'select-profile-services',
+        session,
+        context: { selectedServicesCount: selectedServices.length },
       },
-      query: {
-        sessionId: session.sessionId,
-      },
-    });
+      () =>
+        PublicAppointmentSessionController.selectAppointmentSessionProfileServices({
+          body: {
+            selectedServices,
+          },
+          query: {
+            sessionId: session.sessionId,
+          },
+        }),
+    );
 
     return redirect(routes.selectTime);
   } catch (error) {

@@ -5,6 +5,7 @@ import { PublicCompanyController } from '~/api/generated/base';
 import { AppointmentsController, PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
+import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import {
   Button as BookingButton,
   Card as BookingCard,
@@ -15,7 +16,15 @@ import {
   StickySummaryBar,
 } from '~/ui';
 
+const ROUTE_ID = 'booking.public.appointment.success';
+
 export async function loader({ request }: Route.LoaderArgs) {
+  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'success' }, async () => {
+    return successLoader({ request } as Route.LoaderArgs);
+  });
+}
+
+async function successLoader({ request }: Route.LoaderArgs) {
   try {
     const url = new URL(request.url);
     const companyId = url.searchParams.get('companyId');
@@ -28,28 +37,58 @@ export async function loader({ request }: Route.LoaderArgs) {
       throw Error('Selskap ikke gjenkjent');
     }
 
-    await AppointmentsController.validateCompanyBooking({
-      path: {
-        companyId: parseInt(companyId),
+    await withBookingBackendCall(
+      {
+        request,
+        routeId: ROUTE_ID,
+        step: 'success',
+        call: 'validate-company-booking',
+        context: { companyId: parseInt(companyId) },
       },
-    });
+      () =>
+        AppointmentsController.validateCompanyBooking({
+          path: {
+            companyId: parseInt(companyId),
+          },
+        }),
+    );
 
-    const companyResponse = await PublicCompanyController.publicGetCompanyById({
-      path: {
-        companyId: parseInt(companyId),
+    const companyResponse = await withBookingBackendCall(
+      {
+        request,
+        routeId: ROUTE_ID,
+        step: 'success',
+        call: 'get-company',
+        context: { companyId: parseInt(companyId) },
       },
-    });
+      () =>
+        PublicCompanyController.publicGetCompanyById({
+          path: {
+            companyId: parseInt(companyId),
+          },
+        }),
+    );
 
     if (!companyResponse.data?.data) {
       throw Error('Selskap ikke funnet');
     }
 
     try {
-      const appointmentResponse = await PublicAppointmentSessionController.getAppointmentById({
-        query: {
-          appointmentId: parsedAppointmentId,
+      const appointmentResponse = await withBookingBackendCall(
+        {
+          request,
+          routeId: ROUTE_ID,
+          step: 'success',
+          call: 'get-appointment',
+          context: { appointmentId: parsedAppointmentId },
         },
-      });
+        () =>
+          PublicAppointmentSessionController.getAppointmentById({
+            query: {
+              appointmentId: parsedAppointmentId,
+            },
+          }),
+      );
       return data({
         companySummary: companyResponse.data.data,
         appointment: appointmentResponse.data?.data ?? undefined,

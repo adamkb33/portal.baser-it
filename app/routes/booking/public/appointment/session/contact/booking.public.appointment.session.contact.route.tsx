@@ -3,6 +3,7 @@ import { ArrowLeft, Mail, Phone, UserRound } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
+import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
@@ -11,7 +12,15 @@ import { submitContactFormSchema } from './_schemas/submit-contact.form.schema';
 import { BOOKING_CONTACT_LABEL_CLASS, BOOKING_CONTACT_PAGE_HEADER_CLASS } from './_utils/booking-contact-theme';
 import type { Route } from './+types/booking.public.appointment.session.contact.route';
 
+const ROUTE_ID = 'booking.public.appointment.session.contact';
+
 export async function loader({ request }: Route.LoaderArgs) {
+  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'contact' }, async () => {
+    return contactLoader({ request } as Route.LoaderArgs);
+  });
+}
+
+async function contactLoader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
 
   try {
@@ -21,9 +30,13 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
 
     const { session } = guardResult;
-    const requirementsResponse = await PublicAppointmentSessionController.getAppointmentSessionRequirements({
-      path: { sessionId: session.sessionId },
-    });
+    const requirementsResponse = await withBookingBackendCall(
+      { request, routeId: ROUTE_ID, step: 'contact', call: 'get-requirements', session },
+      () =>
+        PublicAppointmentSessionController.getAppointmentSessionRequirements({
+          path: { sessionId: session.sessionId },
+        }),
+    );
     const requirements = requirementsResponse.data?.data;
 
     if (requirements?.nextStep === 'VERIFY_MOBILE') {
@@ -56,6 +69,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'contact' }, async () => {
+    return contactAction({ request } as Route.ActionArgs);
+  });
+}
+
+async function contactAction({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
 
   try {
@@ -79,15 +98,26 @@ export async function action({ request }: Route.ActionArgs) {
       return data({ error: firstError }, { status: 400 });
     }
 
-    const response = await PublicAppointmentSessionController.identifyAppointmentSessionUser({
-      path: { sessionId: session.sessionId },
-      body: {
-        givenName: parsed.data.givenName,
-        familyName: parsed.data.familyName,
-        mobileNumber: parsed.data.mobileNumber,
-        email: parsed.data.email,
+    const response = await withBookingBackendCall(
+      {
+        request,
+        routeId: ROUTE_ID,
+        step: 'contact',
+        call: 'identify-user',
+        session,
+        context: { hasEmail: Boolean(parsed.data.email) },
       },
-    });
+      () =>
+        PublicAppointmentSessionController.identifyAppointmentSessionUser({
+          path: { sessionId: session.sessionId },
+          body: {
+            givenName: parsed.data.givenName,
+            familyName: parsed.data.familyName,
+            mobileNumber: parsed.data.mobileNumber,
+            email: parsed.data.email,
+          },
+        }),
+    );
 
     const nextStep = response.data?.data?.nextStep;
     if (nextStep === 'DONE') {

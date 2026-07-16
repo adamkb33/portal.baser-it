@@ -6,6 +6,7 @@ import { redirectWithError } from '~/lib/flash-message.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
+import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { redirect } from 'react-router';
 import { useNavigation, useRevalidator, useSearchParams, useSubmit } from 'react-router';
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -24,8 +25,15 @@ import { BookingBottomActionBar } from '~/routes/booking/public/_components/bott
 import type { Route } from './+types/booking.public.appointment.session.select-time.route';
 
 const SCHEDULE_REFRESH_INTERVAL_MS = 30_000;
+const ROUTE_ID = 'booking.public.appointment.session.select-time';
 
 export async function loader({ request }: Route.LoaderArgs) {
+  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'select-time' }, async () => {
+    return selectTimeLoader({ request } as Route.LoaderArgs);
+  });
+}
+
+async function selectTimeLoader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
   const guardResult = await requireBookingSession(request);
   if (guardResult instanceof Response) {
@@ -43,12 +51,17 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   try {
     const [schedulesResponse, companySummary] = await Promise.all([
-      PublicAppointmentSessionController.getAppointmentSessionSchedules({
-        query: {
-          sessionId: session.sessionId,
-        },
-      }),
-      getBookingCompanySummary(session.companyId),
+      withBookingBackendCall({ request, routeId: ROUTE_ID, step: 'select-time', call: 'get-schedules', session }, () =>
+        PublicAppointmentSessionController.getAppointmentSessionSchedules({
+          query: {
+            sessionId: session.sessionId,
+          },
+        }),
+      ),
+      withBookingBackendCall(
+        { request, routeId: ROUTE_ID, step: 'select-time', call: 'get-company-summary', session },
+        () => getBookingCompanySummary(session.companyId),
+      ),
     ]);
 
     return data({
@@ -67,6 +80,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'select-time' }, async () => {
+    return selectTimeAction({ request } as Route.ActionArgs);
+  });
+}
+
+async function selectTimeAction({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
   const guardResult = await requireBookingSession(request);
   if (guardResult instanceof Response) {
@@ -78,12 +97,23 @@ export async function action({ request }: Route.ActionArgs) {
   const selectedStartTime = formData.get('selectedStartTime') as string;
 
   try {
-    await PublicAppointmentSessionController.submitAppointmentSessionStartTime({
-      query: {
-        sessionId: session.sessionId,
-        selectedStartTime,
+    await withBookingBackendCall(
+      {
+        request,
+        routeId: ROUTE_ID,
+        step: 'select-time',
+        call: 'submit-start-time',
+        session,
+        context: { selectedStartTime },
       },
-    });
+      () =>
+        PublicAppointmentSessionController.submitAppointmentSessionStartTime({
+          query: {
+            sessionId: session.sessionId,
+            selectedStartTime,
+          },
+        }),
+    );
 
     return redirect(routes.contact);
   } catch (error) {
@@ -372,9 +402,20 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const [showMoreTimeHint, setShowMoreTimeHint] = useState(true);
 
   const urlSelectedTime = searchParams.get('time');
-  const persistedTime = urlSelectedTime || session.selectedStartTime;
-  const persistedTimeIsAvailable = persistedTime ? findScheduleWithTime(schedules, persistedTime) !== null : false;
-  const displayTime = selectedTime || (persistedTimeIsAvailable ? persistedTime : null);
+  const searchParamString = searchParams.toString();
+  const validUrlSelectedTime = useMemo(
+    () => (urlSelectedTime && findScheduleWithTime(schedules, urlSelectedTime) ? urlSelectedTime : null),
+    [schedules, urlSelectedTime],
+  );
+  const validSessionSelectedTime = useMemo(
+    () =>
+      session.selectedStartTime && findScheduleWithTime(schedules, session.selectedStartTime)
+        ? session.selectedStartTime
+        : null,
+    [schedules, session.selectedStartTime],
+  );
+  const persistedTime = validUrlSelectedTime || validSessionSelectedTime;
+  const displayTime = selectedTime || persistedTime;
 
   const currentWeek = weekGroups[selectedWeekIndex];
   const currentWeekSchedules = currentWeek?.schedules || [];
@@ -408,8 +449,17 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
 
   // Initialize: find week with selected time or default to first week
   useEffect(() => {
-    if (session.selectedStartTime && !urlSelectedTime) {
-      setSearchParams({ time: session.selectedStartTime }, { replace: true });
+    if (urlSelectedTime && !validUrlSelectedTime) {
+      const nextSearchParams = new URLSearchParams(searchParamString);
+      nextSearchParams.delete('time');
+      setSearchParams(nextSearchParams, { replace: true });
+      return;
+    }
+
+    if (validSessionSelectedTime && !validUrlSelectedTime) {
+      const nextSearchParams = new URLSearchParams(searchParamString);
+      nextSearchParams.set('time', validSessionSelectedTime);
+      setSearchParams(nextSearchParams, { replace: true });
     }
 
     if (persistedTime && weekGroups.length > 0) {
@@ -423,7 +473,16 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
         }
       }
     }
-  }, [session.selectedStartTime, urlSelectedTime, persistedTime, schedules, weekGroups, setSearchParams]);
+  }, [
+    urlSelectedTime,
+    validUrlSelectedTime,
+    validSessionSelectedTime,
+    persistedTime,
+    schedules,
+    weekGroups,
+    setSearchParams,
+    searchParamString,
+  ]);
 
   useEffect(() => {
     if (!selectedTime || findScheduleWithTime(schedules, selectedTime)) {
@@ -435,11 +494,17 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
 
   const handleTimeSelect = (startTime: string) => {
     setSelectedTime(startTime);
+    const nextSearchParams = new URLSearchParams(searchParamString);
+    nextSearchParams.set('time', startTime);
+    setSearchParams(nextSearchParams, { replace: true });
   };
 
   const handleQuickBook = () => {
     if (earliestSlot) {
       setSelectedTime(earliestSlot.time);
+      const nextSearchParams = new URLSearchParams(searchParamString);
+      nextSearchParams.set('time', earliestSlot.time);
+      setSearchParams(nextSearchParams, { replace: true });
       const scheduleDate = findScheduleWithTime(schedules, earliestSlot.time);
       if (scheduleDate) {
         const weekIndex = weekGroups.findIndex((wg) => wg.schedules.some((s) => s.date === scheduleDate));
@@ -518,23 +583,22 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
 
     submitInFlightRef.current = true;
 
-    if (selectedTime) {
-      const scheduleDate = selectedDate ?? findScheduleWithTime(schedules, selectedTime);
-      const rawDateTime = selectedTime.includes('T')
-        ? selectedTime
-        : scheduleDate
-          ? `${scheduleDate}T${selectedTime}`
-          : selectedTime;
-      const selectedStartTimeOslo = normalizeToOsloIso(rawDateTime);
-      const formData = new FormData();
-      formData.set('selectedStartTime', selectedStartTimeOslo);
-      submit(formData, { method: 'post' });
-    } else {
-      submit(null, {
-        method: 'get',
-        action: loaderData.navigation.contact,
-      });
+    const timeToSubmit = selectedTime || displayTime;
+    if (!timeToSubmit) {
+      submitInFlightRef.current = false;
+      return;
     }
+
+    const scheduleDate = selectedDate ?? findScheduleWithTime(schedules, timeToSubmit);
+    const rawDateTime = timeToSubmit.includes('T')
+      ? timeToSubmit
+      : scheduleDate
+        ? `${scheduleDate}T${timeToSubmit}`
+        : timeToSubmit;
+    const selectedStartTimeOslo = normalizeToOsloIso(rawDateTime);
+    const formData = new FormData();
+    formData.set('selectedStartTime', selectedStartTimeOslo);
+    submit(formData, { method: 'post' });
   };
 
   const handlePrevWeek = () => {

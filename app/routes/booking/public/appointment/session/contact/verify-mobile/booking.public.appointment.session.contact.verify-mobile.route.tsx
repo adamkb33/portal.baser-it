@@ -5,6 +5,7 @@ import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { authService } from '~/lib/auth-service';
 import { redirectWithError } from '~/lib/flash-message.server';
+import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingBottomActionBar } from '~/routes/booking/public/_components/bottom-nav';
@@ -23,8 +24,15 @@ type VerifyMobileActionData =
     };
 
 const CODE_LENGTH = 6;
+const ROUTE_ID = 'booking.public.appointment.session.contact.verify-mobile';
 
 export async function loader({ request }: Route.LoaderArgs) {
+  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'verify-mobile' }, async () => {
+    return verifyMobileLoader({ request } as Route.LoaderArgs);
+  });
+}
+
+async function verifyMobileLoader({ request }: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
 
   try {
@@ -34,9 +42,13 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
 
     const { session } = guardResult;
-    const requirementsResponse = await PublicAppointmentSessionController.getAppointmentSessionRequirements({
-      path: { sessionId: session.sessionId },
-    });
+    const requirementsResponse = await withBookingBackendCall(
+      { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'get-requirements', session },
+      () =>
+        PublicAppointmentSessionController.getAppointmentSessionRequirements({
+          path: { sessionId: session.sessionId },
+        }),
+    );
     const requirements = requirementsResponse.data?.data;
 
     if (!requirements || requirements.nextStep === 'CONTACT_FORM') {
@@ -66,6 +78,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'verify-mobile' }, async () => {
+    return verifyMobileAction({ request } as Route.ActionArgs);
+  });
+}
+
+async function verifyMobileAction({ request }: Route.ActionArgs) {
   const routes = getBookingRouteMap();
 
   try {
@@ -79,16 +97,24 @@ export async function action({ request }: Route.ActionArgs) {
     const intent = String(formData.get('intent') || 'verify');
 
     if (intent === 'change-mobile') {
-      await PublicAppointmentSessionController.clearAppointmentSessionUser({
-        path: { sessionId: session.sessionId },
-      });
+      await withBookingBackendCall(
+        { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'clear-user', session },
+        () =>
+          PublicAppointmentSessionController.clearAppointmentSessionUser({
+            path: { sessionId: session.sessionId },
+          }),
+      );
       return redirect(routes.contact);
     }
 
     if (intent === 'resend') {
-      await PublicAppointmentSessionController.resendAppointmentSessionMobileChallenge({
-        path: { sessionId: session.sessionId },
-      });
+      await withBookingBackendCall(
+        { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'resend-mobile-challenge', session },
+        () =>
+          PublicAppointmentSessionController.resendAppointmentSessionMobileChallenge({
+            path: { sessionId: session.sessionId },
+          }),
+      );
       return data<VerifyMobileActionData>({ ok: true, message: 'Ny SMS-kode er sendt.' });
     }
 
@@ -99,13 +125,24 @@ export async function action({ request }: Route.ActionArgs) {
       return data<VerifyMobileActionData>({ ok: false, error: 'Skriv inn SMS-koden på 6 siffer.' }, { status: 400 });
     }
 
-    const response = await PublicAppointmentSessionController.verifyAppointmentSessionUserMobile({
-      path: { sessionId: session.sessionId },
-      body: {
-        challengeId,
-        code,
+    const response = await withBookingBackendCall(
+      {
+        request,
+        routeId: ROUTE_ID,
+        step: 'verify-mobile',
+        call: 'verify-mobile',
+        session,
+        context: { hasChallengeId: Boolean(challengeId) },
       },
-    });
+      () =>
+        PublicAppointmentSessionController.verifyAppointmentSessionUserMobile({
+          path: { sessionId: session.sessionId },
+          body: {
+            challengeId,
+            code,
+          },
+        }),
+    );
     const payload = response.data?.data;
 
     if (!payload || payload.nextStep !== 'DONE') {
