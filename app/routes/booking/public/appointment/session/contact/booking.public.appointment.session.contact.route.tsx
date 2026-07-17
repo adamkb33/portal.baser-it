@@ -64,8 +64,8 @@ export async function loader({ request }: Route.LoaderArgs) {
       );
       const requirements = requirementsResponse.data?.data ?? null;
 
-      // Rule 1: a code is pending — never render contact.
-      if (requirements?.nextStep === 'VERIFY_MOBILE') {
+      // Rule 1: a code is pending — return to verification unless the user chose to edit the form.
+      if (requirements?.nextStep === 'VERIFY_MOBILE' && !url.searchParams.has('form')) {
         const challengeParam = requirements.challengeId ? `?challengeId=${requirements.challengeId}` : '';
         return redirect(`${routes.contactVerifyMobile}${challengeParam}`);
       }
