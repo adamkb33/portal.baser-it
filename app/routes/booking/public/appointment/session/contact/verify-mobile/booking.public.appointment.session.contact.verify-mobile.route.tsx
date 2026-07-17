@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Form, data, redirect, useActionData, useNavigation } from 'react-router';
+import { Form, Link, data, redirect, useActionData, useNavigation } from 'react-router';
 import { RotateCcw } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { resolveErrorPayload } from '~/lib/api-error';
@@ -7,6 +7,7 @@ import { authService } from '~/lib/auth-service';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { BookingActionButton } from '~/routes/booking/public/_components/booking-action-button';
 import { BookingFooterNav } from '~/routes/booking/public/_components/booking-footer-nav';
+import { BookingLink } from '~/routes/booking/public/_components/booking-link';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
@@ -74,17 +75,22 @@ export async function action({ request }: Route.ActionArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'verify-mobile' }, async () => {
     const routes = getBookingRouteMap();
 
-    try {
-      const guardResult = await requireBookingSession(request);
-      if (guardResult instanceof Response) {
-        return guardResult;
-      }
+    const guardResult = await requireBookingSession(request);
+    if (guardResult instanceof Response) {
+      return guardResult;
+    }
 
-      const { session } = guardResult;
-      const formData = await request.formData();
-      const intent = String(formData.get('intent') || 'verify');
+    const { session } = guardResult;
+    const formData = await request.formData();
+    const intent = String(formData.get('intent') || 'verify');
 
-      if (intent === 'change-mobile') {
+    // "Endre mobilnummer": the pending guest state lives on the CHALLENGE, not on
+    // session.userId — a pending guest has no user to clear, so the clear is
+    // best-effort cleanup and must never block the change. The `?form=1` param tells
+    // the contact loader to render the form even though the old challenge is still
+    // live; submitting the form replaces the challenge on the backend.
+    if (intent === 'change-mobile') {
+      try {
         await withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'clear-user', session },
           () =>
@@ -92,10 +98,14 @@ export async function action({ request }: Route.ActionArgs) {
               path: { sessionId: session.sessionId },
             }),
         );
-        return redirect(routes.contact);
+      } catch {
+        // Nothing attached yet — expected for pending guests. The form is still the right place.
       }
+      return redirect(`${routes.contact}?form=1`);
+    }
 
-      if (intent === 'resend') {
+    if (intent === 'resend') {
+      try {
         await withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'resend-mobile-challenge', session },
           () =>
@@ -104,8 +114,14 @@ export async function action({ request }: Route.ActionArgs) {
             }),
         );
         return data<VerifyMobileActionData>({ ok: true, message: 'Ny SMS-kode er sendt.' });
+      } catch (error) {
+        const { message } = resolveErrorPayload(error, 'Kunne ikke sende ny SMS');
+        return data<VerifyMobileActionData>({ ok: false, error: message }, { status: 400 });
       }
+    }
 
+    // Default: verify the code.
+    try {
       const challengeId = String(formData.get('challengeId') || '');
       const code = String(formData.get('code') || '').replace(/\D/g, '');
 
@@ -159,39 +175,40 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
   const actionData = useActionData<typeof action>() as VerifyMobileActionData | undefined;
   const navigation = useNavigation();
   const [code, setCode] = React.useState('');
+  const routes = getBookingRouteMap();
   const isSubmitting = navigation.state === 'submitting';
   const submittingIntent = navigation.formData?.get('intent');
-  const isVerifyingCode = isSubmitting && submittingIntent !== 'resend' && submittingIntent !== 'change-mobile';
+  const isVerifyingCode = isSubmitting && submittingIntent === 'verify';
   const isSendingCode = isSubmitting && submittingIntent === 'resend';
-  const verifyFormId = 'booking-mobile-verify-form';
-  const changeMobileFormId = 'booking-change-mobile-form';
-  const resendFormId = 'booking-mobile-resend-form';
   const maskedMobile = loaderData.requirements.maskedMobile || 'mobilnummeret ditt';
+  const changeMobileHref = `${routes.contact}?form=1`;
 
   return (
     <Stack space="xl">
-      <div className={BOOKING_CONTACT_PAGE_HEADER_CLASS}>
-        <Text as="p" variant="overline" className="text-booking-action">
-          SMS
-        </Text>
-        <Text as="h1" variant="heading-lg" className="text-booking-text">
-          Skriv inn SMS-koden
-        </Text>
-        <Text as="p" variant="body" className="max-w-2xl text-booking-text-muted">
-          Vi har sendt en kode til {maskedMobile}. Skriv inn koden for å bekrefte mobilnummeret og fortsette.
-        </Text>
-      </div>
+      <div className="mx-auto w-full max-w-2xl space-y-6">
+        <div className={BOOKING_CONTACT_PAGE_HEADER_CLASS}>
+          <Text as="p" variant="overline" className="text-booking-action">
+            SMS
+          </Text>
+          <Text as="h1" variant="heading-lg" className="text-booking-text">
+            Skriv inn SMS-koden
+          </Text>
+          <Text as="p" variant="body" className="max-w-2xl text-booking-text-muted">
+            Vi har sendt en kode til {maskedMobile}. Skriv inn koden for å bekrefte mobilnummeret og fortsette.
+          </Text>
+        </div>
 
-      {actionData?.ok === false ? (
-        <Notice variant="booking" tone="emphasis" title="Kunne ikke bekrefte kode" message={actionData.error} />
-      ) : null}
-      {actionData?.ok === true ? <Notice variant="booking" title="SMS-kode" message={actionData.message} /> : null}
+        {actionData?.ok === false ? (
+          <Notice variant="booking" tone="emphasis" title="Kunne ikke bekrefte kode" message={actionData.error} />
+        ) : null}
+        {actionData?.ok === true ? <Notice variant="booking" title="SMS-kode" message={actionData.message} /> : null}
 
-      <div className="space-y-5 rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-4 shadow-[var(--shadow-booking-card)] md:p-5">
-        <Form id={verifyFormId} method="post" aria-busy={isVerifyingCode}>
-          <Stack space="md">
-            <input type="hidden" name="intent" value="verify" />
-            <input type="hidden" name="challengeId" value={loaderData.requirements.challengeId} />
+        {/* THE verify form — wraps the card AND the footer, so no form="id" indirection. */}
+        <Form method="post" aria-busy={isVerifyingCode} className="space-y-6">
+          <input type="hidden" name="intent" value="verify" />
+          <input type="hidden" name="challengeId" value={loaderData.requirements.challengeId} />
+
+          <div className="space-y-5 rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-4 shadow-[var(--shadow-booking-card)] md:p-5">
             <VerificationCodeInput
               name="code"
               value={code}
@@ -201,51 +218,56 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
               disabled={isSubmitting}
               boxClassName="border-booking-border bg-booking-surface-strong text-booking-text data-[active=true]:border-booking-action data-[active=true]:ring-booking-action/25 data-[filled=true]:border-booking-action hover:border-booking-action"
             />
-            <div className="hidden md:block">
-              <Button
-                type="submit"
-                variant="booking-primary"
-                loading={isVerifyingCode}
-                disabled={code.length !== CODE_LENGTH || isSubmitting}
-              >
-                {isVerifyingCode ? 'Bekrefter...' : 'Bekreft kode'}
-              </Button>
+
+            <div className="flex flex-col gap-2 border-t border-booking-border pt-4 md:flex-row md:items-center md:justify-between">
+              {/* Resend is its own tiny form; nesting forms is invalid HTML, so it sits
+                  outside via the button's formAction-free sibling pattern below. */}
+              <ResendButton isSendingCode={isSendingCode} isSubmitting={isSubmitting} />
+              <Link to={changeMobileHref} className="text-sm font-semibold text-booking-action hover:underline">
+                Feil nummer? Endre
+              </Link>
             </div>
-          </Stack>
+          </div>
+
+          <BookingFooterNav>
+            <BookingLink to={changeMobileHref} variant="secondary" disabled={isSubmitting}>
+              Endre mobil
+            </BookingLink>
+            <BookingActionButton
+              type="submit"
+              variant="primary"
+              loading={isVerifyingCode}
+              disabled={code.length !== CODE_LENGTH || isSubmitting}
+            >
+              {isVerifyingCode ? 'Bekrefter...' : 'Bekreft kode'}
+            </BookingActionButton>
+          </BookingFooterNav>
         </Form>
-
-        <div className="grid gap-2 md:grid-cols-2">
-          <Form id={resendFormId} method="post">
-            <input type="hidden" name="intent" value="resend" />
-            <Button type="submit" variant="booking-secondary" fullWidth loading={isSendingCode} disabled={isSubmitting}>
-              <RotateCcw className="size-4" />
-              {isSendingCode ? 'Sender SMS...' : 'Send SMS på nytt'}
-            </Button>
-          </Form>
-
-          <Form id={changeMobileFormId} method="post">
-            <input type="hidden" name="intent" value="change-mobile" />
-            <Button type="submit" variant="booking-ghost" fullWidth disabled={isSubmitting}>
-              Endre mobilnummer
-            </Button>
-          </Form>
-        </div>
       </div>
-
-      <BookingFooterNav>
-        <BookingActionButton type="submit" form={changeMobileFormId} variant="secondary" disabled={isSubmitting}>
-          Endre mobil
-        </BookingActionButton>
-        <BookingActionButton
-          type="submit"
-          form={verifyFormId}
-          variant="primary"
-          loading={isVerifyingCode}
-          disabled={code.length !== CODE_LENGTH || isSubmitting}
-        >
-          {isVerifyingCode ? 'Bekrefter...' : 'Bekreft'}
-        </BookingActionButton>
-      </BookingFooterNav>
     </Stack>
+  );
+}
+
+/**
+ * Resend must be a separate POST (it has its own intent), but HTML forbids nested
+ * forms. A submit button with `formMethod`/`formAction`-style overrides can't change
+ * the intent field, so the resend button submits its own form rendered via a portal-free
+ * trick: it lives inside the verify form but overrides the submitted intent using
+ * name/value on the button itself — the LAST intent value wins in FormData order,
+ * so the button carries its own `name="intent" value="resend"`.
+ */
+function ResendButton({ isSendingCode, isSubmitting }: { isSendingCode: boolean; isSubmitting: boolean }) {
+  return (
+    <Button
+      type="submit"
+      name="intent"
+      value="resend"
+      variant="booking-secondary"
+      loading={isSendingCode}
+      disabled={isSubmitting}
+    >
+      <RotateCcw className="size-4" />
+      {isSendingCode ? 'Sender SMS...' : 'Send SMS på nytt'}
+    </Button>
   );
 }

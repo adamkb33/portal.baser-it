@@ -1,4 +1,5 @@
-export type BookingActionVariant = 'primary' | 'secondary' | 'ghost';
+export type BookingActionVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'inline';
+
 export type BookingActionSize = 'sm' | 'md';
 
 export const bookingActionBaseClass =
@@ -8,7 +9,10 @@ export const bookingActionVariantClass: Record<BookingActionVariant, string> = {
   primary:
     'border-booking-action bg-booking-action text-booking-action-contrast shadow-sm hover:bg-booking-action-hover',
   secondary: 'border-booking-action bg-transparent text-booking-action hover:bg-booking-action-muted',
+  outline: 'border-booking-border bg-transparent text-booking-text hover:bg-booking-surface-muted',
   ghost: 'border-transparent bg-transparent text-booking-text hover:bg-booking-surface-muted',
+  inline:
+    'min-h-0 justify-start rounded-none border-transparent bg-transparent p-0 text-booking-action underline-offset-4 hover:text-booking-action-hover hover:underline',
 };
 
 export const bookingActionSizeClass: Record<BookingActionSize, string> = {
