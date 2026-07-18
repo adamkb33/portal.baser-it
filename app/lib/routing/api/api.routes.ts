@@ -31,28 +31,6 @@ export const API_ROUTES_TREE: ApiRoute[] = [
         id: 'auth.navbar-notifications',
         url: '/api/auth/navbar-notifications',
       },
-      {
-        id: 'auth.verify-mobile',
-        url: '/api/auth/verify-mobile',
-      },
-      {
-        id: 'auth.resend-verification',
-        url: '/api/auth/resend-verification',
-        children: [
-          {
-            id: 'auth.resend-verification.email',
-            url: '/api/auth/resend-verification/email',
-          },
-          {
-            id: 'auth.resend-verification.mobile',
-            url: '/api/auth/resend-verification/mobile',
-          },
-        ],
-      },
-      {
-        id: 'auth.user-status',
-        url: '/api/auth/user-status',
-      },
     ],
   },
   {

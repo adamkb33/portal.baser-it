@@ -1,7 +1,8 @@
 import type { Route } from './+types/booking.public.appointment.session.route';
 import { Loader2 } from 'lucide-react';
 import { redirect } from 'react-router';
-import { AppointmentsController } from '~/api/generated/booking';
+import { AppointmentsController, type AppointmentSessionDto } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import {
   parseBookingContext,
   resolveBookingTheme,
@@ -29,12 +30,14 @@ async function createBookingContextCookie(context: BookingContext, companyId: nu
   });
 }
 
-async function validateCompanyBooking(companyId: number) {
-  await AppointmentsController.validateCompanyBooking({
-    path: {
-      companyId,
-    },
-  });
+async function validateCompanyBooking(companyId: number, request: Request) {
+  await withAuth(request, () =>
+    AppointmentsController.validateCompanyBooking({
+      path: {
+        companyId,
+      },
+    }),
+  );
 }
 
 export async function loader(args: Route.LoaderArgs) {
@@ -45,6 +48,10 @@ export async function loader(args: Route.LoaderArgs) {
 
 async function sessionLoader(args: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
+  // Tracked outside the try block so the catch-all below can tell whether a valid
+  // session already existed before something failed — if it did, recovery must stay
+  // inside that session/company rather than ejecting to the company picker.
+  let session: AppointmentSessionDto | null = null;
 
   try {
     const url = new URL(args.request.url);
@@ -104,7 +111,7 @@ async function sessionLoader(args: Route.LoaderArgs) {
           call: 'validate-company-booking',
           context: { companyId: companyIdNumber },
         },
-        () => validateCompanyBooking(companyIdNumber),
+        () => validateCompanyBooking(companyIdNumber, args.request),
       );
 
       const created = await withBookingBackendCall(
@@ -125,46 +132,34 @@ async function sessionLoader(args: Route.LoaderArgs) {
       return redirect(routes.employee, { headers });
     }
 
-    const session = sessionResult.status === 'found' ? sessionResult.session : null;
+    session = sessionResult.status === 'found' ? sessionResult.session : null;
 
     if (session) {
-      if (companyIdParam) {
-        const companyIdNumber = parseCompanyId(companyIdParam);
+      // Only switch companies when the URL gives us a genuinely different, valid companyId.
+      // A missing or malformed companyId must never discard an existing, valid session.
+      const companyIdNumber = companyIdParam ? parseCompanyId(companyIdParam) : null;
 
-        if (companyIdNumber === null) {
-          return redirectWithError(args.request, routes.appointment, 'Selskaps-ID er ugyldig.');
-        }
+      if (companyIdNumber !== null && session.companyId !== companyIdNumber) {
+        const clearSessionCookie = await withBookingBackendCall(
+          { request: args.request, routeId: ROUTE_ID, step: 'session', call: 'delete-session', session },
+          () => AppointmentSessionService.delete(args.request),
+        );
+        const created = await withBookingBackendCall(
+          {
+            request: args.request,
+            routeId: ROUTE_ID,
+            step: 'session',
+            call: 'create-session',
+            context: { companyId: companyIdNumber },
+          },
+          () => AppointmentSessionService.create(companyIdNumber, args.request),
+        );
+        const headers = new Headers();
+        appendSetCookie(headers, clearSessionCookie);
+        appendSetCookie(headers, created.setCookieHeader);
+        appendSetCookie(headers, await createBookingContextCookie(nextContext, companyIdNumber));
 
-        if (session.companyId === companyIdNumber) {
-          return redirect(routes.employee, {
-            headers: {
-              'Set-Cookie': await createBookingContextCookie(nextContext, session.companyId),
-            },
-          });
-        }
-
-        if (session.companyId !== companyIdNumber) {
-          const clearSessionCookie = await withBookingBackendCall(
-            { request: args.request, routeId: ROUTE_ID, step: 'session', call: 'delete-session', session },
-            () => AppointmentSessionService.delete(args.request),
-          );
-          const created = await withBookingBackendCall(
-            {
-              request: args.request,
-              routeId: ROUTE_ID,
-              step: 'session',
-              call: 'create-session',
-              context: { companyId: companyIdNumber },
-            },
-            () => AppointmentSessionService.create(companyIdNumber, args.request),
-          );
-          const headers = new Headers();
-          appendSetCookie(headers, clearSessionCookie);
-          appendSetCookie(headers, created.setCookieHeader);
-          appendSetCookie(headers, await createBookingContextCookie(nextContext, companyIdNumber));
-
-          return redirect(routes.employee, { headers });
-        }
+        return redirect(routes.employee, { headers });
       }
 
       return redirect(routes.employee, {
@@ -192,7 +187,7 @@ async function sessionLoader(args: Route.LoaderArgs) {
         call: 'validate-company-booking',
         context: { companyId: companyIdNumber },
       },
-      () => validateCompanyBooking(companyIdNumber),
+      () => validateCompanyBooking(companyIdNumber, args.request),
     );
 
     const created = await withBookingBackendCall(
@@ -214,6 +209,13 @@ async function sessionLoader(args: Route.LoaderArgs) {
   } catch (error: unknown) {
     if (error instanceof Response) {
       throw error;
+    }
+
+    // A session/company already existed before this failed — keep them inside it
+    // (its own guard will cascade to the picker if the session turns out to be gone too)
+    // instead of ejecting straight to the company picker.
+    if (session) {
+      return redirectWithError(args.request, routes.employee, 'Noe gikk galt. Prøv igjen.');
     }
 
     return redirectWithError(args.request, routes.appointment, 'Noe gikk galt under oppstart av booking. Prøv igjen.');

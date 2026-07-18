@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Form, data, redirect, useNavigation } from 'react-router';
 import { BadgeCheck, Mail, Phone, Plus, UserRound } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { authService } from '~/lib/auth-service';
 import { logger } from '~/lib/logger';
 import { accessTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { BookingActionButton } from '~/routes/booking/public/_components/booking-action-button';
@@ -28,9 +30,12 @@ const CARD_CLASS =
   'rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised shadow-[var(--shadow-booking-card)]';
 
 /**
- * The public SDK methods carry no security scheme, so the generated client never
- * attaches the user's token to them. Requirements and attach need it: the backend
- * resolves canAttachAuthenticatedUser / the attach principal from this header.
+ * Only used to check whether the browser is signed in before hitting the backend.
+ * The actual Authorization header for backend calls is attached by `withAuth`, which
+ * serializes access to the generated clients' process-wide singleton config — passing
+ * an empty headers object per-call here instead would get stripped by the SDK's
+ * `stripEmptySlots` and silently fall back to whatever token another concurrent
+ * request last left on the shared client (a cross-user auth leak).
  */
 async function getAuthHeader(request: Request): Promise<Record<string, string>> {
   const token = await accessTokenCookie.parse(request.headers.get('Cookie'));
@@ -56,11 +61,12 @@ export async function loader({ request }: Route.LoaderArgs) {
     try {
       const requirementsResponse = await withBookingBackendCall(
         { request, routeId: ROUTE_ID, step: 'contact', call: 'get-requirements', session },
-        async () =>
-          PublicAppointmentSessionController.getAppointmentSessionRequirements({
-            path: { sessionId: session.sessionId },
-            headers: await getAuthHeader(request),
-          }),
+        () =>
+          withAuth(request, () =>
+            PublicAppointmentSessionController.getAppointmentSessionRequirements({
+              path: { sessionId: session.sessionId },
+            }),
+          ),
       );
       const requirements = requirementsResponse.data?.data ?? null;
 
@@ -157,13 +163,45 @@ export async function action({ request }: Route.ActionArgs) {
         await withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'contact', call: 'clear-session-user', session },
           () =>
-            PublicAppointmentSessionController.clearAppointmentSessionUser({
-              path: { sessionId: session.sessionId },
-            }),
+            withAuth(request, () =>
+              PublicAppointmentSessionController.clearAppointmentSessionUser({
+                path: { sessionId: session.sessionId },
+              }),
+            ),
         );
         return redirect(`${routes.contact}?form=1`);
       } catch (error) {
         const { message } = resolveErrorPayload(error, 'Kunne ikke endre kontaktinformasjon');
+        return data({ error: message }, { status: 400 });
+      }
+    }
+
+    // RESUME primary: session already has a verified user (nextStep DONE) but the browser's
+    // own login may have expired or been cleared — mint fresh auth cookies from the session's
+    // own identity so "Mine bookinger" works afterward too.
+    if (intent === 'resume') {
+      try {
+        const response = await withBookingBackendCall(
+          { request, routeId: ROUTE_ID, step: 'contact', call: 'resume-session', session },
+          () =>
+            withAuth(request, () =>
+              PublicAppointmentSessionController.resumeAppointmentSession({
+                path: { sessionId: session.sessionId },
+              }),
+            ),
+        );
+        const authTokens = response.data?.data?.authTokens;
+        const headers = authTokens
+          ? await authService.setAuthCookies(
+              authTokens.accessToken,
+              authTokens.refreshToken,
+              authTokens.accessTokenExpiresAt,
+              authTokens.refreshTokenExpiresAt,
+            )
+          : undefined;
+        return redirect(routes.overview, headers ? { headers } : undefined);
+      } catch (error) {
+        const { message } = resolveErrorPayload(error, 'Kunne ikke fortsette bookingen');
         return data({ error: message }, { status: 400 });
       }
     }
@@ -179,10 +217,11 @@ export async function action({ request }: Route.ActionArgs) {
         const response = await withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'contact', call: 'set-pending-user', session },
           () =>
-            PublicAppointmentSessionController.setPendingAppointmentSessionUser({
-              path: { sessionId: session.sessionId },
-              headers: authHeader,
-            }),
+            withAuth(request, () =>
+              PublicAppointmentSessionController.setPendingAppointmentSessionUser({
+                path: { sessionId: session.sessionId },
+              }),
+            ),
         );
         const nextStep = response.data?.data?.nextStep;
         if (nextStep === 'DONE') return redirect(routes.overview);
@@ -218,17 +257,18 @@ export async function action({ request }: Route.ActionArgs) {
           session,
           context: { hasEmail: Boolean(parsed.data.email) },
         },
-        async () =>
-          PublicAppointmentSessionController.identifyAppointmentSessionUser({
-            path: { sessionId: session.sessionId },
-            headers: await getAuthHeader(request),
-            body: {
-              givenName: parsed.data.givenName,
-              familyName: parsed.data.familyName,
-              mobileNumber: parsed.data.mobileNumber,
-              email: parsed.data.email, // schema transforms '' → undefined; only sent when filled
-            },
-          }),
+        () =>
+          withAuth(request, () =>
+            PublicAppointmentSessionController.identifyAppointmentSessionUser({
+              path: { sessionId: session.sessionId },
+              body: {
+                givenName: parsed.data.givenName,
+                familyName: parsed.data.familyName,
+                mobileNumber: parsed.data.mobileNumber,
+                email: parsed.data.email, // schema transforms '' → undefined; only sent when filled
+              },
+            }),
+          ),
       );
 
       const result = response.data?.data;
@@ -252,8 +292,12 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function BookingSessionContactPage({ loaderData, actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state !== 'idle';
   const routes = getBookingRouteMap();
+  const pendingIntent = isSubmitting ? String(navigation.formData?.get('intent') ?? '') : '';
+  const pendingDestination = isSubmitting
+    ? `${navigation.location?.pathname ?? ''}${navigation.location?.search ?? ''}`
+    : '';
   const errorMessage =
     actionData && typeof actionData === 'object' && 'error' in actionData ? String(actionData.error) : null;
 
@@ -292,24 +336,48 @@ export default function BookingSessionContactPage({ loaderData, actionData }: Ro
         ) : null}
 
         {contactState === 'RESUME' ? (
-          <ResumeCard resumeUser={resumeUser} isSubmitting={isSubmitting} />
+          <ResumeCard resumeUser={resumeUser} isSubmitting={isSubmitting} isClearing={pendingIntent === 'clear'} />
         ) : contactState === 'CONTINUE_AS' ? (
-          <ContinueAsCard authenticatedUser={authenticatedUser} routes={routes} isSubmitting={isSubmitting} />
+          <ContinueAsCard
+            authenticatedUser={authenticatedUser}
+            routes={routes}
+            isSubmitting={isSubmitting}
+            pendingIntent={pendingIntent}
+            pendingDestination={pendingDestination}
+          />
         ) : (
-          <ContactForm routes={routes} isSubmitting={isSubmitting} />
+          <ContactForm
+            routes={routes}
+            isSubmitting={isSubmitting}
+            pendingIntent={pendingIntent}
+            pendingDestination={pendingDestination}
+          />
         )}
       </div>
 
       {/* Footers stay outside the constrained column so the sticky bar spans as before. */}
       {contactState === 'RESUME' ? (
-        <BookingFooterNav>
-          <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
-            Tilbake
-          </BookingLink>
-          <BookingLink to={routes.overview} variant="primary" disabled={isSubmitting}>
-            Fortsett til booking
-          </BookingLink>
-        </BookingFooterNav>
+        <Form method="post">
+          <input type="hidden" name="intent" value="resume" readOnly />
+          <BookingFooterNav>
+            <BookingLink
+              to={routes.selectTime}
+              variant="secondary"
+              loading={pendingDestination === routes.selectTime}
+              disabled={isSubmitting}
+            >
+              Tilbake
+            </BookingLink>
+            <BookingActionButton
+              type="submit"
+              variant="primary"
+              loading={pendingIntent === 'resume'}
+              disabled={isSubmitting}
+            >
+              {pendingIntent === 'resume' ? 'Går videre...' : 'Fortsett til booking'}
+            </BookingActionButton>
+          </BookingFooterNav>
+        </Form>
       ) : null}
     </Stack>
   );
@@ -331,9 +399,11 @@ function AvatarInitial({ name }: { name: string | null }) {
 function ResumeCard({
   resumeUser,
   isSubmitting,
+  isClearing,
 }: {
   resumeUser: { displayName: string | null; maskedMobile: string | null } | null;
   isSubmitting: boolean;
+  isClearing: boolean;
 }) {
   return (
     <div className={`${CARD_CLASS} overflow-hidden`}>
@@ -367,7 +437,7 @@ function ResumeCard({
             disabled={isSubmitting}
             className="text-sm font-semibold text-booking-action hover:underline disabled:opacity-50"
           >
-            Endre
+            {isClearing ? 'Endrer...' : 'Endre'}
           </button>
         </Form>
       </div>
@@ -381,10 +451,14 @@ function ContinueAsCard({
   authenticatedUser,
   routes,
   isSubmitting,
+  pendingIntent,
+  pendingDestination,
 }: {
   authenticatedUser: { displayName: string | null } | null;
   routes: ReturnType<typeof getBookingRouteMap>;
   isSubmitting: boolean;
+  pendingIntent: string;
+  pendingDestination: string;
 }) {
   const name = authenticatedUser?.displayName || null;
   return (
@@ -409,6 +483,7 @@ function ContinueAsCard({
             <BookingLink
               to={`${routes.contact}?form=1`}
               variant="inline"
+              loading={pendingDestination === `${routes.contact}?form=1`}
               disabled={isSubmitting}
               className="min-h-0 rounded-md border-booking-action/40 bg-booking-surface-raised/60 px-2 py-1 text-sm no-underline"
             >
@@ -418,6 +493,7 @@ function ContinueAsCard({
             <BookingLink
               to={routes.contactSignIn}
               variant="inline"
+              loading={isSubmitting && !pendingIntent && pendingDestination !== `${routes.contact}?form=1`}
               disabled={isSubmitting}
               className="min-h-0 rounded-md border-booking-action/40 bg-booking-surface-raised/60 px-2 py-1 text-sm no-underline"
             >
@@ -428,11 +504,21 @@ function ContinueAsCard({
       </div>
 
       <BookingFooterNav>
-        <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
+        <BookingLink
+          to={routes.selectTime}
+          variant="secondary"
+          loading={pendingDestination === routes.selectTime}
+          disabled={isSubmitting}
+        >
           Tilbake
         </BookingLink>
-        <BookingActionButton type="submit" variant="primary" loading={isSubmitting} disabled={isSubmitting}>
-          {name ? `Fortsett som ${name}` : 'Fortsett'}
+        <BookingActionButton
+          type="submit"
+          variant="primary"
+          loading={pendingIntent === 'attach'}
+          disabled={isSubmitting}
+        >
+          {pendingIntent === 'attach' ? 'Går videre...' : name ? `Fortsett som ${name}` : 'Fortsett'}
         </BookingActionButton>
       </BookingFooterNav>
     </Form>
@@ -444,9 +530,13 @@ function ContinueAsCard({
 function ContactForm({
   routes,
   isSubmitting,
+  pendingIntent,
+  pendingDestination,
 }: {
   routes: ReturnType<typeof getBookingRouteMap>;
   isSubmitting: boolean;
+  pendingIntent: string;
+  pendingDestination: string;
 }) {
   const [showEmail, setShowEmail] = useState(false);
 
@@ -460,14 +550,28 @@ function ContactForm({
             <Label htmlFor="givenName" className={BOOKING_CONTACT_LABEL_CLASS}>
               Fornavn
             </Label>
-            <Input id="givenName" name="givenName" variant="booking" autoComplete="given-name" required />
+            <Input
+              id="givenName"
+              name="givenName"
+              variant="booking"
+              autoComplete="given-name"
+              required
+              disabled={isSubmitting}
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="familyName" className={BOOKING_CONTACT_LABEL_CLASS}>
               Etternavn
             </Label>
-            <Input id="familyName" name="familyName" variant="booking" autoComplete="family-name" required />
+            <Input
+              id="familyName"
+              name="familyName"
+              variant="booking"
+              autoComplete="family-name"
+              required
+              disabled={isSubmitting}
+            />
           </div>
         </div>
 
@@ -486,6 +590,7 @@ function ContactForm({
               autoComplete="tel"
               maxLength={8}
               required
+              disabled={isSubmitting}
               className="pl-9"
             />
           </div>
@@ -509,6 +614,7 @@ function ContactForm({
                 inputMode="email"
                 autoComplete="email"
                 className="pl-9"
+                disabled={isSubmitting}
               />
             </div>
             <Text as="p" variant="caption" className="text-booking-text-muted">
@@ -518,6 +624,7 @@ function ContactForm({
         ) : (
           <button
             type="button"
+            disabled={isSubmitting}
             onClick={() => setShowEmail(true)}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-booking-action hover:underline"
           >
@@ -530,8 +637,15 @@ function ContactForm({
         <div className="border-t border-booking-border pt-4">
           <Text as="p" variant="caption" className="text-booking-text-muted">
             Har du allerede en konto?{' '}
-            <BookingLink to={routes.contactSignIn} variant="inline">
-              Logg inn
+            <BookingLink
+              to={routes.contactSignIn}
+              variant="inline"
+              loading={isSubmitting && !pendingIntent && pendingDestination !== routes.selectTime}
+              disabled={isSubmitting}
+            >
+              {isSubmitting && !pendingIntent && pendingDestination !== routes.selectTime
+                ? 'Åpner innlogging...'
+                : 'Logg inn'}
             </BookingLink>
           </Text>
         </div>
@@ -539,11 +653,21 @@ function ContactForm({
 
       {/* Footer INSIDE the form — the submit needs no form="id" attribute. */}
       <BookingFooterNav>
-        <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
+        <BookingLink
+          to={routes.selectTime}
+          variant="secondary"
+          loading={pendingDestination === routes.selectTime}
+          disabled={isSubmitting}
+        >
           Tilbake
         </BookingLink>
-        <BookingActionButton type="submit" variant="primary" loading={isSubmitting} disabled={isSubmitting}>
-          {isSubmitting ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'}
+        <BookingActionButton
+          type="submit"
+          variant="primary"
+          loading={pendingIntent === 'identify'}
+          disabled={isSubmitting}
+        >
+          {pendingIntent === 'identify' ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'}
         </BookingActionButton>
       </BookingFooterNav>
     </Form>

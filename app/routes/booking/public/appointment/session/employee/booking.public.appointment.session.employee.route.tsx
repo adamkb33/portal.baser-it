@@ -1,5 +1,6 @@
 import { Form, data, redirect, useNavigation } from 'react-router';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
@@ -29,16 +30,18 @@ export async function loader({ request }: Route.LoaderArgs) {
       const { session } = guardResult;
       const companySummary = await withBookingBackendCall(
         { request, routeId: ROUTE_ID, step: 'employee', call: 'get-company-summary', session },
-        () => getBookingCompanySummary(session.companyId),
+        () => getBookingCompanySummary(session.companyId, request),
       );
       const profilesResponse = await withBookingBackendCall(
         { request, routeId: ROUTE_ID, step: 'employee', call: 'get-profiles', session },
         () =>
-          PublicAppointmentSessionController.getAppointmentSessionProfiles({
-            query: {
-              sessionId: session.sessionId,
-            },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.getAppointmentSessionProfiles({
+              query: {
+                sessionId: session.sessionId,
+              },
+            }),
+          ),
       );
 
       const profiles = profilesResponse.data?.data || [];
@@ -50,12 +53,14 @@ export async function loader({ request }: Route.LoaderArgs) {
           await withBookingBackendCall(
             { request, routeId: ROUTE_ID, step: 'employee', call: 'select-profile', session },
             () =>
-              PublicAppointmentSessionController.selectAppointmentSessionProfile({
-                query: {
-                  sessionId: session.sessionId,
-                  selectedProfileId: onlyProfile.id,
-                },
-              }),
+              withAuth(request, () =>
+                PublicAppointmentSessionController.selectAppointmentSessionProfile({
+                  query: {
+                    sessionId: session.sessionId,
+                    selectedProfileId: onlyProfile.id,
+                  },
+                }),
+              ),
           );
         }
 
@@ -106,12 +111,14 @@ export async function action({ request }: Route.ActionArgs) {
           context: { selectedProfileId: Number(selectedProfileId) },
         },
         () =>
-          PublicAppointmentSessionController.selectAppointmentSessionProfile({
-            query: {
-              sessionId: session.sessionId,
-              selectedProfileId: Number(selectedProfileId),
-            },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.selectAppointmentSessionProfile({
+              query: {
+                sessionId: session.sessionId,
+                selectedProfileId: Number(selectedProfileId),
+              },
+            }),
+          ),
       );
 
       return redirect(routes.selectServices);
@@ -127,8 +134,9 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
   const selectedProfileId = loaderData.selectedProfileId;
   const routes = getBookingRouteMap();
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state !== 'idle';
   const submittingProfileId = navigation.formData?.get('selectedProfileId');
+  const pendingDestination = navigation.location?.pathname;
 
   return (
     <BookingStepTemplate
@@ -162,12 +170,22 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
         })}
       </Grid>
       <BookingFooterNav>
-        <BookingLink to={routes.contact} variant="secondary" disabled={isSubmitting}>
-          Tilbake
+        <BookingLink
+          to={routes.contact}
+          variant="secondary"
+          loading={isSubmitting && pendingDestination === routes.contact}
+          disabled={isSubmitting}
+        >
+          {isSubmitting && pendingDestination === routes.contact ? 'Går tilbake...' : 'Tilbake'}
         </BookingLink>
         {selectedProfileId ? (
-          <BookingLink to={routes.selectServices} variant="primary" disabled={isSubmitting}>
-            Fortsett
+          <BookingLink
+            to={routes.selectServices}
+            variant="primary"
+            loading={isSubmitting && pendingDestination === routes.selectServices}
+            disabled={isSubmitting}
+          >
+            {isSubmitting && pendingDestination === routes.selectServices ? 'Går videre...' : 'Fortsett'}
           </BookingLink>
         ) : (
           <BookingActionButton type="button" variant="primary" disabled>

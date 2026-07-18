@@ -9,9 +9,17 @@ type ServiceCardProps = {
   quantity: number;
   onQuantityChange: (nextQuantity: number) => void;
   onViewImages?: () => void;
+  disableIncrement?: boolean;
 };
 
-export function ServiceCard({ service, index, quantity, onQuantityChange, onViewImages }: ServiceCardProps) {
+export function ServiceCard({
+  service,
+  index,
+  quantity,
+  onQuantityChange,
+  onViewImages,
+  disableIncrement,
+}: ServiceCardProps) {
   const isSelected = quantity > 0;
   const hasImages = service.images && service.images.length > 0;
   const previewImage = hasImages ? service.images && service.images[0] : null;
@@ -100,7 +108,7 @@ export function ServiceCard({ service, index, quantity, onQuantityChange, onView
           </Button>
         )}
 
-        <ServiceQuantityControl quantity={quantity} onChange={onQuantityChange} />
+        <ServiceQuantityControl quantity={quantity} onChange={onQuantityChange} disableIncrement={disableIncrement} />
       </CardFooter>
     </Card>
   );

@@ -33,6 +33,7 @@ export type ApiMessage = {
     | 'ACCESS_DENIED'
     | 'CONFLICT'
     | 'EMAIL_ALREADY_IN_USE'
+    | 'EMAIL_ALREADY_REGISTERED'
     | 'MOBILE_ALREADY_IN_USE'
     | 'AUTH_PROVIDER_MISMATCH_LOCAL'
     | 'AUTH_PROVIDER_MISMATCH_GOOGLE'
@@ -59,6 +60,8 @@ export type ApiMessage = {
     | 'SESSION_ALREADY_ATTACHED'
     | 'SESSION_USER_ATTACHED'
     | 'SESSION_REQUIREMENTS'
+    | 'SESSION_RESUMED'
+    | 'SESSION_NOT_RESUMABLE'
     | 'SESSION_EXPIRED'
     | 'REQUIREMENTS_UNAVAILABLE'
     | 'CONTACT_VALIDATION_FAILED'
@@ -95,6 +98,7 @@ export type ApiMessage = {
     | 'COMPANY_NOT_FOUND'
     | 'COMPANY_VALIDATION_FAILED'
     | 'SESSION_NOT_FOUND'
+    | 'APPOINTMENT_SLOT_UNAVAILABLE'
     | 'COMPANY_HAS_NO_PROFILES'
     | 'PROFILE_DELETED'
     | 'START_TIME_MUST_BE_BEFORE_END'
@@ -795,6 +799,21 @@ export type UserDto = {
   provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
   hasPassword: boolean;
   accountStatus: 'GUEST' | 'FULL';
+};
+
+export type ApiResponsePublicResumeAppointmentSessionResponseDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: PublicResumeAppointmentSessionResponseDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type PublicResumeAppointmentSessionResponseDto = {
+  sessionId: string;
+  userId: number;
+  authTokens: AuthenticationTokenDto;
 };
 
 export type ApiResponsePublicMobileChallengeResponseDto = {
@@ -3134,6 +3153,25 @@ export type SetPendingAppointmentSessionUserResponses = {
 
 export type SetPendingAppointmentSessionUserResponse =
   SetPendingAppointmentSessionUserResponses[keyof SetPendingAppointmentSessionUserResponses];
+
+export type ResumeAppointmentSessionData = {
+  body?: never;
+  path: {
+    sessionId: string;
+  };
+  query?: never;
+  url: '/booking-service/public/appointment-session/{sessionId}/resume';
+};
+
+export type ResumeAppointmentSessionResponses = {
+  /**
+   * OK
+   */
+  200: ApiResponsePublicResumeAppointmentSessionResponseDto;
+};
+
+export type ResumeAppointmentSessionResponse =
+  ResumeAppointmentSessionResponses[keyof ResumeAppointmentSessionResponses];
 
 export type ResendAppointmentSessionMobileChallengeData = {
   body?: never;

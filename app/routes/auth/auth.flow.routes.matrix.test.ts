@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   providerCompleteProfile: vi.fn(),
   setAuthCookies: vi.fn(),
   resolveErrorPayload: vi.fn(),
+  redirectWithError: vi.fn(),
   redirectWithWarning: vi.fn(),
   readVerificationToken: vi.fn(),
   buildVerificationCookieHeader: vi.fn(),
@@ -52,7 +53,8 @@ vi.mock('~/lib/api-error', () => ({
   resolveErrorPayload: mocks.resolveErrorPayload,
 }));
 
-vi.mock('~/routes/company/_lib/flash-message.server', () => ({
+vi.mock('~/lib/flash-message.server', () => ({
+  redirectWithError: mocks.redirectWithError,
   redirectWithWarning: mocks.redirectWithWarning,
 }));
 
@@ -124,6 +126,9 @@ describe('auth flow routes matrix', () => {
     mocks.redirectWithWarning.mockImplementation(
       (_request: Request, href: string) => new Response(null, { status: 302, headers: { Location: href } }),
     );
+    mocks.redirectWithError.mockImplementation(
+      (_request: Request, href: string) => new Response(null, { status: 302, headers: { Location: href } }),
+    );
     mocks.setAuthCookies.mockResolvedValue(new Headers([['Set-Cookie', 'auth=1']]));
     mocks.getCompanyIdFromToken.mockReturnValue(undefined);
     mocks.getCompanyContexts.mockResolvedValue({ data: { data: [] } });
@@ -137,7 +142,7 @@ describe('auth flow routes matrix', () => {
   });
 
   describe('sign-in action', () => {
-    it('returns 400 when google id token is missing', async () => {
+    it('redirects with an error when google id token is missing', async () => {
       const formData = new FormData();
       formData.set('provider', 'GOOGLE');
 
@@ -145,8 +150,12 @@ describe('auth flow routes matrix', () => {
         request: new Request('http://localhost/auth/sign-in', { method: 'POST', body: formData }),
       } as never);
 
-      expect(unwrapData(result)).toMatchObject({ error: 'Kunne ikke logge inn med Google. Prøv igjen.' });
-      expect(getStatus(result)).toBe(400);
+      expect(mocks.redirectWithError).toHaveBeenCalledWith(
+        expect.any(Request),
+        ROUTES_MAP['auth.sign-in'].href,
+        'Kunne ikke logge inn med Google. Prøv igjen.',
+      );
+      expect(getStatus(result)).toBe(302);
     });
 
     it.each([

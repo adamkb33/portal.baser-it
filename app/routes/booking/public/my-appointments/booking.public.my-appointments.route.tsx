@@ -18,6 +18,7 @@ import {
 import { AppointmentsController, type MyAppointmentDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { authService } from '~/lib/auth-service';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { getBookingRouteHref } from '~/routes/booking/public/_utils/booking.route-map';
 import {
@@ -205,6 +206,8 @@ function AppointmentPagination({
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
+  await authService.requireAuth(request, ROUTES_MAP['auth.sign-in'].href);
+
   try {
     const url = new URL(request.url);
     const safeUpcomingPage = getSafePage(url.searchParams.get('upcomingPage'));
@@ -344,7 +347,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
   };
 
   return (
-    <BookingContainer>
+    <BookingContainer aria-busy={isLoading || undefined} className={isLoading ? 'pointer-events-none' : undefined}>
       <Stack space="md">
         <div>
           <Button type="button" variant="booking-secondary" size="sm" className="gap-2" onClick={handleBack}>

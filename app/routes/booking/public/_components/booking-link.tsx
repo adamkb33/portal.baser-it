@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Loader2 } from 'lucide-react';
 import { Link, type LinkProps } from 'react-router';
 import { cn } from '~/ui';
 import {
@@ -13,19 +14,33 @@ export interface BookingLinkProps extends LinkProps {
   variant?: BookingActionVariant;
   size?: BookingActionSize;
   disabled?: boolean;
+  loading?: boolean;
   fullWidth?: boolean;
 }
 
 export const BookingLink = React.forwardRef<HTMLAnchorElement, BookingLinkProps>(function BookingLink(
-  { variant = 'primary', size = 'md', disabled = false, fullWidth = false, className, children, onClick, ...props },
+  {
+    variant = 'primary',
+    size = 'md',
+    disabled = false,
+    loading = false,
+    fullWidth = false,
+    className,
+    children,
+    onClick,
+    ...props
+  },
   ref,
 ) {
+  const isDisabled = disabled || loading;
+
   return (
     <Link
       ref={ref}
-      aria-disabled={disabled}
+      aria-disabled={isDisabled}
+      aria-busy={loading || undefined}
       onClick={(event) => {
-        if (disabled) {
+        if (isDisabled) {
           event.preventDefault();
           return;
         }
@@ -37,11 +52,12 @@ export const BookingLink = React.forwardRef<HTMLAnchorElement, BookingLinkProps>
         bookingActionVariantClass[variant],
         bookingActionSizeClass[size],
         fullWidth && 'w-full',
-        disabled && 'pointer-events-none cursor-not-allowed opacity-50',
+        isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
         className,
       )}
       {...props}
     >
+      {loading && <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden="true" />}
       {children}
     </Link>
   );
