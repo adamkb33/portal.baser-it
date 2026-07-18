@@ -67,12 +67,6 @@ export function redirectAuthStatusNextStepHref(authStatus: UserAuthStatusDto) {
   return redirect(routes.contact);
 }
 
-export function shouldStoreVerificationToken(
-  nextStep: SignInResponseDto['nextStep'] | SignUpResponseDto['nextStep'] | null | undefined,
-) {
-  return nextStep === 'VERIFY_MOBILE';
-}
-
 export function hasAuthErrors(
   payload:
     | SignInResponseDto
