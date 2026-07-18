@@ -13,7 +13,6 @@ const mocks = vi.hoisted(() => ({
   setPendingAppointmentSessionUser: vi.fn(),
   attachUser: vi.fn(),
   resolveAuthNextStepHref: vi.fn(),
-  shouldStoreVerificationToken: vi.fn(),
   buildVerificationCookieHeaderFromDto: vi.fn(),
 }));
 
@@ -50,7 +49,6 @@ vi.mock('~/lib/auth-service', () => ({
 
 vi.mock('../_utils/auth.utils', () => ({
   resolveAuthNextStepHref: mocks.resolveAuthNextStepHref,
-  shouldStoreVerificationToken: mocks.shouldStoreVerificationToken,
 }));
 
 vi.mock('./verification-token.service.server', () => ({
@@ -67,7 +65,6 @@ describe('ContactAuthService matrix', () => {
     mocks.resolveAuthNextStepHref.mockImplementation((nextStep: string) =>
       nextStep ? `/booking/next/${nextStep}` : null,
     );
-    mocks.shouldStoreVerificationToken.mockImplementation((nextStep: string) => nextStep === 'VERIFY_MOBILE');
     mocks.buildVerificationCookieHeaderFromDto.mockResolvedValue(null);
     mocks.setAuthCookies.mockResolvedValue(new Headers([['Set-Cookie', 'auth=1']]));
   });
@@ -201,13 +198,13 @@ describe('ContactAuthService matrix', () => {
 
   it.each([
     {
-      name: 'resolvePostAuthRedirect skips email verification token',
+      name: 'resolvePostAuthRedirect stores verification token even when nextStep is VERIFY_EMAIL',
       payload: {
         userId: 1,
         nextStep: 'VERIFY_EMAIL',
         verificationToken: { value: 'vt-1', expiresAt: '2030-01-01T00:00:00.000Z' },
       },
-      cookie: null,
+      cookie: 'verification=vt-1',
       expectedHref: '/booking/next/VERIFY_EMAIL',
     },
     {

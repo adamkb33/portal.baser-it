@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
-import {
-  redirectAuthStatusNextStepHref,
-  resolveAuthNextStepHref,
-  resolveAuthStatusNextStepHref,
-  shouldStoreVerificationToken,
-} from './auth.utils';
+import { redirectAuthStatusNextStepHref, resolveAuthNextStepHref, resolveAuthStatusNextStepHref } from './auth.utils';
 
 describe('booking contact auth step matrix', () => {
   it.each([
@@ -111,16 +106,5 @@ describe('booking contact auth step matrix', () => {
     expect(response.headers.get('Location')).toBe(
       ROUTES_MAP['booking.public.appointment.session.contact.verify-mobile'].href,
     );
-  });
-
-  it.each([
-    { nextStep: 'VERIFY_EMAIL', expected: false },
-    { nextStep: 'VERIFY_MOBILE', expected: true },
-    { nextStep: 'COLLECT_EMAIL', expected: false },
-    { nextStep: 'COLLECT_MOBILE', expected: false },
-    { nextStep: 'DONE', expected: false },
-    { nextStep: null, expected: false },
-  ])('shouldStoreVerificationToken for $nextStep', ({ nextStep, expected }) => {
-    expect(shouldStoreVerificationToken(nextStep as never)).toBe(expected);
   });
 });

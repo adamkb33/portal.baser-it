@@ -3,6 +3,7 @@ import type { AppointmentSessionDto } from '~/api/generated/booking';
 import { resolveAuthStatusNextStepHref } from '~/routes/booking/public/appointment/session/contact/_utils/auth.utils';
 import { AppointmentSessionService } from '../_services/booking.appointment-session.service.server';
 import { ContactAuthService } from '../appointment/session/contact/_services/contact-auth.service.server';
+import { VerificationTokenService } from '../appointment/session/contact/_services/verification-token.service.server';
 import { getBookingRouteMap } from './booking.route-map';
 
 type GuardResult = {
@@ -40,7 +41,12 @@ export async function requireAuthenticatedBookingFlow(request: Request): Promise
   if (authStatus.nextStep !== 'DONE') {
     const nextStepHref = resolveAuthStatusNextStepHref(authStatus);
     if (nextStepHref && nextStepHref !== routes.employee) {
-      return redirect(nextStepHref);
+      const verificationCookieHeader = await VerificationTokenService.buildVerificationCookieHeaderFromDto(
+        authStatus.verificationToken ?? null,
+      );
+      return redirect(nextStepHref, {
+        headers: verificationCookieHeader ? { 'Set-Cookie': verificationCookieHeader } : undefined,
+      });
     }
     if (!nextStepHref) {
       return redirect(routes.contact);

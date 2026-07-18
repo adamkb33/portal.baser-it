@@ -67,6 +67,30 @@ describe('requireAuthenticatedBookingFlow', () => {
     );
   });
 
+  it('persists the verification token cookie when redirecting to the next auth step', async () => {
+    getSessionMock.mockResolvedValue({ sessionId: 's1', userId: 10 });
+    getUserStatusMock.mockResolvedValue({
+      nextStep: 'VERIFY_MOBILE',
+      user: {
+        mobileNumber: '+4740104131',
+        mobileVerified: false,
+      },
+      verificationToken: { value: 'vt-1', expiresAt: '2030-01-01T00:00:00.000Z' },
+    });
+
+    const { requireAuthenticatedBookingFlow } = await import(
+      '~/routes/booking/public/_utils/booking.require-authenticated-flow.server'
+    );
+
+    const result = await requireAuthenticatedBookingFlow(new Request('http://localhost/x'));
+
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).headers.get('Location')).toBe(
+      '/booking/public/appointment/session/contact/verify-mobile',
+    );
+    expect((result as Response).headers.get('Set-Cookie')).toContain('verification_session_token=');
+  });
+
   it('returns session when auth flow is done', async () => {
     const session = { sessionId: 's1', userId: 10 };
     getSessionMock.mockResolvedValue(session);
