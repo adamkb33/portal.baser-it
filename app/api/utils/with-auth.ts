@@ -11,11 +11,13 @@ import { toJwtClaims } from '~/routes/auth/_utils/token-payload';
 let authClientQueue: Promise<void> = Promise.resolve();
 
 function setAuthorizationHeader(accessToken?: string) {
-  const headers = accessToken
-    ? {
-        Authorization: `Bearer ${accessToken}`,
-      }
-    : {};
+  // `mergeHeaders` (generated client) only clears a header when its value is
+  // explicitly `null` — an absent key is left untouched. Passing `{}` here would
+  // silently keep whatever Authorization a previous, unrelated request last set on
+  // this process-wide singleton, leaking that user's token into this one.
+  const headers = {
+    Authorization: accessToken ? `Bearer ${accessToken}` : null,
+  };
 
   baseClient.setConfig({ headers });
   bookingClient.setConfig({ headers });

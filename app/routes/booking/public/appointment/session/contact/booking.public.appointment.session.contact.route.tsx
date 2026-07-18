@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Form, data, redirect, useNavigation } from 'react-router';
 import { BadgeCheck, Mail, Phone, Plus, UserRound } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { logger } from '~/lib/logger';
 import { accessTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
@@ -28,9 +29,12 @@ const CARD_CLASS =
   'rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised shadow-[var(--shadow-booking-card)]';
 
 /**
- * The public SDK methods carry no security scheme, so the generated client never
- * attaches the user's token to them. Requirements and attach need it: the backend
- * resolves canAttachAuthenticatedUser / the attach principal from this header.
+ * Only used to check whether the browser is signed in before hitting the backend.
+ * The actual Authorization header for backend calls is attached by `withAuth`, which
+ * serializes access to the generated clients' process-wide singleton config — passing
+ * an empty headers object per-call here instead would get stripped by the SDK's
+ * `stripEmptySlots` and silently fall back to whatever token another concurrent
+ * request last left on the shared client (a cross-user auth leak).
  */
 async function getAuthHeader(request: Request): Promise<Record<string, string>> {
   const token = await accessTokenCookie.parse(request.headers.get('Cookie'));
@@ -56,11 +60,12 @@ export async function loader({ request }: Route.LoaderArgs) {
     try {
       const requirementsResponse = await withBookingBackendCall(
         { request, routeId: ROUTE_ID, step: 'contact', call: 'get-requirements', session },
-        async () =>
-          PublicAppointmentSessionController.getAppointmentSessionRequirements({
-            path: { sessionId: session.sessionId },
-            headers: await getAuthHeader(request),
-          }),
+        () =>
+          withAuth(request, () =>
+            PublicAppointmentSessionController.getAppointmentSessionRequirements({
+              path: { sessionId: session.sessionId },
+            }),
+          ),
       );
       const requirements = requirementsResponse.data?.data ?? null;
 
@@ -179,10 +184,11 @@ export async function action({ request }: Route.ActionArgs) {
         const response = await withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'contact', call: 'set-pending-user', session },
           () =>
-            PublicAppointmentSessionController.setPendingAppointmentSessionUser({
-              path: { sessionId: session.sessionId },
-              headers: authHeader,
-            }),
+            withAuth(request, () =>
+              PublicAppointmentSessionController.setPendingAppointmentSessionUser({
+                path: { sessionId: session.sessionId },
+              }),
+            ),
         );
         const nextStep = response.data?.data?.nextStep;
         if (nextStep === 'DONE') return redirect(routes.overview);
@@ -218,17 +224,18 @@ export async function action({ request }: Route.ActionArgs) {
           session,
           context: { hasEmail: Boolean(parsed.data.email) },
         },
-        async () =>
-          PublicAppointmentSessionController.identifyAppointmentSessionUser({
-            path: { sessionId: session.sessionId },
-            headers: await getAuthHeader(request),
-            body: {
-              givenName: parsed.data.givenName,
-              familyName: parsed.data.familyName,
-              mobileNumber: parsed.data.mobileNumber,
-              email: parsed.data.email, // schema transforms '' → undefined; only sent when filled
-            },
-          }),
+        () =>
+          withAuth(request, () =>
+            PublicAppointmentSessionController.identifyAppointmentSessionUser({
+              path: { sessionId: session.sessionId },
+              body: {
+                givenName: parsed.data.givenName,
+                familyName: parsed.data.familyName,
+                mobileNumber: parsed.data.mobileNumber,
+                email: parsed.data.email, // schema transforms '' → undefined; only sent when filled
+              },
+            }),
+          ),
       );
 
       const result = response.data?.data;

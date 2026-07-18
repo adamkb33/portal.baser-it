@@ -68,10 +68,13 @@ describe('withAuth', () => {
     expect(bookingSetConfig).toHaveBeenNthCalledWith(1, { headers: { Authorization: 'Bearer token-123' } });
     expect(timesheetSetConfig).toHaveBeenNthCalledWith(1, { headers: { Authorization: 'Bearer token-123' } });
     expect(notificationSetConfig).toHaveBeenNthCalledWith(1, { headers: { Authorization: 'Bearer token-123' } });
-    expect(baseSetConfig).toHaveBeenLastCalledWith({ headers: {} });
-    expect(bookingSetConfig).toHaveBeenLastCalledWith({ headers: {} });
-    expect(timesheetSetConfig).toHaveBeenLastCalledWith({ headers: {} });
-    expect(notificationSetConfig).toHaveBeenLastCalledWith({ headers: {} });
+    // Reset must send an explicit `null`, not `{}` — the generated client's
+    // mergeHeaders only clears a header when its value is null; an absent key
+    // is left untouched, which silently kept the previous request's token.
+    expect(baseSetConfig).toHaveBeenLastCalledWith({ headers: { Authorization: null } });
+    expect(bookingSetConfig).toHaveBeenLastCalledWith({ headers: { Authorization: null } });
+    expect(timesheetSetConfig).toHaveBeenLastCalledWith({ headers: { Authorization: null } });
+    expect(notificationSetConfig).toHaveBeenLastCalledWith({ headers: { Authorization: null } });
   });
 
   it('clears headers when no token exists', async () => {
@@ -81,10 +84,10 @@ describe('withAuth', () => {
 
     await withAuth(request, async () => 'ok');
 
-    expect(baseSetConfig).toHaveBeenNthCalledWith(1, { headers: {} });
-    expect(bookingSetConfig).toHaveBeenNthCalledWith(1, { headers: {} });
-    expect(timesheetSetConfig).toHaveBeenNthCalledWith(1, { headers: {} });
-    expect(notificationSetConfig).toHaveBeenNthCalledWith(1, { headers: {} });
-    expect(baseSetConfig).toHaveBeenLastCalledWith({ headers: {} });
+    expect(baseSetConfig).toHaveBeenNthCalledWith(1, { headers: { Authorization: null } });
+    expect(bookingSetConfig).toHaveBeenNthCalledWith(1, { headers: { Authorization: null } });
+    expect(timesheetSetConfig).toHaveBeenNthCalledWith(1, { headers: { Authorization: null } });
+    expect(notificationSetConfig).toHaveBeenNthCalledWith(1, { headers: { Authorization: null } });
+    expect(baseSetConfig).toHaveBeenLastCalledWith({ headers: { Authorization: null } });
   });
 });
