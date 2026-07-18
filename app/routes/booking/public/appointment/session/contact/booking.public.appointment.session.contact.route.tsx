@@ -4,6 +4,7 @@ import { BadgeCheck, Mail, Phone, Plus, UserRound } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
+import { authService } from '~/lib/auth-service';
 import { logger } from '~/lib/logger';
 import { accessTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { BookingActionButton } from '~/routes/booking/public/_components/booking-action-button';
@@ -173,6 +174,31 @@ export async function action({ request }: Route.ActionArgs) {
       }
     }
 
+    // RESUME primary: session already has a verified user (nextStep DONE) but the browser's
+    // own login may have expired or been cleared — mint fresh auth cookies from the session's
+    // own identity so "Mine bookinger" works afterward too.
+    if (intent === 'resume') {
+      try {
+        const response = await withBookingBackendCall(
+          { request, routeId: ROUTE_ID, step: 'contact', call: 'resume-session', session },
+          () => PublicAppointmentSessionController.resumeAppointmentSession({ path: { sessionId: session.sessionId } }),
+        );
+        const authTokens = response.data?.data?.authTokens;
+        const headers = authTokens
+          ? await authService.setAuthCookies(
+              authTokens.accessToken,
+              authTokens.refreshToken,
+              authTokens.accessTokenExpiresAt,
+              authTokens.refreshTokenExpiresAt,
+            )
+          : undefined;
+        return redirect(routes.overview, headers ? { headers } : undefined);
+      } catch (error) {
+        const { message } = resolveErrorPayload(error, 'Kunne ikke fortsette bookingen');
+        return data({ error: message }, { status: 400 });
+      }
+    }
+
     // CONTINUE_AS primary: attach the authenticated browser user. Principal comes from the
     // Authorization header — never from form data.
     if (intent === 'attach') {
@@ -309,14 +335,17 @@ export default function BookingSessionContactPage({ loaderData, actionData }: Ro
 
       {/* Footers stay outside the constrained column so the sticky bar spans as before. */}
       {contactState === 'RESUME' ? (
-        <BookingFooterNav>
-          <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
-            Tilbake
-          </BookingLink>
-          <BookingLink to={routes.overview} variant="primary" disabled={isSubmitting}>
-            Fortsett til booking
-          </BookingLink>
-        </BookingFooterNav>
+        <Form method="post">
+          <input type="hidden" name="intent" value="resume" readOnly />
+          <BookingFooterNav>
+            <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
+              Tilbake
+            </BookingLink>
+            <BookingActionButton type="submit" variant="primary" loading={isSubmitting} disabled={isSubmitting}>
+              Fortsett til booking
+            </BookingActionButton>
+          </BookingFooterNav>
+        </Form>
       ) : null}
     </Stack>
   );
