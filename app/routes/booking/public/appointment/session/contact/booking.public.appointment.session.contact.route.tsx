@@ -392,24 +392,38 @@ function ContinueAsCard({
       <input type="hidden" name="intent" value="attach" readOnly />
 
       <div className={`${CARD_CLASS} p-4 md:p-5`}>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <AvatarInitial name={name} />
-          <div className="min-w-0 flex-1 space-y-0.5">
+          <div className="min-w-0 flex-1 space-y-0">
             <Text as="p" variant="body" className="truncate font-bold text-booking-text">
               {name || 'Innlogget bruker'}
             </Text>
-            <Text as="p" variant="caption" className="text-booking-text-muted">
+            <Text as="p" variant="caption" className="leading-snug text-booking-text-muted">
               Du er logget inn — vi bruker kontaktinformasjonen fra kontoen din.
             </Text>
           </div>
         </div>
-        <div className="mt-4 space-y-2 border-t border-booking-border pt-3">
-          <BookingLink to={routes.contactSignIn} variant="secondary" disabled={isSubmitting}>
-            Logg inn med en annen konto
-          </BookingLink>
-          <BookingLink to={`${routes.contact}?form=1`} variant="secondary" disabled={isSubmitting}>
-            Ikke deg? Fortsett som gjest
-          </BookingLink>
+        <div className="mt-3 rounded-[var(--radius-booking-control)] bg-booking-action/10 px-3 py-2.5">
+          <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-sm leading-snug text-booking-text-muted">
+            <span>Ikke {name || 'deg'}?</span>
+            <BookingLink
+              to={`${routes.contact}?form=1`}
+              variant="inline"
+              disabled={isSubmitting}
+              className="min-h-0 rounded-md border-booking-action/40 bg-booking-surface-raised/60 px-2 py-1 text-sm no-underline"
+            >
+              Fortsett som gjest
+            </BookingLink>
+            <span>eller</span>
+            <BookingLink
+              to={routes.contactSignIn}
+              variant="inline"
+              disabled={isSubmitting}
+              className="min-h-0 rounded-md border-booking-action/40 bg-booking-surface-raised/60 px-2 py-1 text-sm no-underline"
+            >
+              logg inn med en annen konto
+            </BookingLink>
+          </div>
         </div>
       </div>
 

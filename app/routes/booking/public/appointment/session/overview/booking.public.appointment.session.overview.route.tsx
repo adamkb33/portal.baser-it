@@ -10,10 +10,9 @@ import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/pub
 import { requireBookingReady } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { redirect } from 'react-router';
-import { useState } from 'react';
 import { Form, Link, useNavigation } from 'react-router';
-import { Calendar, User, Mail, DollarSign, CheckCircle2 } from 'lucide-react';
-import { BookingStepTemplate, Container, KeyValueList, PageHeader, Stack, Text } from '~/ui';
+import { CheckCircle2 } from 'lucide-react';
+import { BookingStepTemplate, Container, PageHeader, Text } from '~/ui';
 import { formatNorwegianDateTime } from './_utils/format-norwegian-date-time';
 import type { Route } from './+types/booking.public.appointment.session.overview.route';
 
@@ -98,7 +97,6 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   const routes = getBookingRouteMap();
-  const [showAllServices, setShowAllServices] = useState(false);
 
   if (!loaderData.sessionOverview) {
     return (
@@ -115,12 +113,9 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
   const totalPrice =
     sessionOverview.totalPrice ??
     sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.price * item.quantity, 0);
-  const totalServiceCount = sessionOverview.selectedServices.reduce((sum, item) => sum + item.quantity, 0);
-  const collapsedServices = sessionOverview.selectedServices.slice(0, 3);
-  const additionalServices = sessionOverview.selectedServices.slice(3);
-
   const dateTime = formatNorwegianDateTime(sessionOverview.selectedStartTime);
   const confirmFormId = 'booking-overview-confirm-form';
+  const editLinkClass = 'text-sm font-semibold text-booking-action hover:underline';
 
   return (
     <BookingStepTemplate
@@ -128,214 +123,69 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
       description="Gjennomgå detaljene før du bekrefter."
       headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
-      <Stack space="lg">
-        <Form id={confirmFormId} method="post" className="hidden" />
-        <section className="space-y-4 rounded-[var(--radius-booking-panel)] bg-booking-surface-muted p-3 shadow-[var(--shadow-booking-panel)] md:p-5">
-          <header className="space-y-1">
-            <Text as="h2" variant="label" className="text-booking-text">
-              Oversikt
-            </Text>
+      <Form id={confirmFormId} method="post" className="hidden" />
+      <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised shadow-[var(--shadow-booking-card)]">
+        <OverviewSection title="Tidspunkt" editHref={routes.selectTime} editLinkClass={editLinkClass}>
+          <Text as="p" variant="body" className="font-semibold text-booking-text">
+            {dateTime.full}
+          </Text>
+          <Text as="p" variant="body-sm" className="text-booking-text-muted">
+            {totalDuration} min
+          </Text>
+        </OverviewSection>
+
+        <OverviewSection title="Kontakt" editHref={routes.contact} editLinkClass={editLinkClass}>
+          <Text as="p" variant="body" className="font-semibold text-booking-text">
+            {sessionOverview.user.givenName} {sessionOverview.user.familyName}
+          </Text>
+          {sessionOverview.user.email ? (
             <Text as="p" variant="body-sm" className="text-booking-text-muted">
-              Kontroller informasjonen før bekreftelse.
+              {sessionOverview.user.email}
             </Text>
-          </header>
+          ) : null}
+        </OverviewSection>
 
-          <div className="grid gap-2 sm:grid-cols-3">
-            <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong px-3 py-2">
-              <Text as="p" variant="caption" className="uppercase tracking-wide text-booking-text-muted">
-                Tjenester
-              </Text>
-              <Text as="p" variant="body-sm" className="tabular-nums font-semibold text-booking-text">
-                {totalServiceCount}
-              </Text>
-            </div>
-            <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong px-3 py-2">
-              <Text as="p" variant="caption" className="uppercase tracking-wide text-booking-text-muted">
-                Varighet
-              </Text>
-              <Text as="p" variant="body-sm" className="tabular-nums font-semibold text-booking-text">
-                {totalDuration} min
-              </Text>
-            </div>
-            <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong px-3 py-2">
-              <Text as="p" variant="caption" className="uppercase tracking-wide text-booking-text-muted">
-                Totalpris
-              </Text>
-              <Text as="p" variant="body-sm" className="tabular-nums font-semibold text-booking-text">
-                {totalPrice} kr
-              </Text>
-            </div>
-          </div>
+        <OverviewSection title="Behandler" editHref={routes.employee} editLinkClass={editLinkClass}>
+          <Text as="p" variant="body" className="font-semibold text-booking-text">
+            {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
+          </Text>
+        </OverviewSection>
 
-          <div className="space-y-3">
-            <section className="rounded-[var(--radius-booking-card)] bg-booking-surface-subtle p-2.5 md:p-3">
-              <div className="mb-2 flex items-center justify-between gap-3 border-b border-booking-border pb-2">
-                <Text as="p" variant="label">
-                  Tidspunkt
-                </Text>
-                <Link to={routes.selectTime} className="text-xs text-booking-text-muted">
-                  Endre
-                </Link>
-              </div>
-              <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong p-2.5 md:p-3">
-                <KeyValueList
-                  items={[
-                    { label: 'Dato', value: dateTime.full, icon: <Calendar className="size-4" /> },
-                    { label: 'Varighet', value: `${totalDuration} min` },
-                    { label: 'Pris', value: `${totalPrice} kr`, icon: <DollarSign className="size-4" /> },
-                  ]}
-                />
-              </div>
-            </section>
-
-            <div className="grid gap-3 md:grid-cols-2">
-              <section className="rounded-[var(--radius-booking-card)] bg-booking-surface-subtle p-2.5 md:p-3">
-                <div className="mb-2 flex items-center justify-between gap-3 border-b border-booking-border pb-2">
-                  <Text as="p" variant="label">
-                    Kontakt
+        <OverviewSection title="Tjenester" editHref={routes.selectServices} editLinkClass={editLinkClass}>
+          <div className="divide-y divide-booking-border">
+            {sessionOverview.selectedServices.map((item) => (
+              <div key={`${item.serviceGroup.id}-${item.services.id}`} className="flex gap-4 py-2 first:pt-0 last:pb-0">
+                <div className="min-w-0 flex-1">
+                  <Text as="p" variant="body-sm" className="font-medium text-booking-text">
+                    {item.services.name}
+                    {item.quantity > 1 ? ` × ${item.quantity}` : ''}
                   </Text>
-                  <Link to={routes.contact} className="text-xs text-booking-text-muted">
-                    Endre
-                  </Link>
-                </div>
-                <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong p-2.5 md:p-3">
-                  <KeyValueList
-                    layout="stacked"
-                    items={[
-                      {
-                        label: 'Navn',
-                        value: `${sessionOverview.user.givenName} ${sessionOverview.user.familyName}`,
-                        icon: <User className="size-4" />,
-                      },
-                      ...(sessionOverview.user.email
-                        ? [{ label: 'E-post', value: sessionOverview.user.email, icon: <Mail className="size-4" /> }]
-                        : []),
-                    ]}
-                  />
-                </div>
-              </section>
-
-              <section className="rounded-[var(--radius-booking-card)] bg-booking-surface-subtle p-2.5 md:p-3">
-                <div className="mb-2 flex items-center justify-between gap-3 border-b border-booking-border pb-2">
-                  <Text as="p" variant="label">
-                    Behandler
+                  <Text as="p" variant="caption" className="text-booking-text-muted">
+                    {item.services.duration * item.quantity} min
                   </Text>
-                  <Link to={routes.employee} className="text-xs text-booking-text-muted">
-                    Endre
-                  </Link>
                 </div>
-                <div className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong p-2.5 md:p-3">
-                  <div className="flex items-start gap-3">
-                    {sessionOverview.selectedProfile.image ? (
-                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-[var(--radius-booking-field)] bg-booking-surface-muted">
-                        <img
-                          src={sessionOverview.selectedProfile.image.url}
-                          alt={`${sessionOverview.selectedProfile.givenName} ${sessionOverview.selectedProfile.familyName}`}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    ) : null}
-                    <Text as="p" variant="body-sm" className="font-semibold">
-                      {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
-                    </Text>
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            <section className="rounded-[var(--radius-booking-card)] bg-booking-surface-subtle p-2.5 md:p-3">
-              <div className="mb-2 flex items-center justify-between gap-3 border-b border-booking-border pb-2">
-                <Text as="p" variant="label">
-                  Tjenester
+                <Text as="p" variant="body-sm" className="shrink-0 tabular-nums text-booking-text">
+                  {item.services.price * item.quantity} kr
                 </Text>
-                <Link to={routes.selectServices} className="text-xs text-booking-text-muted">
-                  Endre
-                </Link>
               </div>
-              <div className="grid gap-2 md:grid-cols-2">
-                {collapsedServices.map((item) => (
-                  <div
-                    key={`${item.serviceGroup.id}-${item.services.id}`}
-                    className="rounded-[var(--radius-booking-card)] bg-booking-surface-strong p-2.5"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <Text as="p" variant="body-sm" className="truncate text-sm font-medium md:text-base">
-                          {item.services.name}
-                        </Text>
-                        {item.quantity > 1 ? (
-                          <Text as="p" variant="caption" className="text-booking-text-muted">
-                            Antall: {item.quantity}
-                          </Text>
-                        ) : null}
-                      </div>
-                      <Text as="p" variant="body-sm" className="shrink-0 text-sm text-booking-text-muted md:text-base">
-                        <span className="tabular-nums">{item.services.price * item.quantity}</span> kr
-                      </Text>
-                    </div>
-                    <Text as="p" variant="caption" className="mt-0.5 text-booking-text-muted">
-                      <span className="tabular-nums">{item.services.duration * item.quantity}</span> min
-                    </Text>
-                  </div>
-                ))}
-              </div>
-              {additionalServices.length > 0 ? (
-                <div className="mt-2 space-y-2">
-                  {showAllServices ? (
-                    <div id="overview-more-services" className="grid gap-2 md:grid-cols-2">
-                      {additionalServices.map((item) => (
-                        <div
-                          key={`${item.serviceGroup.id}-${item.services.id}`}
-                          className="rounded-[var(--radius-booking-card)] bg-booking-surface-muted p-2.5"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0">
-                              <Text as="p" variant="body-sm" className="truncate text-sm font-medium md:text-base">
-                                {item.services.name}
-                              </Text>
-                              {item.quantity > 1 ? (
-                                <Text as="p" variant="caption" className="text-booking-text-muted">
-                                  Antall: {item.quantity}
-                                </Text>
-                              ) : null}
-                            </div>
-                            <Text
-                              as="p"
-                              variant="body-sm"
-                              className="shrink-0 text-sm text-booking-text-muted md:text-base"
-                            >
-                              <span className="tabular-nums">{item.services.price * item.quantity}</span> kr
-                            </Text>
-                          </div>
-                          <Text as="p" variant="caption" className="mt-0.5 text-booking-text-muted">
-                            <span className="tabular-nums">{item.services.duration * item.quantity}</span> min
-                          </Text>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-between rounded-[var(--radius-booking-control)] bg-booking-surface-strong px-3 py-2 text-left"
-                    onClick={() => setShowAllServices((prev) => !prev)}
-                    aria-expanded={showAllServices}
-                    aria-controls="overview-more-services"
-                  >
-                    <Text as="span" variant="body-sm" className="font-medium">
-                      {showAllServices ? 'Vis færre' : 'Vis flere'}
-                    </Text>
-                    {!showAllServices ? (
-                      <Text as="span" variant="caption" className="text-booking-text-muted">
-                        +{additionalServices.length} flere
-                      </Text>
-                    ) : null}
-                  </button>
-                </div>
-              ) : null}
-            </section>
+            ))}
           </div>
-        </section>
-      </Stack>
+        </OverviewSection>
+
+        <div className="flex items-center justify-between gap-4 border-t-2 border-booking-action/30 bg-booking-action/10 px-4 py-4 md:px-5">
+          <Text as="p" variant="label" className="text-booking-text">
+            Totalt
+          </Text>
+          <div className="text-right">
+            <Text as="p" variant="body" className="tabular-nums font-bold text-booking-text">
+              {totalPrice} kr
+            </Text>
+            <Text as="p" variant="caption" className="text-booking-text-muted">
+              {totalDuration} min
+            </Text>
+          </div>
+        </div>
+      </div>
       <BookingFooterNav>
         <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
           Endre tid
@@ -352,5 +202,31 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
         </BookingActionButton>
       </BookingFooterNav>
     </BookingStepTemplate>
+  );
+}
+
+function OverviewSection({
+  title,
+  editHref,
+  editLinkClass,
+  children,
+}: {
+  title: string;
+  editHref: string;
+  editLinkClass: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="border-b border-booking-border px-4 py-4 md:px-5">
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <Text as="h2" variant="label" className="text-booking-text">
+          {title}
+        </Text>
+        <Link to={editHref} className={editLinkClass}>
+          Endre
+        </Link>
+      </div>
+      {children}
+    </section>
   );
 }

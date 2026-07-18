@@ -62,23 +62,19 @@ export function DateButton({ schedule, isSelected, hasSelectedTime, onClick, var
         )}
       </div>
 
-      <div
-        className={cn(
-          'flex flex-col items-end gap-0.5 rounded-[var(--radius-booking-badge)] px-2.5 py-1',
-          isSelected ? 'bg-booking-action-contrast/20' : 'bg-booking-surface-muted',
-        )}
-      >
+      <div className="flex flex-col items-center gap-1 text-center">
+        <span className={cn('text-xs', isSelected ? 'text-booking-action-contrast/80' : 'text-booking-text-muted')}>
+          ledig
+        </span>
         <span
           className={cn(
-            'font-bold',
-            isCompact ? 'text-sm' : 'text-base',
+            'flex items-center justify-center rounded-full font-bold',
+            isCompact ? 'size-8 text-sm' : 'size-10 text-base',
+            isSelected ? 'bg-booking-action-contrast/20' : 'bg-booking-surface-muted',
             isSelected ? 'text-booking-action-contrast' : 'text-booking-text',
           )}
         >
           {schedule.timeSlots.length}
-        </span>
-        <span className={cn('text-xs', isSelected ? 'text-booking-action-contrast/80' : 'text-booking-text-muted')}>
-          ledig
         </span>
       </div>
     </button>
