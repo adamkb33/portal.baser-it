@@ -103,6 +103,8 @@ import type {
   IdentifyAppointmentSessionUserResponses,
   ResendAppointmentSessionMobileChallengeData,
   ResendAppointmentSessionMobileChallengeResponses,
+  ResumeAppointmentSessionData,
+  ResumeAppointmentSessionResponses,
   SelectAppointmentSessionProfileData,
   SelectAppointmentSessionProfileResponses,
   SelectAppointmentSessionProfileServicesData,
@@ -218,6 +220,15 @@ export class Booking {
   ) {
     return (options.client ?? client).post<SetPendingAppointmentSessionUserResponses, unknown, ThrowOnError>({
       url: '/booking-service/public/appointment-session/{sessionId}/user',
+      ...options,
+    });
+  }
+
+  public static resumeAppointmentSession<ThrowOnError extends boolean = false>(
+    options: Options<ResumeAppointmentSessionData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).post<ResumeAppointmentSessionResponses, unknown, ThrowOnError>({
+      url: '/booking-service/public/appointment-session/{sessionId}/resume',
       ...options,
     });
   }

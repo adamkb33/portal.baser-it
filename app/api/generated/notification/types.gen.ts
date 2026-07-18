@@ -59,6 +59,8 @@ export type ApiMessage = {
     | 'SESSION_ALREADY_ATTACHED'
     | 'SESSION_USER_ATTACHED'
     | 'SESSION_REQUIREMENTS'
+    | 'SESSION_RESUMED'
+    | 'SESSION_NOT_RESUMABLE'
     | 'SESSION_EXPIRED'
     | 'REQUIREMENTS_UNAVAILABLE'
     | 'CONTACT_VALIDATION_FAILED'
@@ -795,6 +797,21 @@ export type UserDto = {
   provider?: 'LOCAL' | 'GOOGLE' | 'FACEBOOK';
   hasPassword: boolean;
   accountStatus: 'GUEST' | 'FULL';
+};
+
+export type ApiResponsePublicResumeAppointmentSessionResponseDto = {
+  success: boolean;
+  message: ApiMessage;
+  data?: PublicResumeAppointmentSessionResponseDto;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
+export type PublicResumeAppointmentSessionResponseDto = {
+  sessionId: string;
+  userId: number;
+  authTokens: AuthenticationTokenDto;
 };
 
 export type ApiResponsePublicMobileChallengeResponseDto = {
