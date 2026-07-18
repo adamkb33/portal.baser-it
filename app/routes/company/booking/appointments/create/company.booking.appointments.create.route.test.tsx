@@ -49,7 +49,8 @@ vi.mock('~/routes/company/booking/_components/date-time-selector', () => ({
   DateTimeSelector: () => null,
 }));
 
-vi.mock('~/routes/company/_lib/flash-message.server', () => ({
+vi.mock('~/lib/flash-message.server', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/lib/flash-message.server')>()),
   redirectWithSuccess: mocks.redirectWithSuccess,
 }));
 
@@ -214,7 +215,7 @@ describe('company.booking.appointments.create.route', () => {
 
     const result = await action({ request } as never);
 
-    expect(result).toEqual({
+    expect((result as { data: unknown }).data).toEqual({
       error: 'Email and mobile belong to different customers. Please use only one or correct contact info.',
     });
   });
@@ -239,7 +240,7 @@ describe('company.booking.appointments.create.route', () => {
 
     const result = await action({ request } as never);
 
-    expect(result).toEqual({
+    expect((result as { data: unknown }).data).toEqual({
       error: 'Valgt tidspunkt ble nettopp opptatt. Velg et annet tidspunkt.',
     });
   });

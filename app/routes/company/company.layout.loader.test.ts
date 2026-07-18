@@ -10,7 +10,7 @@ vi.mock('~/lib/auth.utils', () => ({
   getAuthPayloadFromRequest: mocks.getAuthPayloadFromRequest,
 }));
 
-vi.mock('~/routes/company/_lib/flash-message.server', () => ({
+vi.mock('~/lib/flash-message.server', () => ({
   redirectWithInfo: mocks.redirectWithInfo,
   redirectWithError: mocks.redirectWithError,
 }));

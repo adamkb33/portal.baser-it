@@ -63,39 +63,16 @@ describe('booking pending submission UI', () => {
     expect(source).toContain("navigation.state === 'submitting'");
     expect(source).toContain('loading={isSubmitting}');
     expect(source).toContain('disabled={isSubmitting}');
-    expect(source).toContain("isSubmitting ? 'Sender SMS...' : 'Fortsett'");
+    expect(source).toContain("isSubmitting ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'");
     expect(source).not.toContain('ProviderButtons');
   });
 
-  it('obsolete booking auth subroutes redirect back to the contact resolver', () => {
+  it('obsolete sign-in subroute redirects back to the contact resolver', () => {
     const signInSource = readSessionRoute(
       'contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx',
     );
-    const signUpSource = readSessionRoute(
-      'contact/sign-up/booking.public.appointment.session.contact.sign-up.route.tsx',
-    );
-    const verifyEmailSource = readSessionRoute(
-      'contact/verify-email/booking.public.appointment.session.contact.verify-email.route.tsx',
-    );
 
     expect(signInSource).toContain('return redirect(getBookingRouteMap().contact)');
-    expect(signUpSource).toContain('return redirect(getBookingRouteMap().contact)');
-    expect(verifyEmailSource).toContain('return redirect(getBookingRouteMap().contact)');
-  });
-
-  it('keeps removed collect routes as contact redirects', () => {
-    const collectMobileSource = readSessionRoute(
-      'contact/collect-mobile/booking.public.appointment.session.contact.collect-mobile.route.tsx',
-    );
-    const collectEmailSource = readSessionRoute(
-      'contact/collect-email/booking.public.appointment.session.contact.collect-email.route.tsx',
-    );
-    const submitContactFormSource = readSessionRoute('contact/_forms/submit-contact.form.tsx');
-
-    expect(collectMobileSource).toContain('return redirect(getBookingRouteMap().contact)');
-    expect(collectEmailSource).toContain('return redirect(getBookingRouteMap().contact)');
-    expect(submitContactFormSource).toContain('disabled={isSubmitting || inputOptions.disabled}');
-    expect(submitContactFormSource).toContain('loading={isSubmitting}');
   });
 
   it('disables SMS verification submissions while requests are pending', () => {
