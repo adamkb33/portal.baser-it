@@ -218,9 +218,10 @@ export async function action({ request }: Route.ActionArgs) {
           session,
           context: { hasEmail: Boolean(parsed.data.email) },
         },
-        () =>
+        async () =>
           PublicAppointmentSessionController.identifyAppointmentSessionUser({
             path: { sessionId: session.sessionId },
+            headers: await getAuthHeader(request),
             body: {
               givenName: parsed.data.givenName,
               familyName: parsed.data.familyName,

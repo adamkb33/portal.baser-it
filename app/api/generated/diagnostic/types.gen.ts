@@ -832,9 +832,9 @@ export type ApiResponsePublicIdentifyResponseDto = {
 };
 
 export type PublicIdentifyResponseDto = {
-  challengeId: string;
-  maskedMobile: string;
-  expiresAt: string;
+  challengeId?: string;
+  maskedMobile?: string;
+  expiresAt?: string;
   resendAvailableAt?: string;
   nextStep: 'CONTACT_FORM' | 'VERIFY_MOBILE' | 'DONE';
 };
