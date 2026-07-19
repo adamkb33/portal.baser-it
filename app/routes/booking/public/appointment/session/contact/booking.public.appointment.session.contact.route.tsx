@@ -294,6 +294,10 @@ export default function BookingSessionContactPage({ loaderData, actionData }: Ro
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== 'idle';
   const routes = getBookingRouteMap();
+  const pendingIntent = isSubmitting ? String(navigation.formData?.get('intent') ?? '') : '';
+  const pendingDestination = isSubmitting
+    ? `${navigation.location?.pathname ?? ''}${navigation.location?.search ?? ''}`
+    : '';
   const errorMessage =
     actionData && typeof actionData === 'object' && 'error' in actionData ? String(actionData.error) : null;
 
@@ -332,11 +336,22 @@ export default function BookingSessionContactPage({ loaderData, actionData }: Ro
         ) : null}
 
         {contactState === 'RESUME' ? (
-          <ResumeCard resumeUser={resumeUser} isSubmitting={isSubmitting} />
+          <ResumeCard resumeUser={resumeUser} isSubmitting={isSubmitting} isClearing={pendingIntent === 'clear'} />
         ) : contactState === 'CONTINUE_AS' ? (
-          <ContinueAsCard authenticatedUser={authenticatedUser} routes={routes} isSubmitting={isSubmitting} />
+          <ContinueAsCard
+            authenticatedUser={authenticatedUser}
+            routes={routes}
+            isSubmitting={isSubmitting}
+            pendingIntent={pendingIntent}
+            pendingDestination={pendingDestination}
+          />
         ) : (
-          <ContactForm routes={routes} isSubmitting={isSubmitting} />
+          <ContactForm
+            routes={routes}
+            isSubmitting={isSubmitting}
+            pendingIntent={pendingIntent}
+            pendingDestination={pendingDestination}
+          />
         )}
       </div>
 
@@ -345,11 +360,21 @@ export default function BookingSessionContactPage({ loaderData, actionData }: Ro
         <Form method="post">
           <input type="hidden" name="intent" value="resume" readOnly />
           <BookingFooterNav>
-            <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
+            <BookingLink
+              to={routes.selectTime}
+              variant="secondary"
+              loading={pendingDestination === routes.selectTime}
+              disabled={isSubmitting}
+            >
               Tilbake
             </BookingLink>
-            <BookingActionButton type="submit" variant="primary" loading={isSubmitting} disabled={isSubmitting}>
-              Fortsett til booking
+            <BookingActionButton
+              type="submit"
+              variant="primary"
+              loading={pendingIntent === 'resume'}
+              disabled={isSubmitting}
+            >
+              {pendingIntent === 'resume' ? 'Går videre...' : 'Fortsett til booking'}
             </BookingActionButton>
           </BookingFooterNav>
         </Form>
@@ -374,9 +399,11 @@ function AvatarInitial({ name }: { name: string | null }) {
 function ResumeCard({
   resumeUser,
   isSubmitting,
+  isClearing,
 }: {
   resumeUser: { displayName: string | null; maskedMobile: string | null } | null;
   isSubmitting: boolean;
+  isClearing: boolean;
 }) {
   return (
     <div className={`${CARD_CLASS} overflow-hidden`}>
@@ -410,7 +437,7 @@ function ResumeCard({
             disabled={isSubmitting}
             className="text-sm font-semibold text-booking-action hover:underline disabled:opacity-50"
           >
-            Endre
+            {isClearing ? 'Endrer...' : 'Endre'}
           </button>
         </Form>
       </div>
@@ -424,10 +451,14 @@ function ContinueAsCard({
   authenticatedUser,
   routes,
   isSubmitting,
+  pendingIntent,
+  pendingDestination,
 }: {
   authenticatedUser: { displayName: string | null } | null;
   routes: ReturnType<typeof getBookingRouteMap>;
   isSubmitting: boolean;
+  pendingIntent: string;
+  pendingDestination: string;
 }) {
   const name = authenticatedUser?.displayName || null;
   return (
@@ -452,6 +483,7 @@ function ContinueAsCard({
             <BookingLink
               to={`${routes.contact}?form=1`}
               variant="inline"
+              loading={pendingDestination === `${routes.contact}?form=1`}
               disabled={isSubmitting}
               className="min-h-0 rounded-md border-booking-action/40 bg-booking-surface-raised/60 px-2 py-1 text-sm no-underline"
             >
@@ -461,6 +493,7 @@ function ContinueAsCard({
             <BookingLink
               to={routes.contactSignIn}
               variant="inline"
+              loading={isSubmitting && !pendingIntent && pendingDestination !== `${routes.contact}?form=1`}
               disabled={isSubmitting}
               className="min-h-0 rounded-md border-booking-action/40 bg-booking-surface-raised/60 px-2 py-1 text-sm no-underline"
             >
@@ -471,11 +504,21 @@ function ContinueAsCard({
       </div>
 
       <BookingFooterNav>
-        <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
+        <BookingLink
+          to={routes.selectTime}
+          variant="secondary"
+          loading={pendingDestination === routes.selectTime}
+          disabled={isSubmitting}
+        >
           Tilbake
         </BookingLink>
-        <BookingActionButton type="submit" variant="primary" loading={isSubmitting} disabled={isSubmitting}>
-          {name ? `Fortsett som ${name}` : 'Fortsett'}
+        <BookingActionButton
+          type="submit"
+          variant="primary"
+          loading={pendingIntent === 'attach'}
+          disabled={isSubmitting}
+        >
+          {pendingIntent === 'attach' ? 'Går videre...' : name ? `Fortsett som ${name}` : 'Fortsett'}
         </BookingActionButton>
       </BookingFooterNav>
     </Form>
@@ -487,9 +530,13 @@ function ContinueAsCard({
 function ContactForm({
   routes,
   isSubmitting,
+  pendingIntent,
+  pendingDestination,
 }: {
   routes: ReturnType<typeof getBookingRouteMap>;
   isSubmitting: boolean;
+  pendingIntent: string;
+  pendingDestination: string;
 }) {
   const [showEmail, setShowEmail] = useState(false);
 
@@ -573,8 +620,15 @@ function ContactForm({
         <div className="border-t border-booking-border pt-4">
           <Text as="p" variant="caption" className="text-booking-text-muted">
             Har du allerede en konto?{' '}
-            <BookingLink to={routes.contactSignIn} variant="inline">
-              Logg inn
+            <BookingLink
+              to={routes.contactSignIn}
+              variant="inline"
+              loading={isSubmitting && !pendingIntent && pendingDestination !== routes.selectTime}
+              disabled={isSubmitting}
+            >
+              {isSubmitting && !pendingIntent && pendingDestination !== routes.selectTime
+                ? 'Åpner innlogging...'
+                : 'Logg inn'}
             </BookingLink>
           </Text>
         </div>
@@ -582,11 +636,21 @@ function ContactForm({
 
       {/* Footer INSIDE the form — the submit needs no form="id" attribute. */}
       <BookingFooterNav>
-        <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
+        <BookingLink
+          to={routes.selectTime}
+          variant="secondary"
+          loading={pendingDestination === routes.selectTime}
+          disabled={isSubmitting}
+        >
           Tilbake
         </BookingLink>
-        <BookingActionButton type="submit" variant="primary" loading={isSubmitting} disabled={isSubmitting}>
-          {isSubmitting ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'}
+        <BookingActionButton
+          type="submit"
+          variant="primary"
+          loading={pendingIntent === 'identify'}
+          disabled={isSubmitting}
+        >
+          {pendingIntent === 'identify' ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'}
         </BookingActionButton>
       </BookingFooterNav>
     </Form>

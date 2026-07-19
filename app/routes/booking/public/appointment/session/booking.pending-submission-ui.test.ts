@@ -62,9 +62,12 @@ describe('booking pending submission UI', () => {
 
     expect(source).toContain('useNavigation');
     expect(source).toContain("navigation.state !== 'idle'");
-    expect(source).toContain('loading={isSubmitting}');
+    expect(source).toContain("loading={pendingIntent === 'identify'}");
     expect(source).toContain('disabled={isSubmitting}');
-    expect(source).toContain("isSubmitting ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'");
+    expect(source).toContain("pendingIntent === 'identify' ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'");
+    expect(source).toContain("? 'Åpner innlogging...'");
+    expect(source).toContain("loading={pendingIntent === 'attach'}");
+    expect(source).toContain("loading={pendingIntent === 'resume'}");
     expect(source).not.toContain('ProviderButtons');
   });
 
@@ -73,7 +76,7 @@ describe('booking pending submission UI', () => {
       'contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx',
     );
 
-    expect(signInSource).toContain("return redirect(ROUTES_MAP['auth.sign-in'].href)");
+    expect(signInSource).toContain('return redirect(signInHrefBackToContact())');
   });
 
   it('disables SMS verification submissions while requests are pending', () => {
@@ -120,10 +123,12 @@ describe('booking pending submission UI', () => {
     expect(selectTimeSource).toContain('disabled={isSubmitting}');
     expect(selectTimeSource).toContain("const isSubmitting = navigation.state !== 'idle' || isSelectingTime");
     expect(selectTimeSource).toContain(
-      '<BookingLink to={routes.contact} variant="primary" disabled={isSubmitting} reloadDocument>',
+      '<BookingLink to={routes.contact} variant="primary" loading={isContinuing} disabled={isSubmitting}>',
     );
-    expect(bookingLinkSource).toContain('aria-disabled={disabled}');
-    expect(bookingLinkSource).toContain("disabled && 'pointer-events-none cursor-not-allowed opacity-50'");
+    expect(selectTimeSource).toContain("isContinuing ? 'Går videre...' : 'Fortsett'");
+    expect(bookingLinkSource).toContain('aria-busy={loading || undefined}');
+    expect(bookingLinkSource).toContain('aria-disabled={isDisabled}');
+    expect(bookingLinkSource).toContain("isDisabled && 'pointer-events-none cursor-not-allowed opacity-50'");
     expect(bookingActionStylesSource).toContain('export const bookingActionBaseClass');
     expect(overviewSource).toContain('loading={isSubmitting}');
     expect(overviewSource).toContain('disabled={isSubmitting}');

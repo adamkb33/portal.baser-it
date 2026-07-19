@@ -36,13 +36,23 @@ function redactIdentifier(value: string) {
   return `***${digitsOnly.slice(-4)}`;
 }
 
-function buildSignInHref(redirectUrl?: string) {
-  if (!redirectUrl) {
-    return ROUTES_MAP['auth.sign-in'].href;
-  }
+function buildSignInHref(redirectUrl?: string, returnTo?: string | null) {
+  const params = new URLSearchParams();
+  if (redirectUrl) params.set('redirectUrl', redirectUrl);
+  if (returnTo) params.set('returnTo', returnTo);
 
-  const params = new URLSearchParams({ redirectUrl });
-  return `${ROUTES_MAP['auth.sign-in'].href}?${params.toString()}`;
+  const search = params.toString();
+  return search ? `${ROUTES_MAP['auth.sign-in'].href}?${search}` : ROUTES_MAP['auth.sign-in'].href;
+}
+
+// Only ever a relative, same-origin path — never follow this off-site.
+function getSafeReturnTo(value: string | null): string | null {
+  return value && value.startsWith('/') && !value.startsWith('//') ? value : null;
+}
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  return { returnTo: getSafeReturnTo(url.searchParams.get('returnTo')) };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -52,6 +62,7 @@ export async function action({ request }: Route.ActionArgs) {
   const emailOrMobile = String(formData.get('emailOrMobile') || '');
   const password = String(formData.get('password') || '');
   const redirectUrl = String(formData.get('redirectUrl') || '');
+  const returnTo = getSafeReturnTo(String(formData.get('returnTo') || ''));
   const isGoogleLogin = provider === 'GOOGLE';
 
   logger.info('[auth.sign-in] Action started', {
@@ -69,7 +80,7 @@ export async function action({ request }: Route.ActionArgs) {
     });
     return redirectWithError(
       request,
-      buildSignInHref(redirectUrl || undefined),
+      buildSignInHref(redirectUrl || undefined, returnTo),
       'Kunne ikke logge inn med Google. Prøv igjen.',
     );
   }
@@ -98,6 +109,7 @@ export async function action({ request }: Route.ActionArgs) {
       const headers = new Headers();
       let resolvedNextStepHref = nextStepHref;
       let authTokens = payload.authTokens ?? null;
+      let forcedCompanyContextSelection = false;
 
       if (payload.authTokens) {
         if (payload.nextStep === 'DONE') {
@@ -125,6 +137,7 @@ export async function action({ request }: Route.ActionArgs) {
                 }
               } else if (companyContexts.length > 1) {
                 resolvedNextStepHref = ROUTES_MAP['user.company-context'].href;
+                forcedCompanyContextSelection = true;
               }
             } catch (companyContextError) {
               logger.warn('[auth.sign-in] Failed to resolve company context after DONE', {
@@ -150,6 +163,12 @@ export async function action({ request }: Route.ActionArgs) {
 
       if (verificationCookieHeader) {
         headers.append('Set-Cookie', verificationCookieHeader);
+      }
+
+      // Send them back to exactly where they were, but never skip a required step
+      // (verification, company selection) to get there.
+      if (payload.nextStep === 'DONE' && !forcedCompanyContextSelection && returnTo) {
+        resolvedNextStepHref = returnTo;
       }
 
       logger.info('[auth.sign-in] Redirecting to auth next step', {
@@ -184,11 +203,11 @@ export async function action({ request }: Route.ActionArgs) {
       status: 400,
       error,
     });
-    return redirectWithError(request, buildSignInHref(redirectUrl || undefined), message);
+    return redirectWithError(request, buildSignInHref(redirectUrl || undefined, returnTo), message);
   }
 }
 
-export default function AuthSignIn({ actionData }: Route.ComponentProps) {
+export default function AuthSignIn({ loaderData, actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
@@ -254,6 +273,7 @@ export default function AuthSignIn({ actionData }: Route.ComponentProps) {
       bottom={<span>Ved å logge inn godtar du gjeldende vilkår for bruk av Pitell Portal.</span>}
     >
       <Form method="post" aria-busy={isSubmitting}>
+        <input type="hidden" name="returnTo" value={loaderData.returnTo ?? ''} />
         <Stack space="md">
           <FormField
             id="emailOrMobile"

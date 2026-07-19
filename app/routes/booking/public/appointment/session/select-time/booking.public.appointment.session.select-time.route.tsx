@@ -133,6 +133,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const startTimeFetcher = useFetcher();
   const isSelectingTime = startTimeFetcher.state !== 'idle';
   const isSubmitting = navigation.state !== 'idle' || isSelectingTime;
+  const isContinuing = navigation.state !== 'idle' && navigation.location?.pathname === routes.contact;
 
   const selectedStartTime = session.selectedStartTime ?? '';
   const pendingStartTime = startTimeFetcher.formData?.get('startTime') as string | null;
@@ -276,9 +277,9 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
           Tilbake
         </BookingLink>
         {selectedStartTime ? (
-          <BookingLink to={routes.contact} variant="primary" disabled={isSubmitting} reloadDocument>
+          <BookingLink to={routes.contact} variant="primary" loading={isContinuing} disabled={isSubmitting}>
             <Check className="size-4" />
-            Fortsett
+            {isContinuing ? 'Går videre...' : 'Fortsett'}
           </BookingLink>
         ) : (
           <BookingActionButton type="button" variant="primary" disabled>
