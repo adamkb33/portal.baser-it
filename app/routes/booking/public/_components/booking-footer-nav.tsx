@@ -6,6 +6,8 @@ export interface BookingFooterNavProps extends React.HTMLAttributes<HTMLElement>
   columns?: 1 | 2 | 3;
   /** CSS selector for the page footer the nav should avoid overlapping. */
   avoidSelector?: string;
+  /** Optional message strip above the buttons — stays visible since the nav is fixed. */
+  message?: React.ReactNode;
 }
 
 const gridClassByColumns: Record<NonNullable<BookingFooterNavProps['columns']>, string> = {
@@ -21,6 +23,7 @@ export function BookingFooterNav({
   columns = 2,
   className,
   avoidSelector = 'footer',
+  message,
   ...props
 }: BookingFooterNavProps) {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
@@ -121,6 +124,11 @@ export function BookingFooterNav({
           )}
           {...props}
         >
+          {message && (
+            <div className="mb-2 bg-transparent px-3 py-1.5 text-center text-sm font-normal text-booking-text-muted">
+              {message}
+            </div>
+          )}
           <div className={cn('grid w-full gap-2', gridClassByColumns[columns])}>{children}</div>
         </nav>
       </div>

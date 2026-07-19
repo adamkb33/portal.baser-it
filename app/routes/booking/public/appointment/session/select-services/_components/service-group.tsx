@@ -7,6 +7,7 @@ type ServiceGroupProps = {
   selectedServiceQuantities: Map<number, number>;
   onSetServiceQuantity: (serviceId: number, nextQuantity: number) => void;
   onViewImages: (service: GroupedServiceDto) => void;
+  disableIncrement?: boolean;
 };
 
 export function ServiceGroup({
@@ -14,6 +15,7 @@ export function ServiceGroup({
   selectedServiceQuantities,
   onSetServiceQuantity,
   onViewImages,
+  disableIncrement,
 }: ServiceGroupProps) {
   const selectedInGroup = group.services.reduce(
     (sum, service) => sum + (selectedServiceQuantities.get(service.id) ?? 0),
@@ -79,6 +81,7 @@ export function ServiceGroup({
                     quantity={quantity}
                     onQuantityChange={(nextQuantity) => onSetServiceQuantity(service.id, nextQuantity)}
                     onViewImages={() => onViewImages(service)}
+                    disableIncrement={disableIncrement}
                   />
                 );
               })}

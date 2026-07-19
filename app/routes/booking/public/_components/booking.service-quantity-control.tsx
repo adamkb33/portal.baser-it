@@ -5,13 +5,21 @@ type ServiceQuantityControlProps = {
   quantity: number;
   onChange: (nextQuantity: number) => void;
   className?: string;
+  /** Disables only the actions that would increase the total (select / +), never removal. */
+  disableIncrement?: boolean;
 };
 
-export function ServiceQuantityControl({ quantity, onChange, className }: ServiceQuantityControlProps) {
+export function ServiceQuantityControl({
+  quantity,
+  onChange,
+  className,
+  disableIncrement = false,
+}: ServiceQuantityControlProps) {
   if (quantity <= 0) {
     return (
       <Button
         type="button"
+        disabled={disableIncrement}
         onClick={(event) => {
           event.stopPropagation();
           onChange(1);
@@ -42,6 +50,7 @@ export function ServiceQuantityControl({ quantity, onChange, className }: Servic
         </Button>
         <Button
           type="button"
+          disabled={disableIncrement}
           onClick={(event) => {
             event.stopPropagation();
             onChange(2);
@@ -74,6 +83,7 @@ export function ServiceQuantityControl({ quantity, onChange, className }: Servic
         type="button"
         variant="booking-secondary"
         className="w-full"
+        disabled={disableIncrement}
         aria-label="Øk antall"
         onClick={(event) => {
           event.stopPropagation();

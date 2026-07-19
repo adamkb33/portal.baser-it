@@ -19,6 +19,7 @@ import { ServiceImageDialog } from './_components/service-image-dialog';
 import type { Route } from './+types/booking.public.appointment.session.select-services.route';
 
 const ROUTE_ID = 'booking.public.appointment.session.select-services';
+const MAX_TOTAL_SERVICES = 5;
 
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'select-services' }, async () => {
@@ -170,8 +171,20 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
       .filter((group) => group.services.length > 0);
   }, [serviceGroups, searchQuery]);
 
+  const totalSelectedQuantity = useMemo(
+    () => Array.from(selectedServiceQuantities.values()).reduce((sum, quantity) => sum + quantity, 0),
+    [selectedServiceQuantities],
+  );
+  const atServiceLimit = totalSelectedQuantity >= MAX_TOTAL_SERVICES;
+
   const setServiceQuantity = (serviceId: number, nextQuantity: number) => {
     setSelectedServiceQuantities((prev) => {
+      const currentQuantity = prev.get(serviceId) ?? 0;
+      const nextTotal = totalSelectedQuantity - currentQuantity + nextQuantity;
+      if (nextQuantity > currentQuantity && nextTotal > MAX_TOTAL_SERVICES) {
+        return prev;
+      }
+
       const next = new Map(prev);
       if (nextQuantity <= 0) {
         next.delete(serviceId);
@@ -238,6 +251,7 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
                   selectedServiceQuantities={selectedServiceQuantities}
                   onSetServiceQuantity={setServiceQuantity}
                   onViewImages={setDialogService}
+                  disableIncrement={atServiceLimit}
                 />
               ))
           ) : (
@@ -264,8 +278,10 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
           <input key={serviceId} type="hidden" name={`serviceQuantity:${serviceId}`} value={quantity} />
         ))}
       </Form>
-      <BookingFooterNav>
-        <BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting}>
+      <BookingFooterNav
+        message={atServiceLimit ? 'Du har valgt maks 5 tjenester. Fjern en for å velge en annen.' : undefined}
+      >
+        <BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting} className="invisible">
           Tilbake
         </BookingLink>
         <BookingActionButton
