@@ -26,6 +26,7 @@ describe('booking pending submission UI', () => {
 
     expect(markup).toContain('disabled=""');
     expect(markup).toContain('aria-busy="true"');
+    expect(markup).toContain('animate-spin');
     expect(markup).toContain('Submit booking');
   });
 
@@ -110,8 +111,9 @@ describe('booking pending submission UI', () => {
     expect(employeeSource).toContain('<BookingActionButton type="button" variant="primary" disabled>');
     expect(selectServicesSource).toContain('loading={isSubmitting}');
     expect(selectServicesSource).toContain('disabled={!hasSelections || isSubmitting}');
+    expect(selectServicesSource).toContain("isSubmitting ? 'Finner ledige tider...' : 'Fortsett'");
     expect(selectServicesSource).toContain(
-      '<BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting}>',
+      '<BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting} className="invisible">',
     );
     expect(selectTimeSource).toContain('disabled={isSubmitting}');
     expect(selectTimeSource).toContain(

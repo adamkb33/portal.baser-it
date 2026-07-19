@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Loader2 } from 'lucide-react';
 import { cn } from '~/ui';
 import {
   bookingActionBaseClass,
@@ -37,6 +38,7 @@ export const BookingActionButton = React.forwardRef<HTMLButtonElement, BookingAc
         )}
         {...props}
       >
+        {loading && <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden="true" />}
         {children}
       </button>
     );

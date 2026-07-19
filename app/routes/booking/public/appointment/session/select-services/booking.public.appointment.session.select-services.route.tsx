@@ -301,7 +301,7 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
           disabled={!hasSelections || isSubmitting}
         >
           <Sparkles className="size-4" />
-          Fortsett
+          {isSubmitting ? 'Finner ledige tider...' : 'Fortsett'}
         </BookingActionButton>
       </BookingFooterNav>
     </BookingStepTemplate>

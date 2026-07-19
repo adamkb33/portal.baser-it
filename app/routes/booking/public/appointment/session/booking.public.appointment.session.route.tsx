@@ -48,6 +48,10 @@ export async function loader(args: Route.LoaderArgs) {
 
 async function sessionLoader(args: Route.LoaderArgs) {
   const routes = getBookingRouteMap();
+  // Tracked outside the try block so the catch-all below can tell whether a valid
+  // session already existed before something failed — if it did, recovery must stay
+  // inside that session/company rather than ejecting to the company picker.
+  let session: AppointmentSessionDto | null = null;
 
   try {
     const url = new URL(args.request.url);
@@ -128,7 +132,7 @@ async function sessionLoader(args: Route.LoaderArgs) {
       return redirect(routes.employee, { headers });
     }
 
-    const session = sessionResult.status === 'found' ? sessionResult.session : null;
+    session = sessionResult.status === 'found' ? sessionResult.session : null;
 
     if (session) {
       // Only switch companies when the URL gives us a genuinely different, valid companyId.
@@ -205,6 +209,13 @@ async function sessionLoader(args: Route.LoaderArgs) {
   } catch (error: unknown) {
     if (error instanceof Response) {
       throw error;
+    }
+
+    // A session/company already existed before this failed — keep them inside it
+    // (its own guard will cascade to the picker if the session turns out to be gone too)
+    // instead of ejecting straight to the company picker.
+    if (session) {
+      return redirectWithError(args.request, routes.employee, 'Noe gikk galt. Prøv igjen.');
     }
 
     return redirectWithError(args.request, routes.appointment, 'Noe gikk galt under oppstart av booking. Prøv igjen.');
