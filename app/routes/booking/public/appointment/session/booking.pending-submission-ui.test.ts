@@ -68,12 +68,12 @@ describe('booking pending submission UI', () => {
     expect(source).not.toContain('ProviderButtons');
   });
 
-  it('obsolete sign-in subroute redirects back to the contact resolver', () => {
+  it('"log in with a different account" sends the browser to real sign-in, not back into the same session', () => {
     const signInSource = readSessionRoute(
       'contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx',
     );
 
-    expect(signInSource).toContain('return redirect(getBookingRouteMap().contact)');
+    expect(signInSource).toContain("return redirect(ROUTES_MAP['auth.sign-in'].href)");
   });
 
   it('disables SMS verification submissions while requests are pending', () => {
@@ -111,6 +111,7 @@ describe('booking pending submission UI', () => {
     expect(employeeSource).toContain('<BookingActionButton type="button" variant="primary" disabled>');
     expect(selectServicesSource).toContain('loading={isSubmitting}');
     expect(selectServicesSource).toContain('disabled={!hasSelections || isSubmitting}');
+    expect(selectServicesSource).toContain("const isSubmitting = navigation.state !== 'idle'");
     expect(selectServicesSource).toContain("isSubmitting ? 'Finner ledige tider...' : 'Fortsett'");
     expect(selectServicesSource).toContain(
       '<BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting} className="invisible">',

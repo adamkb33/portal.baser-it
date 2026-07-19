@@ -126,7 +126,7 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
   const session = loaderData.session;
   const routes = getBookingRouteMap();
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state !== 'idle';
 
   const [selectedServiceQuantities, setSelectedServiceQuantities] = useState<Map<number, number>>(new Map());
   const [searchQuery, setSearchQuery] = useState('');
