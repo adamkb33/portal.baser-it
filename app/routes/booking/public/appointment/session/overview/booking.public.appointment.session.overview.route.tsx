@@ -105,7 +105,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function BookingOverviewPage({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state !== 'idle';
   const routes = getBookingRouteMap();
 
   if (!loaderData.sessionOverview) {

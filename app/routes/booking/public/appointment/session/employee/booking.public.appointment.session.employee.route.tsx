@@ -134,7 +134,7 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
   const selectedProfileId = loaderData.selectedProfileId;
   const routes = getBookingRouteMap();
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state !== 'idle';
   const submittingProfileId = navigation.formData?.get('selectedProfileId');
 
   return (

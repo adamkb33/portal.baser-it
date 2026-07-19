@@ -57,11 +57,11 @@ describe('booking pending submission UI', () => {
     );
   });
 
-  it('disables contact landing submissions while React Router navigation is submitting', () => {
+  it('disables contact landing submissions through submission and redirect loading', () => {
     const source = readSessionRoute('contact/booking.public.appointment.session.contact.route.tsx');
 
     expect(source).toContain('useNavigation');
-    expect(source).toContain("navigation.state === 'submitting'");
+    expect(source).toContain("navigation.state !== 'idle'");
     expect(source).toContain('loading={isSubmitting}');
     expect(source).toContain('disabled={isSubmitting}');
     expect(source).toContain("isSubmitting ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'");
@@ -81,7 +81,7 @@ describe('booking pending submission UI', () => {
       'contact/verify-mobile/booking.public.appointment.session.contact.verify-mobile.route.tsx',
     );
 
-    expect(verifyMobileSource).toContain("const isSubmitting = navigation.state === 'submitting'");
+    expect(verifyMobileSource).toContain("const isSubmitting = navigation.state !== 'idle'");
     expect(verifyMobileSource).toContain("const isSendingCode = isSubmitting && submittingIntent === 'resend'");
     expect(verifyMobileSource).toContain('disabled={code.length !== CODE_LENGTH || isSubmitting}');
     expect(verifyMobileSource).toContain('loading={isVerifyingCode}');
@@ -105,6 +105,7 @@ describe('booking pending submission UI', () => {
 
     expect(profileCardSource).toContain('loading={isSubmittingProfile}');
     expect(profileCardSource).toContain('disabled={isSubmitting}');
+    expect(employeeSource).toContain("const isSubmitting = navigation.state !== 'idle'");
     expect(employeeSource).toContain(
       '<BookingLink to={routes.selectServices} variant="primary" disabled={isSubmitting}>',
     );
@@ -117,6 +118,7 @@ describe('booking pending submission UI', () => {
       '<BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting} className="invisible">',
     );
     expect(selectTimeSource).toContain('disabled={isSubmitting}');
+    expect(selectTimeSource).toContain("const isSubmitting = navigation.state !== 'idle' || isSelectingTime");
     expect(selectTimeSource).toContain(
       '<BookingLink to={routes.contact} variant="primary" disabled={isSubmitting} reloadDocument>',
     );
@@ -125,6 +127,19 @@ describe('booking pending submission UI', () => {
     expect(bookingActionStylesSource).toContain('export const bookingActionBaseClass');
     expect(overviewSource).toContain('loading={isSubmitting}');
     expect(overviewSource).toContain('disabled={isSubmitting}');
+    expect(overviewSource).toContain("const isSubmitting = navigation.state !== 'idle'");
+  });
+
+  it('keeps cancellation actions pending through redirect loading', () => {
+    const cancellationSource = readWorkspaceFile(
+      'app/routes/booking/public/appointment/cancel/booking.public.appointment.cancel.route.tsx',
+    );
+    const cancellationByIdSource = readWorkspaceFile(
+      'app/routes/booking/public/appointment/cancel-by-id/booking.public.appointment.cancel-by-id.route.tsx',
+    );
+
+    expect(cancellationSource).toContain("const isSubmitting = navigation.state !== 'idle'");
+    expect(cancellationByIdSource).toContain("const isSubmitting = navigation.state !== 'idle'");
   });
 
   it('saves time selection through one visible route-owned form and continues with a link', () => {

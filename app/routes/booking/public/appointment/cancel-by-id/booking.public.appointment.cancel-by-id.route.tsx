@@ -175,7 +175,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state !== 'idle';
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   if (loaderData.error || !loaderData.appointment) {

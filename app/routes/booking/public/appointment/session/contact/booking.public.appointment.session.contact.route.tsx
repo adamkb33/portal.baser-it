@@ -292,7 +292,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function BookingSessionContactPage({ loaderData, actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state !== 'idle';
   const routes = getBookingRouteMap();
   const errorMessage =
     actionData && typeof actionData === 'object' && 'error' in actionData ? String(actionData.error) : null;

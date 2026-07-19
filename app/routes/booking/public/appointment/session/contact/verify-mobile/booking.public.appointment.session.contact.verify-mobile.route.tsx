@@ -185,7 +185,7 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
   const navigation = useNavigation();
   const [code, setCode] = React.useState('');
   const routes = getBookingRouteMap();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state !== 'idle';
   const submittingIntent = navigation.formData?.get('intent');
   const isVerifyingCode = isSubmitting && submittingIntent === 'verify';
   const isSendingCode = isSubmitting && submittingIntent === 'resend';

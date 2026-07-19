@@ -132,7 +132,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const revalidator = useRevalidator();
   const startTimeFetcher = useFetcher();
   const isSelectingTime = startTimeFetcher.state !== 'idle';
-  const isSubmitting = navigation.state === 'submitting' || isSelectingTime;
+  const isSubmitting = navigation.state !== 'idle' || isSelectingTime;
 
   const selectedStartTime = session.selectedStartTime ?? '';
   const pendingStartTime = startTimeFetcher.formData?.get('startTime') as string | null;

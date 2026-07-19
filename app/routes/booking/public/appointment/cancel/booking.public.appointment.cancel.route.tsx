@@ -269,7 +269,7 @@ export default function BookingPublicAppointmentCancelRoute() {
   const cancelToken = loaderData?.cancelToken ?? null;
   const actionData = useActionData<CancelActionData>();
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state !== 'idle';
   const isExpired = expiresAt ? expiresAt * 1000 < Date.now() : false;
   const canCancel = Boolean(appointmentId && appointment && !error && !isExpired);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
