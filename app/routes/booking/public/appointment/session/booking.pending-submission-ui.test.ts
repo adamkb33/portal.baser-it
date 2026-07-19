@@ -109,19 +109,19 @@ describe('booking pending submission UI', () => {
     expect(profileCardSource).toContain('loading={isSubmittingProfile}');
     expect(profileCardSource).toContain('disabled={isSubmitting}');
     expect(employeeSource).toContain("const isSubmitting = navigation.state !== 'idle'");
-    expect(employeeSource).toContain(
-      '<BookingLink to={routes.selectServices} variant="primary" disabled={isSubmitting}>',
-    );
+    expect(employeeSource).toContain('loading={isSubmitting && pendingDestination === routes.selectServices}');
     expect(employeeSource).toContain('<BookingActionButton type="button" variant="primary" disabled>');
     expect(selectServicesSource).toContain('loading={isSubmitting}');
     expect(selectServicesSource).toContain('disabled={!hasSelections || isSubmitting}');
     expect(selectServicesSource).toContain("const isSubmitting = navigation.state !== 'idle'");
+    expect(selectServicesSource).toContain('<fieldset disabled={isSubmitting} className="contents">');
     expect(selectServicesSource).toContain("isSubmitting ? 'Finner ledige tider...' : 'Fortsett'");
     expect(selectServicesSource).toContain(
       '<BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting} className="invisible">',
     );
     expect(selectTimeSource).toContain('disabled={isSubmitting}');
     expect(selectTimeSource).toContain("const isSubmitting = navigation.state !== 'idle' || isSelectingTime");
+    expect(selectTimeSource).toContain('<fieldset disabled={isSubmitting} className="contents">');
     expect(selectTimeSource).toContain(
       '<BookingLink to={routes.contact} variant="primary" loading={isContinuing} disabled={isSubmitting}>',
     );
@@ -130,7 +130,7 @@ describe('booking pending submission UI', () => {
     expect(bookingLinkSource).toContain('aria-disabled={isDisabled}');
     expect(bookingLinkSource).toContain("isDisabled && 'pointer-events-none cursor-not-allowed opacity-50'");
     expect(bookingActionStylesSource).toContain('export const bookingActionBaseClass');
-    expect(overviewSource).toContain('loading={isSubmitting}');
+    expect(overviewSource).toContain('loading={isConfirming}');
     expect(overviewSource).toContain('disabled={isSubmitting}');
     expect(overviewSource).toContain("const isSubmitting = navigation.state !== 'idle'");
   });

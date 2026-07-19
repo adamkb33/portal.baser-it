@@ -220,61 +220,63 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
       description={`Velg én eller flere tjenester fra ${totalServices} tilgjengelige tjenester.`}
       headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
-      <Stack space="lg">
-        {totalServices > 6 && (
-          <div className="relative rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-muted p-2 md:p-3">
-            <Input
-              type="text"
-              placeholder="Søk etter tjenester..."
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              variant="booking"
-              startIcon={<Search className="text-booking-text-muted" />}
-              className="pr-11"
-            />
-
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-[var(--radius-booking-badge)] p-1 transition-colors hover:bg-booking-surface-strong"
-              >
-                <X className="size-4 text-booking-text-muted" />
-              </button>
-            )}
-          </div>
-        )}
-
+      <fieldset disabled={isSubmitting} className="contents">
         <Stack space="lg">
-          {filteredGroups.length > 0 ? (
-            filteredGroups
-              .filter((group) => group.services.length > 0)
-              .map((group) => (
-                <ServiceGroup
-                  key={group.id}
-                  group={group}
-                  selectedServiceQuantities={selectedServiceQuantities}
-                  onSetServiceQuantity={setServiceQuantity}
-                  onViewImages={setDialogService}
-                  disableIncrement={atServiceLimit}
-                />
-              ))
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-selected)] border-dashed border-booking-border bg-booking-surface-subtle py-12 text-center">
-              <Search className="size-12 text-booking-text-muted opacity-50" />
-              <p className="mt-4 text-base font-medium text-booking-text">Ingen tjenester funnet</p>
-              <p className="mt-1 text-sm text-booking-text-muted">Prøv et annet søkeord</p>
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="mt-4 text-sm font-medium text-booking-action hover:underline"
-              >
-                Tilbakestill søk
-              </button>
+          {totalServices > 6 && (
+            <div className="relative rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-muted p-2 md:p-3">
+              <Input
+                type="text"
+                placeholder="Søk etter tjenester..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                variant="booking"
+                startIcon={<Search className="text-booking-text-muted" />}
+                className="pr-11"
+              />
+
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-[var(--radius-booking-badge)] p-1 transition-colors hover:bg-booking-surface-strong"
+                >
+                  <X className="size-4 text-booking-text-muted" />
+                </button>
+              )}
             </div>
           )}
+
+          <Stack space="lg">
+            {filteredGroups.length > 0 ? (
+              filteredGroups
+                .filter((group) => group.services.length > 0)
+                .map((group) => (
+                  <ServiceGroup
+                    key={group.id}
+                    group={group}
+                    selectedServiceQuantities={selectedServiceQuantities}
+                    onSetServiceQuantity={setServiceQuantity}
+                    onViewImages={setDialogService}
+                    disableIncrement={atServiceLimit}
+                  />
+                ))
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-selected)] border-dashed border-booking-border bg-booking-surface-subtle py-12 text-center">
+                <Search className="size-12 text-booking-text-muted opacity-50" />
+                <p className="mt-4 text-base font-medium text-booking-text">Ingen tjenester funnet</p>
+                <p className="mt-1 text-sm text-booking-text-muted">Prøv et annet søkeord</p>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="mt-4 text-sm font-medium text-booking-action hover:underline"
+                >
+                  Tilbakestill søk
+                </button>
+              </div>
+            )}
+          </Stack>
         </Stack>
-      </Stack>
+      </fieldset>
 
       <ServiceImageDialog service={dialogService} onClose={() => setDialogService(null)} />
 

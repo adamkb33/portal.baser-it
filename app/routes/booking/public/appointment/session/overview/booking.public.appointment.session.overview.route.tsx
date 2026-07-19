@@ -11,7 +11,7 @@ import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/pub
 import { requireBookingReady } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { redirect } from 'react-router';
-import { Form, Link, useNavigation } from 'react-router';
+import { Form, useNavigation } from 'react-router';
 import { CheckCircle2 } from 'lucide-react';
 import { BookingStepTemplate, Container, PageHeader, Text } from '~/ui';
 import { formatNorwegianDateTime } from './_utils/format-norwegian-date-time';
@@ -106,6 +106,8 @@ export async function action({ request }: Route.ActionArgs) {
 export default function BookingOverviewPage({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== 'idle';
+  const isConfirming = isSubmitting && navigation.formData !== undefined;
+  const pendingDestination = navigation.location?.pathname;
   const routes = getBookingRouteMap();
 
   if (!loaderData.sessionOverview) {
@@ -135,7 +137,13 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
     >
       <Form id={confirmFormId} method="post" className="hidden" />
       <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised shadow-[var(--shadow-booking-card)]">
-        <OverviewSection title="Tidspunkt" editHref={routes.selectTime} editLinkClass={editLinkClass}>
+        <OverviewSection
+          title="Tidspunkt"
+          editHref={routes.selectTime}
+          editLinkClass={editLinkClass}
+          isBusy={isSubmitting}
+          isLoading={pendingDestination === routes.selectTime}
+        >
           <Text as="p" variant="body" className="font-semibold text-booking-text">
             {dateTime.full}
           </Text>
@@ -144,7 +152,13 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
           </Text>
         </OverviewSection>
 
-        <OverviewSection title="Kontakt" editHref={routes.contact} editLinkClass={editLinkClass}>
+        <OverviewSection
+          title="Kontakt"
+          editHref={routes.contact}
+          editLinkClass={editLinkClass}
+          isBusy={isSubmitting}
+          isLoading={pendingDestination === routes.contact}
+        >
           <Text as="p" variant="body" className="font-semibold text-booking-text">
             {sessionOverview.user.givenName} {sessionOverview.user.familyName}
           </Text>
@@ -155,13 +169,25 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
           ) : null}
         </OverviewSection>
 
-        <OverviewSection title="Behandler" editHref={routes.employee} editLinkClass={editLinkClass}>
+        <OverviewSection
+          title="Behandler"
+          editHref={routes.employee}
+          editLinkClass={editLinkClass}
+          isBusy={isSubmitting}
+          isLoading={pendingDestination === routes.employee}
+        >
           <Text as="p" variant="body" className="font-semibold text-booking-text">
             {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
           </Text>
         </OverviewSection>
 
-        <OverviewSection title="Tjenester" editHref={routes.selectServices} editLinkClass={editLinkClass}>
+        <OverviewSection
+          title="Tjenester"
+          editHref={routes.selectServices}
+          editLinkClass={editLinkClass}
+          isBusy={isSubmitting}
+          isLoading={pendingDestination === routes.selectServices}
+        >
           <div className="divide-y divide-booking-border">
             {sessionOverview.selectedServices.map((item) => (
               <div key={`${item.serviceGroup.id}-${item.services.id}`} className="flex gap-4 py-2 first:pt-0 last:pb-0">
@@ -197,18 +223,23 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
         </div>
       </div>
       <BookingFooterNav>
-        <BookingLink to={routes.selectTime} variant="secondary" disabled={isSubmitting}>
-          Endre tid
+        <BookingLink
+          to={routes.selectTime}
+          variant="secondary"
+          loading={isSubmitting && pendingDestination === routes.selectTime}
+          disabled={isSubmitting}
+        >
+          {isSubmitting && pendingDestination === routes.selectTime ? 'Åpner tidspunkt...' : 'Endre tid'}
         </BookingLink>
         <BookingActionButton
           type="submit"
           form={confirmFormId}
           variant="primary"
-          loading={isSubmitting}
+          loading={isConfirming}
           disabled={isSubmitting}
         >
           <CheckCircle2 className="size-4" strokeWidth={2.5} />
-          Bekreft
+          {isConfirming ? 'Bekrefter...' : 'Bekreft'}
         </BookingActionButton>
       </BookingFooterNav>
     </BookingStepTemplate>
@@ -219,11 +250,15 @@ function OverviewSection({
   title,
   editHref,
   editLinkClass,
+  isBusy,
+  isLoading,
   children,
 }: {
   title: string;
   editHref: string;
   editLinkClass: string;
+  isBusy: boolean;
+  isLoading: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -232,9 +267,9 @@ function OverviewSection({
         <Text as="h2" variant="label" className="text-booking-text">
           {title}
         </Text>
-        <Link to={editHref} className={editLinkClass}>
-          Endre
-        </Link>
+        <BookingLink to={editHref} variant="inline" className={editLinkClass} loading={isLoading} disabled={isBusy}>
+          {isLoading ? 'Åpner...' : 'Endre'}
+        </BookingLink>
       </div>
       {children}
     </section>

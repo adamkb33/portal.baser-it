@@ -134,6 +134,7 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const isSelectingTime = startTimeFetcher.state !== 'idle';
   const isSubmitting = navigation.state !== 'idle' || isSelectingTime;
   const isContinuing = navigation.state !== 'idle' && navigation.location?.pathname === routes.contact;
+  const isGoingBack = navigation.state !== 'idle' && navigation.location?.pathname === routes.selectServices;
 
   const selectedStartTime = session.selectedStartTime ?? '';
   const pendingStartTime = startTimeFetcher.formData?.get('startTime') as string | null;
@@ -220,61 +221,63 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
       headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
       <startTimeFetcher.Form method="post" preventScrollReset>
-        <Stack space="xl">
-          {earliestSlot && !displayTime && (
-            <BookingSection>
-              <QuickBookButton slot={earliestSlot} disabled={isSubmitting} />
-            </BookingSection>
-          )}
+        <fieldset disabled={isSubmitting} className="contents">
+          <Stack space="xl">
+            {earliestSlot && !displayTime && (
+              <BookingSection>
+                <QuickBookButton slot={earliestSlot} disabled={isSubmitting} />
+              </BookingSection>
+            )}
 
-          <WeekNavigator
-            weekGroups={weekGroups}
-            selectedWeekIndex={selectedWeekIndex}
-            onPreviousWeek={handlePrevWeek}
-            onNextWeek={handleNextWeek}
-            onSelectWeek={handleSelectWeek}
-          />
+            <WeekNavigator
+              weekGroups={weekGroups}
+              selectedWeekIndex={selectedWeekIndex}
+              onPreviousWeek={handlePrevWeek}
+              onNextWeek={handleNextWeek}
+              onSelectWeek={handleSelectWeek}
+            />
 
-          <div className="space-y-6 md:hidden">
-            <DateSelectorSection
-              schedules={currentWeekSchedules}
-              selectedDate={selectedDate}
-              isCollapsed={isDateListCollapsed}
-              displayTime={displayTime}
-              onSelectDate={handleSelectDate}
-              onShowAllDates={() => setIsDateListCollapsed(false)}
-            />
-            <TimeSlotsSection
-              selectedDate={selectedDate}
-              timeSlots={timeSlots}
-              displayTime={displayTime}
-              isSubmitting={isSubmitting}
-            />
-          </div>
+            <div className="space-y-6 md:hidden">
+              <DateSelectorSection
+                schedules={currentWeekSchedules}
+                selectedDate={selectedDate}
+                isCollapsed={isDateListCollapsed}
+                displayTime={displayTime}
+                onSelectDate={handleSelectDate}
+                onShowAllDates={() => setIsDateListCollapsed(false)}
+              />
+              <TimeSlotsSection
+                selectedDate={selectedDate}
+                timeSlots={timeSlots}
+                displayTime={displayTime}
+                isSubmitting={isSubmitting}
+              />
+            </div>
 
-          <div className="hidden md:grid md:grid-cols-2 md:gap-6 lg:grid-cols-5">
-            <DateSelectorSection
-              schedules={currentWeekSchedules}
-              selectedDate={selectedDate}
-              isCollapsed={isDateListCollapsed}
-              displayTime={displayTime}
-              onSelectDate={handleSelectDate}
-              onShowAllDates={() => setIsDateListCollapsed(false)}
-              variant="desktop"
-            />
-            <TimeSlotsSection
-              selectedDate={selectedDate}
-              timeSlots={timeSlots}
-              displayTime={displayTime}
-              isSubmitting={isSubmitting}
-              variant="desktop"
-            />
-          </div>
-        </Stack>
+            <div className="hidden md:grid md:grid-cols-2 md:gap-6 lg:grid-cols-5">
+              <DateSelectorSection
+                schedules={currentWeekSchedules}
+                selectedDate={selectedDate}
+                isCollapsed={isDateListCollapsed}
+                displayTime={displayTime}
+                onSelectDate={handleSelectDate}
+                onShowAllDates={() => setIsDateListCollapsed(false)}
+                variant="desktop"
+              />
+              <TimeSlotsSection
+                selectedDate={selectedDate}
+                timeSlots={timeSlots}
+                displayTime={displayTime}
+                isSubmitting={isSubmitting}
+                variant="desktop"
+              />
+            </div>
+          </Stack>
+        </fieldset>
       </startTimeFetcher.Form>
       <BookingFooterNav>
-        <BookingLink to={routes.selectServices} variant="secondary" disabled={isSubmitting}>
-          Tilbake
+        <BookingLink to={routes.selectServices} variant="secondary" loading={isGoingBack} disabled={isSubmitting}>
+          {isGoingBack ? 'Går tilbake...' : 'Tilbake'}
         </BookingLink>
         {selectedStartTime ? (
           <BookingLink to={routes.contact} variant="primary" loading={isContinuing} disabled={isSubmitting}>

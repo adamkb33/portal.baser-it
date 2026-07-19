@@ -7,18 +7,23 @@ import type { Route } from './+types/user.company-context.route';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { Grid, KeyValueList, Notice, PageTemplate, Panel, SelectionCard, Text } from '~/ui';
+import { getSafeReturnTo } from '~/utils';
 
 export async function loader({ request }: Route.LoaderArgs) {
+  const url = new URL(request.url);
+  const returnTo = getSafeReturnTo(url.searchParams.get('returnTo'));
+
   return withAuth(request, async () => {
     try {
       const response = await AuthController.getCompanyContexts();
 
       return data({
         companyContexts: response.data?.data,
+        returnTo,
       });
     } catch (error: any) {
       console.error('[company-context] Loader error:', error);
-      return data({ companyContexts: [] });
+      return data({ companyContexts: [], returnTo });
     }
   });
 }
@@ -27,6 +32,7 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const companyId = formData.get('companyId');
   const orgNumber = formData.get('orgNumber');
+  const returnTo = getSafeReturnTo(String(formData.get('returnTo') || ''));
 
   if (!orgNumber || !companyId) {
     return redirectWithError(request, ROUTES_MAP['user.company-context'].href, 'Ikke valgt');
@@ -57,7 +63,7 @@ export async function action({ request }: Route.ActionArgs) {
         expires: new Date(payload.refreshTokenExpiresAt * 1000),
       });
 
-      return redirect('/', {
+      return redirect(returnTo ?? '/', {
         headers: [
           ['Set-Cookie', accessCookie],
           ['Set-Cookie', refreshCookie],

@@ -59,6 +59,7 @@ export function ProfileCard({ profile, isSelected, isSubmitting, isSubmittingPro
                     type="button"
                     variant="booking-ghost"
                     size="sm"
+                    disabled={isSubmitting}
                     className="h-8 px-2 text-xs hover:bg-booking-surface-raised"
                   >
                     Vis alle

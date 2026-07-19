@@ -13,6 +13,7 @@ import React from 'react';
 import { resolveAuthPostRedirect } from '../_utils/auth-flow.server';
 import { Button, FormField, AuthPageTemplate, Stack } from '~/ui';
 import { Lock, User } from 'lucide-react';
+import { getSafeReturnTo } from '~/utils';
 
 function redactIdentifier(value: string) {
   const normalized = value.trim();
@@ -43,11 +44,6 @@ function buildSignInHref(redirectUrl?: string, returnTo?: string | null) {
 
   const search = params.toString();
   return search ? `${ROUTES_MAP['auth.sign-in'].href}?${search}` : ROUTES_MAP['auth.sign-in'].href;
-}
-
-// Only ever a relative, same-origin path — never follow this off-site.
-function getSafeReturnTo(value: string | null): string | null {
-  return value && value.startsWith('/') && !value.startsWith('//') ? value : null;
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -136,7 +132,9 @@ export async function action({ request }: Route.ActionArgs) {
                   authTokens = companySignInResponse.data.data;
                 }
               } else if (companyContexts.length > 1) {
-                resolvedNextStepHref = ROUTES_MAP['user.company-context'].href;
+                resolvedNextStepHref = returnTo
+                  ? `${ROUTES_MAP['user.company-context'].href}?returnTo=${encodeURIComponent(returnTo)}`
+                  : ROUTES_MAP['user.company-context'].href;
                 forcedCompanyContextSelection = true;
               }
             } catch (companyContextError) {

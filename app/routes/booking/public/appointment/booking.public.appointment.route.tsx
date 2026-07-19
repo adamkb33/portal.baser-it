@@ -289,8 +289,15 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
                   <Link
                     key={company.id}
                     to={startUrl}
-                    onClick={() => setActiveCompanyId(company.id)}
-                    className="group block focus-visible:outline-none"
+                    onClick={(event) => {
+                      if (isNavigatingToSession) {
+                        event.preventDefault();
+                        return;
+                      }
+                      setActiveCompanyId(company.id);
+                    }}
+                    aria-disabled={isNavigatingToSession}
+                    className={`group block focus-visible:outline-none ${isNavigatingToSession ? 'pointer-events-none opacity-60' : ''}`}
                     aria-label={`Start booking hos ${companyName}`}
                   >
                     <Card

@@ -136,6 +136,7 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== 'idle';
   const submittingProfileId = navigation.formData?.get('selectedProfileId');
+  const pendingDestination = navigation.location?.pathname;
 
   return (
     <BookingStepTemplate
@@ -169,12 +170,22 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
         })}
       </Grid>
       <BookingFooterNav>
-        <BookingLink to={routes.contact} variant="secondary" disabled={isSubmitting}>
-          Tilbake
+        <BookingLink
+          to={routes.contact}
+          variant="secondary"
+          loading={isSubmitting && pendingDestination === routes.contact}
+          disabled={isSubmitting}
+        >
+          {isSubmitting && pendingDestination === routes.contact ? 'Går tilbake...' : 'Tilbake'}
         </BookingLink>
         {selectedProfileId ? (
-          <BookingLink to={routes.selectServices} variant="primary" disabled={isSubmitting}>
-            Fortsett
+          <BookingLink
+            to={routes.selectServices}
+            variant="primary"
+            loading={isSubmitting && pendingDestination === routes.selectServices}
+            disabled={isSubmitting}
+          >
+            {isSubmitting && pendingDestination === routes.selectServices ? 'Går videre...' : 'Fortsett'}
           </BookingLink>
         ) : (
           <BookingActionButton type="button" variant="primary" disabled>

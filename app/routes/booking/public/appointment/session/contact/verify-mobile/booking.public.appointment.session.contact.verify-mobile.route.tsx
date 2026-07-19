@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Form, Link, data, redirect, useActionData, useNavigation } from 'react-router';
+import { Form, data, redirect, useActionData, useNavigation } from 'react-router';
 import { RotateCcw } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
@@ -191,6 +191,7 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
   const isSendingCode = isSubmitting && submittingIntent === 'resend';
   const maskedMobile = loaderData.requirements.maskedMobile || 'mobilnummeret ditt';
   const changeMobileHref = `${routes.contact}?form=1`;
+  const isChangingMobile = isSubmitting && !submittingIntent && navigation.location?.pathname === routes.contact;
 
   return (
     <Stack space="xl">
@@ -232,15 +233,15 @@ export default function BookingContactVerifyMobilePage({ loaderData }: Route.Com
               {/* Resend is its own tiny form; nesting forms is invalid HTML, so it sits
                   outside via the button's formAction-free sibling pattern below. */}
               <ResendButton isSendingCode={isSendingCode} isSubmitting={isSubmitting} />
-              <Link to={changeMobileHref} className="text-sm font-semibold text-booking-action hover:underline">
-                Feil nummer? Endre
-              </Link>
+              <BookingLink to={changeMobileHref} variant="inline" loading={isChangingMobile} disabled={isSubmitting}>
+                {isChangingMobile ? 'Endrer mobil...' : 'Feil nummer? Endre'}
+              </BookingLink>
             </div>
           </div>
 
           <BookingFooterNav>
-            <BookingLink to={changeMobileHref} variant="secondary" disabled={isSubmitting}>
-              Endre mobil
+            <BookingLink to={changeMobileHref} variant="secondary" loading={isChangingMobile} disabled={isSubmitting}>
+              {isChangingMobile ? 'Endrer mobil...' : 'Endre mobil'}
             </BookingLink>
             <BookingActionButton
               type="submit"

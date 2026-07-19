@@ -336,9 +336,11 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
         title="Avbestill time"
         description="Er du sikker på at du vil avbestille timen? Avbestillingen kan ikke angres."
         open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
+        onOpenChange={(open) => {
+          if (!isSubmitting) setIsDeleteOpen(open);
+        }}
         cancelAction={
-          <Button type="button" variant="outline">
+          <Button type="button" variant="outline" disabled={isSubmitting}>
             Avbryt
           </Button>
         }

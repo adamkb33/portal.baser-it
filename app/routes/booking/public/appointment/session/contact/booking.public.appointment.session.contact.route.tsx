@@ -550,14 +550,28 @@ function ContactForm({
             <Label htmlFor="givenName" className={BOOKING_CONTACT_LABEL_CLASS}>
               Fornavn
             </Label>
-            <Input id="givenName" name="givenName" variant="booking" autoComplete="given-name" required />
+            <Input
+              id="givenName"
+              name="givenName"
+              variant="booking"
+              autoComplete="given-name"
+              required
+              disabled={isSubmitting}
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="familyName" className={BOOKING_CONTACT_LABEL_CLASS}>
               Etternavn
             </Label>
-            <Input id="familyName" name="familyName" variant="booking" autoComplete="family-name" required />
+            <Input
+              id="familyName"
+              name="familyName"
+              variant="booking"
+              autoComplete="family-name"
+              required
+              disabled={isSubmitting}
+            />
           </div>
         </div>
 
@@ -576,6 +590,7 @@ function ContactForm({
               autoComplete="tel"
               maxLength={8}
               required
+              disabled={isSubmitting}
               className="pl-9"
             />
           </div>
@@ -599,6 +614,7 @@ function ContactForm({
                 inputMode="email"
                 autoComplete="email"
                 className="pl-9"
+                disabled={isSubmitting}
               />
             </div>
             <Text as="p" variant="caption" className="text-booking-text-muted">
@@ -608,6 +624,7 @@ function ContactForm({
         ) : (
           <button
             type="button"
+            disabled={isSubmitting}
             onClick={() => setShowEmail(true)}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-booking-action hover:underline"
           >

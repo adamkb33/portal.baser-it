@@ -347,7 +347,7 @@ export default function BookingPublicMyAppointmentsRoute({ loaderData }: Route.C
   };
 
   return (
-    <BookingContainer>
+    <BookingContainer aria-busy={isLoading || undefined} className={isLoading ? 'pointer-events-none' : undefined}>
       <Stack space="md">
         <div>
           <Button type="button" variant="booking-secondary" size="sm" className="gap-2" onClick={handleBack}>
