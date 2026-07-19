@@ -15,7 +15,7 @@ export type BottomActionBarAction = {
   type?: 'link' | 'button';
   buttonType?: 'button' | 'submit';
   form?: string;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  onClick?: React.MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
 };
 
 type BookingBottomActionBarProps = {
@@ -90,7 +90,18 @@ export function BookingBottomActionBar({
                     loading={action.loading}
                     disabled={action.disabled}
                     form={action.form}
-                    onClick={action.onClick}
+                    onClick={(event) => {
+                      console.info('[booking:client:bottom-action:button-click]', {
+                        actionId: action.id,
+                        buttonType: action.buttonType ?? 'button',
+                        formProp: action.form ?? null,
+                        domFormId: event.currentTarget.form?.id ?? null,
+                        disabled: Boolean(action.disabled),
+                        loading: Boolean(action.loading),
+                        defaultPrevented: event.defaultPrevented,
+                      });
+                      action.onClick?.(event);
+                    }}
                     className={actionControlClass}
                   >
                     <span className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2">
@@ -107,6 +118,7 @@ export function BookingBottomActionBar({
                   to={action.to ?? '#'}
                   aria-disabled={action.disabled}
                   onClick={(event) => {
+                    action.onClick?.(event);
                     if (action.disabled || action.loading) {
                       event.preventDefault();
                     }

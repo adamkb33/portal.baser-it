@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { data, Link, useNavigation } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.route';
 import { AppointmentsController, type CompanySummaryDto } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { parseBookingContext, resolveBookingTheme } from '~/lib/booking-context.server';
@@ -165,7 +166,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const context = await parseBookingContext(request);
     const urlTheme = url.searchParams.has('theme') ? resolveBookingTheme(url.searchParams.get('theme')) : null;
     const theme = urlTheme ?? context.theme;
-    const response = await AppointmentsController.getBookingReadyCompanies();
+    const response = await withAuth(request, () => AppointmentsController.getBookingReadyCompanies());
     const companies = response.data?.data ?? [];
 
     console.debug('[companies-map] booking-ready companies', {
@@ -288,8 +289,15 @@ export default function AppointmentsRoute({ loaderData }: Route.ComponentProps) 
                   <Link
                     key={company.id}
                     to={startUrl}
-                    onClick={() => setActiveCompanyId(company.id)}
-                    className="group block focus-visible:outline-none"
+                    onClick={(event) => {
+                      if (isNavigatingToSession) {
+                        event.preventDefault();
+                        return;
+                      }
+                      setActiveCompanyId(company.id);
+                    }}
+                    aria-disabled={isNavigatingToSession}
+                    className={`group block focus-visible:outline-none ${isNavigatingToSession ? 'pointer-events-none opacity-60' : ''}`}
                     aria-label={`Start booking hos ${companyName}`}
                   >
                     <Card

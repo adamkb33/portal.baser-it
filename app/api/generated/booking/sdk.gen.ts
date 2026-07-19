@@ -99,6 +99,12 @@ import type {
   GetServiceGroupsResponses,
   GetServicesData,
   GetServicesResponses,
+  IdentifyAppointmentSessionUserData,
+  IdentifyAppointmentSessionUserResponses,
+  ResendAppointmentSessionMobileChallengeData,
+  ResendAppointmentSessionMobileChallengeResponses,
+  ResumeAppointmentSessionData,
+  ResumeAppointmentSessionResponses,
   SelectAppointmentSessionProfileData,
   SelectAppointmentSessionProfileResponses,
   SelectAppointmentSessionProfileServicesData,
@@ -121,6 +127,8 @@ import type {
   UploadAppointmentImageResponses,
   ValidateCompanyBookingData,
   ValidateCompanyBookingResponses,
+  VerifyAppointmentSessionUserMobileData,
+  VerifyAppointmentSessionUserMobileResponses,
 } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<
@@ -185,6 +193,19 @@ export class Booking {
     });
   }
 
+  public static verifyAppointmentSessionUserMobile<ThrowOnError extends boolean = false>(
+    options: Options<VerifyAppointmentSessionUserMobileData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).post<VerifyAppointmentSessionUserMobileResponses, unknown, ThrowOnError>({
+      url: '/booking-service/public/appointment-session/{sessionId}/verify-mobile',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  }
+
   public static clearAppointmentSessionUser<ThrowOnError extends boolean = false>(
     options: Options<ClearAppointmentSessionUserData, ThrowOnError>,
   ) {
@@ -200,6 +221,37 @@ export class Booking {
     return (options.client ?? client).post<SetPendingAppointmentSessionUserResponses, unknown, ThrowOnError>({
       url: '/booking-service/public/appointment-session/{sessionId}/user',
       ...options,
+    });
+  }
+
+  public static resumeAppointmentSession<ThrowOnError extends boolean = false>(
+    options: Options<ResumeAppointmentSessionData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).post<ResumeAppointmentSessionResponses, unknown, ThrowOnError>({
+      url: '/booking-service/public/appointment-session/{sessionId}/resume',
+      ...options,
+    });
+  }
+
+  public static resendAppointmentSessionMobileChallenge<ThrowOnError extends boolean = false>(
+    options: Options<ResendAppointmentSessionMobileChallengeData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).post<ResendAppointmentSessionMobileChallengeResponses, unknown, ThrowOnError>({
+      url: '/booking-service/public/appointment-session/{sessionId}/mobile-challenge/resend',
+      ...options,
+    });
+  }
+
+  public static identifyAppointmentSessionUser<ThrowOnError extends boolean = false>(
+    options: Options<IdentifyAppointmentSessionUserData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).post<IdentifyAppointmentSessionUserResponses, unknown, ThrowOnError>({
+      url: '/booking-service/public/appointment-session/{sessionId}/identify',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
     });
   }
 

@@ -56,7 +56,7 @@ describe('booking session loader', () => {
     } as never);
 
     expect(result).toBeInstanceOf(Response);
-    expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment/session/contact');
+    expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment/session/employee');
     expect(mocks.deleteSession).toHaveBeenCalledOnce();
     expect(mocks.validateCompanyBooking).toHaveBeenCalledWith({ path: { companyId: 1 } });
     expect(mocks.createSession).toHaveBeenCalledWith(1, expect.any(Request));
@@ -96,7 +96,7 @@ describe('booking session loader', () => {
     } as never);
 
     expect(result).toBeInstanceOf(Response);
-    expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment/session/contact');
+    expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment/session/employee');
     expect(mocks.validateCompanyBooking).toHaveBeenCalledWith({ path: { companyId: 1 } });
     expect(mocks.createSession).toHaveBeenCalledWith(1, expect.any(Request));
     expect((result as Response).headers.get('Set-Cookie')).toContain('appointment_session=');
@@ -113,7 +113,7 @@ describe('booking session loader', () => {
     } as never);
 
     expect(result).toBeInstanceOf(Response);
-    expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment/session/contact');
+    expect((result as Response).headers.get('Location')).toBe('/booking/public/appointment/session/employee');
     expect((result as Response).headers.get('Set-Cookie')).toContain('booking_context=');
     await expect(parseBookingContextFromSetCookie((result as Response).headers.get('Set-Cookie'))).resolves.toEqual({
       companyId: 1,

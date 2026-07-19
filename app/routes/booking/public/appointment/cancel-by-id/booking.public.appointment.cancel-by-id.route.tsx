@@ -1,4 +1,4 @@
-import { data, Form, useNavigation } from 'react-router';
+import { data, Form, Link, useNavigation } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.cancel-by-id.route';
 import { AppointmentsController, PublicAppointmentSessionController } from '~/api/generated/booking';
 import type { AppointmentDto } from '~/api/generated/booking';
@@ -59,7 +59,12 @@ function getDurationMinutes(startIso: string, endIso: string): number {
   return Math.max(0, Math.round((end - start) / 60000));
 }
 
-async function loadOwnedAppointment(request: Request, appointmentId: number) {
+const APPOINTMENT_GONE_MESSAGE = 'Denne avtalen finnes ikke lenger. Den er sannsynligvis allerede avbestilt.';
+
+// Returns null (rather than redirecting) when the appointment can't be found, so a stale
+// link — e.g. the browser's back button after a cancel — lands on a calm inline message
+// instead of bouncing through a "not found" flash.
+async function loadOwnedAppointment(request: Request, appointmentId: number): Promise<AppointmentDto | null> {
   const auth = await authService.getAuth(request);
   if (!auth) {
     throw await redirectWithError(request, ROUTES_MAP['auth.sign-in'].href, 'Du må logge inn for å avbestille time.');
@@ -73,7 +78,7 @@ async function loadOwnedAppointment(request: Request, appointmentId: number) {
   const appointment = response.data?.data;
 
   if (!appointment) {
-    throw await redirectWithError(request, ROUTES_MAP['booking.public.my-appointments'].href, 'Fant ikke avtalen.');
+    return null;
   }
 
   if (appointment.userId !== auth.id) {
@@ -95,6 +100,19 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
   try {
     const appointment = await loadOwnedAppointment(request, appointmentId);
+    if (!appointment) {
+      return data(
+        {
+          appointment: null,
+          canCancel: false,
+          duration: 0,
+          totalPrice: 0,
+          error: APPOINTMENT_GONE_MESSAGE,
+        },
+        { status: 404 },
+      );
+    }
+
     const totalPrice = appointment.groupedServiceGroups.reduce(
       (sum, group) => sum + group.services.reduce((inner, service) => inner + service.price, 0),
       0,
@@ -132,7 +150,10 @@ export async function action({ request, params }: Route.ActionArgs) {
   }
 
   try {
-    await loadOwnedAppointment(request, appointmentId);
+    const appointment = await loadOwnedAppointment(request, appointmentId);
+    if (!appointment) {
+      return redirectWithError(request, ROUTES_MAP['booking.public.my-appointments'].href, APPOINTMENT_GONE_MESSAGE);
+    }
 
     await withAuth(request, async () => {
       return AppointmentsController.cancelMyAppointment({
@@ -154,23 +175,24 @@ export async function action({ request, params }: Route.ActionArgs) {
 
 export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === 'submitting';
+  const isSubmitting = navigation.state !== 'idle';
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   if (loaderData.error || !loaderData.appointment) {
     return (
       <Container size="lg">
-        <PageHeader
-          label="Avbestilling"
-          title="Avbestill time"
-          description={loaderData.error ?? 'Kunne ikke hente avtalen.'}
-        />
-        <Notice
-          variant="booking"
-          tone="emphasis"
-          title="Kunne ikke hente avtalen"
-          message={loaderData.error ?? 'Vi fant ikke en gyldig avtale for avbestilling.'}
-        />
+        <PageHeader label="Avbestilling" title="Avbestill time" description="Vi fant ikke avtalen." />
+        <Stack space="lg">
+          <Notice
+            variant="booking"
+            tone="muted"
+            title="Fant ikke avtalen"
+            message={loaderData.error ?? 'Vi fant ikke en gyldig avtale for avbestilling.'}
+          />
+          <Button asChild>
+            <Link to={ROUTES_MAP['booking.public.my-appointments'].href}>Gå til mine bookinger</Link>
+          </Button>
+        </Stack>
       </Container>
     );
   }
@@ -314,9 +336,11 @@ export default function BookingPublicAppointmentCancelByIdRoute({ loaderData }: 
         title="Avbestill time"
         description="Er du sikker på at du vil avbestille timen? Avbestillingen kan ikke angres."
         open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
+        onOpenChange={(open) => {
+          if (!isSubmitting) setIsDeleteOpen(open);
+        }}
         cancelAction={
-          <Button type="button" variant="outline">
+          <Button type="button" variant="outline" disabled={isSubmitting}>
             Avbryt
           </Button>
         }

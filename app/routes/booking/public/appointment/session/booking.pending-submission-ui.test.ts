@@ -26,6 +26,7 @@ describe('booking pending submission UI', () => {
 
     expect(markup).toContain('disabled=""');
     expect(markup).toContain('aria-busy="true"');
+    expect(markup).toContain('animate-spin');
     expect(markup).toContain('Submit booking');
   });
 
@@ -56,118 +57,137 @@ describe('booking pending submission UI', () => {
     );
   });
 
-  it('disables contact landing submissions while React Router navigation is submitting', () => {
+  it('disables contact landing submissions through submission and redirect loading', () => {
     const source = readSessionRoute('contact/booking.public.appointment.session.contact.route.tsx');
-    const continueCardSource = readSessionRoute('contact/_components/continue-card.tsx');
 
     expect(source).toContain('useNavigation');
-    expect(source).toContain("routeNavigation.state === 'submitting'");
-    expect(source).toContain('loading={submittingIntent === ACTION_INTENT.CONTINUE_WITH_AUTHENTICATED_USER}');
+    expect(source).toContain("navigation.state !== 'idle'");
+    expect(source).toContain("loading={pendingIntent === 'identify'}");
     expect(source).toContain('disabled={isSubmitting}');
-    expect(source).toContain('ProviderButtons disabled={isSubmitting}');
-    expect(source).toContain('isSubmitting={submittingIntent === ACTION_INTENT.CONTINUE_WITH_SESSION_USER}');
-    expect(source).toContain('disabled={isSubmitting}');
-    expect(continueCardSource).toContain('disabled={isSubmitting}');
-    expect(continueCardSource).toContain('aria-busy={isSubmitting}');
-    expect(continueCardSource).toContain("isSubmitting ? 'Fortsetter...' : cta");
+    expect(source).toContain("pendingIntent === 'identify' ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'");
+    expect(source).toContain("? 'Åpner innlogging...'");
+    expect(source).toContain("loading={pendingIntent === 'attach'}");
+    expect(source).toContain("loading={pendingIntent === 'resume'}");
+    expect(source).not.toContain('ProviderButtons');
   });
 
-  it('provider auth cannot submit while the provider button group is disabled', () => {
-    const providerButtonsSource = readWorkspaceFile('app/routes/auth/_components/provider-buttons.tsx');
-    const contactSource = readSessionRoute('contact/booking.public.appointment.session.contact.route.tsx');
+  it('"log in with a different account" sends the browser to real sign-in, not back into the same session', () => {
     const signInSource = readSessionRoute(
       'contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx',
     );
 
-    expect(providerButtonsSource).toContain('if (disabled) return;');
-    expect(providerButtonsSource).toContain('disabled={disabled}');
-    expect(contactSource).toContain('ProviderButtons disabled={isSubmitting}');
-    expect(signInSource).toContain('ProviderButtons showDivider={!isGoogleProvider} disabled={isSubmitting}');
+    expect(signInSource).toContain('return redirect(signInHrefBackToContact())');
   });
 
-  it('shows loading-disabled submit buttons across contact substeps', () => {
-    const signInSource = readSessionRoute(
-      'contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx',
-    );
-    const signUpSource = readSessionRoute(
-      'contact/sign-up/booking.public.appointment.session.contact.sign-up.route.tsx',
-    );
-    const collectMobileSource = readSessionRoute(
-      'contact/collect-mobile/booking.public.appointment.session.contact.collect-mobile.route.tsx',
-    );
-    const collectEmailSource = readSessionRoute(
-      'contact/collect-email/booking.public.appointment.session.contact.collect-email.route.tsx',
-    );
-    const submitContactFormSource = readSessionRoute('contact/_forms/submit-contact.form.tsx');
-    const clearSessionSource = readSessionRoute('contact/_components/clear-session-action.tsx');
-
-    expect(signInSource).toContain('ProviderButtons showDivider={!isGoogleProvider} disabled={isSubmitting}');
-    expect(signInSource).toContain('loading={isSubmitting}');
-    expect(signUpSource).toContain('loading={isSubmitting}');
-    expect(signUpSource).toContain("isSubmitting ? 'Oppretter konto...' : 'Opprett konto'");
-    expect(collectMobileSource).toContain('loading={isSubmitting}');
-    expect(collectMobileSource).toContain("isSubmitting ? 'Lagrer...' : 'Fortsett'");
-    expect(collectEmailSource).toContain('loading={isSubmitting}');
-    expect(collectEmailSource).toContain("isSubmitting ? 'Lagrer...' : buttonLabel");
-    expect(submitContactFormSource).toContain('disabled={isSubmitting || inputOptions.disabled}');
-    expect(submitContactFormSource).toContain('loading={isSubmitting}');
-    expect(clearSessionSource).toContain("const isSubmitting = fetcher.state !== 'idle'");
-    expect(clearSessionSource).toContain('disabled={isSubmitting}');
-    expect(clearSessionSource).toContain('loading={isSubmitting}');
-  });
-
-  it('disables fetcher-based verification submissions while requests are pending', () => {
+  it('disables SMS verification submissions while requests are pending', () => {
     const verifyMobileSource = readSessionRoute(
       'contact/verify-mobile/booking.public.appointment.session.contact.verify-mobile.route.tsx',
     );
 
-    expect(verifyMobileSource).toContain("const isVerifyingCode = fetcher.state !== 'idle'");
-    expect(verifyMobileSource).toContain('disabled={isVerifyingCode}');
+    expect(verifyMobileSource).toContain("const isSubmitting = navigation.state !== 'idle'");
+    expect(verifyMobileSource).toContain("const isSendingCode = isSubmitting && submittingIntent === 'resend'");
+    expect(verifyMobileSource).toContain('disabled={code.length !== CODE_LENGTH || isSubmitting}');
     expect(verifyMobileSource).toContain('loading={isVerifyingCode}');
     expect(verifyMobileSource).toContain("isVerifyingCode ? 'Bekrefter...' : 'Bekreft kode'");
-    expect(verifyMobileSource).toContain("const isSendingCode = resendFetcher.state !== 'idle'");
     expect(verifyMobileSource).toContain('loading={isSendingCode}');
-    expect(verifyMobileSource).toContain('aria-busy={isSendingCode}');
-    expect(verifyMobileSource).toContain('disabled={!verificationSessionToken || isSendingCode}');
-  });
-
-  it('does not expose an email verification blocking UI in booking', () => {
-    const verifyEmailSource = readSessionRoute(
-      'contact/verify-email/booking.public.appointment.session.contact.verify-email.route.tsx',
-    );
-
-    expect(verifyEmailSource).toContain('return redirectAuthStatusNextStepHref(authStatus)');
-    expect(verifyEmailSource).toContain('return null');
-    expect(verifyEmailSource).not.toContain('resendVerificationAction');
+    expect(verifyMobileSource).toContain('disabled={isSubmitting}');
   });
 
   it('disables later booking step navigation while route submissions are pending', () => {
     const employeeSource = readSessionRoute('employee/booking.public.appointment.session.employee.route.tsx');
+    const profileCardSource = readSessionRoute('employee/_components/profile-card.tsx');
     const selectServicesSource = readSessionRoute(
       'select-services/booking.public.appointment.session.select-services.route.tsx',
     );
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
+    const bookingLinkSource = readWorkspaceFile('app/routes/booking/public/_components/booking-link.tsx');
+    const bookingActionStylesSource = readWorkspaceFile(
+      'app/routes/booking/public/_components/booking-action-styles.ts',
+    );
     const overviewSource = readSessionRoute('overview/booking.public.appointment.session.overview.route.tsx');
 
-    expect(employeeSource).toContain('loading={isSubmittingProfile}');
-    expect(employeeSource).toContain('disabled={isSubmitting}');
-    expect(employeeSource).toContain('disabled: !selectedProfileId || isSubmitting');
-    expect(selectServicesSource).toContain('loading: isSubmitting');
-    expect(selectServicesSource).toContain('disabled: !hasSelections || isSubmitting');
-    expect(selectServicesSource).toContain('disabled: isSubmitting');
-    expect(selectTimeSource).toContain('loading: isSubmitting');
-    expect(selectTimeSource).toContain('disabled: !displayTime || isSubmitting');
-    expect(selectTimeSource).toContain('disabled: isSubmitting');
-    expect(overviewSource).toContain('loading: isSubmitting');
-    expect(overviewSource).toContain('disabled: isSubmitting');
+    expect(profileCardSource).toContain('loading={isSubmittingProfile}');
+    expect(profileCardSource).toContain('disabled={isSubmitting}');
+    expect(employeeSource).toContain("const isSubmitting = navigation.state !== 'idle'");
+    expect(employeeSource).toContain('loading={isSubmitting && pendingDestination === routes.selectServices}');
+    expect(employeeSource).toContain('<BookingActionButton type="button" variant="primary" disabled>');
+    expect(selectServicesSource).toContain('loading={isSubmitting}');
+    expect(selectServicesSource).toContain('disabled={!hasSelections || isSubmitting}');
+    expect(selectServicesSource).toContain("const isSubmitting = navigation.state !== 'idle'");
+    expect(selectServicesSource).toContain('<fieldset disabled={isSubmitting} className="contents">');
+    expect(selectServicesSource).toContain("isSubmitting ? 'Finner ledige tider...' : 'Fortsett'");
+    expect(selectServicesSource).toContain(
+      '<BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting} className="invisible">',
+    );
+    expect(selectTimeSource).toContain('disabled={isSubmitting}');
+    expect(selectTimeSource).toContain("const isSubmitting = navigation.state !== 'idle' || isSelectingTime");
+    expect(selectTimeSource).toContain('<fieldset disabled={isSubmitting} className="contents">');
+    expect(selectTimeSource).toContain(
+      '<BookingLink to={routes.contact} variant="primary" loading={isContinuing} disabled={isSubmitting}>',
+    );
+    expect(selectTimeSource).toContain("isContinuing ? 'Går videre...' : 'Fortsett'");
+    expect(bookingLinkSource).toContain('aria-busy={loading || undefined}');
+    expect(bookingLinkSource).toContain('aria-disabled={isDisabled}');
+    expect(bookingLinkSource).toContain("isDisabled && 'pointer-events-none cursor-not-allowed opacity-50'");
+    expect(bookingActionStylesSource).toContain('export const bookingActionBaseClass');
+    expect(overviewSource).toContain('loading={isConfirming}');
+    expect(overviewSource).toContain('disabled={isSubmitting}');
+    expect(overviewSource).toContain("const isSubmitting = navigation.state !== 'idle'");
   });
 
-  it('guards useSubmit-based time selection against rapid double submit', () => {
+  it('keeps cancellation actions pending through redirect loading', () => {
+    const cancellationSource = readWorkspaceFile(
+      'app/routes/booking/public/appointment/cancel/booking.public.appointment.cancel.route.tsx',
+    );
+    const cancellationByIdSource = readWorkspaceFile(
+      'app/routes/booking/public/appointment/cancel-by-id/booking.public.appointment.cancel-by-id.route.tsx',
+    );
+
+    expect(cancellationSource).toContain("const isSubmitting = navigation.state !== 'idle'");
+    expect(cancellationByIdSource).toContain("const isSubmitting = navigation.state !== 'idle'");
+  });
+
+  it('saves time selection through one visible route-owned form and continues with a link', () => {
+    const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
+    const timeSlotButtonSource = readSessionRoute('select-time/_components/time-slot-button.tsx');
+    const quickBookButtonSource = readSessionRoute('select-time/_components/quick-book-button.tsx');
+
+    expect(selectTimeSource).toContain('<startTimeFetcher.Form method="post" preventScrollReset>');
+    expect(selectTimeSource).toContain(
+      "const pendingStartTime = startTimeFetcher.formData?.get('startTime') as string | null",
+    );
+    expect(selectTimeSource).toContain('const displayTime = pendingStartTime || selectedStartTime || null');
+    expect(timeSlotButtonSource).toContain('name="startTime"');
+    expect(timeSlotButtonSource).toContain('value={time}');
+    expect(timeSlotButtonSource).toContain('type="submit"');
+    expect(quickBookButtonSource).toContain('name="startTime"');
+    expect(quickBookButtonSource).toContain('value={slot.time}');
+    expect(selectTimeSource).toContain('return redirect(routes.selectTime)');
+    expect(selectTimeSource).toContain('to={routes.contact}');
+    expect(selectTimeSource).not.toContain('loaderData.navigation');
+    expect(selectTimeSource).not.toContain("const intent = formData.get('intent') as string | null");
+    expect(selectTimeSource).not.toContain("if (intent === 'continue')");
+    expect(selectTimeSource).not.toContain('return redirect(routes.contact)');
+    expect(selectTimeSource).not.toContain("const continueFormId = 'booking-select-time-continue-form'");
+    expect(selectTimeSource).not.toContain('form: continueFormId');
+    expect(selectTimeSource).not.toContain("buttonType: 'submit'");
+    expect(selectTimeSource).not.toContain('BookingBottomActionBar');
+    expect(selectTimeSource).not.toContain('useSubmit');
+    expect(selectTimeSource).not.toContain('submitInFlightRef');
+    expect(selectTimeSource).not.toContain('submitFormId');
+  });
+
+  it('uses backend session selectedStartTime as the selected time state', () => {
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
 
-    expect(selectTimeSource).toContain('const submitInFlightRef = useRef(false)');
-    expect(selectTimeSource).toContain('if (isSubmitting || submitInFlightRef.current)');
-    expect(selectTimeSource).toContain('submitInFlightRef.current = true');
-    expect(selectTimeSource).toContain("if (navigation.state === 'idle')");
+    expect(selectTimeSource).toContain("const selectedStartTime = session.selectedStartTime ?? ''");
+    expect(selectTimeSource).toContain(
+      "const pendingStartTime = startTimeFetcher.formData?.get('startTime') as string | null",
+    );
+    expect(selectTimeSource).toContain('const displayTime = pendingStartTime || selectedStartTime || null');
+    expect(selectTimeSource).not.toContain('setSelectedTime');
+    expect(selectTimeSource).not.toContain('const [selectedTime');
+    expect(selectTimeSource).not.toContain('normalizeToOsloIso');
+    expect(selectTimeSource).not.toContain('action: loaderData.navigation.contact');
   });
 });

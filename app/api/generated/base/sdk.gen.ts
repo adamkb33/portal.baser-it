@@ -3,12 +3,16 @@
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
 import type {
+  AccountCompletionStatusData,
+  AccountCompletionStatusResponses,
   AddCompanyRoleData,
   AddCompanyRoleResponses,
   AddProductsToCompanyData,
   AddProductsToCompanyResponses,
   CancelCompanyUserInviteData,
   CancelCompanyUserInviteResponses,
+  ChallengeStatusData,
+  ChallengeStatusResponses,
   ChangePasswordData,
   ChangePasswordResponses,
   ChangeUnverifiedEmailData,
@@ -17,6 +21,8 @@ import type {
   ChangeUnverifiedMobileResponses,
   CompanySignInData,
   CompanySignInResponses,
+  CompleteData,
+  CompleteResponses,
   CreateCompanyData,
   CreateCompanyResponses,
   CreateContact1Data,
@@ -93,6 +99,8 @@ import type {
   GetUserContextResponses,
   GetUserData,
   GetUserResponses,
+  IdentifyData,
+  IdentifyResponses,
   InviteCompanyUserData,
   InviteCompanyUserResponses,
   InviteUserData,
@@ -113,6 +121,8 @@ import type {
   RefreshResponses,
   RequestDeleteRoleData,
   RequestDeleteRoleResponses,
+  ResendChallengeData,
+  ResendChallengeResponses,
   ResendVerificationData,
   ResendVerificationEmailOnlyData,
   ResendVerificationEmailOnlyResponses,
@@ -165,12 +175,14 @@ import type {
   ValidateProductResponses,
   VerificationStatusData,
   VerificationStatusResponses,
+  VerifyData,
   VerifyEmailData,
   VerifyEmailResponses,
   VerifyGoogleTokenData,
   VerifyGoogleTokenResponses,
   VerifyMobileData,
   VerifyMobileResponses,
+  VerifyResponses,
 } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<
@@ -364,6 +376,17 @@ export class Base {
     });
   }
 
+  public static complete<ThrowOnError extends boolean = false>(options: Options<CompleteData, ThrowOnError>) {
+    return (options.client ?? client).post<CompleteResponses, unknown, ThrowOnError>({
+      url: '/base-service/public/account/complete',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  }
+
   public static validateCompanyUsers<ThrowOnError extends boolean = false>(
     options: Options<ValidateCompanyUsersData, ThrowOnError>,
   ) {
@@ -422,6 +445,72 @@ export class Base {
     return (options.client ?? client).post<FindByIdsResponses, unknown, ThrowOnError>({
       security: [{ scheme: 'bearer', type: 'http' }],
       url: '/base-service/internal/users/batch',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  }
+
+  public static verify<ThrowOnError extends boolean = false>(options: Options<VerifyData, ThrowOnError>) {
+    return (options.client ?? client).post<VerifyResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/internal/guest-identity/verify',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  }
+
+  public static resendChallenge<ThrowOnError extends boolean = false>(
+    options: Options<ResendChallengeData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).post<ResendChallengeResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/internal/guest-identity/resend-challenge',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  }
+
+  public static identify<ThrowOnError extends boolean = false>(options: Options<IdentifyData, ThrowOnError>) {
+    return (options.client ?? client).post<IdentifyResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/internal/guest-identity/identify',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  }
+
+  public static challengeStatus<ThrowOnError extends boolean = false>(
+    options: Options<ChallengeStatusData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).post<ChallengeStatusResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/internal/guest-identity/challenge-status',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  }
+
+  public static accountCompletionStatus<ThrowOnError extends boolean = false>(
+    options: Options<AccountCompletionStatusData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).post<AccountCompletionStatusResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/internal/guest-identity/account-completion-status',
       ...options,
       headers: {
         'Content-Type': 'application/json',

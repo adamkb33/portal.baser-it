@@ -72,19 +72,10 @@ export const StepHelpers = {
  */
 export const BOOKING_STEPS: BookingStep[] = [
   {
-    id: 'contact',
-    routeId: 'booking.public.appointment.session.contact',
-    routePath: 'contact',
-    order: 1,
-    name: 'Bruker',
-    description: 'Logg inn for å fortsette',
-    isRequired: true,
-  },
-  {
     id: 'employee',
     routeId: 'booking.public.appointment.session.employee',
     routePath: 'employee',
-    order: 2,
+    order: 1,
     name: 'Velg behandler',
     description: 'Velg ønsket behandler',
     isRequired: true,
@@ -93,7 +84,7 @@ export const BOOKING_STEPS: BookingStep[] = [
     id: 'select-services',
     routeId: 'booking.public.appointment.session.select-services',
     routePath: 'select-services',
-    order: 3,
+    order: 2,
     name: 'Velg tjenester',
     description: 'Velg tjenester du ønsker',
     isRequired: true,
@@ -102,9 +93,18 @@ export const BOOKING_STEPS: BookingStep[] = [
     id: 'select-time',
     routeId: 'booking.public.appointment.session.select-time',
     routePath: 'select-time',
-    order: 4,
+    order: 3,
     name: 'Velg tidspunkt',
     description: 'Velg dato og tid for avtalen',
+    isRequired: true,
+  },
+  {
+    id: 'contact',
+    routeId: 'booking.public.appointment.session.contact',
+    routePath: 'contact',
+    order: 4,
+    name: 'Kontakt',
+    description: 'Legg inn kontaktinformasjon',
     isRequired: true,
   },
   {
@@ -210,7 +210,7 @@ export function canProceedToNextStep(
   const validations: Record<string, () => { canProceed: boolean; reason?: string }> = {
     contact: () => ({
       canProceed: !!session.userId,
-      reason: !session.userId ? 'Bruker mangler' : undefined,
+      reason: !session.userId ? 'Kontaktinformasjon mangler' : undefined,
     }),
 
     employee: () => ({
