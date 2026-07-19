@@ -1,7 +1,7 @@
 import type { Route } from './+types/booking.public.appointment.session.route';
 import { Loader2 } from 'lucide-react';
 import { redirect } from 'react-router';
-import { AppointmentsController } from '~/api/generated/booking';
+import { AppointmentsController, type AppointmentSessionDto } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import {
   parseBookingContext,
@@ -131,43 +131,31 @@ async function sessionLoader(args: Route.LoaderArgs) {
     const session = sessionResult.status === 'found' ? sessionResult.session : null;
 
     if (session) {
-      if (companyIdParam) {
-        const companyIdNumber = parseCompanyId(companyIdParam);
+      // Only switch companies when the URL gives us a genuinely different, valid companyId.
+      // A missing or malformed companyId must never discard an existing, valid session.
+      const companyIdNumber = companyIdParam ? parseCompanyId(companyIdParam) : null;
 
-        if (companyIdNumber === null) {
-          return redirectWithError(args.request, routes.appointment, 'Selskaps-ID er ugyldig.');
-        }
+      if (companyIdNumber !== null && session.companyId !== companyIdNumber) {
+        const clearSessionCookie = await withBookingBackendCall(
+          { request: args.request, routeId: ROUTE_ID, step: 'session', call: 'delete-session', session },
+          () => AppointmentSessionService.delete(args.request),
+        );
+        const created = await withBookingBackendCall(
+          {
+            request: args.request,
+            routeId: ROUTE_ID,
+            step: 'session',
+            call: 'create-session',
+            context: { companyId: companyIdNumber },
+          },
+          () => AppointmentSessionService.create(companyIdNumber, args.request),
+        );
+        const headers = new Headers();
+        appendSetCookie(headers, clearSessionCookie);
+        appendSetCookie(headers, created.setCookieHeader);
+        appendSetCookie(headers, await createBookingContextCookie(nextContext, companyIdNumber));
 
-        if (session.companyId === companyIdNumber) {
-          return redirect(routes.employee, {
-            headers: {
-              'Set-Cookie': await createBookingContextCookie(nextContext, session.companyId),
-            },
-          });
-        }
-
-        if (session.companyId !== companyIdNumber) {
-          const clearSessionCookie = await withBookingBackendCall(
-            { request: args.request, routeId: ROUTE_ID, step: 'session', call: 'delete-session', session },
-            () => AppointmentSessionService.delete(args.request),
-          );
-          const created = await withBookingBackendCall(
-            {
-              request: args.request,
-              routeId: ROUTE_ID,
-              step: 'session',
-              call: 'create-session',
-              context: { companyId: companyIdNumber },
-            },
-            () => AppointmentSessionService.create(companyIdNumber, args.request),
-          );
-          const headers = new Headers();
-          appendSetCookie(headers, clearSessionCookie);
-          appendSetCookie(headers, created.setCookieHeader);
-          appendSetCookie(headers, await createBookingContextCookie(nextContext, companyIdNumber));
-
-          return redirect(routes.employee, { headers });
-        }
+        return redirect(routes.employee, { headers });
       }
 
       return redirect(routes.employee, {

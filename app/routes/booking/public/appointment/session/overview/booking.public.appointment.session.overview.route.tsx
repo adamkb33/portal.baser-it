@@ -56,8 +56,10 @@ export async function loader({ request }: Route.LoaderArgs) {
         companySummary,
       };
     } catch (error) {
+      // Session/company context is still valid here (requireBookingReady already passed) —
+      // stay inside the booking flow instead of ejecting to the company picker.
       const { message } = resolveErrorPayload(error, 'Kunne ikke hente oversikt');
-      return redirectWithError(request, routes.appointment, message);
+      return redirectWithError(request, routes.selectTime, message);
     }
   });
 }
@@ -92,8 +94,11 @@ export async function action({ request }: Route.ActionArgs) {
 
       return redirect(`${routes.success}?companyId=${session.companyId}&appointmentId=${appointmentId}`);
     } catch (error) {
+      // Same as above — e.g. the slot became unavailable between selection and submit.
+      // The session/company is still valid, so send them back to pick a new time
+      // instead of ejecting to the company picker.
       const { message } = resolveErrorPayload(error, 'Kunne ikke bekrefte timebestilling');
-      return redirectWithError(request, routes.appointment, message);
+      return redirectWithError(request, routes.selectTime, message);
     }
   });
 }

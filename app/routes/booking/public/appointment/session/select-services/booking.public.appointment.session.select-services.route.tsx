@@ -284,7 +284,11 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
         ))}
       </Form>
       <BookingFooterNav
-        message={atServiceLimit ? 'Du har valgt maks 5 tjenester. Fjern en for å velge en annen.' : undefined}
+        message={
+          atServiceLimit
+            ? 'Du kan velge opptil 5 tjenester. Fjern én av de valgte tjenestene for å velge en ny.'
+            : undefined
+        }
       >
         <BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting} className="invisible">
           Tilbake
