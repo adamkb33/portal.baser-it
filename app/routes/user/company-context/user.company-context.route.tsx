@@ -82,6 +82,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function CompanyContextPage({ loaderData }: Route.ComponentProps) {
   const companies = loaderData?.companyContexts || [];
+  const returnTo = loaderData?.returnTo ?? null;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
 
@@ -117,6 +118,7 @@ export default function CompanyContextPage({ loaderData }: Route.ComponentProps)
               <Form key={company.id} method="post" className="h-full">
                 <input type="hidden" name="companyId" value={company.id} />
                 <input type="hidden" name="orgNumber" value={company.orgNumber} />
+                <input type="hidden" name="returnTo" value={returnTo ?? ''} />
                 <SelectionCard
                   type="submit"
                   className="h-full"
