@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Form, Link, data, redirect, useActionData, useNavigation } from 'react-router';
 import { RotateCcw } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { authService } from '~/lib/auth-service';
 import { redirectWithError } from '~/lib/flash-message.server';
@@ -42,9 +43,11 @@ export async function loader({ request }: Route.LoaderArgs) {
       const requirementsResponse = await withBookingBackendCall(
         { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'get-requirements', session },
         () =>
-          PublicAppointmentSessionController.getAppointmentSessionRequirements({
-            path: { sessionId: session.sessionId },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.getAppointmentSessionRequirements({
+              path: { sessionId: session.sessionId },
+            }),
+          ),
       );
       const requirements = requirementsResponse.data?.data;
 
@@ -94,9 +97,11 @@ export async function action({ request }: Route.ActionArgs) {
         await withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'clear-user', session },
           () =>
-            PublicAppointmentSessionController.clearAppointmentSessionUser({
-              path: { sessionId: session.sessionId },
-            }),
+            withAuth(request, () =>
+              PublicAppointmentSessionController.clearAppointmentSessionUser({
+                path: { sessionId: session.sessionId },
+              }),
+            ),
         );
       } catch {
         // Nothing attached yet — expected for pending guests. The form is still the right place.
@@ -109,9 +114,11 @@ export async function action({ request }: Route.ActionArgs) {
         await withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'verify-mobile', call: 'resend-mobile-challenge', session },
           () =>
-            PublicAppointmentSessionController.resendAppointmentSessionMobileChallenge({
-              path: { sessionId: session.sessionId },
-            }),
+            withAuth(request, () =>
+              PublicAppointmentSessionController.resendAppointmentSessionMobileChallenge({
+                path: { sessionId: session.sessionId },
+              }),
+            ),
         );
         return data<VerifyMobileActionData>({ ok: true, message: 'Ny SMS-kode er sendt.' });
       } catch (error) {
@@ -139,13 +146,15 @@ export async function action({ request }: Route.ActionArgs) {
           context: { hasChallengeId: Boolean(challengeId) },
         },
         () =>
-          PublicAppointmentSessionController.verifyAppointmentSessionUserMobile({
-            path: { sessionId: session.sessionId },
-            body: {
-              challengeId,
-              code,
-            },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.verifyAppointmentSessionUserMobile({
+              path: { sessionId: session.sessionId },
+              body: {
+                challengeId,
+                code,
+              },
+            }),
+          ),
       );
       const payload = response.data?.data;
 

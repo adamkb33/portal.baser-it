@@ -163,9 +163,11 @@ export async function action({ request }: Route.ActionArgs) {
         await withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'contact', call: 'clear-session-user', session },
           () =>
-            PublicAppointmentSessionController.clearAppointmentSessionUser({
-              path: { sessionId: session.sessionId },
-            }),
+            withAuth(request, () =>
+              PublicAppointmentSessionController.clearAppointmentSessionUser({
+                path: { sessionId: session.sessionId },
+              }),
+            ),
         );
         return redirect(`${routes.contact}?form=1`);
       } catch (error) {
@@ -181,7 +183,12 @@ export async function action({ request }: Route.ActionArgs) {
       try {
         const response = await withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'contact', call: 'resume-session', session },
-          () => PublicAppointmentSessionController.resumeAppointmentSession({ path: { sessionId: session.sessionId } }),
+          () =>
+            withAuth(request, () =>
+              PublicAppointmentSessionController.resumeAppointmentSession({
+                path: { sessionId: session.sessionId },
+              }),
+            ),
         );
         const authTokens = response.data?.data?.authTokens;
         const headers = authTokens

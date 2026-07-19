@@ -3,6 +3,7 @@ import type { Route } from './+types/booking.public.appointment.success.route';
 import { Check, MapPin, Calendar, Mail, Bell, Clock, ExternalLink, Sparkles, PartyPopper, Phone } from 'lucide-react';
 import { PublicCompanyController } from '~/api/generated/base';
 import { AppointmentsController, PublicAppointmentSessionController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
@@ -46,11 +47,13 @@ async function successLoader({ request }: Route.LoaderArgs) {
         context: { companyId: parseInt(companyId) },
       },
       () =>
-        AppointmentsController.validateCompanyBooking({
-          path: {
-            companyId: parseInt(companyId),
-          },
-        }),
+        withAuth(request, () =>
+          AppointmentsController.validateCompanyBooking({
+            path: {
+              companyId: parseInt(companyId),
+            },
+          }),
+        ),
     );
 
     const companyResponse = await withBookingBackendCall(
@@ -62,11 +65,13 @@ async function successLoader({ request }: Route.LoaderArgs) {
         context: { companyId: parseInt(companyId) },
       },
       () =>
-        PublicCompanyController.publicGetCompanyById({
-          path: {
-            companyId: parseInt(companyId),
-          },
-        }),
+        withAuth(request, () =>
+          PublicCompanyController.publicGetCompanyById({
+            path: {
+              companyId: parseInt(companyId),
+            },
+          }),
+        ),
     );
 
     if (!companyResponse.data?.data) {
@@ -83,11 +88,13 @@ async function successLoader({ request }: Route.LoaderArgs) {
           context: { appointmentId: parsedAppointmentId },
         },
         () =>
-          PublicAppointmentSessionController.getAppointmentById({
-            query: {
-              appointmentId: parsedAppointmentId,
-            },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.getAppointmentById({
+              query: {
+                appointmentId: parsedAppointmentId,
+              },
+            }),
+          ),
       );
       return data({
         companySummary: companyResponse.data.data,

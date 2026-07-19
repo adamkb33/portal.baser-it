@@ -3,6 +3,7 @@ import { Form, data, redirect, useNavigation } from 'react-router';
 import { Search, Sparkles, X } from 'lucide-react';
 import type { GroupedServiceDto } from '~/api/generated/booking';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { BookingActionButton } from '~/routes/booking/public/_components/booking-action-button';
@@ -37,15 +38,17 @@ export async function loader({ request }: Route.LoaderArgs) {
         withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'select-services', call: 'get-profile-services', session },
           () =>
-            PublicAppointmentSessionController.getAppointmentSessionProfileServices({
-              query: {
-                sessionId: session.sessionId,
-              },
-            }),
+            withAuth(request, () =>
+              PublicAppointmentSessionController.getAppointmentSessionProfileServices({
+                query: {
+                  sessionId: session.sessionId,
+                },
+              }),
+            ),
         ),
         withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'select-services', call: 'get-company-summary', session },
-          () => getBookingCompanySummary(session.companyId),
+          () => getBookingCompanySummary(session.companyId, request),
         ),
       ]);
 
@@ -98,14 +101,16 @@ export async function action({ request }: Route.ActionArgs) {
           context: { selectedServicesCount: selectedServices.length },
         },
         () =>
-          PublicAppointmentSessionController.selectAppointmentSessionProfileServices({
-            body: {
-              selectedServices,
-            },
-            query: {
-              sessionId: session.sessionId,
-            },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.selectAppointmentSessionProfileServices({
+              body: {
+                selectedServices,
+              },
+              query: {
+                sessionId: session.sessionId,
+              },
+            }),
+          ),
       );
 
       return redirect(routes.selectTime);

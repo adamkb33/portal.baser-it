@@ -1,5 +1,6 @@
 import { data } from 'react-router';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { redirectWithError } from '~/lib/flash-message.server';
@@ -47,15 +48,17 @@ export async function loader({ request }: Route.LoaderArgs) {
         withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'select-time', call: 'get-schedules', session },
           () =>
-            PublicAppointmentSessionController.getAppointmentSessionSchedules({
-              query: {
-                sessionId: session.sessionId,
-              },
-            }),
+            withAuth(request, () =>
+              PublicAppointmentSessionController.getAppointmentSessionSchedules({
+                query: {
+                  sessionId: session.sessionId,
+                },
+              }),
+            ),
         ),
         withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'select-time', call: 'get-company-summary', session },
-          () => getBookingCompanySummary(session.companyId),
+          () => getBookingCompanySummary(session.companyId, request),
         ),
       ]);
       const schedules = schedulesResponse.data?.data || [];
@@ -99,12 +102,14 @@ export async function action({ request }: Route.ActionArgs) {
           context: { startTime },
         },
         () =>
-          PublicAppointmentSessionController.submitAppointmentSessionStartTime({
-            query: {
-              sessionId: session.sessionId,
-              selectedStartTime: startTime,
-            },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.submitAppointmentSessionStartTime({
+              query: {
+                sessionId: session.sessionId,
+                selectedStartTime: startTime,
+              },
+            }),
+          ),
       );
 
       if (!saveResponse.data?.data?.selectedStartTime) {

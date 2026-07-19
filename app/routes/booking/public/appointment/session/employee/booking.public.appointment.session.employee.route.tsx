@@ -1,5 +1,6 @@
 import { Form, data, redirect, useNavigation } from 'react-router';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
@@ -29,16 +30,18 @@ export async function loader({ request }: Route.LoaderArgs) {
       const { session } = guardResult;
       const companySummary = await withBookingBackendCall(
         { request, routeId: ROUTE_ID, step: 'employee', call: 'get-company-summary', session },
-        () => getBookingCompanySummary(session.companyId),
+        () => getBookingCompanySummary(session.companyId, request),
       );
       const profilesResponse = await withBookingBackendCall(
         { request, routeId: ROUTE_ID, step: 'employee', call: 'get-profiles', session },
         () =>
-          PublicAppointmentSessionController.getAppointmentSessionProfiles({
-            query: {
-              sessionId: session.sessionId,
-            },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.getAppointmentSessionProfiles({
+              query: {
+                sessionId: session.sessionId,
+              },
+            }),
+          ),
       );
 
       const profiles = profilesResponse.data?.data || [];
@@ -50,12 +53,14 @@ export async function loader({ request }: Route.LoaderArgs) {
           await withBookingBackendCall(
             { request, routeId: ROUTE_ID, step: 'employee', call: 'select-profile', session },
             () =>
-              PublicAppointmentSessionController.selectAppointmentSessionProfile({
-                query: {
-                  sessionId: session.sessionId,
-                  selectedProfileId: onlyProfile.id,
-                },
-              }),
+              withAuth(request, () =>
+                PublicAppointmentSessionController.selectAppointmentSessionProfile({
+                  query: {
+                    sessionId: session.sessionId,
+                    selectedProfileId: onlyProfile.id,
+                  },
+                }),
+              ),
           );
         }
 
@@ -106,12 +111,14 @@ export async function action({ request }: Route.ActionArgs) {
           context: { selectedProfileId: Number(selectedProfileId) },
         },
         () =>
-          PublicAppointmentSessionController.selectAppointmentSessionProfile({
-            query: {
-              sessionId: session.sessionId,
-              selectedProfileId: Number(selectedProfileId),
-            },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.selectAppointmentSessionProfile({
+              query: {
+                sessionId: session.sessionId,
+                selectedProfileId: Number(selectedProfileId),
+              },
+            }),
+          ),
       );
 
       return redirect(routes.selectServices);

@@ -2,6 +2,7 @@ import { data, Form, useActionData, useNavigation, useLoaderData } from 'react-r
 import { useState } from 'react';
 import type { Route } from './+types/booking.public.appointment.cancel.route';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithInfo } from '~/lib/flash-message.server';
 import { Calendar, Clock, User, Mail, Phone, Sparkles, XCircle } from 'lucide-react';
@@ -86,9 +87,11 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   try {
-    const response = await PublicAppointmentSessionController.getAppointmentById({
-      query: { appointmentId },
-    });
+    const response = await withAuth(request, () =>
+      PublicAppointmentSessionController.getAppointmentById({
+        query: { appointmentId },
+      }),
+    );
     const appointment = response.data?.data ?? null;
 
     if (!appointment) {
@@ -166,11 +169,13 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   try {
-    await PublicAppointmentSessionController.cancelAppointment({
-      query: {
-        token,
-      },
-    });
+    await withAuth(request, () =>
+      PublicAppointmentSessionController.cancelAppointment({
+        query: {
+          token,
+        },
+      }),
+    );
 
     return redirectWithInfo(request, '/', 'Avbestillingen er registrert.');
   } catch (err) {

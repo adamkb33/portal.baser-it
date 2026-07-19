@@ -2,6 +2,7 @@ import type { Route } from './+types/booking.public.appointment.session.route';
 import { Loader2 } from 'lucide-react';
 import { redirect } from 'react-router';
 import { AppointmentsController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import {
   parseBookingContext,
   resolveBookingTheme,
@@ -29,12 +30,14 @@ async function createBookingContextCookie(context: BookingContext, companyId: nu
   });
 }
 
-async function validateCompanyBooking(companyId: number) {
-  await AppointmentsController.validateCompanyBooking({
-    path: {
-      companyId,
-    },
-  });
+async function validateCompanyBooking(companyId: number, request: Request) {
+  await withAuth(request, () =>
+    AppointmentsController.validateCompanyBooking({
+      path: {
+        companyId,
+      },
+    }),
+  );
 }
 
 export async function loader(args: Route.LoaderArgs) {
@@ -104,7 +107,7 @@ async function sessionLoader(args: Route.LoaderArgs) {
           call: 'validate-company-booking',
           context: { companyId: companyIdNumber },
         },
-        () => validateCompanyBooking(companyIdNumber),
+        () => validateCompanyBooking(companyIdNumber, args.request),
       );
 
       const created = await withBookingBackendCall(
@@ -192,7 +195,7 @@ async function sessionLoader(args: Route.LoaderArgs) {
         call: 'validate-company-booking',
         context: { companyId: companyIdNumber },
       },
-      () => validateCompanyBooking(companyIdNumber),
+      () => validateCompanyBooking(companyIdNumber, args.request),
     );
 
     const created = await withBookingBackendCall(

@@ -1,4 +1,5 @@
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { BookingActionButton } from '~/routes/booking/public/_components/booking-action-button';
@@ -31,15 +32,17 @@ export async function loader({ request }: Route.LoaderArgs) {
       const { session } = guardResult;
       const [response, companySummary] = await Promise.all([
         withBookingBackendCall({ request, routeId: ROUTE_ID, step: 'overview', call: 'get-overview', session }, () =>
-          PublicAppointmentSessionController.getAppointmentSessionOverview({
-            query: {
-              sessionId: session.sessionId,
-            },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.getAppointmentSessionOverview({
+              query: {
+                sessionId: session.sessionId,
+              },
+            }),
+          ),
         ),
         withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'overview', call: 'get-company-summary', session },
-          () => getBookingCompanySummary(session.companyId),
+          () => getBookingCompanySummary(session.companyId, request),
         ),
       ]);
 
@@ -73,11 +76,13 @@ export async function action({ request }: Route.ActionArgs) {
       const submitResponse = await withBookingBackendCall(
         { request, routeId: ROUTE_ID, step: 'overview', call: 'submit-appointment', session },
         () =>
-          PublicAppointmentSessionController.submitAppointmentSession({
-            query: {
-              sessionId: session.sessionId,
-            },
-          }),
+          withAuth(request, () =>
+            PublicAppointmentSessionController.submitAppointmentSession({
+              query: {
+                sessionId: session.sessionId,
+              },
+            }),
+          ),
       );
 
       const appointmentId = submitResponse.data?.data?.appointmentId;
