@@ -93,6 +93,7 @@ export type ApiMessage = {
     | 'INVALID_REQUEST_PARAMETERS'
     | 'REQUEST_TIMEOUT'
     | 'INTERNAL_SERVER_ERROR'
+    | 'IMAGE_STORAGE_NOT_IMPLEMENTED'
     | 'PROFILE_NOT_FOUND'
     | 'CONTACT_NOT_FOUND'
     | 'COMPANY_NOT_FOUND'
@@ -771,6 +772,8 @@ export type PublicVerifyMobileResponseDto = {
   maskedMobile?: string;
   completionToken?: string;
   nextStep: 'CONTACT_FORM' | 'VERIFY_MOBILE' | 'DONE';
+  mobileVerificationToken?: string;
+  mobileVerificationTokenExpiresAt?: string;
 };
 
 export type ApiResponsePublicPendingUserResponseDto = {
@@ -839,6 +842,7 @@ export type PublicIdentifyDto = {
   familyName: string;
   mobileNumber: string;
   email?: string;
+  mobileVerificationToken?: string;
 };
 
 export type ApiResponsePublicIdentifyResponseDto = {
@@ -856,6 +860,12 @@ export type PublicIdentifyResponseDto = {
   expiresAt?: string;
   resendAvailableAt?: string;
   nextStep: 'CONTACT_FORM' | 'VERIFY_MOBILE' | 'DONE';
+  userId?: number;
+  authTokens?: AuthenticationTokenDto;
+  isReturning?: boolean;
+  accountStatus?: 'GUEST' | 'FULL';
+  displayName?: string;
+  completionToken?: string;
 };
 
 export type ApiResponsePublicSubmitAppointmentSessionResponseDto = {
@@ -1329,6 +1339,8 @@ export type InternalVerifyGuestMobileResponseDto = {
   displayName?: string;
   maskedMobile?: string;
   completionToken?: string;
+  mobileVerificationToken?: string;
+  mobileVerificationTokenExpiresAt?: string;
 };
 
 export type InternalBookingChallengeResendDto = {
@@ -1363,6 +1375,7 @@ export type InternalIdentifyGuestDto = {
   mobileNumber: string;
   email?: string;
   requesterIp?: string;
+  mobileVerificationToken?: string;
 };
 
 export type ApiResponseInternalIdentifyGuestResponseDto = {
@@ -1375,10 +1388,11 @@ export type ApiResponseInternalIdentifyGuestResponseDto = {
 };
 
 export type InternalIdentifyGuestResponseDto = {
-  challengeId: string;
-  maskedMobile: string;
-  expiresAt: string;
+  challengeId?: string;
+  maskedMobile?: string;
+  expiresAt?: string;
   resendAvailableAt?: string;
+  skipVerification?: InternalVerifyGuestMobileResponseDto;
 };
 
 export type InternalBookingChallengeStatusRequestDto = {
