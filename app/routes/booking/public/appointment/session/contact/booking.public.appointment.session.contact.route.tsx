@@ -20,6 +20,7 @@ import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route
 import { Button, Input, Label, Notice, Stack, Text } from '~/ui';
 import { submitContactFormSchema } from './_schemas/submit-contact.form.schema';
 import { BOOKING_CONTACT_LABEL_CLASS, BOOKING_CONTACT_PAGE_HEADER_CLASS } from './_utils/booking-contact-theme';
+import { mobileVerificationTokenCookie } from './_utils/mobile-verification-token.cookie.server';
 import type { Route } from './+types/booking.public.appointment.session.contact.route';
 
 const ROUTE_ID = 'booking.public.appointment.session.contact';
@@ -248,6 +249,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     try {
+      const mobileVerificationToken = await mobileVerificationTokenCookie.parse(request.headers.get('Cookie'));
       const response = await withBookingBackendCall(
         {
           request,
@@ -266,6 +268,8 @@ export async function action({ request }: Route.ActionArgs) {
                 familyName: parsed.data.familyName,
                 mobileNumber: parsed.data.mobileNumber,
                 email: parsed.data.email, // schema transforms '' → undefined; only sent when filled
+                mobileVerificationToken:
+                  typeof mobileVerificationToken === 'string' ? mobileVerificationToken : undefined,
               },
             }),
           ),
@@ -278,7 +282,19 @@ export async function action({ request }: Route.ActionArgs) {
         nextStep: result?.nextStep ?? null,
       });
 
-      if (result?.nextStep === 'DONE') return redirect(routes.overview);
+      if (result?.nextStep === 'DONE') {
+        // Same-shape success as a real OTP verify (this is the remembered-mobile skip path) —
+        // mint the login cookies exactly like verify-mobile does before continuing.
+        const headers = result.authTokens
+          ? await authService.setAuthCookies(
+              result.authTokens.accessToken,
+              result.authTokens.refreshToken,
+              result.authTokens.accessTokenExpiresAt,
+              result.authTokens.refreshTokenExpiresAt,
+            )
+          : undefined;
+        return redirect(routes.overview, headers ? { headers } : undefined);
+      }
       const challengeParam = result?.challengeId ? `?challengeId=${result.challengeId}` : '';
       return redirect(`${routes.contactVerifyMobile}${challengeParam}`);
     } catch (error) {

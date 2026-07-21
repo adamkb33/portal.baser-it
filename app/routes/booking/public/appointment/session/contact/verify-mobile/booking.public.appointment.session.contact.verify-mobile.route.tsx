@@ -14,6 +14,7 @@ import { requireBookingSession } from '~/routes/booking/public/_utils/booking.re
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { Button, Notice, Stack, Text, VerificationCodeInput } from '~/ui';
 import { BOOKING_CONTACT_PAGE_HEADER_CLASS } from '../_utils/booking-contact-theme';
+import { mobileVerificationTokenCookie } from '../_utils/mobile-verification-token.cookie.server';
 import type { Route } from './+types/booking.public.appointment.session.contact.verify-mobile.route';
 
 type VerifyMobileActionData =
@@ -171,6 +172,15 @@ export async function action({ request }: Route.ActionArgs) {
         payload.authTokens.accessTokenExpiresAt,
         payload.authTokens.refreshTokenExpiresAt,
       );
+
+      if (payload.mobileVerificationToken && payload.mobileVerificationTokenExpiresAt) {
+        headers.append(
+          'Set-Cookie',
+          await mobileVerificationTokenCookie.serialize(payload.mobileVerificationToken, {
+            expires: new Date(payload.mobileVerificationTokenExpiresAt),
+          }),
+        );
+      }
 
       return redirect(routes.overview, { headers });
     } catch (error) {
