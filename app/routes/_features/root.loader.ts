@@ -108,7 +108,8 @@ export const buildResponseData = async (request: Request, accessToken: string, f
     );
   }
 
-  const companyContexts = (userContext as UserContextDto | undefined)?.companies ?? [];
+  const resolvedUserContext = userContext as UserContextDto | undefined;
+  const companyContexts = resolvedUserContext?.companies ?? [];
   if (authPayload?.companyId && companyContexts.length > 0) {
     companySummary = companyContexts.find((entry) => entry.company.id === authPayload.companyId)?.company;
   }
@@ -119,6 +120,7 @@ export const buildResponseData = async (request: Request, accessToken: string, f
 
   return {
     user: authPayload,
+    userProfile: resolvedUserContext?.user ?? (authPayload ? { email: authPayload.email } : null),
     userNavigation: navigation,
     companyContext: companySummary,
     flashMessage,
@@ -139,6 +141,7 @@ export const defaultResponse = async (
   return data(
     {
       user: null,
+      userProfile: null,
       companyContext: null,
       userNavigation: createNavigation(undefined, [], false),
       flashMessage,

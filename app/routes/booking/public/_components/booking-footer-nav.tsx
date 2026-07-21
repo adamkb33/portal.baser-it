@@ -116,21 +116,26 @@ export function BookingFooterNav({
             'visible translate-y-0 opacity-100 transition-[bottom,opacity,transform] duration-300 ease-out motion-reduce:transition-none',
         )}
       >
-        <nav
-          aria-label="Booking handlinger"
-          className={cn(
-            'rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-2 shadow-[var(--shadow-booking-floating)] md:p-2',
-            className,
-          )}
-          {...props}
-        >
+        <div className={cn(message && 'rounded-[var(--radius-booking-panel)] shadow-[var(--shadow-booking-floating)]')}>
           {message && (
-            <div className="mb-2 bg-transparent px-3 py-1.5 text-center text-sm font-normal text-booking-text-muted">
+            <div className="rounded-t-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-b-0 border-booking-border bg-booking-action-muted px-3 py-2 text-center text-sm font-normal">
               {message}
             </div>
           )}
-          <div className={cn('grid w-full gap-2', gridClassByColumns[columns])}>{children}</div>
-        </nav>
+          <nav
+            aria-label="Booking handlinger"
+            className={cn(
+              'border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-2 md:p-2',
+              message
+                ? 'rounded-b-[var(--radius-booking-panel)] rounded-t-none shadow-none'
+                : 'rounded-[var(--radius-booking-panel)] shadow-[var(--shadow-booking-floating)]',
+              className,
+            )}
+            {...props}
+          >
+            <div className={cn('grid w-full gap-2', gridClassByColumns[columns])}>{children}</div>
+          </nav>
+        </div>
       </div>
     </div>
   );

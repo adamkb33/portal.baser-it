@@ -100,7 +100,7 @@ export default function Profile({ loaderData }: Route.ComponentProps) {
       description="Profilinformasjon og passordhåndtering."
       label="Bruker"
       hero={
-        <Panel title="Brukerinfo" description="Informasjon fra autentiseringskontekst.">
+        <Panel title="Brukerinfo">
           <div className="grid gap-2">
             <Text as="p" variant="body-sm">
               Navn: {fullName || 'Ikke registrert'}
@@ -115,7 +115,7 @@ export default function Profile({ loaderData }: Route.ComponentProps) {
         </Panel>
       }
     >
-      <Panel title="Oppdater passord" description="Endre passord for innlogget bruker.">
+      <Panel title="Oppdater passord">
         <Form ref={formRef} method="post" className="space-y-3">
           <FormField
             label="Nåværende passord"

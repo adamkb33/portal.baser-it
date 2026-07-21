@@ -33,27 +33,28 @@ export function ServiceGroup({
       <Accordion
         type="single"
         collapsible
-        className="rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-muted"
+        className="overflow-hidden rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised shadow-[var(--shadow-booking-card)]"
       >
-        <AccordionItem value={String(group.id)} className="border-none">
-          <div className="flex items-start gap-3 px-3 py-3 md:px-4 md:py-4">
-            <AccordionTrigger className="flex-1 p-0 text-left hover:no-underline data-[state=open]:bg-booking-surface-muted">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-base font-bold text-booking-text md:text-lg">{group.name}</h2>
-                  {selectedInGroup > 0 && (
-                    <span className="rounded-[var(--radius-booking-badge)] border-[length:var(--border-booking-card)] border-booking-action bg-booking-action-muted px-2.5 py-0.5 text-xs font-semibold text-booking-action">
-                      {selectedInGroup} valgt
-                    </span>
-                  )}
-                </div>
-                <p className="mt-0.5 text-xs text-booking-text-muted md:text-sm">
-                  {group.services.length} {group.services.length === 1 ? 'tjeneste' : 'tjenester'}
-                </p>
+        <AccordionItem
+          value={String(group.id)}
+          className="rounded-[inherit] border-0 bg-transparent shadow-none data-[state=open]:bg-booking-surface-strong data-[state=open]:shadow-none"
+        >
+          <AccordionTrigger className="w-full bg-transparent px-3 py-3 text-left hover:bg-booking-surface-strong/50 hover:no-underline data-[state=open]:bg-transparent md:px-4 md:py-4">
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <h2 className="text-base font-bold text-booking-text md:text-lg">{group.name}</h2>
+                {selectedInGroup > 0 && (
+                  <span className="rounded-[var(--radius-booking-badge)] border-[length:var(--border-booking-card)] border-booking-action bg-booking-action-muted px-2.5 py-0.5 text-xs font-semibold text-booking-action">
+                    {selectedInGroup} valgt
+                  </span>
+                )}
               </div>
-            </AccordionTrigger>
-          </div>
-          <AccordionContent className="border-t border-booking-border bg-booking-surface-muted p-3 md:p-4">
+              <p className="mt-0.5 text-xs text-booking-text-muted md:text-sm">
+                {group.services.length} {group.services.length === 1 ? 'tjeneste' : 'tjenester'}
+              </p>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="border-t border-booking-border bg-transparent p-3 md:p-4">
             {multiQuantityServices.length > 0 ? (
               <div className="mb-4 rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-card)] border-booking-action/30 bg-booking-action-muted p-3">
                 <div className="flex items-start gap-3">

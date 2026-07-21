@@ -145,6 +145,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
               <div className="flex h-full w-full items-center px-4 lg:px-8">
                 <Navbar
                   navRoutes={userNav}
+                  userProfile={loaderData.userProfile}
                   companyContext={companyContext}
                   hasSidebar={hasSidebar}
                   onOpenSidebar={() => setMobileMenuOpen(true)}
@@ -174,6 +175,7 @@ export default function RootLayout({ loaderData }: Route.ComponentProps) {
             <div className="mx-auto flex h-full w-full max-w-[var(--container-xl)] items-center px-[var(--app-shell-inline-padding)]">
               <Navbar
                 navRoutes={userNav}
+                userProfile={loaderData.userProfile}
                 companyContext={companyContext}
                 hasSidebar={hasSidebar}
                 onOpenSidebar={() => setMobileMenuOpen(true)}
