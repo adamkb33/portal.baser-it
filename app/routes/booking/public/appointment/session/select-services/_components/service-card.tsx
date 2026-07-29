@@ -86,7 +86,7 @@ export function ServiceCard({
 
           <div className="flex items-center gap-1.5 text-booking-text-muted">
             <Clock className="size-4" />
-            <span>{service.duration} min</span>
+            <span>Fra {service.duration} min</span>
           </div>
         </div>
       </div>

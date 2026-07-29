@@ -83,7 +83,7 @@ export function ProfileCard({ profile, isSelected, isSubmitting, isSubmittingPro
                             >
                               <span className="text-sm text-booking-text">{service.name}</span>
                               <div className="flex flex-shrink-0 items-baseline gap-2">
-                                <span className="text-xs text-booking-text-muted">{service.duration} min</span>
+                                <span className="text-xs text-booking-text-muted">Fra {service.duration} min</span>
                                 <span className="text-sm font-medium text-booking-text">{service.price} kr</span>
                               </div>
                             </div>
