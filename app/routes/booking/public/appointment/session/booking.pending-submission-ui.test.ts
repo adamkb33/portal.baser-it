@@ -26,8 +26,6 @@ describe('booking pending submission UI', () => {
 
     expect(markup).toContain('disabled=""');
     expect(markup).toContain('aria-busy="true"');
-    expect(markup).toContain('animate-spin');
-    expect(markup).toContain('Submit booking');
   });
 
   it('verification code input disables its hidden input and visual boxes', () => {
@@ -42,19 +40,6 @@ describe('booking pending submission UI', () => {
 
     expect(markup).toContain('name="code"');
     expect(markup).toContain('disabled=""');
-    expect(markup).toContain('cursor-not-allowed');
-  });
-
-  it('bottom action bar blocks links and buttons while disabled or loading', () => {
-    const source = readWorkspaceFile('app/routes/booking/public/_components/bottom-nav/booking-bottom-action-bar.tsx');
-
-    expect(source).toContain('loading={action.loading}');
-    expect(source).toContain('disabled={action.disabled}');
-    expect(source).toContain('if (action.disabled || action.loading)');
-    expect(source).toContain('event.preventDefault()');
-    expect(source).toContain(
-      "(action.disabled || action.loading) && 'pointer-events-none cursor-not-allowed opacity-50'",
-    );
   });
 
   it('disables contact landing submissions through submission and redirect loading', () => {
@@ -64,10 +49,8 @@ describe('booking pending submission UI', () => {
     expect(source).toContain("navigation.state !== 'idle'");
     expect(source).toContain("loading={pendingIntent === 'identify'}");
     expect(source).toContain('disabled={isSubmitting}');
-    expect(source).toContain("pendingIntent === 'identify' ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'");
-    expect(source).toContain("? 'Åpner innlogging...'");
-    expect(source).toContain("loading={pendingIntent === 'attach'}");
-    expect(source).toContain("loading={pendingIntent === 'resume'}");
+    expect(source).not.toContain("contactState: 'CONTINUE_AS'");
+    expect(source).not.toContain("contactState: 'RESUME'");
     expect(source).not.toContain('ProviderButtons');
   });
 
@@ -76,7 +59,8 @@ describe('booking pending submission UI', () => {
       'contact/sign-in/booking.public.appointment.session.contact.sign-in.route.tsx',
     );
 
-    expect(signInSource).toContain('return redirect(signInHrefBackToContact())');
+    expect(signInSource).toContain('return redirectToSignIn()');
+    expect(signInSource).toContain("'Set-Cookie': await clearManualContactOverride()");
   });
 
   it('disables SMS verification submissions while requests are pending', () => {
@@ -88,9 +72,9 @@ describe('booking pending submission UI', () => {
     expect(verifyMobileSource).toContain("const isSendingCode = isSubmitting && submittingIntent === 'resend'");
     expect(verifyMobileSource).toContain('disabled={code.length !== CODE_LENGTH || isSubmitting}');
     expect(verifyMobileSource).toContain('loading={isVerifyingCode}');
-    expect(verifyMobileSource).toContain("isVerifyingCode ? 'Bekrefter...' : 'Bekreft kode'");
     expect(verifyMobileSource).toContain('loading={isSendingCode}');
     expect(verifyMobileSource).toContain('disabled={isSubmitting}');
+    expect(verifyMobileSource).not.toContain('<input type="hidden" name="intent" value="verify"');
   });
 
   it('disables later booking step navigation while route submissions are pending', () => {
@@ -101,9 +85,6 @@ describe('booking pending submission UI', () => {
     );
     const selectTimeSource = readSessionRoute('select-time/booking.public.appointment.session.select-time.route.tsx');
     const bookingLinkSource = readWorkspaceFile('app/routes/booking/public/_components/booking-link.tsx');
-    const bookingActionStylesSource = readWorkspaceFile(
-      'app/routes/booking/public/_components/booking-action-styles.ts',
-    );
     const overviewSource = readSessionRoute('overview/booking.public.appointment.session.overview.route.tsx');
 
     expect(profileCardSource).toContain('loading={isSubmittingProfile}');
@@ -114,22 +95,16 @@ describe('booking pending submission UI', () => {
     expect(selectServicesSource).toContain('loading={isSubmitting}');
     expect(selectServicesSource).toContain('disabled={!hasSelections || isSubmitting}');
     expect(selectServicesSource).toContain("const isSubmitting = navigation.state !== 'idle'");
-    expect(selectServicesSource).toContain('<fieldset disabled={isSubmitting} className="contents">');
-    expect(selectServicesSource).toContain("isSubmitting ? 'Finner ledige tider...' : 'Fortsett'");
     expect(selectServicesSource).toContain(
-      '<BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting} className="invisible">',
+      'to={returnToOverview ? withOverviewReturnTo(routes.employee) : routes.employee}',
     );
     expect(selectTimeSource).toContain('disabled={isSubmitting}');
     expect(selectTimeSource).toContain("const isSubmitting = navigation.state !== 'idle' || isSelectingTime");
-    expect(selectTimeSource).toContain('<fieldset disabled={isSubmitting} className="contents">');
     expect(selectTimeSource).toContain(
-      '<BookingLink to={routes.contact} variant="primary" loading={isContinuing} disabled={isSubmitting}>',
+      '<BookingLink to={continueHref} variant="primary" loading={isContinuing} disabled={isSubmitting}>',
     );
-    expect(selectTimeSource).toContain("isContinuing ? 'Går videre...' : 'Fortsett'");
     expect(bookingLinkSource).toContain('aria-busy={loading || undefined}');
     expect(bookingLinkSource).toContain('aria-disabled={isDisabled}');
-    expect(bookingLinkSource).toContain("isDisabled && 'pointer-events-none cursor-not-allowed opacity-50'");
-    expect(bookingActionStylesSource).toContain('export const bookingActionBaseClass');
     expect(overviewSource).toContain('loading={isConfirming}');
     expect(overviewSource).toContain('disabled={isSubmitting}');
     expect(overviewSource).toContain("const isSubmitting = navigation.state !== 'idle'");
@@ -162,8 +137,8 @@ describe('booking pending submission UI', () => {
     expect(timeSlotButtonSource).toContain('type="submit"');
     expect(quickBookButtonSource).toContain('name="startTime"');
     expect(quickBookButtonSource).toContain('value={slot.time}');
-    expect(selectTimeSource).toContain('return redirect(routes.selectTime)');
-    expect(selectTimeSource).toContain('to={routes.contact}');
+    expect(selectTimeSource).toContain('return redirect(returnToOverview ? routes.overview : routes.selectTime)');
+    expect(selectTimeSource).toContain('const continueHref = returnToOverview ? routes.overview : routes.contact');
     expect(selectTimeSource).not.toContain('loaderData.navigation');
     expect(selectTimeSource).not.toContain("const intent = formData.get('intent') as string | null");
     expect(selectTimeSource).not.toContain("if (intent === 'continue')");

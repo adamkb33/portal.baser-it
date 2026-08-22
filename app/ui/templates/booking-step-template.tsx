@@ -31,11 +31,7 @@ export function BookingStepTemplate({
       <Container size={size} data-booking-step-container>
         <div
           data-booking-step-content
-          className={cn(
-            'flex min-h-[var(--booking-step-min-height)] flex-col gap-8',
-            '[&_[data-booking-bottom-action-bar]]:mt-auto',
-            contentClassName,
-          )}
+          className={cn('flex min-h-[var(--booking-step-min-height)] flex-col gap-8', contentClassName)}
         >
           <PageHeader label={label} title={title} description={description} meta={headerMeta} />
           {children}

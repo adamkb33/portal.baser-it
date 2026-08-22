@@ -24,7 +24,6 @@ export function WeekNavigator({
   }
 
   const currentWeek = weekGroups[selectedWeekIndex];
-  const totalSlots = currentWeek.schedules.reduce((sum, schedule) => sum + schedule.timeSlots.length, 0);
 
   return (
     <BookingSection className="p-0">
@@ -41,7 +40,6 @@ export function WeekNavigator({
 
         <div className="flex-1 py-3 text-center">
           <p className="text-sm font-bold text-booking-text md:text-base">{getWeekLabel(currentWeek)}</p>
-          <p className="mt-0.5 text-xs text-booking-text-muted">{totalSlots} ledige tider</p>
         </div>
 
         <button

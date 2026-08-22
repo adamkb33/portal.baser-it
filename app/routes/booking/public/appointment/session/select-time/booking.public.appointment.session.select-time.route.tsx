@@ -11,10 +11,14 @@ import { BookingFooterNav } from '~/routes/booking/public/_components/booking-fo
 import { BookingLink } from '~/routes/booking/public/_components/booking-link';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
+import {
+  OVERVIEW_RETURN_VALUE,
+  shouldReturnToOverview,
+  withOverviewReturnTo,
+} from '~/routes/booking/public/_utils/booking-return-to';
 import { redirect } from 'react-router';
 import { useFetcher, useNavigation, useRevalidator } from 'react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Check } from 'lucide-react';
 import { BookingStepTemplate, Panel as BookingSection, Stack } from '~/ui';
 import { DateSelectorSection } from './_components/date-selector-section';
 import { QuickBookButton } from './_components/quick-book-button';
@@ -29,6 +33,7 @@ const ROUTE_ID = 'booking.public.appointment.session.select-time';
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'select-time' }, async () => {
     const routes = getBookingRouteMap();
+    const returnToOverview = shouldReturnToOverview(new URL(request.url).searchParams.get('returnTo'));
     const guardResult = await requireBookingSession(request);
     if (guardResult instanceof Response) {
       return guardResult;
@@ -67,6 +72,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         session,
         schedules,
         companySummary,
+        returnToOverview,
       });
     } catch (error) {
       const { message } = resolveErrorPayload(error, 'Kunne ikke hente tilgjengelige tider');
@@ -86,6 +92,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     const formData = await request.formData();
     const startTime = formData.get('startTime') as string;
+    const returnToOverview = shouldReturnToOverview(formData.get('returnTo'));
 
     if (!startTime) {
       return redirectWithError(request, routes.selectTime, 'Velg et tidspunkt for å fortsette');
@@ -116,7 +123,7 @@ export async function action({ request }: Route.ActionArgs) {
         return redirectWithError(request, routes.selectTime, 'Kunne ikke lagre valgt tidspunkt');
       }
 
-      return redirect(routes.selectTime);
+      return redirect(returnToOverview ? routes.overview : routes.selectTime);
     } catch (error) {
       const { message } = resolveErrorPayload(error, 'Kunne ikke lagre tidspunkt');
       return redirectWithError(request, routes.selectTime, message);
@@ -133,7 +140,9 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   const startTimeFetcher = useFetcher();
   const isSelectingTime = startTimeFetcher.state !== 'idle';
   const isSubmitting = navigation.state !== 'idle' || isSelectingTime;
-  const isContinuing = navigation.state !== 'idle' && navigation.location?.pathname === routes.contact;
+  const returnToOverview = loaderData.returnToOverview;
+  const continueHref = returnToOverview ? routes.overview : routes.contact;
+  const isContinuing = navigation.state !== 'idle' && navigation.location?.pathname === continueHref;
   const isGoingBack = navigation.state !== 'idle' && navigation.location?.pathname === routes.selectServices;
 
   const selectedStartTime = session.selectedStartTime ?? '';
@@ -216,11 +225,12 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
   return (
     <BookingStepTemplate
       label="Velg tidspunkt"
-      title="Hva er ett tidspunkt du ønsker?"
-      description={displayTime ? 'Valgt tidspunkt kan endres' : 'Velg dato og klokkeslett for avtalen'}
+      title="Når passer det?"
+      description={displayTime ? 'Valgt tidspunkt kan endres.' : 'Velg dato og klokkeslett.'}
       headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
       <startTimeFetcher.Form method="post" preventScrollReset>
+        {returnToOverview ? <input type="hidden" name="returnTo" value={OVERVIEW_RETURN_VALUE} /> : null}
         <fieldset disabled={isSubmitting} className="contents">
           <Stack space="xl">
             {earliestSlot && !displayTime && (
@@ -276,18 +286,21 @@ export default function BookingSelectTimePage({ loaderData }: Route.ComponentPro
         </fieldset>
       </startTimeFetcher.Form>
       <BookingFooterNav>
-        <BookingLink to={routes.selectServices} variant="secondary" loading={isGoingBack} disabled={isSubmitting}>
+        <BookingLink
+          to={returnToOverview ? withOverviewReturnTo(routes.selectServices) : routes.selectServices}
+          variant="secondary"
+          loading={isGoingBack}
+          disabled={isSubmitting}
+        >
           {isGoingBack ? 'Går tilbake...' : 'Tilbake'}
         </BookingLink>
         {selectedStartTime ? (
-          <BookingLink to={routes.contact} variant="primary" loading={isContinuing} disabled={isSubmitting}>
-            <Check className="size-4" />
-            {isContinuing ? 'Går videre...' : 'Fortsett'}
+          <BookingLink to={continueHref} variant="primary" loading={isContinuing} disabled={isSubmitting}>
+            {isContinuing ? 'Finner neste steg ...' : returnToOverview ? 'Tilbake til oversikt' : 'Fortsett'}
           </BookingLink>
         ) : (
           <BookingActionButton type="button" variant="primary" disabled>
-            <Check className="size-4" />
-            Velg et tidspunkt
+            Fortsett
           </BookingActionButton>
         )}
       </BookingFooterNav>

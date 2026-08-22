@@ -5,6 +5,8 @@ import { client } from './client.gen';
 import type {
   CancelAppointmentData,
   CancelAppointmentResponses,
+  CancelAppointmentSessionContactReplacementData,
+  CancelAppointmentSessionContactReplacementResponses,
   CancelMyAppointmentData,
   CancelMyAppointmentResponses,
   ClearAppointmentSessionUserData,
@@ -756,6 +758,16 @@ export class Booking {
       url: '/booking-service/appointments/booking-ready-companies',
       ...options,
     });
+  }
+
+  public static cancelAppointmentSessionContactReplacement<ThrowOnError extends boolean = false>(
+    options: Options<CancelAppointmentSessionContactReplacementData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).delete<
+      CancelAppointmentSessionContactReplacementResponses,
+      unknown,
+      ThrowOnError
+    >({ url: '/booking-service/public/appointment-session/{sessionId}/contact-replacement', ...options });
   }
 
   public static deleteAppointmentSession<ThrowOnError extends boolean = false>(

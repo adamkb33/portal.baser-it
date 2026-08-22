@@ -9,6 +9,8 @@ import type {
   AddCompanyRoleResponses,
   AddProductsToCompanyData,
   AddProductsToCompanyResponses,
+  CancelChallengeData,
+  CancelChallengeResponses,
   CancelCompanyUserInviteData,
   CancelCompanyUserInviteResponses,
   ChallengeStatusData,
@@ -151,6 +153,8 @@ import type {
   SignUpResponses,
   SyncCompanyReviewsData,
   SyncCompanyReviewsResponses,
+  UpdateBookingContactData,
+  UpdateBookingContactResponses,
   UpdateCompanyDisplayNameData,
   UpdateCompanyDisplayNameResponses,
   UpdateCompanyGooglePlaceIdData,
@@ -209,6 +213,20 @@ export class Base {
     return (options.client ?? client).put<UpdateCompanyGooglePlaceIdResponses, unknown, ThrowOnError>({
       security: [{ scheme: 'bearer', type: 'http' }],
       url: '/base-service/system-admin/companies/{companyId}/google-place-id',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+  }
+
+  public static updateBookingContact<ThrowOnError extends boolean = false>(
+    options: Options<UpdateBookingContactData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).put<UpdateBookingContactResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/internal/users/{userId}/booking-contact',
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -1183,6 +1201,16 @@ export class Base {
         'Content-Type': 'application/json',
         ...options.headers,
       },
+    });
+  }
+
+  public static cancelChallenge<ThrowOnError extends boolean = false>(
+    options: Options<CancelChallengeData, ThrowOnError>,
+  ) {
+    return (options.client ?? client).delete<CancelChallengeResponses, unknown, ThrowOnError>({
+      security: [{ scheme: 'bearer', type: 'http' }],
+      url: '/base-service/internal/guest-identity/booking-challenge/{sessionId}',
+      ...options,
     });
   }
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Form, data, redirect, useNavigation } from 'react-router';
-import { Search, Sparkles, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import type { GroupedServiceDto } from '~/api/generated/booking';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
@@ -13,6 +13,11 @@ import { BookingLink } from '~/routes/booking/public/_components/booking-link';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
+import {
+  OVERVIEW_RETURN_VALUE,
+  shouldReturnToOverview,
+  withOverviewReturnTo,
+} from '~/routes/booking/public/_utils/booking-return-to';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingStepTemplate, Container, Input, PageHeader, Stack } from '~/ui';
 import { ServiceGroup } from './_components/service-group';
@@ -25,6 +30,7 @@ const MAX_TOTAL_SERVICES = 5;
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'select-services' }, async () => {
     const routes = getBookingRouteMap();
+    const returnToOverview = shouldReturnToOverview(new URL(request.url).searchParams.get('returnTo'));
 
     try {
       const guardResult = await requireBookingSession(request);
@@ -56,6 +62,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         session,
         serviceGroups: serviceGroupsResponse.data?.data || [],
         companySummary,
+        returnToOverview,
       });
     } catch (error) {
       const { message } = resolveErrorPayload(error, 'Kunne ikke hente tjenester');
@@ -76,6 +83,7 @@ export async function action({ request }: Route.ActionArgs) {
 
       const { session } = guardResult;
       const formData = await request.formData();
+      const returnToOverview = shouldReturnToOverview(formData.get('returnTo'));
       const selectedServices = Array.from(formData.entries())
         .filter(([key]) => key.startsWith('serviceQuantity:'))
         .map(([key, value]) => {
@@ -113,7 +121,7 @@ export async function action({ request }: Route.ActionArgs) {
           ),
       );
 
-      return redirect(routes.selectTime);
+      return redirect(returnToOverview ? withOverviewReturnTo(routes.selectTime) : routes.selectTime);
     } catch (error) {
       const { message } = resolveErrorPayload(error, 'Kunne ikke lagre tjenestevalg');
       return redirectWithError(request, routes.selectServices, message);
@@ -127,6 +135,7 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
   const routes = getBookingRouteMap();
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== 'idle';
+  const returnToOverview = loaderData.returnToOverview;
 
   const [selectedServiceQuantities, setSelectedServiceQuantities] = useState<Map<number, number>>(new Map());
   const [searchQuery, setSearchQuery] = useState('');
@@ -217,7 +226,7 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
     <BookingStepTemplate
       label="Velg tjenester"
       title="Hvilke tjenester ønsker du?"
-      description={`Velg én eller flere tjenester fra ${totalServices} tilgjengelige tjenester.`}
+      description="Velg én eller flere tjenester."
       headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
     >
       <fieldset disabled={isSubmitting} className="contents">
@@ -281,6 +290,7 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
       <ServiceImageDialog service={dialogService} onClose={() => setDialogService(null)} />
 
       <Form id={submitFormId} method="post" className="hidden">
+        {returnToOverview ? <input type="hidden" name="returnTo" value={OVERVIEW_RETURN_VALUE} /> : null}
         {Array.from(selectedServiceQuantities.entries()).map(([serviceId, quantity]) => (
           <input key={serviceId} type="hidden" name={`serviceQuantity:${serviceId}`} value={quantity} />
         ))}
@@ -292,7 +302,12 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
             : undefined
         }
       >
-        <BookingLink to={routes.employee} variant="secondary" disabled={isSubmitting} className="invisible">
+        <BookingLink
+          to={returnToOverview ? withOverviewReturnTo(routes.employee) : routes.employee}
+          variant="secondary"
+          disabled={isSubmitting}
+          className="invisible"
+        >
           Tilbake
         </BookingLink>
         <BookingActionButton
@@ -302,8 +317,7 @@ export default function BookingSelectServicesPage({ loaderData }: Route.Componen
           loading={isSubmitting}
           disabled={!hasSelections || isSubmitting}
         >
-          <Sparkles className="size-4" />
-          {isSubmitting ? 'Finner ledige tider...' : 'Fortsett'}
+          {isSubmitting ? 'Finner ledige tider...' : 'Fortsett til tidspunkt'}
         </BookingActionButton>
       </BookingFooterNav>
     </BookingStepTemplate>

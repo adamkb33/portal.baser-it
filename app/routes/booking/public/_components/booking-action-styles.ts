@@ -1,4 +1,4 @@
-export type BookingActionVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'inline';
+export type BookingActionVariant = 'primary' | 'confirm' | 'secondary' | 'outline' | 'ghost' | 'inline';
 
 export type BookingActionSize = 'sm' | 'md';
 
@@ -8,6 +8,8 @@ export const bookingActionBaseClass =
 export const bookingActionVariantClass: Record<BookingActionVariant, string> = {
   primary:
     'border-booking-action bg-booking-action text-booking-action-contrast shadow-sm hover:bg-booking-action-hover',
+  confirm:
+    'border-booking-confirm bg-booking-confirm text-booking-confirm-contrast shadow-sm hover:bg-booking-confirm-hover focus-visible:ring-booking-confirm',
   secondary: 'border-booking-action bg-transparent text-booking-action hover:bg-booking-action-muted',
   outline: 'border-booking-border bg-transparent text-booking-text hover:bg-booking-surface-muted',
   ghost: 'border-transparent bg-transparent text-booking-text hover:bg-booking-surface-muted',

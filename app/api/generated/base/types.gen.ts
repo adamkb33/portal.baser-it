@@ -65,6 +65,8 @@ export type ApiMessage = {
     | 'SESSION_EXPIRED'
     | 'REQUIREMENTS_UNAVAILABLE'
     | 'CONTACT_VALIDATION_FAILED'
+    | 'CONTACT_REPLACEMENT_PENDING'
+    | 'CONTACT_REPLACEMENT_CANCELLED'
     | 'INVALID_CODE'
     | 'CHALLENGE_NOT_FOUND'
     | 'CHALLENGE_EXPIRED'
@@ -443,6 +445,20 @@ export type SystemAdminCompanyDto = {
   updatedAt?: string;
 };
 
+export type BookingContactUpdateRequestDto = {
+  givenName: string;
+  familyName: string;
+  email?: string;
+};
+
+export type ApiResponseUnit = {
+  success: boolean;
+  message: ApiMessage;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
 export type UpdateContactDto = {
   givenName: string;
   familyName: string;
@@ -470,14 +486,6 @@ export type ContactDto = {
 
 export type EditCompanyUserDto = {
   roles: Array<'ADMIN' | 'EMPLOYEE'>;
-};
-
-export type ApiResponseUnit = {
-  success: boolean;
-  message: ApiMessage;
-  errors?: Array<ApiError>;
-  meta?: ApiMeta;
-  timestamp: string;
 };
 
 export type UpdateCompanyDisplayNameDto = {
@@ -3058,6 +3066,24 @@ export type UpdateCompanyGooglePlaceIdResponses = {
 export type UpdateCompanyGooglePlaceIdResponse =
   UpdateCompanyGooglePlaceIdResponses[keyof UpdateCompanyGooglePlaceIdResponses];
 
+export type UpdateBookingContactData = {
+  body: BookingContactUpdateRequestDto;
+  path: {
+    userId: number;
+  };
+  query?: never;
+  url: '/base-service/internal/users/{userId}/booking-contact';
+};
+
+export type UpdateBookingContactResponses = {
+  /**
+   * OK
+   */
+  200: ApiResponseUnit;
+};
+
+export type UpdateBookingContactResponse = UpdateBookingContactResponses[keyof UpdateBookingContactResponses];
+
 export type DeleteContact1Data = {
   body?: never;
   path: {
@@ -4566,6 +4592,24 @@ export type DeleteProductsFromCompanyResponses = {
 
 export type DeleteProductsFromCompanyResponse =
   DeleteProductsFromCompanyResponses[keyof DeleteProductsFromCompanyResponses];
+
+export type CancelChallengeData = {
+  body?: never;
+  path: {
+    sessionId: string;
+  };
+  query?: never;
+  url: '/base-service/internal/guest-identity/booking-challenge/{sessionId}';
+};
+
+export type CancelChallengeResponses = {
+  /**
+   * OK
+   */
+  200: ApiResponseBoolean;
+};
+
+export type CancelChallengeResponse = CancelChallengeResponses[keyof CancelChallengeResponses];
 
 export type DeleteCompanyUserData = {
   body?: never;

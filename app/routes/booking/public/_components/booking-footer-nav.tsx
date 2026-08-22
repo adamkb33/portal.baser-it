@@ -102,39 +102,43 @@ export function BookingFooterNav({
   }, [ready, entered]);
 
   return (
-    <div style={{ height: spacerHeight ?? 0 }} className="md:h-auto">
-      <div
-        ref={wrapperRef}
-        style={{
-          bottom: `max(${bottomOffset ?? BASE_OFFSET_PX}px, env(safe-area-inset-bottom))`,
-        }}
-        className={cn(
-          'fixed inset-x-3 z-40 mx-auto max-w-md md:static md:max-w-5xl',
-          !ready && 'invisible opacity-0',
-          ready && !entered && 'visible translate-y-4 opacity-0',
-          entered &&
-            'visible translate-y-0 opacity-100 transition-[bottom,opacity,transform] duration-300 ease-out motion-reduce:transition-none',
-        )}
-      >
-        <div className={cn(message && 'rounded-[var(--radius-booking-panel)] shadow-[var(--shadow-booking-floating)]')}>
-          {message && (
-            <div className="rounded-t-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-b-0 border-booking-border bg-booking-action-muted px-3 py-2 text-center text-sm font-normal">
-              {message}
-            </div>
+    <div style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }} className="md:!pb-0">
+      <div style={{ height: spacerHeight ?? 0 }}>
+        <div
+          ref={wrapperRef}
+          style={{
+            bottom: `max(${bottomOffset ?? BASE_OFFSET_PX}px, env(safe-area-inset-bottom))`,
+          }}
+          className={cn(
+            'fixed inset-x-3 z-40 mx-auto max-w-md md:static md:max-w-5xl',
+            !ready && 'invisible opacity-0',
+            ready && !entered && 'visible translate-y-4 opacity-0',
+            entered &&
+              'visible translate-y-0 opacity-100 transition-[bottom,opacity,transform] duration-300 ease-out motion-reduce:transition-none',
           )}
-          <nav
-            aria-label="Booking handlinger"
-            className={cn(
-              'border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-2 md:p-2',
-              message
-                ? 'rounded-b-[var(--radius-booking-panel)] rounded-t-none shadow-none'
-                : 'rounded-[var(--radius-booking-panel)] shadow-[var(--shadow-booking-floating)]',
-              className,
-            )}
-            {...props}
+        >
+          <div
+            className={cn(message && 'rounded-[var(--radius-booking-panel)] shadow-[var(--shadow-booking-floating)]')}
           >
-            <div className={cn('grid w-full gap-2', gridClassByColumns[columns])}>{children}</div>
-          </nav>
+            {message && (
+              <div className="rounded-t-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-b-0 border-booking-border bg-booking-action-muted px-3 py-2 text-center text-sm font-normal">
+                {message}
+              </div>
+            )}
+            <nav
+              aria-label="Booking handlinger"
+              className={cn(
+                'border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised p-2 md:p-2',
+                message
+                  ? 'rounded-b-[var(--radius-booking-panel)] rounded-t-none shadow-none'
+                  : 'rounded-[var(--radius-booking-panel)] shadow-[var(--shadow-booking-floating)]',
+                className,
+              )}
+              {...props}
+            >
+              <div className={cn('grid w-full gap-2', gridClassByColumns[columns])}>{children}</div>
+            </nav>
+          </div>
         </div>
       </div>
     </div>

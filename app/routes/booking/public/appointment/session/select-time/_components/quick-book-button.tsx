@@ -23,7 +23,7 @@ export function QuickBookButton({ slot, disabled = false }: QuickBookButtonProps
           <Zap className="size-5 text-booking-action-contrast" />
         </div>
         <div className="text-left">
-          <p className="text-sm font-bold text-booking-text md:text-base">Raskeste tiden</p>
+          <p className="text-sm font-bold text-booking-text md:text-base">Første ledige tid</p>
           <p className="text-xs text-booking-text-muted md:text-sm">
             {formatFullDate(slot.date)} kl. {formatTime(slot.time)}
           </p>

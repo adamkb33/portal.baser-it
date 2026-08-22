@@ -1,23 +1,23 @@
+import { Form, redirect, useNavigation } from 'react-router';
+import { CalendarDays } from 'lucide-react';
 import { PublicAppointmentSessionController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { redirectWithError } from '~/lib/flash-message.server';
 import { BookingActionButton } from '~/routes/booking/public/_components/booking-action-button';
-import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking-company-badge';
-import { BookingFooterNav } from '~/routes/booking/public/_components/booking-footer-nav';
 import { BookingLink } from '~/routes/booking/public/_components/booking-link';
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingReady } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
+import { withOverviewReturnTo } from '~/routes/booking/public/_utils/booking-return-to';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
-import { redirect } from 'react-router';
-import { Form, useNavigation } from 'react-router';
-import { CheckCircle2 } from 'lucide-react';
 import { BookingStepTemplate, Container, PageHeader, Text } from '~/ui';
 import { formatNorwegianDateTime } from './_utils/format-norwegian-date-time';
 import type { Route } from './+types/booking.public.appointment.session.overview.route';
 
 const ROUTE_ID = 'booking.public.appointment.session.overview';
+const EDIT_ACTION_CLASS_NAME =
+  "relative inline-flex min-h-0 items-baseline justify-end rounded-md px-0 py-0 text-sm font-semibold text-booking-action underline-offset-4 after:absolute after:right-0 after:top-1/2 after:h-11 after:w-11 after:-translate-y-1/2 after:content-[''] hover:underline focus-visible:outline-none focus-visible:ring-[length:var(--border-booking-focus-ring)] focus-visible:ring-booking-action disabled:opacity-50";
 
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'overview' }, async () => {
@@ -56,8 +56,6 @@ export async function loader({ request }: Route.LoaderArgs) {
         companySummary,
       };
     } catch (error) {
-      // Session/company context is still valid here (requireBookingReady already passed) —
-      // stay inside the booking flow instead of ejecting to the company picker.
       const { message } = resolveErrorPayload(error, 'Kunne ikke hente oversikt');
       return redirectWithError(request, routes.selectTime, message);
     }
@@ -94,9 +92,6 @@ export async function action({ request }: Route.ActionArgs) {
 
       return redirect(`${routes.success}?companyId=${session.companyId}&appointmentId=${appointmentId}`);
     } catch (error) {
-      // Same as above — e.g. the slot became unavailable between selection and submit.
-      // The session/company is still valid, so send them back to pick a new time
-      // instead of ejecting to the company picker.
       const { message } = resolveErrorPayload(error, 'Kunne ikke bekrefte timebestilling');
       return redirectWithError(request, routes.selectTime, message);
     }
@@ -106,14 +101,15 @@ export async function action({ request }: Route.ActionArgs) {
 export default function BookingOverviewPage({ loaderData }: Route.ComponentProps) {
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== 'idle';
-  const isConfirming = isSubmitting && navigation.formData !== undefined;
+  const pendingIntent = navigation.formData?.get('intent');
+  const isConfirming = isSubmitting && navigation.formData !== undefined && pendingIntent !== 'clear';
   const pendingDestination = navigation.location?.pathname;
   const routes = getBookingRouteMap();
 
   if (!loaderData.sessionOverview) {
     return (
       <Container size="lg">
-        <PageHeader title="Bekreft timebestilling" description="Kunne ikke hente oversikt" />
+        <PageHeader title="Oversikt" description="Kunne ikke hente oversikt" />
       </Container>
     );
   }
@@ -126,122 +122,120 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
     sessionOverview.totalPrice ??
     sessionOverview.selectedServices.reduce((sum, item) => sum + item.services.price * item.quantity, 0);
   const dateTime = formatNorwegianDateTime(sessionOverview.selectedStartTime);
-  const confirmFormId = 'booking-overview-confirm-form';
-  const editLinkClass = 'text-sm font-semibold text-booking-action hover:underline';
+  const companyName = formatCompanyDisplayName(loaderData.companySummary?.name);
 
   return (
-    <BookingStepTemplate
-      title="Bekreft timebestilling"
-      description="Gjennomgå detaljene før du bekrefter."
-      headerMeta={<BookingCompanyBadge company={loaderData.companySummary} />}
-    >
-      <Form id={confirmFormId} method="post" className="hidden" />
-      <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised shadow-[var(--shadow-booking-card)]">
-        <OverviewSection
-          title="Tidspunkt"
-          editHref={routes.selectTime}
-          editLinkClass={editLinkClass}
-          isBusy={isSubmitting}
-          isLoading={pendingDestination === routes.selectTime}
+    <BookingStepTemplate label="Oversikt" title="Stemmer alt?" contentClassName="gap-3">
+      <div className="mx-auto grid w-full items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
+        <dl
+          className="grid grid-cols-[minmax(72px,auto)_minmax(0,1fr)_auto] items-baseline gap-x-3 border-t border-booking-border"
+          aria-label="Bookingoversikt"
         >
-          <Text as="p" variant="body" className="font-semibold text-booking-text">
-            {dateTime.full}
-          </Text>
-          <Text as="p" variant="body-sm" className="text-booking-text-muted">
-            {totalDuration} min
-          </Text>
-        </OverviewSection>
-
-        <OverviewSection
-          title="Kontakt"
-          editHref={routes.contact}
-          editLinkClass={editLinkClass}
-          isBusy={isSubmitting}
-          isLoading={pendingDestination === routes.contact}
-        >
-          <Text as="p" variant="body" className="font-semibold text-booking-text">
-            {sessionOverview.user.givenName} {sessionOverview.user.familyName}
-          </Text>
-          {sessionOverview.user.email ? (
-            <Text as="p" variant="body-sm" className="text-booking-text-muted">
-              {sessionOverview.user.email}
+          <dt className="flex min-h-11 items-baseline border-b border-booking-border py-4 text-booking-action">
+            <CalendarDays className="size-5" strokeWidth={2} aria-hidden="true" />
+            <span className="sr-only">Tidspunkt</span>
+          </dt>
+          <dd className="min-w-0 border-b border-booking-border py-4">
+            <Text as="p" variant="heading-sm" className="font-semibold text-booking-text">
+              {dateTime.short}
             </Text>
-          ) : null}
-        </OverviewSection>
+            <Text as="p" variant="body-sm" className="mt-1 text-booking-text-muted">
+              {companyName}
+            </Text>
+          </dd>
+          <dd className="flex min-h-11 items-baseline justify-end border-b border-booking-border py-4">
+            <BookingLink
+              to={withOverviewReturnTo(routes.selectTime)}
+              variant="inline"
+              loading={pendingDestination === routes.selectTime}
+              disabled={isSubmitting}
+              className={EDIT_ACTION_CLASS_NAME}
+            >
+              Endre<span className="sr-only"> tidspunkt</span>
+            </BookingLink>
+          </dd>
 
-        <OverviewSection
-          title="Behandler"
-          editHref={routes.employee}
-          editLinkClass={editLinkClass}
-          isBusy={isSubmitting}
-          isLoading={pendingDestination === routes.employee}
-        >
-          <Text as="p" variant="body" className="font-semibold text-booking-text">
-            {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
-          </Text>
-        </OverviewSection>
+          <OverviewSection
+            title="Kontakt"
+            editHref={`${routes.contact}?edit=1`}
+            isBusy={isSubmitting}
+            isLoading={pendingDestination === routes.contact}
+          >
+            <Text as="p" variant="body-sm" className="font-medium text-booking-text">
+              {sessionOverview.user.givenName} {sessionOverview.user.familyName}
+            </Text>
+          </OverviewSection>
 
-        <OverviewSection
-          title="Tjenester"
-          editHref={routes.selectServices}
-          editLinkClass={editLinkClass}
-          isBusy={isSubmitting}
-          isLoading={pendingDestination === routes.selectServices}
-        >
-          <div className="divide-y divide-booking-border">
-            {sessionOverview.selectedServices.map((item) => (
-              <div key={`${item.serviceGroup.id}-${item.services.id}`} className="flex gap-4 py-2 first:pt-0 last:pb-0">
-                <div className="min-w-0 flex-1">
-                  <Text as="p" variant="body-sm" className="font-medium text-booking-text">
+          <OverviewSection
+            title="Behandler"
+            editHref={withOverviewReturnTo(routes.employee)}
+            isBusy={isSubmitting}
+            isLoading={pendingDestination === routes.employee}
+          >
+            <Text as="p" variant="body-sm" className="font-medium text-booking-text">
+              {sessionOverview.selectedProfile.givenName} {sessionOverview.selectedProfile.familyName}
+            </Text>
+          </OverviewSection>
+
+          <OverviewSection
+            title="Tjenester"
+            editHref={withOverviewReturnTo(routes.selectServices)}
+            isBusy={isSubmitting}
+            isLoading={pendingDestination === routes.selectServices}
+          >
+            <div className="space-y-1">
+              {sessionOverview.selectedServices.map((item) => (
+                <Text
+                  key={`${item.serviceGroup.id}-${item.services.id}`}
+                  as="p"
+                  variant="body-sm"
+                  className="text-booking-text"
+                >
+                  <span className="font-medium">
                     {item.services.name}
                     {item.quantity > 1 ? ` × ${item.quantity}` : ''}
-                  </Text>
-                  <Text as="p" variant="caption" className="text-booking-text-muted">
-                    {item.services.duration * item.quantity} min
-                  </Text>
-                </div>
-                <Text as="p" variant="body-sm" className="shrink-0 tabular-nums text-booking-text">
-                  {item.services.price * item.quantity} kr
+                  </span>
+                  <span className="text-booking-text-muted">
+                    {' '}
+                    · {item.services.duration * item.quantity} min · {item.services.price * item.quantity} kr
+                  </span>
                 </Text>
-              </div>
-            ))}
-          </div>
-        </OverviewSection>
+              ))}
+            </div>
+          </OverviewSection>
 
-        <div className="flex items-center justify-between gap-4 border-t-2 border-booking-action/30 bg-booking-action/10 px-4 py-4 md:px-5">
-          <Text as="p" variant="label" className="text-booking-text">
-            Totalt
+          {sessionOverview.selectedServices.length > 1 ? (
+            <OverviewSection title="Estimert total">
+              <Text as="p" variant="body-sm" className="tabular-nums text-booking-text">
+                {totalDuration} min · {totalPrice} kr
+              </Text>
+            </OverviewSection>
+          ) : null}
+        </dl>
+
+        <section
+          className="space-y-3 rounded-[var(--radius-booking-panel)] bg-booking-action-muted p-4 md:p-5"
+          aria-labelledby="booking-final-action-heading"
+        >
+          <Text id="booking-final-action-heading" as="h2" variant="heading-sm" className="text-booking-text">
+            Du er snart i mål
           </Text>
-          <div className="text-right">
-            <Text as="p" variant="body" className="tabular-nums font-bold text-booking-text">
-              {totalPrice} kr
-            </Text>
-            <Text as="p" variant="caption" className="text-booking-text-muted">
-              {totalDuration} min
-            </Text>
-          </div>
-        </div>
+          <Text as="p" variant="body" className="text-booking-text-muted">
+            Timen blir bestilt når du trykker knappen under.
+          </Text>
+          <Form method="post" className="pt-2">
+            <BookingActionButton
+              type="submit"
+              variant="confirm"
+              fullWidth
+              loading={isConfirming}
+              disabled={isSubmitting}
+            >
+              {isConfirming ? 'Bekrefter timebestillingen ...' : 'Bekreft timebestilling'}
+            </BookingActionButton>
+          </Form>
+        </section>
       </div>
-      <BookingFooterNav>
-        <BookingLink
-          to={routes.selectTime}
-          variant="secondary"
-          loading={isSubmitting && pendingDestination === routes.selectTime}
-          disabled={isSubmitting}
-        >
-          {isSubmitting && pendingDestination === routes.selectTime ? 'Åpner tidspunkt...' : 'Endre tid'}
-        </BookingLink>
-        <BookingActionButton
-          type="submit"
-          form={confirmFormId}
-          variant="primary"
-          loading={isConfirming}
-          disabled={isSubmitting}
-        >
-          <CheckCircle2 className="size-4" strokeWidth={2.5} />
-          {isConfirming ? 'Bekrefter...' : 'Bekreft'}
-        </BookingActionButton>
-      </BookingFooterNav>
     </BookingStepTemplate>
   );
 }
@@ -249,29 +243,53 @@ export default function BookingOverviewPage({ loaderData }: Route.ComponentProps
 function OverviewSection({
   title,
   editHref,
-  editLinkClass,
-  isBusy,
-  isLoading,
+  isBusy = false,
+  isLoading = false,
   children,
 }: {
   title: string;
-  editHref: string;
-  editLinkClass: string;
-  isBusy: boolean;
-  isLoading: boolean;
+  editHref?: string;
+  isBusy?: boolean;
+  isLoading?: boolean;
   children: React.ReactNode;
 }) {
+  const editSubject = title.toLocaleLowerCase('nb-NO');
+
   return (
-    <section className="border-b border-booking-border px-4 py-4 md:px-5">
-      <div className="mb-3 flex items-center justify-between gap-4">
-        <Text as="h2" variant="label" className="text-booking-text">
-          {title}
-        </Text>
-        <BookingLink to={editHref} variant="inline" className={editLinkClass} loading={isLoading} disabled={isBusy}>
-          {isLoading ? 'Åpner...' : 'Endre'}
-        </BookingLink>
-      </div>
-      {children}
-    </section>
+    <>
+      <Text as="dt" variant="body-sm" className="min-h-11 border-b border-booking-border py-3 text-booking-text-muted">
+        {title}
+      </Text>
+      <dd className="min-w-0 border-b border-booking-border py-3">{children}</dd>
+      <dd className="flex min-h-11 items-baseline justify-end border-b border-booking-border py-3">
+        {editHref ? (
+          <BookingLink
+            to={editHref}
+            variant="inline"
+            loading={isLoading}
+            disabled={isBusy}
+            className={EDIT_ACTION_CLASS_NAME}
+          >
+            Endre<span className="sr-only"> {editSubject}</span>
+          </BookingLink>
+        ) : null}
+      </dd>
+    </>
   );
+}
+
+function formatCompanyDisplayName(name?: string | null): string {
+  const trimmedName = name?.trim();
+  if (!trimmedName) return 'Virksomheten';
+
+  const lettersOnly = trimmedName.replace(/[^\p{L}]/gu, '');
+  if (!lettersOnly || lettersOnly !== lettersOnly.toLocaleUpperCase('nb-NO')) {
+    return trimmedName;
+  }
+
+  return trimmedName
+    .toLocaleLowerCase('nb-NO')
+    .replace(/(^|[\s-])(\p{L})/gu, (_match, separator: string, letter: string) => {
+      return `${separator}${letter.toLocaleUpperCase('nb-NO')}`;
+    });
 }

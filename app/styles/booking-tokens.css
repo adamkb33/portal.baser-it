@@ -18,6 +18,9 @@
   --color-booking-action-muted: color-mix(in oklab, var(--color-interactive) 10%, var(--color-surface));
   --color-booking-action-ring: color-mix(in oklab, var(--color-interactive) 35%, transparent);
   --color-booking-action-contrast: var(--color-text-inverse);
+  --color-booking-confirm: #047857;
+  --color-booking-confirm-hover: #065f46;
+  --color-booking-confirm-contrast: var(--color-text-inverse);
   --color-booking-accent: var(--color-secondary);
   --color-booking-accent-muted: color-mix(in oklab, var(--color-secondary) 12%, var(--color-surface));
 

@@ -101,7 +101,8 @@ When there is card-in-card or div-in-div:
   - use same shell pattern (title row + optional action + content block)
 - Keep action placement predictable:
   - edit/change links consistently at section top-right
-- Use one primary action bar pattern per step (current bottom action bar pattern).
+- Use `BookingFooterNav` on services, time, contact, and SMS.
+- The overview is the deliberate exception: its single submit action stays in page flow after the review content.
 
 ### Service Quantity Selector Contract (Select Services)
 
@@ -125,46 +126,38 @@ When there is card-in-card or div-in-div:
 
 ### Section Structure
 
-Overview must have clearly separated blocks:
+Overview uses plain, separated sections without an outer card or receipt-style total panel:
 
-1. Time summary (`S1` with `S2` key-value content)
-2. Contact + provider summary (`S1`, split columns where needed)
-3. Services summary (`S1`) with progressive reveal behavior
+1. `Tidspunkt`
+2. `Kontakt`
+3. `Behandler`
+4. `Tjenester`
 
-Each block must maintain the same internal pattern:
+The appointment time is the summary's hero row:
 
-- header row
-- optional “Endre” action
-- content area with differentiated nested surfaces
+- calendar icon
+- larger short date and time, allowed to wrap without moving the action column
+- display-cased business name beneath as secondary text
+- contextual `Endre` action in the same shared action column as the compact rows
 
-### Selected Services Progressive Reveal
+`Kontakt`, `Behandler`, and `Tjenester` use compact summary-list rows:
 
-For selected services in overview:
+- one semantic summary-list grid shared by every row: `minmax(72px, auto) minmax(0, 1fr) auto`
+- muted labels and the calendar icon in column one, values in column two, and right-aligned actions in column three
+- each `Endre` aligns with the first value line rather than the row's vertical center
+- every `Endre` control uses a non-layout-changing 44×44 px pseudo-element touch target
+- hidden contextual text gives every `Endre` control a distinct accessible name
+- service items remain compact inside the value column
+- restrained dividers and spacing
 
-- Show max 3 service rows/cards by default.
-- If selected service count > 3:
-  - show compact “Vis flere” control
-  - expanding reveals remaining services in-place
-  - control toggles to “Vis færre” when expanded
-- Use accessible disclosure pattern:
-  - either existing Accordion primitive or explicit button + `aria-expanded` + controlled region
-- Preserve stable order from selected services list.
-- Preserve keyboard focus context when expanding/collapsing (focus should remain on toggle control).
+When more than one service is selected, price and duration appear in a plain `Estimert total` row after `Tjenester`. A single service does not repeat its price in a total row. The final action follows the summary list in normal page flow:
 
-Display behavior:
+- one short sentence explaining the effect
+- one primary `Bekreft timebestilling` button
 
-- Default (collapsed): first 3 services
-- Expanded: all services
-- Summary label should indicate hidden count when collapsed:
-  - e.g. `+7 flere`
+The final-action section uses a subtly tinted neutral surface to distinguish commitment from review details. It remains in normal document flow, immediately follows the summary, and must not become sticky or bottom-anchored.
 
-### Long Content Handling
-
-- In expanded mode, avoid excessive scroll-jump:
-  - keep animation subtle or instant; no large motion dependencies
-- Prevent layout break on small screens:
-  - service rows stack cleanly
-- If service count is high (e.g. 10+), default collapsed state must remain compact and scannable.
+The overview has no `BookingFooterNav` and no secondary footer action.
 
 ## Booking Public Step Consistency
 
@@ -173,7 +166,8 @@ Across contact, employee, services, time, overview:
 - Use same background/surface hierarchy model.
 - Use same card/panel radius and border treatment scale.
 - Keep CTA placement and priority consistent:
-  - primary action on right/last position in action bar
+  - primary action on right/last position in `BookingFooterNav` before the overview
+  - one full-width in-flow primary action on the overview
   - secondary/back action as outline/secondary style
 - Employee and select-services routes must share the same selection-card state language:
   - neutral card (`S2`) at rest
@@ -185,12 +179,6 @@ Across contact, employee, services, time, overview:
 - Color contrast must remain compliant for text on all chosen surfaces.
 - Interactive controls:
   - minimum 44x44 target where touch-primary
-- Expand/collapse controls:
-  - keyboard-operable
-  - proper `aria-expanded` and relation to expanded content region
-- Toggle copy must be explicit:
-  - collapsed: `Vis flere`
-  - expanded: `Vis færre`
 - Do not encode critical meaning by color alone.
 
 ## Performance & Stability
@@ -204,7 +192,6 @@ Across contact, employee, services, time, overview:
 - Card-in-card with identical surface and border treatment.
 - Arbitrary color utilities when semantic token exists.
 - Divergent action placement between steps for equivalent actions.
-- Long service list fully expanded by default on overview.
 - Creating route-specific mini-design systems that duplicate shared UI primitives.
 
 ## Research-Informed Guidelines
@@ -237,8 +224,8 @@ Implementation note:
 
 ## Acceptance Criteria
 
-1. Nested parent/child containers are visually distinguishable using tokenized surfaces.
+1. Nested parent/child containers are visually distinguishable using tokenized surfaces where nesting remains.
 2. No hardcoded/non-token colors are introduced in booking-public route code.
-3. Overview page defaults to showing max 3 selected services.
-4. Overview page supports accessible expand/collapse for additional services.
-5. Section structure and action placement look consistent across session steps.
+3. Overview uses four plain review sections without an outer card or highlighted total panel.
+4. Each overview section has an accessible contextual edit control.
+5. Overview has one in-flow `Bekreft timebestilling` action and no floating action dock.

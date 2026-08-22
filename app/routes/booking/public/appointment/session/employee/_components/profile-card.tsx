@@ -1,5 +1,6 @@
 import { Form } from 'react-router';
 import type { BookingProfileDto } from '~/api/generated/booking';
+import { OVERVIEW_RETURN_VALUE } from '~/routes/booking/public/_utils/booking-return-to';
 import { Button, Card, CardContent, CardFooter, Popover, PopoverContent, PopoverTrigger, Text, cn } from '~/ui';
 
 type ProfileCardProps = {
@@ -7,9 +8,16 @@ type ProfileCardProps = {
   isSelected: boolean;
   isSubmitting: boolean;
   isSubmittingProfile: boolean;
+  returnToOverview: boolean;
 };
 
-export function ProfileCard({ profile, isSelected, isSubmitting, isSubmittingProfile }: ProfileCardProps) {
+export function ProfileCard({
+  profile,
+  isSelected,
+  isSubmitting,
+  isSubmittingProfile,
+  returnToOverview,
+}: ProfileCardProps) {
   return (
     <Card
       variant="default"
@@ -116,6 +124,7 @@ export function ProfileCard({ profile, isSelected, isSubmitting, isSubmittingPro
         ) : (
           <Form method="post">
             <input type="hidden" name="selectedProfileId" value={profile.id} />
+            {returnToOverview ? <input type="hidden" name="returnTo" value={OVERVIEW_RETURN_VALUE} /> : null}
             <Button
               type="submit"
               variant="booking-primary"

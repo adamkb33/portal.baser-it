@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Form, data, redirect, useNavigation } from 'react-router';
-import { BadgeCheck, Mail, Phone, Plus, UserRound } from 'lucide-react';
-import { PublicAppointmentSessionController } from '~/api/generated/booking';
+import { Mail, Phone, Plus } from 'lucide-react';
+import { Booking, PublicAppointmentSessionController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { authService } from '~/lib/auth-service';
+import { redirectWithError } from '~/lib/flash-message.server';
 import { logger } from '~/lib/logger';
-import { accessTokenCookie } from '~/routes/auth/_features/auth.cookies.server';
 import { BookingActionButton } from '~/routes/booking/public/_components/booking-action-button';
 import { BookingFooterNav } from '~/routes/booking/public/_components/booking-footer-nav';
 import { BookingLink } from '~/routes/booking/public/_components/booking-link';
@@ -17,33 +17,23 @@ import {
 } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
-import { Button, Input, Label, Notice, Stack, Text } from '~/ui';
+import { Input, Label, Notice, Stack, Text } from '~/ui';
 import { submitContactFormSchema } from './_schemas/submit-contact.form.schema';
 import { BOOKING_CONTACT_LABEL_CLASS, BOOKING_CONTACT_PAGE_HEADER_CLASS } from './_utils/booking-contact-theme';
+import { clearManualContactOverride, hasManualContactOverride } from './_utils/manual-contact-override.cookie.server';
 import { mobileVerificationTokenCookie } from './_utils/mobile-verification-token.cookie.server';
 import type { Route } from './+types/booking.public.appointment.session.contact.route';
 
 const ROUTE_ID = 'booking.public.appointment.session.contact';
-
-type ContactState = 'RESUME' | 'CONTINUE_AS' | 'FORM' | 'ERROR';
-
 const CARD_CLASS =
   'rounded-[var(--radius-booking-panel)] border-[length:var(--border-booking-card)] border-booking-border bg-booking-surface-raised shadow-[var(--shadow-booking-card)]';
 
-/**
- * Only used to check whether the browser is signed in before hitting the backend.
- * The actual Authorization header for backend calls is attached by `withAuth`, which
- * serializes access to the generated clients' process-wide singleton config — passing
- * an empty headers object per-call here instead would get stripped by the SDK's
- * `stripEmptySlots` and silently fall back to whatever token another concurrent
- * request last left on the shared client (a cross-user auth leak).
- */
-async function getAuthHeader(request: Request): Promise<Record<string, string>> {
-  const token = await accessTokenCookie.parse(request.headers.get('Cookie'));
-  return typeof token === 'string' && token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-// ---------- loader: the four-rule cascade, top to bottom, first match wins ----------
+type ContactFormValues = {
+  givenName: string;
+  familyName: string;
+  mobileNumber: string;
+  email: string;
+};
 
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'contact' }, async () => {
@@ -54,10 +44,57 @@ export async function loader({ request }: Route.LoaderArgs) {
     if (guardResult instanceof Response) return guardResult;
     const { session } = guardResult;
 
-    // Pre-contact selection guard: contact requires completed selections.
     if (!session.selectedProfileId) return redirect(routes.employee);
     if (!session.selectedServices?.length) return redirect(routes.selectServices);
     if (!session.selectedStartTime) return redirect(routes.selectTime);
+
+    const isEditingContact = url.searchParams.get('edit') === '1';
+    const manualContact =
+      isEditingContact ||
+      url.searchParams.get('form') === '1' ||
+      (await hasManualContactOverride(request, session.sessionId));
+
+    if (manualContact) {
+      if (isEditingContact) {
+        try {
+          const response = await withBookingBackendCall(
+            { request, routeId: ROUTE_ID, step: 'contact', call: 'get-overview-for-edit', session },
+            () =>
+              withAuth(request, () =>
+                PublicAppointmentSessionController.getAppointmentSessionOverview({
+                  query: { sessionId: session.sessionId },
+                }),
+              ),
+          );
+          const user = response.data?.data?.user;
+          if (!user) {
+            return redirectWithError(request, routes.overview, 'Kunne ikke hente kontaktinformasjonen');
+          }
+
+          return data({
+            session,
+            requirementsError: null as string | null,
+            isEditingContact: true,
+            initialContact: {
+              givenName: user.givenName ?? '',
+              familyName: user.familyName ?? '',
+              mobileNumber: formatLocalMobileNumber(user.mobileNumber),
+              email: user.email ?? '',
+            } satisfies ContactFormValues,
+          });
+        } catch (error) {
+          const { message } = resolveErrorPayload(error, 'Kunne ikke hente kontaktinformasjonen');
+          return redirectWithError(request, routes.overview, message);
+        }
+      }
+
+      return data({
+        session,
+        requirementsError: null as string | null,
+        isEditingContact: false,
+        initialContact: null as ContactFormValues | null,
+      });
+    }
 
     try {
       const requirementsResponse = await withBookingBackendCall(
@@ -71,117 +108,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       );
       const requirements = requirementsResponse.data?.data ?? null;
 
-      // Rule 1: a code is pending — return to verification unless the user chose to edit the form.
-      if (requirements?.nextStep === 'VERIFY_MOBILE' && !url.searchParams.has('form')) {
-        const challengeParam = requirements.challengeId ? `?challengeId=${requirements.challengeId}` : '';
-        return redirect(`${routes.contactVerifyMobile}${challengeParam}`);
-      }
-
-      // Rule 2: session already has a verified user — resume, never auto-forward.
       if (requirements?.nextStep === 'DONE' && session.userId) {
-        logger.info('[booking:contact:loader]', {
-          ...getBookingSessionLogContext(session),
-          contactState: 'RESUME',
-        });
-        return data({
-          session,
-          requirements,
-          contactState: 'RESUME' as ContactState,
-          resumeUser: {
-            displayName: requirements.displayName ?? null,
-            maskedMobile: requirements.maskedMobile ?? null,
-          },
-          authenticatedUser: null,
-          requirementsError: null as string | null,
-        });
-      }
-
-      // Rule 3: browser is signed in — offer one-tap attach. `?form=1` = "Ikke deg?" opt-out.
-      if (requirements?.canAttachAuthenticatedUser && !url.searchParams.has('form')) {
-        logger.info('[booking:contact:loader]', {
-          ...getBookingSessionLogContext(session),
-          contactState: 'CONTINUE_AS',
-        });
-        return data({
-          session,
-          requirements,
-          contactState: 'CONTINUE_AS' as ContactState,
-          resumeUser: null,
-          authenticatedUser: { displayName: requirements.authenticatedUserDisplayName ?? null },
-          requirementsError: null as string | null,
-        });
-      }
-
-      // Rule 4: the form.
-      logger.info('[booking:contact:loader]', {
-        ...getBookingSessionLogContext(session),
-        contactState: 'FORM',
-      });
-      return data({
-        session,
-        requirements,
-        contactState: 'FORM' as ContactState,
-        resumeUser: null,
-        authenticatedUser: null,
-        requirementsError: null as string | null,
-      });
-    } catch (error) {
-      // Transient requirements failure: keep the session, render the form + a notice.
-      const { message } = resolveErrorPayload(error, 'Kunne ikke hente bookingstatus');
-      logger.error('[booking:contact:loader]', {
-        ...getBookingSessionLogContext(session),
-        contactState: 'ERROR',
-        message,
-      });
-      return data({
-        session,
-        requirements: null,
-        contactState: 'ERROR' as ContactState,
-        resumeUser: null,
-        authenticatedUser: null,
-        requirementsError: message,
-      });
-    }
-  });
-}
-
-// ---------- action: three intents — identify (default), attach, clear ----------
-
-export async function action({ request }: Route.ActionArgs) {
-  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'contact' }, async () => {
-    const routes = getBookingRouteMap();
-
-    const guardResult = await requireBookingSession(request);
-    if (guardResult instanceof Response) return guardResult;
-    const { session } = guardResult;
-
-    const formData = await request.formData();
-    const intent = String(formData.get('intent') || 'identify');
-
-    // "Endre kontaktinformasjon" / switch person: detach the session user, loader re-resolves.
-    if (intent === 'clear') {
-      try {
-        await withBookingBackendCall(
-          { request, routeId: ROUTE_ID, step: 'contact', call: 'clear-session-user', session },
-          () =>
-            withAuth(request, () =>
-              PublicAppointmentSessionController.clearAppointmentSessionUser({
-                path: { sessionId: session.sessionId },
-              }),
-            ),
-        );
-        return redirect(`${routes.contact}?form=1`);
-      } catch (error) {
-        const { message } = resolveErrorPayload(error, 'Kunne ikke endre kontaktinformasjon');
-        return data({ error: message }, { status: 400 });
-      }
-    }
-
-    // RESUME primary: session already has a verified user (nextStep DONE) but the browser's
-    // own login may have expired or been cleared — mint fresh auth cookies from the session's
-    // own identity so "Mine bookinger" works afterward too.
-    if (intent === 'resume') {
-      try {
         const response = await withBookingBackendCall(
           { request, routeId: ROUTE_ID, step: 'contact', call: 'resume-session', session },
           () =>
@@ -200,42 +127,109 @@ export async function action({ request }: Route.ActionArgs) {
               authTokens.refreshTokenExpiresAt,
             )
           : undefined;
-        return redirect(routes.overview, headers ? { headers } : undefined);
-      } catch (error) {
-        const { message } = resolveErrorPayload(error, 'Kunne ikke fortsette bookingen');
-        return data({ error: message }, { status: 400 });
-      }
-    }
 
-    // CONTINUE_AS primary: attach the authenticated browser user. Principal comes from the
-    // Authorization header — never from form data.
-    if (intent === 'attach') {
-      try {
-        const authHeader = await getAuthHeader(request);
-        if (!authHeader.Authorization) {
-          return data({ error: 'Du er ikke lenger innlogget. Fyll ut skjemaet under.' }, { status: 401 });
+        return redirect(routes.overview, headers ? { headers } : undefined);
+      }
+
+      if (requirements?.canAttachAuthenticatedUser) {
+        try {
+          const response = await withBookingBackendCall(
+            { request, routeId: ROUTE_ID, step: 'contact', call: 'set-pending-user', session },
+            () =>
+              withAuth(request, () =>
+                PublicAppointmentSessionController.setPendingAppointmentSessionUser({
+                  path: { sessionId: session.sessionId },
+                }),
+              ),
+          );
+          const nextStep = response.data?.data?.nextStep;
+
+          if (nextStep === 'DONE') return redirect(routes.overview);
+          if (nextStep === 'VERIFY_MOBILE') return redirect(routes.contactVerifyMobile);
+
+          return data({
+            session,
+            requirementsError: 'Vi kunne ikke bruke den innloggede kontoen. Fyll ut kontaktinformasjonen.',
+            isEditingContact: false,
+            initialContact: null as ContactFormValues | null,
+          });
+        } catch (error) {
+          const { message } = resolveErrorPayload(error, 'Fyll ut kontaktinformasjonen for å fortsette.');
+          logger.error('[booking:contact:loader]', {
+            ...getBookingSessionLogContext(session),
+            contactResolution: 'attach-failed',
+            message,
+          });
+          return data({
+            session,
+            requirementsError: message,
+            isEditingContact: false,
+            initialContact: null as ContactFormValues | null,
+          });
         }
-        const response = await withBookingBackendCall(
-          { request, routeId: ROUTE_ID, step: 'contact', call: 'set-pending-user', session },
+      }
+
+      if (requirements?.nextStep === 'VERIFY_MOBILE') {
+        const challengeParam = requirements.challengeId ? `?challengeId=${requirements.challengeId}` : '';
+        return redirect(`${routes.contactVerifyMobile}${challengeParam}`);
+      }
+
+      return data({
+        session,
+        requirementsError: null as string | null,
+        isEditingContact: false,
+        initialContact: null as ContactFormValues | null,
+      });
+    } catch (error) {
+      const { message } = resolveErrorPayload(error, 'Kunne ikke hente kontaktstatus');
+      logger.error('[booking:contact:loader]', {
+        ...getBookingSessionLogContext(session),
+        contactResolution: 'failed',
+        message,
+      });
+      return data({
+        session,
+        requirementsError: message,
+        isEditingContact: false,
+        initialContact: null as ContactFormValues | null,
+      });
+    }
+  });
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'action', step: 'contact' }, async () => {
+    const routes = getBookingRouteMap();
+
+    const guardResult = await requireBookingSession(request);
+    if (guardResult instanceof Response) return guardResult;
+    const { session } = guardResult;
+
+    const formData = await request.formData();
+    const intent = String(formData.get('intent') || 'identify');
+
+    if (intent === 'cancel-edit') {
+      try {
+        await withBookingBackendCall(
+          { request, routeId: ROUTE_ID, step: 'contact', call: 'cancel-contact-replacement', session },
           () =>
             withAuth(request, () =>
-              PublicAppointmentSessionController.setPendingAppointmentSessionUser({
+              Booking.cancelAppointmentSessionContactReplacement({
                 path: { sessionId: session.sessionId },
               }),
             ),
         );
-        const nextStep = response.data?.data?.nextStep;
-        if (nextStep === 'DONE') return redirect(routes.overview);
-        if (nextStep === 'VERIFY_MOBILE') return redirect(routes.contactVerifyMobile);
-        // Unknown shape: bounce to contact and let the loader cascade re-resolve. Safe either way.
-        return redirect(routes.contact);
+        return redirect(routes.overview, {
+          headers: { 'Set-Cookie': await clearManualContactOverride() },
+        });
       } catch (error) {
-        const { message } = resolveErrorPayload(error, 'Kunne ikke fortsette med innlogget bruker');
-        return data({ error: message }, { status: 400 });
+        const { message } = resolveErrorPayload(error, 'Kunne ikke avbryte kontaktendringen');
+        return redirectWithError(request, routes.overview, message);
       }
     }
 
-    // Default: identify — the guest contact form.
+    const isReplacingContact = formData.get('replacement') === '1';
+
     const parsed = submitContactFormSchema.safeParse({
       companyId: session.companyId,
       givenName: String(formData.get('givenName') || '').trim(),
@@ -267,7 +261,7 @@ export async function action({ request }: Route.ActionArgs) {
                 givenName: parsed.data.givenName,
                 familyName: parsed.data.familyName,
                 mobileNumber: parsed.data.mobileNumber,
-                email: parsed.data.email, // schema transforms '' → undefined; only sent when filled
+                email: parsed.data.email,
                 mobileVerificationToken:
                   typeof mobileVerificationToken === 'string' ? mobileVerificationToken : undefined,
               },
@@ -283,8 +277,6 @@ export async function action({ request }: Route.ActionArgs) {
       });
 
       if (result?.nextStep === 'DONE') {
-        // Same-shape success as a real OTP verify (this is the remembered-mobile skip path) —
-        // mint the login cookies exactly like verify-mobile does before continuing.
         const headers = result.authTokens
           ? await authService.setAuthCookies(
               result.authTokens.accessToken,
@@ -292,19 +284,28 @@ export async function action({ request }: Route.ActionArgs) {
               result.authTokens.accessTokenExpiresAt,
               result.authTokens.refreshTokenExpiresAt,
             )
-          : undefined;
-        return redirect(routes.overview, headers ? { headers } : undefined);
+          : new Headers();
+        headers.append('Set-Cookie', await clearManualContactOverride());
+        return redirect(routes.overview, { headers });
       }
-      const challengeParam = result?.challengeId ? `?challengeId=${result.challengeId}` : '';
-      return redirect(`${routes.contactVerifyMobile}${challengeParam}`);
+
+      if (result?.nextStep === 'VERIFY_MOBILE') {
+        const headers = new Headers();
+        headers.append('Set-Cookie', await clearManualContactOverride());
+        const searchParams = new URLSearchParams();
+        if (result.challengeId) searchParams.set('challengeId', result.challengeId);
+        if (isReplacingContact) searchParams.set('replacement', '1');
+        const challengeParams = searchParams.size > 0 ? `?${searchParams.toString()}` : '';
+        return redirect(`${routes.contactVerifyMobile}${challengeParams}`, { headers });
+      }
+
+      return data({ error: 'Kunne ikke fortsette. Kontroller kontaktinformasjonen og prøv igjen.' }, { status: 400 });
     } catch (error) {
       const { message } = resolveErrorPayload(error, 'Kunne ikke lagre kontaktinformasjon');
       return data({ error: message }, { status: 400 });
     }
   });
 }
-
-// ---------- component: renders exactly one of RESUME / CONTINUE_AS / FORM(+ERROR notice) ----------
 
 export default function BookingSessionContactPage({ loaderData, actionData }: Route.ComponentProps) {
   const navigation = useNavigation();
@@ -317,248 +318,67 @@ export default function BookingSessionContactPage({ loaderData, actionData }: Ro
   const errorMessage =
     actionData && typeof actionData === 'object' && 'error' in actionData ? String(actionData.error) : null;
 
-  const { contactState, resumeUser, authenticatedUser, requirementsError } = loaderData;
-
   return (
     <Stack space="xl">
-      {/* Constrained reading width: full-bleed 3-line cards are what made this feel flat. */}
       <div className="mx-auto w-full max-w-2xl space-y-6">
         <div className={BOOKING_CONTACT_PAGE_HEADER_CLASS}>
           <Text as="p" variant="overline" className="text-booking-action">
             Kontakt
           </Text>
           <Text as="h1" variant="heading-lg" className="text-booking-text">
-            {contactState === 'RESUME'
-              ? 'Kontaktinformasjonen din er bekreftet'
-              : 'Hvem skal vi sende bekreftelsen til?'}
+            {loaderData.isEditingContact ? 'Endre kontaktinformasjon' : 'Hvordan når vi deg?'}
           </Text>
-          {contactState !== 'RESUME' && (
-            <Text as="p" variant="body" className="max-w-2xl text-booking-text-muted">
-              Vi sender en SMS-kode til mobilnummeret ditt før timen bekreftes. E-post er valgfritt.
-            </Text>
-          )}
+          <Text as="p" variant="body" className="max-w-2xl text-booking-text-muted">
+            Etterpå får du se over alt før du bekrefter timebestillingen.
+          </Text>
         </div>
 
         {errorMessage ? (
           <Notice variant="booking" tone="emphasis" title="Kunne ikke fortsette" message={errorMessage} />
         ) : null}
-        {requirementsError ? (
+        {loaderData.requirementsError ? (
           <Notice
             variant="booking"
             tone="emphasis"
-            title="Kunne ikke hente bookingstatus"
-            message="Prøv igjen om litt. Kontaktinformasjonen din kan fortsatt fylles ut."
+            title="Fyll ut kontaktinformasjonen"
+            message={loaderData.requirementsError}
           />
         ) : null}
 
-        {contactState === 'RESUME' ? (
-          <ResumeCard resumeUser={resumeUser} isSubmitting={isSubmitting} isClearing={pendingIntent === 'clear'} />
-        ) : contactState === 'CONTINUE_AS' ? (
-          <ContinueAsCard
-            authenticatedUser={authenticatedUser}
-            routes={routes}
-            isSubmitting={isSubmitting}
-            pendingIntent={pendingIntent}
-            pendingDestination={pendingDestination}
-          />
-        ) : (
-          <ContactForm
-            routes={routes}
-            isSubmitting={isSubmitting}
-            pendingIntent={pendingIntent}
-            pendingDestination={pendingDestination}
-          />
-        )}
+        <ContactForm
+          routes={routes}
+          isSubmitting={isSubmitting}
+          pendingIntent={pendingIntent}
+          pendingDestination={pendingDestination}
+          isEditingContact={loaderData.isEditingContact}
+          initialContact={loaderData.initialContact}
+        />
       </div>
-
-      {/* Footers stay outside the constrained column so the sticky bar spans as before. */}
-      {contactState === 'RESUME' ? (
-        <Form method="post">
-          <input type="hidden" name="intent" value="resume" readOnly />
-          <BookingFooterNav>
-            <BookingLink
-              to={routes.selectTime}
-              variant="secondary"
-              loading={pendingDestination === routes.selectTime}
-              disabled={isSubmitting}
-            >
-              Tilbake
-            </BookingLink>
-            <BookingActionButton
-              type="submit"
-              variant="primary"
-              loading={pendingIntent === 'resume'}
-              disabled={isSubmitting}
-            >
-              {pendingIntent === 'resume' ? 'Går videre...' : 'Fortsett til booking'}
-            </BookingActionButton>
-          </BookingFooterNav>
-        </Form>
-      ) : null}
     </Stack>
   );
 }
-
-// ---------- shared: avatar circle from a display name ----------
-
-function AvatarInitial({ name }: { name: string | null }) {
-  const initial = name?.trim().charAt(0).toUpperCase();
-  return (
-    <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-booking-action/10 text-lg font-bold text-booking-action">
-      {initial || <UserRound className="size-5" />}
-    </div>
-  );
-}
-
-// ---------- RESUME: verified identity — confirmation anatomy, not a bare card ----------
-
-function ResumeCard({
-  resumeUser,
-  isSubmitting,
-  isClearing,
-}: {
-  resumeUser: { displayName: string | null; maskedMobile: string | null } | null;
-  isSubmitting: boolean;
-  isClearing: boolean;
-}) {
-  return (
-    <div className={`${CARD_CLASS} overflow-hidden`}>
-      <div className="flex items-center justify-between gap-3 border-b border-booking-border bg-booking-action/5 px-4 py-3 md:px-5">
-        <Text as="p" variant="caption" className="font-semibold uppercase tracking-wider text-booking-text-muted">
-          Din kontaktinformasjon
-        </Text>
-        <span className="inline-flex items-center gap-1 rounded-full bg-booking-action px-2.5 py-1 text-xs font-semibold text-booking-action-contrast">
-          <BadgeCheck className="size-3.5" />
-          Bekreftet
-        </span>
-      </div>
-
-      <div className="flex items-center gap-4 p-4 md:p-5">
-        <AvatarInitial name={resumeUser?.displayName ?? null} />
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <Text as="p" variant="body" className="truncate font-bold text-booking-text">
-            {resumeUser?.displayName || 'Bekreftet kontakt'}
-          </Text>
-          {resumeUser?.maskedMobile ? (
-            <span className="inline-flex items-center gap-1.5 text-sm text-booking-text-muted">
-              <Phone className="size-3.5" />
-              {resumeUser.maskedMobile}
-            </span>
-          ) : null}
-        </div>
-        <Form method="post" className="shrink-0">
-          <input type="hidden" name="intent" value="clear" readOnly />
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="text-sm font-semibold text-booking-action hover:underline disabled:opacity-50"
-          >
-            {isClearing ? 'Endrer...' : 'Endre'}
-          </button>
-        </Form>
-      </div>
-    </div>
-  );
-}
-
-// ---------- CONTINUE_AS: identity card — who you are, one obvious action ----------
-
-function ContinueAsCard({
-  authenticatedUser,
-  routes,
-  isSubmitting,
-  pendingIntent,
-  pendingDestination,
-}: {
-  authenticatedUser: { displayName: string | null } | null;
-  routes: ReturnType<typeof getBookingRouteMap>;
-  isSubmitting: boolean;
-  pendingIntent: string;
-  pendingDestination: string;
-}) {
-  const name = authenticatedUser?.displayName || null;
-  return (
-    <Form method="post" className="space-y-6">
-      <input type="hidden" name="intent" value="attach" readOnly />
-
-      <div className={`${CARD_CLASS} p-4 md:p-5`}>
-        <div className="flex items-center gap-3">
-          <AvatarInitial name={name} />
-          <div className="min-w-0 flex-1 space-y-0">
-            <Text as="p" variant="body" className="truncate font-bold text-booking-text">
-              {name || 'Innlogget bruker'}
-            </Text>
-            <Text as="p" variant="caption" className="leading-snug text-booking-text-muted">
-              Du er logget inn — vi bruker kontaktinformasjonen fra kontoen din.
-            </Text>
-          </div>
-        </div>
-        <div className="mt-3 rounded-[var(--radius-booking-control)] bg-booking-action/10 px-3 py-2.5">
-          <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1 text-sm leading-snug text-booking-text-muted">
-            <span>Ikke {name || 'deg'}?</span>
-            <BookingLink
-              to={`${routes.contact}?form=1`}
-              variant="inline"
-              loading={pendingDestination === `${routes.contact}?form=1`}
-              disabled={isSubmitting}
-              className="min-h-0 rounded-md border-booking-action/40 bg-booking-surface-raised/60 px-2 py-1 text-sm no-underline"
-            >
-              Fortsett som gjest
-            </BookingLink>
-            <span>eller</span>
-            <BookingLink
-              to={routes.contactSignIn}
-              variant="inline"
-              loading={isSubmitting && !pendingIntent && pendingDestination !== `${routes.contact}?form=1`}
-              disabled={isSubmitting}
-              className="min-h-0 rounded-md border-booking-action/40 bg-booking-surface-raised/60 px-2 py-1 text-sm no-underline"
-            >
-              logg inn med en annen konto
-            </BookingLink>
-          </div>
-        </div>
-      </div>
-
-      <BookingFooterNav>
-        <BookingLink
-          to={routes.selectTime}
-          variant="secondary"
-          loading={pendingDestination === routes.selectTime}
-          disabled={isSubmitting}
-        >
-          Tilbake
-        </BookingLink>
-        <BookingActionButton
-          type="submit"
-          variant="primary"
-          loading={pendingIntent === 'attach'}
-          disabled={isSubmitting}
-        >
-          {pendingIntent === 'attach' ? 'Går videre...' : name ? `Fortsett som ${name}` : 'Fortsett'}
-        </BookingActionButton>
-      </BookingFooterNav>
-    </Form>
-  );
-}
-
-// ---------- FORM: the guest contact form (also rendered for ERROR, with the notice above) ----------
 
 function ContactForm({
   routes,
   isSubmitting,
   pendingIntent,
   pendingDestination,
+  isEditingContact,
+  initialContact,
 }: {
   routes: ReturnType<typeof getBookingRouteMap>;
   isSubmitting: boolean;
   pendingIntent: string;
   pendingDestination: string;
+  isEditingContact: boolean;
+  initialContact: ContactFormValues | null;
 }) {
-  const [showEmail, setShowEmail] = useState(false);
+  const [showEmail, setShowEmail] = useState(Boolean(initialContact?.email));
+  const isCancellingEdit = pendingIntent === 'cancel-edit';
 
   return (
     <Form method="post" className="space-y-6">
-      <input type="hidden" name="intent" value="identify" readOnly />
+      {isEditingContact ? <input type="hidden" name="replacement" value="1" readOnly /> : null}
 
       <div className={`${CARD_CLASS} space-y-5 p-4 md:p-6`}>
         <div className="grid gap-4 md:grid-cols-2">
@@ -571,6 +391,7 @@ function ContactForm({
               name="givenName"
               variant="booking"
               autoComplete="given-name"
+              defaultValue={initialContact?.givenName}
               required
               disabled={isSubmitting}
             />
@@ -585,6 +406,7 @@ function ContactForm({
               name="familyName"
               variant="booking"
               autoComplete="family-name"
+              defaultValue={initialContact?.familyName}
               required
               disabled={isSubmitting}
             />
@@ -604,6 +426,7 @@ function ContactForm({
               type="tel"
               inputMode="tel"
               autoComplete="tel"
+              defaultValue={initialContact?.mobileNumber}
               maxLength={8}
               required
               disabled={isSubmitting}
@@ -611,7 +434,9 @@ function ContactForm({
             />
           </div>
           <Text as="p" variant="caption" className="text-booking-text-muted">
-            Vi sender SMS med kode for å bekrefte bestillingen.
+            {isEditingContact
+              ? 'Hvis du endrer nummeret, sender vi en kode før kontakten erstattes.'
+              : 'Vi sender en kode for å bekrefte nummeret.'}
           </Text>
         </div>
 
@@ -629,12 +454,13 @@ function ContactForm({
                 type="email"
                 inputMode="email"
                 autoComplete="email"
+                defaultValue={initialContact?.email}
                 className="pl-9"
                 disabled={isSubmitting}
               />
             </div>
             <Text as="p" variant="caption" className="text-booking-text-muted">
-              Valgfritt. Vi sender bekreftelsen på e-post også.
+              Vi sender også timebekreftelsen på e-post etter bestilling.
             </Text>
           </div>
         ) : (
@@ -649,43 +475,64 @@ function ContactForm({
           </button>
         )}
 
-        {/* Secondary path: one quiet line, clearly separated — never competing with the primary. */}
-        <div className="border-t border-booking-border pt-4">
-          <Text as="p" variant="caption" className="text-booking-text-muted">
-            Har du allerede en konto?{' '}
-            <BookingLink
-              to={routes.contactSignIn}
-              variant="inline"
-              loading={isSubmitting && !pendingIntent && pendingDestination !== routes.selectTime}
-              disabled={isSubmitting}
-            >
-              {isSubmitting && !pendingIntent && pendingDestination !== routes.selectTime
-                ? 'Åpner innlogging...'
-                : 'Logg inn'}
-            </BookingLink>
-          </Text>
-        </div>
+        {!isEditingContact ? (
+          <div className="border-t border-booking-border pt-4">
+            <Text as="p" variant="caption" className="text-booking-text-muted">
+              Har du allerede en konto?{' '}
+              <BookingLink
+                to={routes.contactSignIn}
+                variant="inline"
+                loading={isSubmitting && !pendingIntent && pendingDestination !== routes.selectTime}
+                disabled={isSubmitting}
+              >
+                {isSubmitting && !pendingIntent && pendingDestination !== routes.selectTime
+                  ? 'Åpner innlogging...'
+                  : 'Logg inn'}
+              </BookingLink>
+            </Text>
+          </div>
+        ) : null}
       </div>
 
-      {/* Footer INSIDE the form — the submit needs no form="id" attribute. */}
       <BookingFooterNav>
-        <BookingLink
-          to={routes.selectTime}
-          variant="secondary"
-          loading={pendingDestination === routes.selectTime}
-          disabled={isSubmitting}
-        >
-          Tilbake
-        </BookingLink>
+        {isEditingContact ? (
+          <BookingActionButton
+            type="submit"
+            name="intent"
+            value="cancel-edit"
+            variant="secondary"
+            loading={isCancellingEdit}
+            disabled={isSubmitting}
+          >
+            Tilbake
+          </BookingActionButton>
+        ) : (
+          <BookingLink
+            to={routes.selectTime}
+            variant="secondary"
+            loading={pendingDestination === routes.selectTime}
+            disabled={isSubmitting}
+          >
+            Tilbake
+          </BookingLink>
+        )}
         <BookingActionButton
           type="submit"
+          name="intent"
+          value="identify"
           variant="primary"
           loading={pendingIntent === 'identify'}
           disabled={isSubmitting}
         >
-          {pendingIntent === 'identify' ? 'Sender SMS...' : 'Fortsett til SMS-bekreftelse'}
+          {pendingIntent === 'identify' ? 'Lagrer...' : isEditingContact ? 'Lagre endringer' : 'Lagre og fortsett'}
         </BookingActionButton>
       </BookingFooterNav>
     </Form>
   );
+}
+
+function formatLocalMobileNumber(value?: string | null): string {
+  const digits = value?.replace(/\D/g, '') ?? '';
+  if (digits.length === 10 && digits.startsWith('47')) return digits.slice(2);
+  return digits.slice(-8);
 }

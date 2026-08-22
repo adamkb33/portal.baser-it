@@ -65,6 +65,8 @@ export type ApiMessage = {
     | 'SESSION_EXPIRED'
     | 'REQUIREMENTS_UNAVAILABLE'
     | 'CONTACT_VALIDATION_FAILED'
+    | 'CONTACT_REPLACEMENT_PENDING'
+    | 'CONTACT_REPLACEMENT_CANCELLED'
     | 'INVALID_CODE'
     | 'CHALLENGE_NOT_FOUND'
     | 'CHALLENGE_EXPIRED'
@@ -443,6 +445,20 @@ export type SystemAdminCompanyDto = {
   updatedAt?: string;
 };
 
+export type BookingContactUpdateRequestDto = {
+  givenName: string;
+  familyName: string;
+  email?: string;
+};
+
+export type ApiResponseUnit = {
+  success: boolean;
+  message: ApiMessage;
+  errors?: Array<ApiError>;
+  meta?: ApiMeta;
+  timestamp: string;
+};
+
 export type UpdateContactDto = {
   givenName: string;
   familyName: string;
@@ -470,14 +486,6 @@ export type ContactDto = {
 
 export type EditCompanyUserDto = {
   roles: Array<'ADMIN' | 'EMPLOYEE'>;
-};
-
-export type ApiResponseUnit = {
-  success: boolean;
-  message: ApiMessage;
-  errors?: Array<ApiError>;
-  meta?: ApiMeta;
-  timestamp: string;
 };
 
 export type UpdateCompanyDisplayNameDto = {

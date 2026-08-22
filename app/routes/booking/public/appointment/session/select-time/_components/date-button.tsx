@@ -20,7 +20,7 @@ export function DateButton({ schedule, isSelected, hasSelectedTime, onClick, var
       type="button"
       onClick={onClick}
       className={cn(
-        'relative flex w-full items-center justify-between gap-3 rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-selected)] transition-all',
+        'relative flex w-full items-center gap-3 rounded-[var(--radius-booking-card)] border-[length:var(--border-booking-selected)] transition-all',
         isCompact ? 'min-h-11 px-3 py-2' : 'min-h-16 p-3 md:min-h-14',
         isSelected && [
           'border-booking-action bg-booking-action text-booking-action-contrast',
@@ -60,22 +60,6 @@ export function DateButton({ schedule, isSelected, hasSelectedTime, onClick, var
             />
           </div>
         )}
-      </div>
-
-      <div className="flex flex-col items-center gap-1 text-center">
-        <span className={cn('text-xs', isSelected ? 'text-booking-action-contrast/80' : 'text-booking-text-muted')}>
-          ledig
-        </span>
-        <span
-          className={cn(
-            'flex items-center justify-center rounded-full font-bold',
-            isCompact ? 'size-8 text-sm' : 'size-10 text-base',
-            isSelected ? 'bg-booking-action-contrast/20' : 'bg-booking-surface-muted',
-            isSelected ? 'text-booking-action-contrast' : 'text-booking-text',
-          )}
-        >
-          {schedule.timeSlots.length}
-        </span>
       </div>
     </button>
   );

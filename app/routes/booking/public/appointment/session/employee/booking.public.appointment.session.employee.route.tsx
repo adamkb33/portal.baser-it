@@ -7,6 +7,11 @@ import { BookingCompanyBadge } from '~/routes/booking/public/_components/booking
 import { getBookingCompanySummary } from '~/routes/booking/public/_utils/booking-company.server';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
 import { requireBookingSession } from '~/routes/booking/public/_utils/booking.require-authenticated-flow.server';
+import {
+  OVERVIEW_RETURN_VALUE,
+  shouldReturnToOverview,
+  withOverviewReturnTo,
+} from '~/routes/booking/public/_utils/booking-return-to';
 import { getBookingRouteMap } from '~/routes/booking/public/_utils/booking.route-map';
 import { BookingActionButton } from '~/routes/booking/public/_components/booking-action-button';
 import { BookingFooterNav } from '~/routes/booking/public/_components/booking-footer-nav';
@@ -20,6 +25,7 @@ const ROUTE_ID = 'booking.public.appointment.session.employee';
 export async function loader({ request }: Route.LoaderArgs) {
   return withBookingFlowLog({ request, routeId: ROUTE_ID, kind: 'loader', step: 'employee' }, async () => {
     const routes = getBookingRouteMap();
+    const returnToOverview = shouldReturnToOverview(new URL(request.url).searchParams.get('returnTo'));
 
     try {
       const guardResult = await requireBookingSession(request);
@@ -64,7 +70,7 @@ export async function loader({ request }: Route.LoaderArgs) {
           );
         }
 
-        return redirect(routes.selectServices);
+        return redirect(returnToOverview ? withOverviewReturnTo(routes.selectServices) : routes.selectServices);
       }
 
       return data({
@@ -72,6 +78,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         profiles,
         selectedProfileId: session.selectedProfileId,
         companySummary,
+        returnToOverview,
         error: null as string | null,
       });
     } catch (error) {
@@ -81,6 +88,7 @@ export async function loader({ request }: Route.LoaderArgs) {
         profiles: [],
         selectedProfileId: null,
         companySummary: null,
+        returnToOverview,
         error: message,
       });
     }
@@ -100,6 +108,7 @@ export async function action({ request }: Route.ActionArgs) {
       const { session } = guardResult;
       const formData = await request.formData();
       const selectedProfileId = formData.get('selectedProfileId') as string;
+      const returnToOverview = shouldReturnToOverview(formData.get('returnTo'));
 
       await withBookingBackendCall(
         {
@@ -121,7 +130,7 @@ export async function action({ request }: Route.ActionArgs) {
           ),
       );
 
-      return redirect(routes.selectServices);
+      return redirect(returnToOverview ? withOverviewReturnTo(routes.selectServices) : routes.selectServices);
     } catch (error) {
       const { message } = resolveErrorPayload(error, 'Kunne ikke velge frisør');
       return redirectWithError(request, routes.employee, message);
@@ -135,6 +144,7 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
   const routes = getBookingRouteMap();
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== 'idle';
+  const returnToOverview = loaderData.returnToOverview;
   const submittingProfileId = navigation.formData?.get('selectedProfileId');
   const pendingDestination = navigation.location?.pathname;
 
@@ -165,13 +175,14 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
               isSelected={isSelected}
               isSubmitting={isSubmitting}
               isSubmittingProfile={isSubmittingProfile}
+              returnToOverview={returnToOverview}
             />
           );
         })}
       </Grid>
       <BookingFooterNav>
         <BookingLink
-          to={routes.contact}
+          to={returnToOverview ? routes.overview : routes.contact}
           variant="secondary"
           loading={isSubmitting && pendingDestination === routes.contact}
           disabled={isSubmitting}
@@ -180,7 +191,7 @@ export default function BookingEmployeePage({ loaderData }: Route.ComponentProps
         </BookingLink>
         {selectedProfileId ? (
           <BookingLink
-            to={routes.selectServices}
+            to={returnToOverview ? withOverviewReturnTo(routes.selectServices) : routes.selectServices}
             variant="primary"
             loading={isSubmitting && pendingDestination === routes.selectServices}
             disabled={isSubmitting}

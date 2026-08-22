@@ -144,6 +144,7 @@ export type {
   AuthPermissionFlagsDto,
   AuthPermissionsDto,
   BookingActivityMetrics,
+  BookingContactUpdateRequestDto,
   BookingDashboardMetrics,
   BookingProfileDto,
   BookingSessionMetrics,

@@ -1,21 +1,15 @@
 import { data, redirect, Link } from 'react-router';
 import type { Route } from './+types/booking.public.appointment.success.route';
-import { Check, MapPin, Calendar, Mail, Bell, Clock, ExternalLink, Sparkles, PartyPopper, Phone } from 'lucide-react';
+import { CalendarPlus, Check, MapPin } from 'lucide-react';
 import { PublicCompanyController } from '~/api/generated/base';
 import { AppointmentsController, PublicAppointmentSessionController } from '~/api/generated/booking';
 import { withAuth } from '~/api/utils/with-auth';
 import { resolveErrorPayload } from '~/lib/api-error';
 import { ROUTES_MAP } from '~/lib/routing/route-tree';
+import { AppointmentSessionService } from '~/routes/booking/public/_services/booking.appointment-session.service.server';
 import { withBookingBackendCall, withBookingFlowLog } from '~/routes/booking/public/_utils/booking-flow-log.server';
-import {
-  Button as BookingButton,
-  Card as BookingCard,
-  Container as BookingContainer,
-  PageHeader as BookingStepHeader,
-  Stack,
-  StickyFooterPageTemplate,
-  StickySummaryBar,
-} from '~/ui';
+import { Button as BookingButton, Container as BookingContainer, PageHeader as BookingStepHeader } from '~/ui';
+import { formatNorwegianDateTime } from '../session/overview/_utils/format-norwegian-date-time';
 
 const ROUTE_ID = 'booking.public.appointment.success';
 
@@ -96,16 +90,54 @@ async function successLoader({ request }: Route.LoaderArgs) {
             }),
           ),
       );
+      const appointment = appointmentResponse.data?.data;
+      if (!appointment) {
+        return data({
+          companySummary: companyResponse.data.data,
+          appointment: null,
+          providerName: null as string | null,
+          error: 'Kunne ikke hente avtaledetaljene',
+        });
+      }
+
+      let providerName: string | null = null;
+      try {
+        const session = await AppointmentSessionService.get(request);
+        if (session) {
+          const profilesResponse = await withBookingBackendCall(
+            {
+              request,
+              routeId: ROUTE_ID,
+              step: 'success',
+              call: 'get-provider',
+              context: { appointmentId: parsedAppointmentId, profileId: appointment.profileId },
+            },
+            () =>
+              withAuth(request, () =>
+                PublicAppointmentSessionController.getAppointmentSessionProfiles({
+                  query: { sessionId: session.sessionId },
+                }),
+              ),
+          );
+          const profile = profilesResponse.data?.data?.find((item) => item.id === appointment.profileId);
+          providerName = profile ? [profile.givenName, profile.familyName].filter(Boolean).join(' ') : null;
+        }
+      } catch {
+        providerName = null;
+      }
+
       return data({
         companySummary: companyResponse.data.data,
-        appointment: appointmentResponse.data?.data ?? undefined,
+        appointment,
+        providerName,
         error: null as string | null,
       });
     } catch {
       return data({
         companySummary: companyResponse.data.data,
         appointment: null,
-        error: 'Kunne ikke hente avtale',
+        providerName: null as string | null,
+        error: 'Kunne ikke hente avtaledetaljene',
       });
     }
   } catch (error) {
@@ -113,7 +145,8 @@ async function successLoader({ request }: Route.LoaderArgs) {
     return data(
       {
         companySummary: null,
-        sessionOverview: null,
+        appointment: null,
+        providerName: null as string | null,
         error: message,
       },
       { status: status ?? 400 },
@@ -122,356 +155,196 @@ async function successLoader({ request }: Route.LoaderArgs) {
 }
 
 export default function BookingPublicAppointmentSessionSuccessRoute({ loaderData }: Route.ComponentProps) {
-  if (loaderData.error || !loaderData.companySummary) {
+  if (!loaderData.companySummary) {
     return (
       <BookingContainer>
-        <BookingStepHeader
-          title="Timen er bekreftet"
-          description={loaderData.error ?? 'Kunne ikke hente bekreftelse'}
-        />
+        <BookingStepHeader title="Timen er bestilt" description={loaderData.error ?? 'Kunne ikke hente bekreftelse'} />
       </BookingContainer>
     );
   }
 
   const { companySummary } = loaderData;
-  const newBookingHref = `${ROUTES_MAP['booking.public.appointment.session'].href}?${new URLSearchParams({
-    companyId: String(companySummary.id),
-    reset: '1',
-  }).toString()}`;
-
-  const formatAddress = () => {
-    const address = companySummary.businessAddress;
-    if (!address) return null;
-
-    const parts = [
-      ...(address.addressLines || []),
-      address.postalCode && address.city ? `${address.postalCode} ${address.city}` : address.city,
-      address.country,
-    ].filter(Boolean);
-
-    return parts.join(', ');
-  };
-
-  const getGoogleMapsUrl = () => {
-    const address = companySummary.businessAddress;
-    if (!address) return null;
-
-    const query = [...(address.addressLines || []), address.postalCode, address.city, address.country]
-      .filter(Boolean)
-      .join(' ');
-
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-  };
-
-  const formattedAddress = formatAddress();
-  const mapsUrl = getGoogleMapsUrl();
-
-  const buildCalendarPayload = () => {
-    if (!loaderData.appointment) return null;
-    const { appointment } = loaderData;
-    const startDate = new Date(appointment.startTime);
-    const endDate = new Date(appointment.endTime);
-
-    const formatIcsDate = (date: Date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const summary = `Avtale hos ${companySummary.name}`;
-    const serviceNames = appointment.groupedServiceGroups
-      .flatMap((group) => group.services.map((service) => service.name))
-      .filter(Boolean);
-    const descriptionParts = [
-      serviceNames.length > 0 ? `Tjenester: ${serviceNames.join(', ')}` : null,
-      formattedAddress ? `Adresse: ${formattedAddress}` : null,
-    ].filter(Boolean);
-    const description = descriptionParts.join('\\n');
-    const location = formattedAddress ?? '';
-    const uid = `${companySummary.id ?? 'company'}-${appointment.startTime}`;
-
-    const icsContent = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//Pitell//Booking//NO',
-      'CALSCALE:GREGORIAN',
-      'BEGIN:VEVENT',
-      `UID:${uid}`,
-      `DTSTAMP:${formatIcsDate(new Date())}`,
-      `DTSTART:${formatIcsDate(startDate)}`,
-      `DTEND:${formatIcsDate(endDate)}`,
-      `SUMMARY:${summary}`,
-      description ? `DESCRIPTION:${description.replace(/\n/g, '\\n')}` : null,
-      location ? `LOCATION:${location}` : null,
-      'END:VEVENT',
-      'END:VCALENDAR',
-    ]
-      .filter(Boolean)
-      .join('\r\n');
-
-    const href = `data:text/calendar;charset=utf-8,${encodeURIComponent(icsContent)}`;
-    const filename = `${companySummary.name || 'appointment'}.ics`.replace(/\s+/g, '-').toLowerCase();
-
-    const googleDates = `${formatIcsDate(startDate)}/${formatIcsDate(endDate)}`;
-    const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-      summary,
-    )}&dates=${encodeURIComponent(googleDates)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(
-      location,
-    )}`;
-
-    return { href, filename, googleUrl };
-  };
-
-  const calendarPayload = buildCalendarPayload();
-  const hasEmail = Boolean(loaderData.appointment?.user?.email);
+  const companyName = formatCompanyDisplayName(companySummary.name);
+  const formattedAddress = formatAddress(companySummary.businessAddress);
+  const mapsUrl = buildGoogleMapsUrl(companySummary.businessAddress);
+  const appointment = loaderData.appointment;
+  const services = appointment?.groupedServiceGroups.flatMap((group) => group.services) ?? [];
+  const dateTime = appointment ? formatNorwegianDateTime(appointment.startTime) : null;
+  const calendarPayload = appointment
+    ? buildCalendarPayload({
+        appointment,
+        companyName,
+        formattedAddress,
+      })
+    : null;
 
   return (
-    <StickyFooterPageTemplate
-      footer={
-        <StickySummaryBar
-          items={[]}
-          primaryAction={
-            <Link to={ROUTES_MAP['booking.public.my-appointments'].href}>
-              <BookingButton variant="booking-primary" size="md" fullWidth>
-                Se mine bookinger
-              </BookingButton>
-            </Link>
-          }
-          secondaryAction={
-            <Link to={newBookingHref}>
-              <BookingButton variant="booking-secondary" size="md" fullWidth>
-                Book en ny time
-              </BookingButton>
-            </Link>
-          }
-        />
-      }
-    >
-      <BookingContainer>
-        <BookingStepHeader title="Timen er bekreftet" description="Vi gleder oss til å se deg." />
-        <Stack space="md">
-          <BookingCard
-            variant="emphasis"
-            className="space-y-4 border-booking-border bg-booking-surface-raised text-booking-text shadow-[var(--shadow-booking-card)]"
-          >
-            <div className="space-y-4">
-              {/* Success icon */}
-              <div className="flex items-center justify-center">
-                <div className="relative">
-                  <div className="flex size-20 items-center justify-center rounded-full bg-booking-action text-booking-action-contrast shadow-[var(--shadow-booking-card)] md:size-24">
-                    <Check className="size-10 md:size-12" strokeWidth={3} />
-                  </div>
-                  {/* Sparkle decoration */}
-                  <div className="absolute -right-1 -top-1">
-                    <Sparkles className="size-6 text-booking-action md:size-8" fill="currentColor" />
-                  </div>
+    <BookingContainer size="lg" className="py-6 md:py-10">
+      <div className="mx-auto w-full max-w-2xl space-y-6">
+        <section
+          className="flex flex-col items-center gap-3 rounded-[var(--radius-booking-panel)] border border-booking-confirm/25 bg-success-soft px-4 py-6 text-center text-booking-confirm md:py-8"
+          aria-labelledby="booking-success-heading"
+        >
+          <span className="flex size-12 items-center justify-center rounded-full bg-booking-confirm text-booking-confirm-contrast">
+            <Check className="size-7" strokeWidth={3} aria-hidden="true" />
+          </span>
+          <h1 id="booking-success-heading" className="text-2xl font-bold md:text-3xl">
+            Timen er bestilt
+          </h1>
+        </section>
+
+        {appointment && dateTime ? (
+          <section aria-label="Avtaledetaljer">
+            <div className="border-b border-booking-border pb-5">
+              <h2 className="text-3xl font-bold tracking-tight text-booking-text md:text-4xl">{dateTime.short}</h2>
+              <div className="mt-2 space-y-1">
+                {services.map((service) => (
+                  <p key={service.id} className="text-base text-booking-text md:text-lg">
+                    <span className="font-medium">{service.name}</span>
+                    <span className="text-booking-text-muted">
+                      {' '}
+                      · {service.duration} min · {service.price} kr
+                    </span>
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            <dl className="grid grid-cols-[minmax(84px,auto)_minmax(0,1fr)] items-baseline gap-x-4">
+              <SummaryRow label="Behandler">
+                <p className="font-medium text-booking-text">{loaderData.providerName ?? 'Ikke oppgitt'}</p>
+              </SummaryRow>
+              <SummaryRow label="Sted">
+                <div className="text-booking-text">
+                  <p className="font-medium">{companyName}</p>
+                  {formattedAddress ? <p className="text-booking-text-muted">{formattedAddress}</p> : null}
                 </div>
-              </div>
+              </SummaryRow>
+            </dl>
+          </section>
+        ) : (
+          <p className="text-booking-text-muted">{loaderData.error ?? 'Kunne ikke vise avtaledetaljene.'}</p>
+        )}
 
-              {/* Success message */}
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-booking-text md:text-3xl lg:text-4xl">Timen er bekreftet</h1>
-                <p className="mt-2 text-base text-booking-text-muted md:text-lg">Vi gleder oss til å se deg</p>
-              </div>
+        <p className="text-sm text-booking-text-muted">Vi har sendt bekreftelse på SMS.</p>
 
-              {/* Confirmation number (if available) */}
-              <div className="flex justify-center">
-                <div className="inline-flex items-center gap-2 rounded-full border border-booking-border bg-booking-surface-muted px-4 py-2 text-booking-text">
-                  <PartyPopper className="size-4 text-booking-action" />
-                  <span className="text-sm font-semibold">
-                    {hasEmail ? 'Bekreftelse sendt på SMS og e-post' : 'Bekreftelse sendt på SMS'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </BookingCard>
-
-          {/* ========================================
-          APPOINTMENT DETAILS CARD
-          ======================================== */}
-          <BookingCard className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
-                <Calendar className="size-5 text-primary" />
-              </div>
-              <h2 className="text-lg font-bold text-card-text md:text-xl">Din time hos {companySummary.name}</h2>
-            </div>
-
-            <div className="space-y-3 rounded-lg bg-muted/50 p-4">
-              <p className="text-sm font-medium text-muted-foreground">
-                {hasEmail
-                  ? 'Du mottar bekreftelse på SMS og e-post.'
-                  : 'Du mottar bekreftelse og viktig informasjon på SMS.'}
-              </p>
-            </div>
-
-            {/* Add to calendar CTA */}
-            {calendarPayload ? (
-              <div className="grid gap-2 md:grid-cols-2">
-                <a
-                  href={calendarPayload.googleUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
-                >
-                  <ExternalLink className="size-5" />
-                  Google Kalender
-                </a>
-                <a
-                  href={calendarPayload.href}
-                  download={calendarPayload.filename}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 font-semibold text-primary transition-colors hover:bg-primary/10"
-                >
-                  <Calendar className="size-5" />
-                  Apple Kalender
-                </a>
-              </div>
-            ) : (
-              <button
-                type="button"
-                disabled
-                className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border-2 border-primary/30 bg-primary/5 px-4 py-3 font-semibold text-primary/60"
-              >
-                <Calendar className="size-5" />
+        <div className="space-y-3 pt-1">
+          {calendarPayload ? (
+            <BookingButton asChild variant="outline" size="lg" fullWidth>
+              <a href={calendarPayload.href} download={calendarPayload.filename}>
+                <CalendarPlus aria-hidden="true" />
                 Legg til i kalender
-              </button>
-            )}
-          </BookingCard>
+              </a>
+            </BookingButton>
+          ) : (
+            <BookingButton type="button" variant="outline" size="lg" fullWidth disabled>
+              <CalendarPlus aria-hidden="true" />
+              Legg til i kalender
+            </BookingButton>
+          )}
 
-          {/* ========================================
-          LOCATION CARD - Prominent
-          ======================================== */}
-          <BookingCard className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
-                <MapPin className="size-5 text-primary" />
-              </div>
-              <h2 className="text-lg font-bold text-card-text md:text-xl">Møtested</h2>
-            </div>
+          {mapsUrl ? (
+            <BookingButton asChild variant="outline" size="lg" fullWidth>
+              <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
+                <MapPin aria-hidden="true" />
+                Vis veibeskrivelse
+              </a>
+            </BookingButton>
+          ) : (
+            <BookingButton type="button" variant="outline" size="lg" fullWidth disabled>
+              <MapPin aria-hidden="true" />
+              Vis veibeskrivelse
+            </BookingButton>
+          )}
 
-            {/* Company name */}
-            <div>
-              <h3 className="text-base font-bold text-card-text md:text-lg">
-                {companySummary.name || 'Ukjent selskap'}
-              </h3>
-              {formattedAddress && (
-                <p className="mt-1 text-sm text-muted-foreground md:text-base">{formattedAddress}</p>
-              )}
-            </div>
-
-            {/* Map CTA - Prominent */}
-            {mapsUrl && (
-              <Link
-                to={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-card-border bg-card-accent/10 px-6 py-4 font-semibold text-card-text transition-all hover:border-primary hover:bg-card-accent/20"
-              >
-                <MapPin className="size-5" />
-                <span>Åpne i Google Maps</span>
-                <ExternalLink className="size-4" />
-              </Link>
-            )}
-
-            {/* Detailed address - Collapsed */}
-            {companySummary.businessAddress && (
-              <details className="group">
-                <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground hover:text-card-text">
-                  <span>Vis full adresse</span>
-                  <svg
-                    className="size-4 transition-transform group-open:rotate-180"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </summary>
-                <div className="mt-3 space-y-1 rounded-lg bg-muted/50 p-3">
-                  {companySummary.businessAddress.addressLines?.map((line, idx) => (
-                    <p key={idx} className="text-sm text-card-text">
-                      {line}
-                    </p>
-                  ))}
-                  {(companySummary.businessAddress.postalCode || companySummary.businessAddress.city) && (
-                    <p className="text-sm text-card-text">
-                      {[companySummary.businessAddress.postalCode, companySummary.businessAddress.city]
-                        .filter(Boolean)
-                        .join(' ')}
-                    </p>
-                  )}
-                  {companySummary.businessAddress.country && (
-                    <p className="text-sm text-card-text">{companySummary.businessAddress.country}</p>
-                  )}
-                </div>
-              </details>
-            )}
-          </BookingCard>
-
-          {/* ========================================
-          WHAT'S NEXT - Timeline
-          ======================================== */}
-          <BookingCard className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
-                <Clock className="size-5 text-primary" />
-              </div>
-              <h2 className="text-lg font-bold text-card-text md:text-xl">Hva skjer nå?</h2>
-            </div>
-
-            {/* Timeline */}
-            <ol className="space-y-4">
-              {/* Step 1 */}
-              <li className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-secondary">
-                    {hasEmail ? (
-                      <Mail className="size-5 text-secondary-foreground" />
-                    ) : (
-                      <Phone className="size-5 text-secondary-foreground" />
-                    )}
-                  </div>
-                  <div className="mt-2 h-full w-0.5 bg-card-border" />
-                </div>
-                <div className="flex-1 pb-4">
-                  <h3 className="text-base font-bold text-card-text">Du mottar en bekreftelse</h3>
-                  <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                    {hasEmail
-                      ? 'Vi sender deg bekreftelse med detaljer om timen din på SMS og e-post.'
-                      : 'Vi sender deg bekreftelse med detaljer om timen din på SMS.'}
-                  </p>
-                </div>
-              </li>
-
-              {/* Step 2 */}
-              <li className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-primary/20">
-                    <Bell className="size-5 text-primary" />
-                  </div>
-                  <div className="mt-2 h-full w-0.5 bg-card-border" />
-                </div>
-                <div className="flex-1 pb-4">
-                  <h3 className="text-base font-bold text-card-text">Du får en påminnelse</h3>
-                  <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                    Vi sender deg en påminnelse dagen før timen din
-                  </p>
-                </div>
-              </li>
-
-              {/* Step 3 */}
-              <li className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-primary">
-                    <Check className="size-5 text-primary-foreground" strokeWidth={3} />
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-base font-bold text-card-text">Møt opp til avtalt tid</h3>
-                  <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                    Husk å møte opp i god tid på angitt adresse. Vi gleder oss til å se deg!
-                  </p>
-                </div>
-              </li>
-            </ol>
-          </BookingCard>
-        </Stack>
-      </BookingContainer>
-    </StickyFooterPageTemplate>
+          <Link
+            to={ROUTES_MAP['booking.public.my-appointments'].href}
+            className="mx-auto flex min-h-11 w-fit items-center justify-center px-3 text-sm font-semibold text-booking-action underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-[length:var(--border-booking-focus-ring)] focus-visible:ring-booking-action"
+          >
+            Se mine bookinger
+          </Link>
+        </div>
+      </div>
+    </BookingContainer>
   );
+}
+
+function SummaryRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <>
+      <dt className="border-b border-booking-border py-4 text-sm text-booking-text-muted">{label}</dt>
+      <dd className="min-w-0 border-b border-booking-border py-4 text-sm">{children}</dd>
+    </>
+  );
+}
+
+function formatAddress(address: { addressLines?: Array<string>; postalCode?: string; city?: string } | undefined) {
+  if (!address) return null;
+  const cityLine = [address.postalCode, address.city].filter(Boolean).join(' ');
+  const parts = [...(address.addressLines ?? []), cityLine].filter(Boolean);
+  return parts.length ? parts.join(', ') : null;
+}
+
+function buildGoogleMapsUrl(
+  address: { addressLines?: Array<string>; postalCode?: string; city?: string; country?: string } | undefined,
+) {
+  if (!address) return null;
+  const query = [...(address.addressLines ?? []), address.postalCode, address.city, address.country]
+    .filter(Boolean)
+    .join(' ');
+  return query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : null;
+}
+
+function buildCalendarPayload({
+  appointment,
+  companyName,
+  formattedAddress,
+}: {
+  appointment: NonNullable<Route.ComponentProps['loaderData']['appointment']>;
+  companyName: string;
+  formattedAddress: string | null;
+}) {
+  const formatIcsDate = (date: Date) => `${date.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`;
+  const serviceNames = appointment.groupedServiceGroups.flatMap((group) =>
+    group.services.map((service) => service.name).filter(Boolean),
+  );
+  const description = serviceNames.length ? `Tjenester: ${serviceNames.join(', ')}` : '';
+  const summary = `Avtale hos ${companyName}`;
+  const icsContent = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Pitell//Booking//NO',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${appointment.id}-${appointment.startTime}`,
+    `DTSTAMP:${formatIcsDate(new Date())}`,
+    `DTSTART:${formatIcsDate(new Date(appointment.startTime))}`,
+    `DTEND:${formatIcsDate(new Date(appointment.endTime))}`,
+    `SUMMARY:${summary}`,
+    description ? `DESCRIPTION:${description}` : null,
+    formattedAddress ? `LOCATION:${formattedAddress}` : null,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ]
+    .filter(Boolean)
+    .join('\r\n');
+
+  return {
+    href: `data:text/calendar;charset=utf-8,${encodeURIComponent(`${icsContent}\r\n`)}`,
+    filename: `${companyName || 'appointment'}.ics`.replace(/\s+/g, '-').toLocaleLowerCase('nb-NO'),
+  };
+}
+
+function formatCompanyDisplayName(name?: string | null): string {
+  const trimmedName = name?.trim();
+  if (!trimmedName) return 'Virksomheten';
+
+  const lettersOnly = trimmedName.replace(/[^\p{L}]/gu, '');
+  if (!lettersOnly || lettersOnly !== lettersOnly.toLocaleUpperCase('nb-NO')) return trimmedName;
+
+  return trimmedName
+    .toLocaleLowerCase('nb-NO')
+    .replace(/(^|[\s-])(\p{L})/gu, (_match, separator: string, letter: string) => {
+      return `${separator}${letter.toLocaleUpperCase('nb-NO')}`;
+    });
 }
